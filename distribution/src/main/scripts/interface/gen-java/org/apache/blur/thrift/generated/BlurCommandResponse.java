@@ -51,11 +51,11 @@ import java.util.Arrays;
 
 public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<BlurCommandResponse, BlurCommandResponse._Fields> {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurCommandResponse");
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ADHOC_BYTE_CODE_COMMAND_RESPONSE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("adhocByteCodeCommandResponse", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField AD_HOC_BYTE_CODE_COMMAND_RESPONSE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("adHocByteCodeCommandResponse", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-    ADHOC_BYTE_CODE_COMMAND_RESPONSE((short)1, "adhocByteCodeCommandResponse");
+    AD_HOC_BYTE_CODE_COMMAND_RESPONSE((short)1, "adHocByteCodeCommandResponse");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -70,8 +70,8 @@ public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // ADHOC_BYTE_CODE_COMMAND_RESPONSE
-          return ADHOC_BYTE_CODE_COMMAND_RESPONSE;
+        case 1: // AD_HOC_BYTE_CODE_COMMAND_RESPONSE
+          return AD_HOC_BYTE_CODE_COMMAND_RESPONSE;
         default:
           return null;
       }
@@ -114,8 +114,8 @@ public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.ADHOC_BYTE_CODE_COMMAND_RESPONSE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("adhocByteCodeCommandResponse", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, AdhocByteCodeCommandResponse.class)));
+    tmpMap.put(_Fields.AD_HOC_BYTE_CODE_COMMAND_RESPONSE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("adHocByteCodeCommandResponse", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, AdHocByteCodeCommandResponse.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(BlurCommandResponse.class, metaDataMap);
   }
@@ -135,9 +135,9 @@ public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0
     return new BlurCommandResponse(this);
   }
 
-  public static BlurCommandResponse adhocByteCodeCommandResponse(AdhocByteCodeCommandResponse value) {
+  public static BlurCommandResponse adHocByteCodeCommandResponse(AdHocByteCodeCommandResponse value) {
     BlurCommandResponse x = new BlurCommandResponse();
-    x.setAdhocByteCodeCommandResponse(value);
+    x.setAdHocByteCodeCommandResponse(value);
     return x;
   }
 
@@ -145,11 +145,11 @@ public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0
   @Override
   protected void checkType(_Fields setField, Object value) throws ClassCastException {
     switch (setField) {
-      case ADHOC_BYTE_CODE_COMMAND_RESPONSE:
-        if (value instanceof AdhocByteCodeCommandResponse) {
+      case AD_HOC_BYTE_CODE_COMMAND_RESPONSE:
+        if (value instanceof AdHocByteCodeCommandResponse) {
           break;
         }
-        throw new ClassCastException("Was expecting value of type AdhocByteCodeCommandResponse for field 'adhocByteCodeCommandResponse', but got " + value.getClass().getSimpleName());
+        throw new ClassCastException("Was expecting value of type AdHocByteCodeCommandResponse for field 'adHocByteCodeCommandResponse', but got " + value.getClass().getSimpleName());
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -160,12 +160,12 @@ public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0
     _Fields setField = _Fields.findByThriftId(field.id);
     if (setField != null) {
       switch (setField) {
-        case ADHOC_BYTE_CODE_COMMAND_RESPONSE:
-          if (field.type == ADHOC_BYTE_CODE_COMMAND_RESPONSE_FIELD_DESC.type) {
-            AdhocByteCodeCommandResponse adhocByteCodeCommandResponse;
-            adhocByteCodeCommandResponse = new AdhocByteCodeCommandResponse();
-            adhocByteCodeCommandResponse.read(iprot);
-            return adhocByteCodeCommandResponse;
+        case AD_HOC_BYTE_CODE_COMMAND_RESPONSE:
+          if (field.type == AD_HOC_BYTE_CODE_COMMAND_RESPONSE_FIELD_DESC.type) {
+            AdHocByteCodeCommandResponse adHocByteCodeCommandResponse;
+            adHocByteCodeCommandResponse = new AdHocByteCodeCommandResponse();
+            adHocByteCodeCommandResponse.read(iprot);
+            return adHocByteCodeCommandResponse;
           } else {
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, field.type);
             return null;
@@ -181,9 +181,9 @@ public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0
   @Override
   protected void standardSchemeWriteValue(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     switch (setField_) {
-      case ADHOC_BYTE_CODE_COMMAND_RESPONSE:
-        AdhocByteCodeCommandResponse adhocByteCodeCommandResponse = (AdhocByteCodeCommandResponse)value_;
-        adhocByteCodeCommandResponse.write(oprot);
+      case AD_HOC_BYTE_CODE_COMMAND_RESPONSE:
+        AdHocByteCodeCommandResponse adHocByteCodeCommandResponse = (AdHocByteCodeCommandResponse)value_;
+        adHocByteCodeCommandResponse.write(oprot);
         return;
       default:
         throw new IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -195,11 +195,11 @@ public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0
     _Fields setField = _Fields.findByThriftId(fieldID);
     if (setField != null) {
       switch (setField) {
-        case ADHOC_BYTE_CODE_COMMAND_RESPONSE:
-          AdhocByteCodeCommandResponse adhocByteCodeCommandResponse;
-          adhocByteCodeCommandResponse = new AdhocByteCodeCommandResponse();
-          adhocByteCodeCommandResponse.read(iprot);
-          return adhocByteCodeCommandResponse;
+        case AD_HOC_BYTE_CODE_COMMAND_RESPONSE:
+          AdHocByteCodeCommandResponse adHocByteCodeCommandResponse;
+          adHocByteCodeCommandResponse = new AdHocByteCodeCommandResponse();
+          adHocByteCodeCommandResponse.read(iprot);
+          return adHocByteCodeCommandResponse;
         default:
           throw new IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -211,9 +211,9 @@ public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0
   @Override
   protected void tupleSchemeWriteValue(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     switch (setField_) {
-      case ADHOC_BYTE_CODE_COMMAND_RESPONSE:
-        AdhocByteCodeCommandResponse adhocByteCodeCommandResponse = (AdhocByteCodeCommandResponse)value_;
-        adhocByteCodeCommandResponse.write(oprot);
+      case AD_HOC_BYTE_CODE_COMMAND_RESPONSE:
+        AdHocByteCodeCommandResponse adHocByteCodeCommandResponse = (AdHocByteCodeCommandResponse)value_;
+        adHocByteCodeCommandResponse.write(oprot);
         return;
       default:
         throw new IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -223,8 +223,8 @@ public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0
   @Override
   protected org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField getFieldDesc(_Fields setField) {
     switch (setField) {
-      case ADHOC_BYTE_CODE_COMMAND_RESPONSE:
-        return ADHOC_BYTE_CODE_COMMAND_RESPONSE_FIELD_DESC;
+      case AD_HOC_BYTE_CODE_COMMAND_RESPONSE:
+        return AD_HOC_BYTE_CODE_COMMAND_RESPONSE_FIELD_DESC;
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -245,22 +245,22 @@ public class BlurCommandResponse extends org.apache.blur.thirdparty.thrift_0_9_0
   }
 
 
-  public AdhocByteCodeCommandResponse getAdhocByteCodeCommandResponse() {
-    if (getSetField() == _Fields.ADHOC_BYTE_CODE_COMMAND_RESPONSE) {
-      return (AdhocByteCodeCommandResponse)getFieldValue();
+  public AdHocByteCodeCommandResponse getAdHocByteCodeCommandResponse() {
+    if (getSetField() == _Fields.AD_HOC_BYTE_CODE_COMMAND_RESPONSE) {
+      return (AdHocByteCodeCommandResponse)getFieldValue();
     } else {
-      throw new RuntimeException("Cannot get field 'adhocByteCodeCommandResponse' because union is currently set to " + getFieldDesc(getSetField()).name);
+      throw new RuntimeException("Cannot get field 'adHocByteCodeCommandResponse' because union is currently set to " + getFieldDesc(getSetField()).name);
     }
   }
 
-  public void setAdhocByteCodeCommandResponse(AdhocByteCodeCommandResponse value) {
+  public void setAdHocByteCodeCommandResponse(AdHocByteCodeCommandResponse value) {
     if (value == null) throw new NullPointerException();
-    setField_ = _Fields.ADHOC_BYTE_CODE_COMMAND_RESPONSE;
+    setField_ = _Fields.AD_HOC_BYTE_CODE_COMMAND_RESPONSE;
     value_ = value;
   }
 
-  public boolean isSetAdhocByteCodeCommandResponse() {
-    return setField_ == _Fields.ADHOC_BYTE_CODE_COMMAND_RESPONSE;
+  public boolean isSetAdHocByteCodeCommandResponse() {
+    return setField_ == _Fields.AD_HOC_BYTE_CODE_COMMAND_RESPONSE;
   }
 
 

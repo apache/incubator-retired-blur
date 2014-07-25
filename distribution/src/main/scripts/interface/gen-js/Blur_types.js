@@ -3732,12 +3732,16 @@ Value.prototype.write = function(output) {
   return;
 };
 
-AdhocByteCodeCommandRequest = function(args) {
+AdHocByteCodeCommandRequest = function(args) {
+  this.tablesToInvoke = null;
   this.arguments = null;
   this.instanceData = null;
   this.classData = null;
   this.libraries = null;
   if (args) {
+    if (args.tablesToInvoke !== undefined) {
+      this.tablesToInvoke = args.tablesToInvoke;
+    }
     if (args.arguments !== undefined) {
       this.arguments = args.arguments;
     }
@@ -3752,8 +3756,8 @@ AdhocByteCodeCommandRequest = function(args) {
     }
   }
 };
-AdhocByteCodeCommandRequest.prototype = {};
-AdhocByteCodeCommandRequest.prototype.read = function(input) {
+AdHocByteCodeCommandRequest.prototype = {};
+AdHocByteCodeCommandRequest.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -3767,76 +3771,96 @@ AdhocByteCodeCommandRequest.prototype.read = function(input) {
     switch (fid)
     {
       case 1:
-      if (ftype == Thrift.Type.LIST) {
+      if (ftype == Thrift.Type.SET) {
         var _size232 = 0;
         var _rtmp3236;
-        this.arguments = [];
+        this.tablesToInvoke = [];
         var _etype235 = 0;
-        _rtmp3236 = input.readListBegin();
+        _rtmp3236 = input.readSetBegin();
         _etype235 = _rtmp3236.etype;
         _size232 = _rtmp3236.size;
         for (var _i237 = 0; _i237 < _size232; ++_i237)
         {
           var elem238 = null;
-          elem238 = new Value();
-          elem238.read(input);
-          this.arguments.push(elem238);
+          elem238 = input.readString().value;
+          this.tablesToInvoke.push(elem238);
+        }
+        input.readSetEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.LIST) {
+        var _size239 = 0;
+        var _rtmp3243;
+        this.arguments = [];
+        var _etype242 = 0;
+        _rtmp3243 = input.readListBegin();
+        _etype242 = _rtmp3243.etype;
+        _size239 = _rtmp3243.size;
+        for (var _i244 = 0; _i244 < _size239; ++_i244)
+        {
+          var elem245 = null;
+          elem245 = new Value();
+          elem245.read(input);
+          this.arguments.push(elem245);
         }
         input.readListEnd();
       } else {
         input.skip(ftype);
       }
       break;
-      case 2:
+      case 3:
       if (ftype == Thrift.Type.STRING) {
         this.instanceData = input.readString().value;
       } else {
         input.skip(ftype);
       }
       break;
-      case 3:
+      case 4:
       if (ftype == Thrift.Type.MAP) {
-        var _size239 = 0;
-        var _rtmp3243;
+        var _size246 = 0;
+        var _rtmp3250;
         this.classData = {};
-        var _ktype240 = 0;
-        var _vtype241 = 0;
-        _rtmp3243 = input.readMapBegin();
-        _ktype240 = _rtmp3243.ktype;
-        _vtype241 = _rtmp3243.vtype;
-        _size239 = _rtmp3243.size;
-        for (var _i244 = 0; _i244 < _size239; ++_i244)
+        var _ktype247 = 0;
+        var _vtype248 = 0;
+        _rtmp3250 = input.readMapBegin();
+        _ktype247 = _rtmp3250.ktype;
+        _vtype248 = _rtmp3250.vtype;
+        _size246 = _rtmp3250.size;
+        for (var _i251 = 0; _i251 < _size246; ++_i251)
         {
-          if (_i244 > 0 ) {
+          if (_i251 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key245 = null;
-          var val246 = null;
-          key245 = input.readString().value;
-          val246 = input.readString().value;
-          this.classData[key245] = val246;
+          var key252 = null;
+          var val253 = null;
+          key252 = input.readString().value;
+          val253 = input.readString().value;
+          this.classData[key252] = val253;
         }
         input.readMapEnd();
       } else {
         input.skip(ftype);
       }
       break;
-      case 4:
+      case 5:
       if (ftype == Thrift.Type.LIST) {
-        var _size247 = 0;
-        var _rtmp3251;
+        var _size254 = 0;
+        var _rtmp3258;
         this.libraries = [];
-        var _etype250 = 0;
-        _rtmp3251 = input.readListBegin();
-        _etype250 = _rtmp3251.etype;
-        _size247 = _rtmp3251.size;
-        for (var _i252 = 0; _i252 < _size247; ++_i252)
+        var _etype257 = 0;
+        _rtmp3258 = input.readListBegin();
+        _etype257 = _rtmp3258.etype;
+        _size254 = _rtmp3258.size;
+        for (var _i259 = 0; _i259 < _size254; ++_i259)
         {
-          var elem253 = null;
-          elem253 = input.readString().value;
-          this.libraries.push(elem253);
+          var elem260 = null;
+          elem260 = input.readString().value;
+          this.libraries.push(elem260);
         }
         input.readListEnd();
       } else {
@@ -3852,51 +3876,65 @@ AdhocByteCodeCommandRequest.prototype.read = function(input) {
   return;
 };
 
-AdhocByteCodeCommandRequest.prototype.write = function(output) {
-  output.writeStructBegin('AdhocByteCodeCommandRequest');
-  if (this.arguments !== null && this.arguments !== undefined) {
-    output.writeFieldBegin('arguments', Thrift.Type.LIST, 1);
-    output.writeListBegin(Thrift.Type.STRUCT, this.arguments.length);
-    for (var iter254 in this.arguments)
+AdHocByteCodeCommandRequest.prototype.write = function(output) {
+  output.writeStructBegin('AdHocByteCodeCommandRequest');
+  if (this.tablesToInvoke !== null && this.tablesToInvoke !== undefined) {
+    output.writeFieldBegin('tablesToInvoke', Thrift.Type.SET, 1);
+    output.writeSetBegin(Thrift.Type.STRING, this.tablesToInvoke.length);
+    for (var iter261 in this.tablesToInvoke)
     {
-      if (this.arguments.hasOwnProperty(iter254))
+      if (this.tablesToInvoke.hasOwnProperty(iter261))
       {
-        iter254 = this.arguments[iter254];
-        iter254.write(output);
+        iter261 = this.tablesToInvoke[iter261];
+        output.writeString(iter261);
+      }
+    }
+    output.writeSetEnd();
+    output.writeFieldEnd();
+  }
+  if (this.arguments !== null && this.arguments !== undefined) {
+    output.writeFieldBegin('arguments', Thrift.Type.LIST, 2);
+    output.writeListBegin(Thrift.Type.STRUCT, this.arguments.length);
+    for (var iter262 in this.arguments)
+    {
+      if (this.arguments.hasOwnProperty(iter262))
+      {
+        iter262 = this.arguments[iter262];
+        iter262.write(output);
       }
     }
     output.writeListEnd();
     output.writeFieldEnd();
   }
   if (this.instanceData !== null && this.instanceData !== undefined) {
-    output.writeFieldBegin('instanceData', Thrift.Type.STRING, 2);
+    output.writeFieldBegin('instanceData', Thrift.Type.STRING, 3);
     output.writeString(this.instanceData);
     output.writeFieldEnd();
   }
   if (this.classData !== null && this.classData !== undefined) {
-    output.writeFieldBegin('classData', Thrift.Type.MAP, 3);
+    output.writeFieldBegin('classData', Thrift.Type.MAP, 4);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.classData));
-    for (var kiter255 in this.classData)
+    for (var kiter263 in this.classData)
     {
-      if (this.classData.hasOwnProperty(kiter255))
+      if (this.classData.hasOwnProperty(kiter263))
       {
-        var viter256 = this.classData[kiter255];
-        output.writeString(kiter255);
-        output.writeString(viter256);
+        var viter264 = this.classData[kiter263];
+        output.writeString(kiter263);
+        output.writeString(viter264);
       }
     }
     output.writeMapEnd();
     output.writeFieldEnd();
   }
   if (this.libraries !== null && this.libraries !== undefined) {
-    output.writeFieldBegin('libraries', Thrift.Type.LIST, 4);
+    output.writeFieldBegin('libraries', Thrift.Type.LIST, 5);
     output.writeListBegin(Thrift.Type.STRING, this.libraries.length);
-    for (var iter257 in this.libraries)
+    for (var iter265 in this.libraries)
     {
-      if (this.libraries.hasOwnProperty(iter257))
+      if (this.libraries.hasOwnProperty(iter265))
       {
-        iter257 = this.libraries[iter257];
-        output.writeString(iter257);
+        iter265 = this.libraries[iter265];
+        output.writeString(iter265);
       }
     }
     output.writeListEnd();
@@ -3907,7 +3945,7 @@ AdhocByteCodeCommandRequest.prototype.write = function(output) {
   return;
 };
 
-AdhocByteCodeCommandResponse = function(args) {
+AdHocByteCodeCommandResponse = function(args) {
   this.result = null;
   if (args) {
     if (args.result !== undefined) {
@@ -3915,8 +3953,8 @@ AdhocByteCodeCommandResponse = function(args) {
     }
   }
 };
-AdhocByteCodeCommandResponse.prototype = {};
-AdhocByteCodeCommandResponse.prototype.read = function(input) {
+AdHocByteCodeCommandResponse.prototype = {};
+AdHocByteCodeCommandResponse.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -3949,8 +3987,8 @@ AdhocByteCodeCommandResponse.prototype.read = function(input) {
   return;
 };
 
-AdhocByteCodeCommandResponse.prototype.write = function(output) {
-  output.writeStructBegin('AdhocByteCodeCommandResponse');
+AdHocByteCodeCommandResponse.prototype.write = function(output) {
+  output.writeStructBegin('AdHocByteCodeCommandResponse');
   if (this.result !== null && this.result !== undefined) {
     output.writeFieldBegin('result', Thrift.Type.STRUCT, 1);
     this.result.write(output);
@@ -3962,14 +4000,10 @@ AdhocByteCodeCommandResponse.prototype.write = function(output) {
 };
 
 BlurCommandRequest = function(args) {
-  this.tablesToInvoke = null;
-  this.adhocByteCodeCommandRequest = null;
+  this.adHocByteCodeCommandRequest = null;
   if (args) {
-    if (args.tablesToInvoke !== undefined) {
-      this.tablesToInvoke = args.tablesToInvoke;
-    }
-    if (args.adhocByteCodeCommandRequest !== undefined) {
-      this.adhocByteCodeCommandRequest = args.adhocByteCodeCommandRequest;
+    if (args.adHocByteCodeCommandRequest !== undefined) {
+      this.adHocByteCodeCommandRequest = args.adHocByteCodeCommandRequest;
     }
   }
 };
@@ -3988,33 +4022,16 @@ BlurCommandRequest.prototype.read = function(input) {
     switch (fid)
     {
       case 1:
-      if (ftype == Thrift.Type.SET) {
-        var _size258 = 0;
-        var _rtmp3262;
-        this.tablesToInvoke = [];
-        var _etype261 = 0;
-        _rtmp3262 = input.readSetBegin();
-        _etype261 = _rtmp3262.etype;
-        _size258 = _rtmp3262.size;
-        for (var _i263 = 0; _i263 < _size258; ++_i263)
-        {
-          var elem264 = null;
-          elem264 = input.readString().value;
-          this.tablesToInvoke.push(elem264);
-        }
-        input.readSetEnd();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 2:
       if (ftype == Thrift.Type.STRUCT) {
-        this.adhocByteCodeCommandRequest = new AdhocByteCodeCommandRequest();
-        this.adhocByteCodeCommandRequest.read(input);
+        this.adHocByteCodeCommandRequest = new AdHocByteCodeCommandRequest();
+        this.adHocByteCodeCommandRequest.read(input);
       } else {
         input.skip(ftype);
       }
       break;
+      case 0:
+        input.skip(ftype);
+        break;
       default:
         input.skip(ftype);
     }
@@ -4026,23 +4043,9 @@ BlurCommandRequest.prototype.read = function(input) {
 
 BlurCommandRequest.prototype.write = function(output) {
   output.writeStructBegin('BlurCommandRequest');
-  if (this.tablesToInvoke !== null && this.tablesToInvoke !== undefined) {
-    output.writeFieldBegin('tablesToInvoke', Thrift.Type.SET, 1);
-    output.writeSetBegin(Thrift.Type.STRING, this.tablesToInvoke.length);
-    for (var iter265 in this.tablesToInvoke)
-    {
-      if (this.tablesToInvoke.hasOwnProperty(iter265))
-      {
-        iter265 = this.tablesToInvoke[iter265];
-        output.writeString(iter265);
-      }
-    }
-    output.writeSetEnd();
-    output.writeFieldEnd();
-  }
-  if (this.adhocByteCodeCommandRequest !== null && this.adhocByteCodeCommandRequest !== undefined) {
-    output.writeFieldBegin('adhocByteCodeCommandRequest', Thrift.Type.STRUCT, 2);
-    this.adhocByteCodeCommandRequest.write(output);
+  if (this.adHocByteCodeCommandRequest !== null && this.adHocByteCodeCommandRequest !== undefined) {
+    output.writeFieldBegin('adHocByteCodeCommandRequest', Thrift.Type.STRUCT, 1);
+    this.adHocByteCodeCommandRequest.write(output);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -4051,10 +4054,10 @@ BlurCommandRequest.prototype.write = function(output) {
 };
 
 BlurCommandResponse = function(args) {
-  this.adhocByteCodeCommandResponse = null;
+  this.adHocByteCodeCommandResponse = null;
   if (args) {
-    if (args.adhocByteCodeCommandResponse !== undefined) {
-      this.adhocByteCodeCommandResponse = args.adhocByteCodeCommandResponse;
+    if (args.adHocByteCodeCommandResponse !== undefined) {
+      this.adHocByteCodeCommandResponse = args.adHocByteCodeCommandResponse;
     }
   }
 };
@@ -4074,8 +4077,8 @@ BlurCommandResponse.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.STRUCT) {
-        this.adhocByteCodeCommandResponse = new AdhocByteCodeCommandResponse();
-        this.adhocByteCodeCommandResponse.read(input);
+        this.adHocByteCodeCommandResponse = new AdHocByteCodeCommandResponse();
+        this.adHocByteCodeCommandResponse.read(input);
       } else {
         input.skip(ftype);
       }
@@ -4094,9 +4097,9 @@ BlurCommandResponse.prototype.read = function(input) {
 
 BlurCommandResponse.prototype.write = function(output) {
   output.writeStructBegin('BlurCommandResponse');
-  if (this.adhocByteCodeCommandResponse !== null && this.adhocByteCodeCommandResponse !== undefined) {
-    output.writeFieldBegin('adhocByteCodeCommandResponse', Thrift.Type.STRUCT, 1);
-    this.adhocByteCodeCommandResponse.write(output);
+  if (this.adHocByteCodeCommandResponse !== null && this.adHocByteCodeCommandResponse !== undefined) {
+    output.writeFieldBegin('adHocByteCodeCommandResponse', Thrift.Type.STRUCT, 1);
+    this.adHocByteCodeCommandResponse.write(output);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

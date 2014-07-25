@@ -53,13 +53,13 @@ public class BlurPlatform {
 
   public interface Iface {
 
-    public BlurCommandResponse execute(BlurCommandRequest request) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public BlurCommandResponse execute(String cluster, BlurCommandRequest request) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
   }
 
   public interface AsyncIface {
 
-    public void execute(BlurCommandRequest request, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.execute_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void execute(String cluster, BlurCommandRequest request, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.execute_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
   }
 
@@ -83,15 +83,16 @@ public class BlurPlatform {
       super(iprot, oprot);
     }
 
-    public BlurCommandResponse execute(BlurCommandRequest request) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public BlurCommandResponse execute(String cluster, BlurCommandRequest request) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_execute(request);
+      send_execute(cluster, request);
       return recv_execute();
     }
 
-    public void send_execute(BlurCommandRequest request) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_execute(String cluster, BlurCommandRequest request) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       execute_args args = new execute_args();
+      args.setCluster(cluster);
       args.setRequest(request);
       sendBase("execute", args);
     }
@@ -127,23 +128,26 @@ public class BlurPlatform {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void execute(BlurCommandRequest request, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<execute_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void execute(String cluster, BlurCommandRequest request, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<execute_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      execute_call method_call = new execute_call(request, resultHandler, this, ___protocolFactory, ___transport);
+      execute_call method_call = new execute_call(cluster, request, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class execute_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
+      private String cluster;
       private BlurCommandRequest request;
-      public execute_call(BlurCommandRequest request, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<execute_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      public execute_call(String cluster, BlurCommandRequest request, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<execute_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.cluster = cluster;
         this.request = request;
       }
 
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("execute", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         execute_args args = new execute_args();
+        args.setCluster(cluster);
         args.setRequest(request);
         args.write(prot);
         prot.writeMessageEnd();
@@ -192,7 +196,7 @@ public class BlurPlatform {
       public execute_result getResult(I iface, execute_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         execute_result result = new execute_result();
         try {
-          result.success = iface.execute(args.request);
+          result.success = iface.execute(args.cluster, args.request);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -205,7 +209,8 @@ public class BlurPlatform {
   public static class execute_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<execute_args, execute_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("execute_args");
 
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField REQUEST_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("request", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CLUSTER_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("cluster", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField REQUEST_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("request", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -213,11 +218,13 @@ public class BlurPlatform {
       schemes.put(TupleScheme.class, new execute_argsTupleSchemeFactory());
     }
 
+    public String cluster; // required
     public BlurCommandRequest request; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-      REQUEST((short)1, "request");
+      CLUSTER((short)1, "cluster"),
+      REQUEST((short)2, "request");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -232,7 +239,9 @@ public class BlurPlatform {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // REQUEST
+          case 1: // CLUSTER
+            return CLUSTER;
+          case 2: // REQUEST
             return REQUEST;
           default:
             return null;
@@ -277,6 +286,8 @@ public class BlurPlatform {
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.CLUSTER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("cluster", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.REQUEST, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("request", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, BlurCommandRequest.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -287,9 +298,11 @@ public class BlurPlatform {
     }
 
     public execute_args(
+      String cluster,
       BlurCommandRequest request)
     {
       this();
+      this.cluster = cluster;
       this.request = request;
     }
 
@@ -297,6 +310,9 @@ public class BlurPlatform {
      * Performs a deep copy on <i>other</i>.
      */
     public execute_args(execute_args other) {
+      if (other.isSetCluster()) {
+        this.cluster = other.cluster;
+      }
       if (other.isSetRequest()) {
         this.request = new BlurCommandRequest(other.request);
       }
@@ -308,7 +324,32 @@ public class BlurPlatform {
 
     @Override
     public void clear() {
+      this.cluster = null;
       this.request = null;
+    }
+
+    public String getCluster() {
+      return this.cluster;
+    }
+
+    public execute_args setCluster(String cluster) {
+      this.cluster = cluster;
+      return this;
+    }
+
+    public void unsetCluster() {
+      this.cluster = null;
+    }
+
+    /** Returns true if field cluster is set (has been assigned a value) and false otherwise */
+    public boolean isSetCluster() {
+      return this.cluster != null;
+    }
+
+    public void setClusterIsSet(boolean value) {
+      if (!value) {
+        this.cluster = null;
+      }
     }
 
     public BlurCommandRequest getRequest() {
@@ -337,6 +378,14 @@ public class BlurPlatform {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case CLUSTER:
+        if (value == null) {
+          unsetCluster();
+        } else {
+          setCluster((String)value);
+        }
+        break;
+
       case REQUEST:
         if (value == null) {
           unsetRequest();
@@ -350,6 +399,9 @@ public class BlurPlatform {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case CLUSTER:
+        return getCluster();
+
       case REQUEST:
         return getRequest();
 
@@ -364,6 +416,8 @@ public class BlurPlatform {
       }
 
       switch (field) {
+      case CLUSTER:
+        return isSetCluster();
       case REQUEST:
         return isSetRequest();
       }
@@ -382,6 +436,15 @@ public class BlurPlatform {
     public boolean equals(execute_args that) {
       if (that == null)
         return false;
+
+      boolean this_present_cluster = true && this.isSetCluster();
+      boolean that_present_cluster = true && that.isSetCluster();
+      if (this_present_cluster || that_present_cluster) {
+        if (!(this_present_cluster && that_present_cluster))
+          return false;
+        if (!this.cluster.equals(that.cluster))
+          return false;
+      }
 
       boolean this_present_request = true && this.isSetRequest();
       boolean that_present_request = true && that.isSetRequest();
@@ -408,6 +471,16 @@ public class BlurPlatform {
       int lastComparison = 0;
       execute_args typedOther = (execute_args)other;
 
+      lastComparison = Boolean.valueOf(isSetCluster()).compareTo(typedOther.isSetCluster());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetCluster()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.cluster, typedOther.cluster);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetRequest()).compareTo(typedOther.isSetRequest());
       if (lastComparison != 0) {
         return lastComparison;
@@ -438,6 +511,14 @@ public class BlurPlatform {
       StringBuilder sb = new StringBuilder("execute_args(");
       boolean first = true;
 
+      sb.append("cluster:");
+      if (this.cluster == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.cluster);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("request:");
       if (this.request == null) {
         sb.append("null");
@@ -488,7 +569,15 @@ public class BlurPlatform {
             break;
           }
           switch (schemeField.id) {
-            case 1: // REQUEST
+            case 1: // CLUSTER
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.cluster = iprot.readString();
+                struct.setClusterIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // REQUEST
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
                 struct.request = new BlurCommandRequest();
                 struct.request.read(iprot);
@@ -512,6 +601,11 @@ public class BlurPlatform {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.cluster != null) {
+          oprot.writeFieldBegin(CLUSTER_FIELD_DESC);
+          oprot.writeString(struct.cluster);
+          oprot.writeFieldEnd();
+        }
         if (struct.request != null) {
           oprot.writeFieldBegin(REQUEST_FIELD_DESC);
           struct.request.write(oprot);
@@ -535,10 +629,16 @@ public class BlurPlatform {
       public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, execute_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetRequest()) {
+        if (struct.isSetCluster()) {
           optionals.set(0);
         }
-        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetRequest()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetCluster()) {
+          oprot.writeString(struct.cluster);
+        }
         if (struct.isSetRequest()) {
           struct.request.write(oprot);
         }
@@ -547,8 +647,12 @@ public class BlurPlatform {
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, execute_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(1);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
+          struct.cluster = iprot.readString();
+          struct.setClusterIsSet(true);
+        }
+        if (incoming.get(1)) {
           struct.request = new BlurCommandRequest();
           struct.request.read(iprot);
           struct.setRequestIsSet(true);

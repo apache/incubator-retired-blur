@@ -51,13 +51,11 @@ import java.util.Arrays;
 
 public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<BlurCommandRequest, BlurCommandRequest._Fields> {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("BlurCommandRequest");
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLES_TO_INVOKE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("tablesToInvoke", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, (short)1);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ADHOC_BYTE_CODE_COMMAND_REQUEST_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("adhocByteCodeCommandRequest", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField AD_HOC_BYTE_CODE_COMMAND_REQUEST_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("adHocByteCodeCommandRequest", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-    TABLES_TO_INVOKE((short)1, "tablesToInvoke"),
-    ADHOC_BYTE_CODE_COMMAND_REQUEST((short)2, "adhocByteCodeCommandRequest");
+    AD_HOC_BYTE_CODE_COMMAND_REQUEST((short)1, "adHocByteCodeCommandRequest");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -72,10 +70,8 @@ public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // TABLES_TO_INVOKE
-          return TABLES_TO_INVOKE;
-        case 2: // ADHOC_BYTE_CODE_COMMAND_REQUEST
-          return ADHOC_BYTE_CODE_COMMAND_REQUEST;
+        case 1: // AD_HOC_BYTE_CODE_COMMAND_REQUEST
+          return AD_HOC_BYTE_CODE_COMMAND_REQUEST;
         default:
           return null;
       }
@@ -118,11 +114,8 @@ public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.TABLES_TO_INVOKE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("tablesToInvoke", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.SetMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, 
-            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
-    tmpMap.put(_Fields.ADHOC_BYTE_CODE_COMMAND_REQUEST, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("adhocByteCodeCommandRequest", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, AdhocByteCodeCommandRequest.class)));
+    tmpMap.put(_Fields.AD_HOC_BYTE_CODE_COMMAND_REQUEST, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("adHocByteCodeCommandRequest", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, AdHocByteCodeCommandRequest.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(BlurCommandRequest.class, metaDataMap);
   }
@@ -142,15 +135,9 @@ public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.
     return new BlurCommandRequest(this);
   }
 
-  public static BlurCommandRequest tablesToInvoke(Set<String> value) {
+  public static BlurCommandRequest adHocByteCodeCommandRequest(AdHocByteCodeCommandRequest value) {
     BlurCommandRequest x = new BlurCommandRequest();
-    x.setTablesToInvoke(value);
-    return x;
-  }
-
-  public static BlurCommandRequest adhocByteCodeCommandRequest(AdhocByteCodeCommandRequest value) {
-    BlurCommandRequest x = new BlurCommandRequest();
-    x.setAdhocByteCodeCommandRequest(value);
+    x.setAdHocByteCodeCommandRequest(value);
     return x;
   }
 
@@ -158,16 +145,11 @@ public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.
   @Override
   protected void checkType(_Fields setField, Object value) throws ClassCastException {
     switch (setField) {
-      case TABLES_TO_INVOKE:
-        if (value instanceof Set) {
+      case AD_HOC_BYTE_CODE_COMMAND_REQUEST:
+        if (value instanceof AdHocByteCodeCommandRequest) {
           break;
         }
-        throw new ClassCastException("Was expecting value of type Set<String> for field 'tablesToInvoke', but got " + value.getClass().getSimpleName());
-      case ADHOC_BYTE_CODE_COMMAND_REQUEST:
-        if (value instanceof AdhocByteCodeCommandRequest) {
-          break;
-        }
-        throw new ClassCastException("Was expecting value of type AdhocByteCodeCommandRequest for field 'adhocByteCodeCommandRequest', but got " + value.getClass().getSimpleName());
+        throw new ClassCastException("Was expecting value of type AdHocByteCodeCommandRequest for field 'adHocByteCodeCommandRequest', but got " + value.getClass().getSimpleName());
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -178,31 +160,12 @@ public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.
     _Fields setField = _Fields.findByThriftId(field.id);
     if (setField != null) {
       switch (setField) {
-        case TABLES_TO_INVOKE:
-          if (field.type == TABLES_TO_INVOKE_FIELD_DESC.type) {
-            Set<String> tablesToInvoke;
-            {
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set258 = iprot.readSetBegin();
-              tablesToInvoke = new HashSet<String>(2*_set258.size);
-              for (int _i259 = 0; _i259 < _set258.size; ++_i259)
-              {
-                String _elem260; // required
-                _elem260 = iprot.readString();
-                tablesToInvoke.add(_elem260);
-              }
-              iprot.readSetEnd();
-            }
-            return tablesToInvoke;
-          } else {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, field.type);
-            return null;
-          }
-        case ADHOC_BYTE_CODE_COMMAND_REQUEST:
-          if (field.type == ADHOC_BYTE_CODE_COMMAND_REQUEST_FIELD_DESC.type) {
-            AdhocByteCodeCommandRequest adhocByteCodeCommandRequest;
-            adhocByteCodeCommandRequest = new AdhocByteCodeCommandRequest();
-            adhocByteCodeCommandRequest.read(iprot);
-            return adhocByteCodeCommandRequest;
+        case AD_HOC_BYTE_CODE_COMMAND_REQUEST:
+          if (field.type == AD_HOC_BYTE_CODE_COMMAND_REQUEST_FIELD_DESC.type) {
+            AdHocByteCodeCommandRequest adHocByteCodeCommandRequest;
+            adHocByteCodeCommandRequest = new AdHocByteCodeCommandRequest();
+            adHocByteCodeCommandRequest.read(iprot);
+            return adHocByteCodeCommandRequest;
           } else {
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, field.type);
             return null;
@@ -218,20 +181,9 @@ public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.
   @Override
   protected void standardSchemeWriteValue(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     switch (setField_) {
-      case TABLES_TO_INVOKE:
-        Set<String> tablesToInvoke = (Set<String>)value_;
-        {
-          oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, tablesToInvoke.size()));
-          for (String _iter261 : tablesToInvoke)
-          {
-            oprot.writeString(_iter261);
-          }
-          oprot.writeSetEnd();
-        }
-        return;
-      case ADHOC_BYTE_CODE_COMMAND_REQUEST:
-        AdhocByteCodeCommandRequest adhocByteCodeCommandRequest = (AdhocByteCodeCommandRequest)value_;
-        adhocByteCodeCommandRequest.write(oprot);
+      case AD_HOC_BYTE_CODE_COMMAND_REQUEST:
+        AdHocByteCodeCommandRequest adHocByteCodeCommandRequest = (AdHocByteCodeCommandRequest)value_;
+        adHocByteCodeCommandRequest.write(oprot);
         return;
       default:
         throw new IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -243,25 +195,11 @@ public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.
     _Fields setField = _Fields.findByThriftId(fieldID);
     if (setField != null) {
       switch (setField) {
-        case TABLES_TO_INVOKE:
-          Set<String> tablesToInvoke;
-          {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set262 = iprot.readSetBegin();
-            tablesToInvoke = new HashSet<String>(2*_set262.size);
-            for (int _i263 = 0; _i263 < _set262.size; ++_i263)
-            {
-              String _elem264; // required
-              _elem264 = iprot.readString();
-              tablesToInvoke.add(_elem264);
-            }
-            iprot.readSetEnd();
-          }
-          return tablesToInvoke;
-        case ADHOC_BYTE_CODE_COMMAND_REQUEST:
-          AdhocByteCodeCommandRequest adhocByteCodeCommandRequest;
-          adhocByteCodeCommandRequest = new AdhocByteCodeCommandRequest();
-          adhocByteCodeCommandRequest.read(iprot);
-          return adhocByteCodeCommandRequest;
+        case AD_HOC_BYTE_CODE_COMMAND_REQUEST:
+          AdHocByteCodeCommandRequest adHocByteCodeCommandRequest;
+          adHocByteCodeCommandRequest = new AdHocByteCodeCommandRequest();
+          adHocByteCodeCommandRequest.read(iprot);
+          return adHocByteCodeCommandRequest;
         default:
           throw new IllegalStateException("setField wasn't null, but didn't match any of the case statements!");
       }
@@ -273,20 +211,9 @@ public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.
   @Override
   protected void tupleSchemeWriteValue(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     switch (setField_) {
-      case TABLES_TO_INVOKE:
-        Set<String> tablesToInvoke = (Set<String>)value_;
-        {
-          oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, tablesToInvoke.size()));
-          for (String _iter265 : tablesToInvoke)
-          {
-            oprot.writeString(_iter265);
-          }
-          oprot.writeSetEnd();
-        }
-        return;
-      case ADHOC_BYTE_CODE_COMMAND_REQUEST:
-        AdhocByteCodeCommandRequest adhocByteCodeCommandRequest = (AdhocByteCodeCommandRequest)value_;
-        adhocByteCodeCommandRequest.write(oprot);
+      case AD_HOC_BYTE_CODE_COMMAND_REQUEST:
+        AdHocByteCodeCommandRequest adHocByteCodeCommandRequest = (AdHocByteCodeCommandRequest)value_;
+        adHocByteCodeCommandRequest.write(oprot);
         return;
       default:
         throw new IllegalStateException("Cannot write union with unknown field " + setField_);
@@ -296,10 +223,8 @@ public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.
   @Override
   protected org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField getFieldDesc(_Fields setField) {
     switch (setField) {
-      case TABLES_TO_INVOKE:
-        return TABLES_TO_INVOKE_FIELD_DESC;
-      case ADHOC_BYTE_CODE_COMMAND_REQUEST:
-        return ADHOC_BYTE_CODE_COMMAND_REQUEST_FIELD_DESC;
+      case AD_HOC_BYTE_CODE_COMMAND_REQUEST:
+        return AD_HOC_BYTE_CODE_COMMAND_REQUEST_FIELD_DESC;
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -320,41 +245,22 @@ public class BlurCommandRequest extends org.apache.blur.thirdparty.thrift_0_9_0.
   }
 
 
-  public Set<String> getTablesToInvoke() {
-    if (getSetField() == _Fields.TABLES_TO_INVOKE) {
-      return (Set<String>)getFieldValue();
+  public AdHocByteCodeCommandRequest getAdHocByteCodeCommandRequest() {
+    if (getSetField() == _Fields.AD_HOC_BYTE_CODE_COMMAND_REQUEST) {
+      return (AdHocByteCodeCommandRequest)getFieldValue();
     } else {
-      throw new RuntimeException("Cannot get field 'tablesToInvoke' because union is currently set to " + getFieldDesc(getSetField()).name);
+      throw new RuntimeException("Cannot get field 'adHocByteCodeCommandRequest' because union is currently set to " + getFieldDesc(getSetField()).name);
     }
   }
 
-  public void setTablesToInvoke(Set<String> value) {
+  public void setAdHocByteCodeCommandRequest(AdHocByteCodeCommandRequest value) {
     if (value == null) throw new NullPointerException();
-    setField_ = _Fields.TABLES_TO_INVOKE;
+    setField_ = _Fields.AD_HOC_BYTE_CODE_COMMAND_REQUEST;
     value_ = value;
   }
 
-  public AdhocByteCodeCommandRequest getAdhocByteCodeCommandRequest() {
-    if (getSetField() == _Fields.ADHOC_BYTE_CODE_COMMAND_REQUEST) {
-      return (AdhocByteCodeCommandRequest)getFieldValue();
-    } else {
-      throw new RuntimeException("Cannot get field 'adhocByteCodeCommandRequest' because union is currently set to " + getFieldDesc(getSetField()).name);
-    }
-  }
-
-  public void setAdhocByteCodeCommandRequest(AdhocByteCodeCommandRequest value) {
-    if (value == null) throw new NullPointerException();
-    setField_ = _Fields.ADHOC_BYTE_CODE_COMMAND_REQUEST;
-    value_ = value;
-  }
-
-  public boolean isSetTablesToInvoke() {
-    return setField_ == _Fields.TABLES_TO_INVOKE;
-  }
-
-
-  public boolean isSetAdhocByteCodeCommandRequest() {
-    return setField_ == _Fields.ADHOC_BYTE_CODE_COMMAND_REQUEST;
+  public boolean isSetAdHocByteCodeCommandRequest() {
+    return setField_ == _Fields.AD_HOC_BYTE_CODE_COMMAND_REQUEST;
   }
 
 

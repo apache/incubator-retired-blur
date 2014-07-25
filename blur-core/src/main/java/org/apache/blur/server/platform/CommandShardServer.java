@@ -20,7 +20,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -29,8 +28,8 @@ import java.util.concurrent.Executors;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.thrift.BException;
-import org.apache.blur.thrift.generated.AdhocByteCodeCommandRequest;
-import org.apache.blur.thrift.generated.AdhocByteCodeCommandResponse;
+import org.apache.blur.thrift.generated.AdHocByteCodeCommandRequest;
+import org.apache.blur.thrift.generated.AdHocByteCodeCommandResponse;
 import org.apache.blur.thrift.generated.BlurCommandRequest;
 import org.apache.blur.thrift.generated.BlurCommandResponse;
 import org.apache.blur.thrift.generated.BlurException;
@@ -70,24 +69,21 @@ public class CommandShardServer implements Closeable {
   public BlurCommandResponse execute(Set<String> tables, BlurCommandRequest request) throws BlurException, IOException,
       CommandException {
     // @TODO deal with different command types.
-    Set<String> tablesToInvoke = new HashSet<String>();
-    tablesToInvoke.add("test");
     Object fieldValue = request.getFieldValue();
     BlurCommandResponse blurCommandResponse = new BlurCommandResponse();
-    if (fieldValue instanceof AdhocByteCodeCommandRequest) {
-      AdhocByteCodeCommandRequest commandRequest = request.getAdhocByteCodeCommandRequest();
-      AdhocByteCodeCommandResponse response = execute(tables, commandRequest, tablesToInvoke);
-      blurCommandResponse.setAdhocByteCodeCommandResponse(response);
+    if (fieldValue instanceof AdHocByteCodeCommandRequest) {
+      AdHocByteCodeCommandRequest commandRequest = request.getAdHocByteCodeCommandRequest();
+      AdHocByteCodeCommandResponse response = execute(tables, commandRequest);
+      blurCommandResponse.setAdHocByteCodeCommandResponse(response);
     } else {
       throw new BException("Not implemented.");
     }
     return blurCommandResponse;
   }
 
-  public AdhocByteCodeCommandResponse execute(Set<String> tables, AdhocByteCodeCommandRequest commandRequest,
-      Set<String> tablesToInvoke) throws BlurException, IOException, CommandException {
+  public AdHocByteCodeCommandResponse execute(Set<String> tables, AdHocByteCodeCommandRequest commandRequest) throws BlurException, IOException, CommandException {
     // @TODO handle libraries
-
+    Set<String> tablesToInvoke = commandRequest.getTablesToInvoke();
     Map<String, ByteBuffer> classData = commandRequest.getClassData();
     ClassLoader classLoader = CommandUtils.getClassLoader(classData);
     Object[] args = CommandUtils.getArgs(classLoader, commandRequest.getArguments());
@@ -95,9 +91,9 @@ public class CommandShardServer implements Closeable {
     Object object = execute(tables, command, tablesToInvoke, args);
     Value value = CommandUtils.toValue(object);
 
-    AdhocByteCodeCommandResponse adhocByteCodeCommandResponse = new AdhocByteCodeCommandResponse();
-    adhocByteCodeCommandResponse.setResult(value);
-    return adhocByteCodeCommandResponse;
+    AdHocByteCodeCommandResponse adHocByteCodeCommandResponse = new AdHocByteCodeCommandResponse();
+    adHocByteCodeCommandResponse.setResult(value);
+    return adHocByteCodeCommandResponse;
   }
 
   @Override

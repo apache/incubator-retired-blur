@@ -14,14 +14,18 @@ use Blur::Types;
 
 package Blur::BlurPlatform_execute_args;
 use base qw(Class::Accessor);
-Blur::BlurPlatform_execute_args->mk_accessors( qw( request ) );
+Blur::BlurPlatform_execute_args->mk_accessors( qw( cluster request ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
+  $self->{cluster} = undef;
   $self->{request} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{cluster}) {
+      $self->{cluster} = $vals->{cluster};
+    }
     if (defined $vals->{request}) {
       $self->{request} = $vals->{request};
     }
@@ -48,7 +52,13 @@ sub read {
     }
     SWITCH: for($fid)
     {
-      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{cluster});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRUCT) {
         $self->{request} = new Blur::BlurCommandRequest();
         $xfer += $self->{request}->read($input);
       } else {
@@ -67,8 +77,13 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('BlurPlatform_execute_args');
+  if (defined $self->{cluster}) {
+    $xfer += $output->writeFieldBegin('cluster', TType::STRING, 1);
+    $xfer += $output->writeString($self->{cluster});
+    $xfer += $output->writeFieldEnd();
+  }
   if (defined $self->{request}) {
-    $xfer += $output->writeFieldBegin('request', TType::STRUCT, 1);
+    $xfer += $output->writeFieldBegin('request', TType::STRUCT, 2);
     $xfer += $self->{request}->write($output);
     $xfer += $output->writeFieldEnd();
   }
@@ -165,6 +180,7 @@ use strict;
 
 sub execute{
   my $self = shift;
+  my $cluster = shift;
   my $request = shift;
 
   die 'implement interface';
@@ -185,8 +201,9 @@ sub new {
 sub execute{
   my ($self, $request) = @_;
 
+  my $cluster = ($request->{'cluster'}) ? $request->{'cluster'} : undef;
   my $request = ($request->{'request'}) ? $request->{'request'} : undef;
-  return $self->{impl}->execute($request);
+  return $self->{impl}->execute($cluster, $request);
 }
 
 package Blur::BlurPlatformClient;
@@ -204,18 +221,21 @@ sub new {
 
 sub execute{
   my $self = shift;
+  my $cluster = shift;
   my $request = shift;
 
-    $self->send_execute($request);
+    $self->send_execute($cluster, $request);
   return $self->recv_execute();
 }
 
 sub send_execute{
   my $self = shift;
+  my $cluster = shift;
   my $request = shift;
 
   $self->{output}->writeMessageBegin('execute', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::BlurPlatform_execute_args();
+  $args->{cluster} = $cluster;
   $args->{request} = $request;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
@@ -289,7 +309,7 @@ sub process_execute {
     $input->readMessageEnd();
     my $result = new Blur::BlurPlatform_execute_result();
     eval {
-      $result->{success} = $self->{handler}->execute($args->request);
+      $result->{success} = $self->{handler}->execute($args->cluster, $args->request);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }

@@ -247,8 +247,8 @@ public class FilteredBlurServer implements Iface {
   }
 
   @Override
-  public BlurCommandResponse execute(BlurCommandRequest request) throws BlurException, TException {
-    return _iface.execute(request);
+  public BlurCommandResponse execute(String cluster, BlurCommandRequest request) throws BlurException, TException {
+    return _iface.execute(cluster, request);
   }
 
 }

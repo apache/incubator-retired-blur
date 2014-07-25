@@ -1517,13 +1517,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public BlurCommandResponse execute(final BlurCommandRequest request) throws BlurException, TException {
+  public BlurCommandResponse execute(final String cluster, final BlurCommandRequest request) throws BlurException, TException {
     try {
       // @TODO pass cluster
-      return scatterGather("default", new BlurCommand<BlurCommandResponse>() {
+      return scatterGather(cluster, new BlurCommand<BlurCommandResponse>() {
         @Override
         public BlurCommandResponse call(Client client) throws BlurException, TException {
-          return client.execute(request);
+          return client.execute(cluster, request);
         }
       }, new Merger<BlurCommandResponse>() {
         @Override

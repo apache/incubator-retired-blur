@@ -830,6 +830,9 @@ enum Level {
   ALL
 }
 
+/**
+ * The type of the value, this determines how the bytes are interpreted.
+ */
 enum ValueType {
   STRING,
   INTEGER,
@@ -841,34 +844,40 @@ enum ValueType {
   SERIALIZABLE
 }
 
+/**
+ * Value carries serialized values.
+ */
 struct Value {
   1:ValueType type,
   2:binary value
 }
 
-struct AdhocByteCodeCommandRequest {
-  1:list<Value> arguments,
-  2:binary instanceData,
-  3:map<string,binary> classData,
-  4:list<string> libraries
+/**
+ * Carries ad hoc byte code based execution commands.
+ */
+struct AdHocByteCodeCommandRequest {
+  1:set<string> tablesToInvoke,
+  2:list<Value> arguments,
+  3:binary instanceData,
+  4:map<string,binary> classData,
+  5:list<string> libraries
 }
 
-struct AdhocByteCodeCommandResponse {
+struct AdHocByteCodeCommandResponse {
   1:Value result
 }
 
 union BlurCommandRequest {
-  1:set<string> tablesToInvoke,
-  2:AdhocByteCodeCommandRequest adhocByteCodeCommandRequest
+  1:AdHocByteCodeCommandRequest adHocByteCodeCommandRequest
 }
 
 union BlurCommandResponse {
-  1:AdhocByteCodeCommandResponse adhocByteCodeCommandResponse
+  1:AdHocByteCodeCommandResponse adHocByteCodeCommandResponse
 }
 
 service BlurPlatform {
 
-  BlurCommandResponse execute(1:BlurCommandRequest request) throws (1:BlurException ex)
+  BlurCommandResponse execute(1:string cluster, 2:BlurCommandRequest request) throws (1:BlurException ex)
 
 }
 

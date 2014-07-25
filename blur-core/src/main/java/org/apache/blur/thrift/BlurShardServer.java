@@ -595,7 +595,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public BlurCommandResponse execute(BlurCommandRequest request) throws BlurException, TException {
+  public BlurCommandResponse execute(String cluster, BlurCommandRequest request) throws BlurException, TException {
     try {
       List<String> tableList = tableList();
       return _commandShardServer.execute(new HashSet<String>(tableList), request);

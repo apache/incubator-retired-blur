@@ -948,6 +948,7 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  # Value carries serialized values.
   class Value
     include ::Thrift::Struct, ::Thrift::Struct_Union
     TYPE = 1
@@ -969,14 +970,17 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  class AdhocByteCodeCommandRequest
+  # Carries ad hoc byte code based execution commands.
+  class AdHocByteCodeCommandRequest
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    ARGUMENTS = 1
-    INSTANCEDATA = 2
-    CLASSDATA = 3
-    LIBRARIES = 4
+    TABLESTOINVOKE = 1
+    ARGUMENTS = 2
+    INSTANCEDATA = 3
+    CLASSDATA = 4
+    LIBRARIES = 5
 
     FIELDS = {
+      TABLESTOINVOKE => {:type => ::Thrift::Types::SET, :name => 'tablesToInvoke', :element => {:type => ::Thrift::Types::STRING}},
       ARGUMENTS => {:type => ::Thrift::Types::LIST, :name => 'arguments', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Value}},
       INSTANCEDATA => {:type => ::Thrift::Types::STRING, :name => 'instanceData', :binary => true},
       CLASSDATA => {:type => ::Thrift::Types::MAP, :name => 'classData', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING, :binary => true}},
@@ -991,7 +995,7 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
-  class AdhocByteCodeCommandResponse
+  class AdHocByteCodeCommandResponse
     include ::Thrift::Struct, ::Thrift::Struct_Union
     RESULT = 1
 
@@ -1010,21 +1014,15 @@ module Blur
   class BlurCommandRequest < ::Thrift::Union
     include ::Thrift::Struct_Union
     class << self
-      def tablesToInvoke(val)
-        BlurCommandRequest.new(:tablesToInvoke, val)
-      end
-
-      def adhocByteCodeCommandRequest(val)
-        BlurCommandRequest.new(:adhocByteCodeCommandRequest, val)
+      def adHocByteCodeCommandRequest(val)
+        BlurCommandRequest.new(:adHocByteCodeCommandRequest, val)
       end
     end
 
-    TABLESTOINVOKE = 1
-    ADHOCBYTECODECOMMANDREQUEST = 2
+    ADHOCBYTECODECOMMANDREQUEST = 1
 
     FIELDS = {
-      TABLESTOINVOKE => {:type => ::Thrift::Types::SET, :name => 'tablesToInvoke', :element => {:type => ::Thrift::Types::STRING}},
-      ADHOCBYTECODECOMMANDREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'adhocByteCodeCommandRequest', :class => ::Blur::AdhocByteCodeCommandRequest}
+      ADHOCBYTECODECOMMANDREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'adHocByteCodeCommandRequest', :class => ::Blur::AdHocByteCodeCommandRequest}
     }
 
     def struct_fields; FIELDS; end
@@ -1039,15 +1037,15 @@ module Blur
   class BlurCommandResponse < ::Thrift::Union
     include ::Thrift::Struct_Union
     class << self
-      def adhocByteCodeCommandResponse(val)
-        BlurCommandResponse.new(:adhocByteCodeCommandResponse, val)
+      def adHocByteCodeCommandResponse(val)
+        BlurCommandResponse.new(:adHocByteCodeCommandResponse, val)
       end
     end
 
     ADHOCBYTECODECOMMANDRESPONSE = 1
 
     FIELDS = {
-      ADHOCBYTECODECOMMANDRESPONSE => {:type => ::Thrift::Types::STRUCT, :name => 'adhocByteCodeCommandResponse', :class => ::Blur::AdhocByteCodeCommandResponse}
+      ADHOCBYTECODECOMMANDRESPONSE => {:type => ::Thrift::Types::STRUCT, :name => 'adHocByteCodeCommandResponse', :class => ::Blur::AdHocByteCodeCommandResponse}
     }
 
     def struct_fields; FIELDS; end

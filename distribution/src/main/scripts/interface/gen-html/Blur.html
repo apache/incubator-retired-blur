@@ -61,8 +61,8 @@
 <li><a href="Blur.html#Fn_Blur_traceRequestList">traceRequestList</a></li>
 </ul>
 </td>
-<td><a href="Blur.html#Struct_AdhocByteCodeCommandRequest">AdhocByteCodeCommandRequest</a><br/>
-<a href="Blur.html#Struct_AdhocByteCodeCommandResponse">AdhocByteCodeCommandResponse</a><br/>
+<td><a href="Blur.html#Struct_AdHocByteCodeCommandRequest">AdHocByteCodeCommandRequest</a><br/>
+<a href="Blur.html#Struct_AdHocByteCodeCommandResponse">AdHocByteCodeCommandResponse</a><br/>
 <a href="Blur.html#Struct_BlurCommandRequest">BlurCommandRequest</a><br/>
 <a href="Blur.html#Struct_BlurCommandResponse">BlurCommandResponse</a><br/>
 <a href="Blur.html#Struct_BlurException">BlurException</a><br/>
@@ -214,7 +214,8 @@ Logging level enum used to change the logging levels at runtime.
 <tr><td><code>ALL</code></td><td><code>7</code></td></tr>
 </table></div>
 <div class="definition"><h3 id="Enum_ValueType">Enumeration: ValueType</h3>
-<br/><table class="table-bordered table-striped table-condensed">
+The type of the value, this determines how the bytes are interpreted.
+<br/><br/><table class="table-bordered table-striped table-condensed">
 <tr><td><code>STRING</code></td><td><code>0</code></td></tr>
 <tr><td><code>INTEGER</code></td><td><code>1</code></td></tr>
 <tr><td><code>LONG</code></td><td><code>2</code></td></tr>
@@ -599,26 +600,29 @@ be family dot column, "family.column".
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>type</td><td><code><a href="Blur.html#Enum_ValueType">ValueType</a></code></td><td></td><td>default</td><td></td></tr>
 <tr><td>2</td><td>value</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_AdhocByteCodeCommandRequest">Struct: AdhocByteCodeCommandRequest</h3>
+</table><br/>Value carries serialized values.
+<br/></div><div class="definition"><h3 id="Struct_AdHocByteCodeCommandRequest">Struct: AdHocByteCodeCommandRequest</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>arguments</td><td><code>list&lt;<code><a href="Blur.html#Struct_Value">Value</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>instanceData</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>classData</td><td><code>map&lt;<code>string</code>, <code>binary</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>libraries</td><td><code>list&lt;<code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_AdhocByteCodeCommandResponse">Struct: AdhocByteCodeCommandResponse</h3>
+<tr><td>1</td><td>tablesToInvoke</td><td><code>set&lt;<code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>arguments</td><td><code>list&lt;<code><a href="Blur.html#Struct_Value">Value</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>instanceData</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>4</td><td>classData</td><td><code>map&lt;<code>string</code>, <code>binary</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>5</td><td>libraries</td><td><code>list&lt;<code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+</table><br/>Carries ad hoc byte code based execution commands.
+<br/></div><div class="definition"><h3 id="Struct_AdHocByteCodeCommandResponse">Struct: AdHocByteCodeCommandResponse</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>result</td><td><code><a href="Blur.html#Struct_Value">Value</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/></div><div class="definition"><h3 id="Struct_BlurCommandRequest">Struct: BlurCommandRequest</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>tablesToInvoke</td><td><code>set&lt;<code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>adhocByteCodeCommandRequest</td><td><code><a href="Blur.html#Struct_AdhocByteCodeCommandRequest">AdhocByteCodeCommandRequest</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>1</td><td>adHocByteCodeCommandRequest</td><td><code><a href="Blur.html#Struct_AdHocByteCodeCommandRequest">AdHocByteCodeCommandRequest</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/></div><div class="definition"><h3 id="Struct_BlurCommandResponse">Struct: BlurCommandResponse</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>adhocByteCodeCommandResponse</td><td><code><a href="Blur.html#Struct_AdhocByteCodeCommandResponse">AdhocByteCodeCommandResponse</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>1</td><td>adHocByteCodeCommandResponse</td><td><code><a href="Blur.html#Struct_AdHocByteCodeCommandResponse">AdHocByteCodeCommandResponse</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/></div><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_BlurPlatform">Service: BlurPlatform</h3>
 <div class="definition"><h4 id="Fn_BlurPlatform_execute">Function: BlurPlatform.execute</h4>
-<pre><code><a href="Blur.html#Struct_BlurCommandResponse">BlurCommandResponse</a></code> execute(<code><a href="Blur.html#Struct_BlurCommandRequest">BlurCommandRequest</a></code> request)
+<pre><code><a href="Blur.html#Struct_BlurCommandResponse">BlurCommandResponse</a></code> execute(<code>string</code> cluster,
+                            <code><a href="Blur.html#Struct_BlurCommandRequest">BlurCommandRequest</a></code> request)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre></div><h3 id="Svc_Blur">Service: Blur</h3>
 <div class="extends"><em>extends</em> <code><a href="Blur.html#Svc_BlurPlatform">BlurPlatform</a></code></div>

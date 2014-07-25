@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.blur.thrift.BException;
-import org.apache.blur.thrift.generated.AdhocByteCodeCommandRequest;
-import org.apache.blur.thrift.generated.AdhocByteCodeCommandResponse;
+import org.apache.blur.thrift.generated.AdHocByteCodeCommandRequest;
+import org.apache.blur.thrift.generated.AdHocByteCodeCommandResponse;
 import org.apache.blur.thrift.generated.BlurCommandRequest;
 import org.apache.blur.thrift.generated.BlurCommandResponse;
 import org.apache.blur.thrift.generated.BlurException;
@@ -35,17 +35,17 @@ public class CommandControllerServer implements Closeable {
 
   @Override
   public void close() throws IOException {
-    
+
   }
 
   public BlurCommandResponse merge(BlurCommandRequest request, List<BlurCommandResponse> responses)
       throws BlurException, IOException {
     Object fieldValue = request.getFieldValue();
-    if (fieldValue instanceof AdhocByteCodeCommandRequest) {
-      AdhocByteCodeCommandRequest commandRequest = request.getAdhocByteCodeCommandRequest();
-      AdhocByteCodeCommandResponse commandResponse = merge(commandRequest, toAdhocByteCodeCommandResponses(responses));
+    if (fieldValue instanceof AdHocByteCodeCommandRequest) {
+      AdHocByteCodeCommandRequest commandRequest = request.getAdHocByteCodeCommandRequest();
+      AdHocByteCodeCommandResponse commandResponse = merge(commandRequest, toAdHocByteCodeCommandResponses(responses));
       BlurCommandResponse response = new BlurCommandResponse();
-      response.setAdhocByteCodeCommandResponse(commandResponse);
+      response.setAdHocByteCodeCommandResponse(commandResponse);
       return response;
     } else {
       throw new BException("Not implemented.");
@@ -53,35 +53,35 @@ public class CommandControllerServer implements Closeable {
   }
 
   @SuppressWarnings({ "rawtypes", "unchecked" })
-  private AdhocByteCodeCommandResponse merge(AdhocByteCodeCommandRequest commandRequest,
-      List<AdhocByteCodeCommandResponse> adhocByteCodeCommandResponses) throws BlurException, IOException {
+  private AdHocByteCodeCommandResponse merge(AdHocByteCodeCommandRequest commandRequest,
+      List<AdHocByteCodeCommandResponse> adHocByteCodeCommandResponses) throws BlurException, IOException {
     Map<String, ByteBuffer> classData = commandRequest.getClassData();
     ClassLoader classLoader = CommandUtils.getClassLoader(classData);
     Object[] args = CommandUtils.getArgs(classLoader, commandRequest.getArguments());
     Command<?, ?> command = CommandUtils.toObjectViaSerialization(classLoader, commandRequest.getInstanceData());
     command.setArgs(args);
-    List<?> results = getResults(classLoader, adhocByteCodeCommandResponses);
+    List<?> results = getResults(classLoader, adHocByteCodeCommandResponses);
     Object r = command.mergeFinal((List) results);
     Value value = CommandUtils.toValue(r);
-    AdhocByteCodeCommandResponse adhocByteCodeCommandResponse = new AdhocByteCodeCommandResponse();
-    adhocByteCodeCommandResponse.setResult(value);
-    return adhocByteCodeCommandResponse;
+    AdHocByteCodeCommandResponse adHocByteCodeCommandResponse = new AdHocByteCodeCommandResponse();
+    adHocByteCodeCommandResponse.setResult(value);
+    return adHocByteCodeCommandResponse;
   }
 
-  private List<?> getResults(ClassLoader classLoader, List<AdhocByteCodeCommandResponse> adhocByteCodeCommandResponses)
+  private List<?> getResults(ClassLoader classLoader, List<AdHocByteCodeCommandResponse> adhocByteCodeCommandResponses)
       throws BlurException, IOException {
     List<Object> result = new ArrayList<Object>();
-    for (AdhocByteCodeCommandResponse response : adhocByteCodeCommandResponses) {
+    for (AdHocByteCodeCommandResponse response : adhocByteCodeCommandResponses) {
       Object object = CommandUtils.toObject(classLoader, response.getResult());
       result.add(object);
     }
     return result;
   }
 
-  private List<AdhocByteCodeCommandResponse> toAdhocByteCodeCommandResponses(List<BlurCommandResponse> responses) {
-    List<AdhocByteCodeCommandResponse> result = new ArrayList<AdhocByteCodeCommandResponse>();
+  private List<AdHocByteCodeCommandResponse> toAdHocByteCodeCommandResponses(List<BlurCommandResponse> responses) {
+    List<AdHocByteCodeCommandResponse> result = new ArrayList<AdHocByteCodeCommandResponse>();
     for (BlurCommandResponse r : responses) {
-      result.add(r.getAdhocByteCodeCommandResponse());
+      result.add(r.getAdHocByteCodeCommandResponse());
     }
     return result;
   }

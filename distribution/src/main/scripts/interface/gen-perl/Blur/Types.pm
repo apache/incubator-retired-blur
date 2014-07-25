@@ -3907,19 +3907,23 @@ sub write {
   return $xfer;
 }
 
-package Blur::AdhocByteCodeCommandRequest;
+package Blur::AdHocByteCodeCommandRequest;
 use base qw(Class::Accessor);
-Blur::AdhocByteCodeCommandRequest->mk_accessors( qw( arguments instanceData classData libraries ) );
+Blur::AdHocByteCodeCommandRequest->mk_accessors( qw( tablesToInvoke arguments instanceData classData libraries ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
+  $self->{tablesToInvoke} = undef;
   $self->{arguments} = undef;
   $self->{instanceData} = undef;
   $self->{classData} = undef;
   $self->{libraries} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{tablesToInvoke}) {
+      $self->{tablesToInvoke} = $vals->{tablesToInvoke};
+    }
     if (defined $vals->{arguments}) {
       $self->{arguments} = $vals->{arguments};
     }
@@ -3937,7 +3941,7 @@ sub new {
 }
 
 sub getName {
-  return 'AdhocByteCodeCommandRequest';
+  return 'AdHocByteCodeCommandRequest';
 }
 
 sub read {
@@ -3955,18 +3959,36 @@ sub read {
     }
     SWITCH: for($fid)
     {
-      /^1$/ && do{      if ($ftype == TType::LIST) {
+      /^1$/ && do{      if ($ftype == TType::SET) {
         {
           my $_size206 = 0;
-          $self->{arguments} = [];
+          $self->{tablesToInvoke} = {};
           my $_etype209 = 0;
-          $xfer += $input->readListBegin(\$_etype209, \$_size206);
+          $xfer += $input->readSetBegin(\$_etype209, \$_size206);
           for (my $_i210 = 0; $_i210 < $_size206; ++$_i210)
           {
             my $elem211 = undef;
-            $elem211 = new Blur::Value();
-            $xfer += $elem211->read($input);
-            push(@{$self->{arguments}},$elem211);
+            $xfer += $input->readString(\$elem211);
+            $self->{tablesToInvoke}->{$elem211} = 1;
+          }
+          $xfer += $input->readSetEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size212 = 0;
+          $self->{arguments} = [];
+          my $_etype215 = 0;
+          $xfer += $input->readListBegin(\$_etype215, \$_size212);
+          for (my $_i216 = 0; $_i216 < $_size212; ++$_i216)
+          {
+            my $elem217 = undef;
+            $elem217 = new Blur::Value();
+            $xfer += $elem217->read($input);
+            push(@{$self->{arguments}},$elem217);
           }
           $xfer += $input->readListEnd();
         }
@@ -3974,26 +3996,26 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^2$/ && do{      if ($ftype == TType::STRING) {
+      /^3$/ && do{      if ($ftype == TType::STRING) {
         $xfer += $input->readString(\$self->{instanceData});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^3$/ && do{      if ($ftype == TType::MAP) {
+      /^4$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size212 = 0;
+          my $_size218 = 0;
           $self->{classData} = {};
-          my $_ktype213 = 0;
-          my $_vtype214 = 0;
-          $xfer += $input->readMapBegin(\$_ktype213, \$_vtype214, \$_size212);
-          for (my $_i216 = 0; $_i216 < $_size212; ++$_i216)
+          my $_ktype219 = 0;
+          my $_vtype220 = 0;
+          $xfer += $input->readMapBegin(\$_ktype219, \$_vtype220, \$_size218);
+          for (my $_i222 = 0; $_i222 < $_size218; ++$_i222)
           {
-            my $key217 = '';
-            my $val218 = '';
-            $xfer += $input->readString(\$key217);
-            $xfer += $input->readString(\$val218);
-            $self->{classData}->{$key217} = $val218;
+            my $key223 = '';
+            my $val224 = '';
+            $xfer += $input->readString(\$key223);
+            $xfer += $input->readString(\$val224);
+            $self->{classData}->{$key223} = $val224;
           }
           $xfer += $input->readMapEnd();
         }
@@ -4001,17 +4023,17 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^4$/ && do{      if ($ftype == TType::LIST) {
+      /^5$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size219 = 0;
+          my $_size225 = 0;
           $self->{libraries} = [];
-          my $_etype222 = 0;
-          $xfer += $input->readListBegin(\$_etype222, \$_size219);
-          for (my $_i223 = 0; $_i223 < $_size219; ++$_i223)
+          my $_etype228 = 0;
+          $xfer += $input->readListBegin(\$_etype228, \$_size225);
+          for (my $_i229 = 0; $_i229 < $_size225; ++$_i229)
           {
-            my $elem224 = undef;
-            $xfer += $input->readString(\$elem224);
-            push(@{$self->{libraries}},$elem224);
+            my $elem230 = undef;
+            $xfer += $input->readString(\$elem230);
+            push(@{$self->{libraries}},$elem230);
           }
           $xfer += $input->readListEnd();
         }
@@ -4030,15 +4052,29 @@ sub read {
 sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
-  $xfer += $output->writeStructBegin('AdhocByteCodeCommandRequest');
+  $xfer += $output->writeStructBegin('AdHocByteCodeCommandRequest');
+  if (defined $self->{tablesToInvoke}) {
+    $xfer += $output->writeFieldBegin('tablesToInvoke', TType::SET, 1);
+    {
+      $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{tablesToInvoke}}));
+      {
+        foreach my $iter231 (@{$self->{tablesToInvoke}})
+        {
+          $xfer += $output->writeString($iter231);
+        }
+      }
+      $xfer += $output->writeSetEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
   if (defined $self->{arguments}) {
-    $xfer += $output->writeFieldBegin('arguments', TType::LIST, 1);
+    $xfer += $output->writeFieldBegin('arguments', TType::LIST, 2);
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{arguments}}));
       {
-        foreach my $iter225 (@{$self->{arguments}}) 
+        foreach my $iter232 (@{$self->{arguments}}) 
         {
-          $xfer += ${iter225}->write($output);
+          $xfer += ${iter232}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -4046,19 +4082,19 @@ sub write {
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{instanceData}) {
-    $xfer += $output->writeFieldBegin('instanceData', TType::STRING, 2);
+    $xfer += $output->writeFieldBegin('instanceData', TType::STRING, 3);
     $xfer += $output->writeString($self->{instanceData});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{classData}) {
-    $xfer += $output->writeFieldBegin('classData', TType::MAP, 3);
+    $xfer += $output->writeFieldBegin('classData', TType::MAP, 4);
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{classData}}));
       {
-        while( my ($kiter226,$viter227) = each %{$self->{classData}}) 
+        while( my ($kiter233,$viter234) = each %{$self->{classData}}) 
         {
-          $xfer += $output->writeString($kiter226);
-          $xfer += $output->writeString($viter227);
+          $xfer += $output->writeString($kiter233);
+          $xfer += $output->writeString($viter234);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -4066,13 +4102,13 @@ sub write {
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{libraries}) {
-    $xfer += $output->writeFieldBegin('libraries', TType::LIST, 4);
+    $xfer += $output->writeFieldBegin('libraries', TType::LIST, 5);
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{libraries}}));
       {
-        foreach my $iter228 (@{$self->{libraries}}) 
+        foreach my $iter235 (@{$self->{libraries}}) 
         {
-          $xfer += $output->writeString($iter228);
+          $xfer += $output->writeString($iter235);
         }
       }
       $xfer += $output->writeListEnd();
@@ -4084,9 +4120,9 @@ sub write {
   return $xfer;
 }
 
-package Blur::AdhocByteCodeCommandResponse;
+package Blur::AdHocByteCodeCommandResponse;
 use base qw(Class::Accessor);
-Blur::AdhocByteCodeCommandResponse->mk_accessors( qw( result ) );
+Blur::AdHocByteCodeCommandResponse->mk_accessors( qw( result ) );
 
 sub new {
   my $classname = shift;
@@ -4102,7 +4138,7 @@ sub new {
 }
 
 sub getName {
-  return 'AdhocByteCodeCommandResponse';
+  return 'AdHocByteCodeCommandResponse';
 }
 
 sub read {
@@ -4138,7 +4174,7 @@ sub read {
 sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
-  $xfer += $output->writeStructBegin('AdhocByteCodeCommandResponse');
+  $xfer += $output->writeStructBegin('AdHocByteCodeCommandResponse');
   if (defined $self->{result}) {
     $xfer += $output->writeFieldBegin('result', TType::STRUCT, 1);
     $xfer += $self->{result}->write($output);
@@ -4151,20 +4187,16 @@ sub write {
 
 package Blur::BlurCommandRequest;
 use base qw(Class::Accessor);
-Blur::BlurCommandRequest->mk_accessors( qw( tablesToInvoke adhocByteCodeCommandRequest ) );
+Blur::BlurCommandRequest->mk_accessors( qw( adHocByteCodeCommandRequest ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{tablesToInvoke} = undef;
-  $self->{adhocByteCodeCommandRequest} = undef;
+  $self->{adHocByteCodeCommandRequest} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{tablesToInvoke}) {
-      $self->{tablesToInvoke} = $vals->{tablesToInvoke};
-    }
-    if (defined $vals->{adhocByteCodeCommandRequest}) {
-      $self->{adhocByteCodeCommandRequest} = $vals->{adhocByteCodeCommandRequest};
+    if (defined $vals->{adHocByteCodeCommandRequest}) {
+      $self->{adHocByteCodeCommandRequest} = $vals->{adHocByteCodeCommandRequest};
     }
   }
   return bless ($self, $classname);
@@ -4189,27 +4221,9 @@ sub read {
     }
     SWITCH: for($fid)
     {
-      /^1$/ && do{      if ($ftype == TType::SET) {
-        {
-          my $_size229 = 0;
-          $self->{tablesToInvoke} = {};
-          my $_etype232 = 0;
-          $xfer += $input->readSetBegin(\$_etype232, \$_size229);
-          for (my $_i233 = 0; $_i233 < $_size229; ++$_i233)
-          {
-            my $elem234 = undef;
-            $xfer += $input->readString(\$elem234);
-            $self->{tablesToInvoke}->{$elem234} = 1;
-          }
-          $xfer += $input->readSetEnd();
-        }
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{adhocByteCodeCommandRequest} = new Blur::AdhocByteCodeCommandRequest();
-        $xfer += $self->{adhocByteCodeCommandRequest}->read($input);
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{adHocByteCodeCommandRequest} = new Blur::AdHocByteCodeCommandRequest();
+        $xfer += $self->{adHocByteCodeCommandRequest}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -4226,23 +4240,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('BlurCommandRequest');
-  if (defined $self->{tablesToInvoke}) {
-    $xfer += $output->writeFieldBegin('tablesToInvoke', TType::SET, 1);
-    {
-      $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{tablesToInvoke}}));
-      {
-        foreach my $iter235 (@{$self->{tablesToInvoke}})
-        {
-          $xfer += $output->writeString($iter235);
-        }
-      }
-      $xfer += $output->writeSetEnd();
-    }
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{adhocByteCodeCommandRequest}) {
-    $xfer += $output->writeFieldBegin('adhocByteCodeCommandRequest', TType::STRUCT, 2);
-    $xfer += $self->{adhocByteCodeCommandRequest}->write($output);
+  if (defined $self->{adHocByteCodeCommandRequest}) {
+    $xfer += $output->writeFieldBegin('adHocByteCodeCommandRequest', TType::STRUCT, 1);
+    $xfer += $self->{adHocByteCodeCommandRequest}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -4252,16 +4252,16 @@ sub write {
 
 package Blur::BlurCommandResponse;
 use base qw(Class::Accessor);
-Blur::BlurCommandResponse->mk_accessors( qw( adhocByteCodeCommandResponse ) );
+Blur::BlurCommandResponse->mk_accessors( qw( adHocByteCodeCommandResponse ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{adhocByteCodeCommandResponse} = undef;
+  $self->{adHocByteCodeCommandResponse} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{adhocByteCodeCommandResponse}) {
-      $self->{adhocByteCodeCommandResponse} = $vals->{adhocByteCodeCommandResponse};
+    if (defined $vals->{adHocByteCodeCommandResponse}) {
+      $self->{adHocByteCodeCommandResponse} = $vals->{adHocByteCodeCommandResponse};
     }
   }
   return bless ($self, $classname);
@@ -4287,8 +4287,8 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{adhocByteCodeCommandResponse} = new Blur::AdhocByteCodeCommandResponse();
-        $xfer += $self->{adhocByteCodeCommandResponse}->read($input);
+        $self->{adHocByteCodeCommandResponse} = new Blur::AdHocByteCodeCommandResponse();
+        $xfer += $self->{adHocByteCodeCommandResponse}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -4305,9 +4305,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('BlurCommandResponse');
-  if (defined $self->{adhocByteCodeCommandResponse}) {
-    $xfer += $output->writeFieldBegin('adhocByteCodeCommandResponse', TType::STRUCT, 1);
-    $xfer += $self->{adhocByteCodeCommandResponse}->write($output);
+  if (defined $self->{adHocByteCodeCommandResponse}) {
+    $xfer += $output->writeFieldBegin('adHocByteCodeCommandResponse', TType::STRUCT, 1);
+    $xfer += $self->{adHocByteCodeCommandResponse}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

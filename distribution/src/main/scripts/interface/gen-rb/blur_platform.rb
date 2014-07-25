@@ -12,13 +12,13 @@ module Blur
     class Client
       include ::Thrift::Client
 
-      def execute(request)
-        send_execute(request)
+      def execute(cluster, request)
+        send_execute(cluster, request)
         return recv_execute()
       end
 
-      def send_execute(request)
-        send_message('execute', Execute_args, :request => request)
+      def send_execute(cluster, request)
+        send_message('execute', Execute_args, :cluster => cluster, :request => request)
       end
 
       def recv_execute()
@@ -37,7 +37,7 @@ module Blur
         args = read_args(iprot, Execute_args)
         result = Execute_result.new()
         begin
-          result.success = @handler.execute(args.request)
+          result.success = @handler.execute(args.cluster, args.request)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -50,9 +50,11 @@ module Blur
 
     class Execute_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      REQUEST = 1
+      CLUSTER = 1
+      REQUEST = 2
 
       FIELDS = {
+        CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'},
         REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::Blur::BlurCommandRequest}
       }
 

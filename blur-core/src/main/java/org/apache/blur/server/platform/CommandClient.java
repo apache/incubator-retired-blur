@@ -33,8 +33,8 @@ import java.util.Set;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.AdhocByteCodeCommandRequest;
-import org.apache.blur.thrift.generated.AdhocByteCodeCommandResponse;
+import org.apache.blur.thrift.generated.AdHocByteCodeCommandRequest;
+import org.apache.blur.thrift.generated.AdHocByteCodeCommandResponse;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurCommandRequest;
 import org.apache.blur.thrift.generated.BlurCommandResponse;
@@ -52,25 +52,26 @@ public class CommandClient {
     _client = client;
   }
 
-  public <T1, T2> T2 execute(String table, Command<T1, T2> command) throws BlurException, TException, IOException {
+  public <T1, T2> T2 execute(String cluster, String table, Command<T1, T2> command) throws BlurException, TException,
+      IOException {
     Set<String> tables = new HashSet<String>();
     tables.add(table);
-    return execute(tables, new Object[] {}, command);
+    return execute(cluster, tables, new Object[] {}, command);
   }
 
-  public <T1, T2> T2 execute(Set<String> tables, Object[] args, Command<T1, T2> command) throws BlurException,
-      TException, IOException {
+  public <T1, T2> T2 execute(String cluster, Set<String> tables, Object[] args, Command<T1, T2> command)
+      throws BlurException, TException, IOException {
     BlurCommandRequest request = new BlurCommandRequest();
-    AdhocByteCodeCommandRequest adhocByteCodeCommandRequest = new AdhocByteCodeCommandRequest();
-    packCommandAndClasses(adhocByteCodeCommandRequest, args, command);
-    request.setAdhocByteCodeCommandRequest(adhocByteCodeCommandRequest);
-    BlurCommandResponse blurCommandResponse = _client.execute(request);
-    AdhocByteCodeCommandResponse response = blurCommandResponse.getAdhocByteCodeCommandResponse();
+    AdHocByteCodeCommandRequest adHocByteCodeCommandRequest = new AdHocByteCodeCommandRequest();
+    packCommandAndClasses(adHocByteCodeCommandRequest, args, command);
+    request.setAdHocByteCodeCommandRequest(adHocByteCodeCommandRequest);
+    BlurCommandResponse blurCommandResponse = _client.execute(cluster, request);
+    AdHocByteCodeCommandResponse response = blurCommandResponse.getAdHocByteCodeCommandResponse();
     Value result = response.getResult();
     return CommandUtils.toObject(getClass().getClassLoader(), result);
   }
 
-  private void packCommandAndClasses(AdhocByteCodeCommandRequest request, Object[] args, Object command)
+  private void packCommandAndClasses(AdHocByteCodeCommandRequest request, Object[] args, Object command)
       throws IOException {
     request.setClassData(getClassData(command.getClass()));
     request.setInstanceData(CommandUtils.toBytesViaSerialization(command));

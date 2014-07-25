@@ -49,20 +49,25 @@ import java.util.Arrays;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
-public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<AdhocByteCodeCommandRequest, AdhocByteCodeCommandRequest._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("AdhocByteCodeCommandRequest");
+/**
+ * Carries ad hoc byte code based execution commands.
+ */
+public class AdHocByteCodeCommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<AdHocByteCodeCommandRequest, AdHocByteCodeCommandRequest._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("AdHocByteCodeCommandRequest");
 
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ARGUMENTS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("arguments", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)1);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField INSTANCE_DATA_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("instanceData", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CLASS_DATA_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("classData", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)3);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField LIBRARIES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("libraries", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLES_TO_INVOKE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("tablesToInvoke", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ARGUMENTS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("arguments", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField INSTANCE_DATA_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("instanceData", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)3);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CLASS_DATA_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("classData", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField LIBRARIES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("libraries", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)5);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
-    schemes.put(StandardScheme.class, new AdhocByteCodeCommandRequestStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new AdhocByteCodeCommandRequestTupleSchemeFactory());
+    schemes.put(StandardScheme.class, new AdHocByteCodeCommandRequestStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new AdHocByteCodeCommandRequestTupleSchemeFactory());
   }
 
+  public Set<String> tablesToInvoke; // required
   public List<Value> arguments; // required
   public ByteBuffer instanceData; // required
   public Map<String,ByteBuffer> classData; // required
@@ -70,10 +75,11 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-    ARGUMENTS((short)1, "arguments"),
-    INSTANCE_DATA((short)2, "instanceData"),
-    CLASS_DATA((short)3, "classData"),
-    LIBRARIES((short)4, "libraries");
+    TABLES_TO_INVOKE((short)1, "tablesToInvoke"),
+    ARGUMENTS((short)2, "arguments"),
+    INSTANCE_DATA((short)3, "instanceData"),
+    CLASS_DATA((short)4, "classData"),
+    LIBRARIES((short)5, "libraries");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -88,13 +94,15 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // ARGUMENTS
+        case 1: // TABLES_TO_INVOKE
+          return TABLES_TO_INVOKE;
+        case 2: // ARGUMENTS
           return ARGUMENTS;
-        case 2: // INSTANCE_DATA
+        case 3: // INSTANCE_DATA
           return INSTANCE_DATA;
-        case 3: // CLASS_DATA
+        case 4: // CLASS_DATA
           return CLASS_DATA;
-        case 4: // LIBRARIES
+        case 5: // LIBRARIES
           return LIBRARIES;
         default:
           return null;
@@ -139,6 +147,9 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.TABLES_TO_INVOKE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("tablesToInvoke", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.SetMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET, 
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
     tmpMap.put(_Fields.ARGUMENTS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("arguments", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Value.class))));
@@ -152,19 +163,21 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.ListMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(AdhocByteCodeCommandRequest.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(AdHocByteCodeCommandRequest.class, metaDataMap);
   }
 
-  public AdhocByteCodeCommandRequest() {
+  public AdHocByteCodeCommandRequest() {
   }
 
-  public AdhocByteCodeCommandRequest(
+  public AdHocByteCodeCommandRequest(
+    Set<String> tablesToInvoke,
     List<Value> arguments,
     ByteBuffer instanceData,
     Map<String,ByteBuffer> classData,
     List<String> libraries)
   {
     this();
+    this.tablesToInvoke = tablesToInvoke;
     this.arguments = arguments;
     this.instanceData = instanceData;
     this.classData = classData;
@@ -174,7 +187,14 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public AdhocByteCodeCommandRequest(AdhocByteCodeCommandRequest other) {
+  public AdHocByteCodeCommandRequest(AdHocByteCodeCommandRequest other) {
+    if (other.isSetTablesToInvoke()) {
+      Set<String> __this__tablesToInvoke = new HashSet<String>();
+      for (String other_element : other.tablesToInvoke) {
+        __this__tablesToInvoke.add(other_element);
+      }
+      this.tablesToInvoke = __this__tablesToInvoke;
+    }
     if (other.isSetArguments()) {
       List<Value> __this__arguments = new ArrayList<Value>();
       for (Value other_element : other.arguments) {
@@ -211,16 +231,56 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
     }
   }
 
-  public AdhocByteCodeCommandRequest deepCopy() {
-    return new AdhocByteCodeCommandRequest(this);
+  public AdHocByteCodeCommandRequest deepCopy() {
+    return new AdHocByteCodeCommandRequest(this);
   }
 
   @Override
   public void clear() {
+    this.tablesToInvoke = null;
     this.arguments = null;
     this.instanceData = null;
     this.classData = null;
     this.libraries = null;
+  }
+
+  public int getTablesToInvokeSize() {
+    return (this.tablesToInvoke == null) ? 0 : this.tablesToInvoke.size();
+  }
+
+  public java.util.Iterator<String> getTablesToInvokeIterator() {
+    return (this.tablesToInvoke == null) ? null : this.tablesToInvoke.iterator();
+  }
+
+  public void addToTablesToInvoke(String elem) {
+    if (this.tablesToInvoke == null) {
+      this.tablesToInvoke = new HashSet<String>();
+    }
+    this.tablesToInvoke.add(elem);
+  }
+
+  public Set<String> getTablesToInvoke() {
+    return this.tablesToInvoke;
+  }
+
+  public AdHocByteCodeCommandRequest setTablesToInvoke(Set<String> tablesToInvoke) {
+    this.tablesToInvoke = tablesToInvoke;
+    return this;
+  }
+
+  public void unsetTablesToInvoke() {
+    this.tablesToInvoke = null;
+  }
+
+  /** Returns true if field tablesToInvoke is set (has been assigned a value) and false otherwise */
+  public boolean isSetTablesToInvoke() {
+    return this.tablesToInvoke != null;
+  }
+
+  public void setTablesToInvokeIsSet(boolean value) {
+    if (!value) {
+      this.tablesToInvoke = null;
+    }
   }
 
   public int getArgumentsSize() {
@@ -242,7 +302,7 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
     return this.arguments;
   }
 
-  public AdhocByteCodeCommandRequest setArguments(List<Value> arguments) {
+  public AdHocByteCodeCommandRequest setArguments(List<Value> arguments) {
     this.arguments = arguments;
     return this;
   }
@@ -271,12 +331,12 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
     return instanceData;
   }
 
-  public AdhocByteCodeCommandRequest setInstanceData(byte[] instanceData) {
+  public AdHocByteCodeCommandRequest setInstanceData(byte[] instanceData) {
     setInstanceData(instanceData == null ? (ByteBuffer)null : ByteBuffer.wrap(instanceData));
     return this;
   }
 
-  public AdhocByteCodeCommandRequest setInstanceData(ByteBuffer instanceData) {
+  public AdHocByteCodeCommandRequest setInstanceData(ByteBuffer instanceData) {
     this.instanceData = instanceData;
     return this;
   }
@@ -311,7 +371,7 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
     return this.classData;
   }
 
-  public AdhocByteCodeCommandRequest setClassData(Map<String,ByteBuffer> classData) {
+  public AdHocByteCodeCommandRequest setClassData(Map<String,ByteBuffer> classData) {
     this.classData = classData;
     return this;
   }
@@ -350,7 +410,7 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
     return this.libraries;
   }
 
-  public AdhocByteCodeCommandRequest setLibraries(List<String> libraries) {
+  public AdHocByteCodeCommandRequest setLibraries(List<String> libraries) {
     this.libraries = libraries;
     return this;
   }
@@ -372,6 +432,14 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case TABLES_TO_INVOKE:
+      if (value == null) {
+        unsetTablesToInvoke();
+      } else {
+        setTablesToInvoke((Set<String>)value);
+      }
+      break;
+
     case ARGUMENTS:
       if (value == null) {
         unsetArguments();
@@ -409,6 +477,9 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case TABLES_TO_INVOKE:
+      return getTablesToInvoke();
+
     case ARGUMENTS:
       return getArguments();
 
@@ -432,6 +503,8 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
     }
 
     switch (field) {
+    case TABLES_TO_INVOKE:
+      return isSetTablesToInvoke();
     case ARGUMENTS:
       return isSetArguments();
     case INSTANCE_DATA:
@@ -448,14 +521,23 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof AdhocByteCodeCommandRequest)
-      return this.equals((AdhocByteCodeCommandRequest)that);
+    if (that instanceof AdHocByteCodeCommandRequest)
+      return this.equals((AdHocByteCodeCommandRequest)that);
     return false;
   }
 
-  public boolean equals(AdhocByteCodeCommandRequest that) {
+  public boolean equals(AdHocByteCodeCommandRequest that) {
     if (that == null)
       return false;
+
+    boolean this_present_tablesToInvoke = true && this.isSetTablesToInvoke();
+    boolean that_present_tablesToInvoke = true && that.isSetTablesToInvoke();
+    if (this_present_tablesToInvoke || that_present_tablesToInvoke) {
+      if (!(this_present_tablesToInvoke && that_present_tablesToInvoke))
+        return false;
+      if (!this.tablesToInvoke.equals(that.tablesToInvoke))
+        return false;
+    }
 
     boolean this_present_arguments = true && this.isSetArguments();
     boolean that_present_arguments = true && that.isSetArguments();
@@ -501,14 +583,24 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
     return 0;
   }
 
-  public int compareTo(AdhocByteCodeCommandRequest other) {
+  public int compareTo(AdHocByteCodeCommandRequest other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    AdhocByteCodeCommandRequest typedOther = (AdhocByteCodeCommandRequest)other;
+    AdHocByteCodeCommandRequest typedOther = (AdHocByteCodeCommandRequest)other;
 
+    lastComparison = Boolean.valueOf(isSetTablesToInvoke()).compareTo(typedOther.isSetTablesToInvoke());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTablesToInvoke()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.tablesToInvoke, typedOther.tablesToInvoke);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetArguments()).compareTo(typedOther.isSetArguments());
     if (lastComparison != 0) {
       return lastComparison;
@@ -566,9 +658,17 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("AdhocByteCodeCommandRequest(");
+    StringBuilder sb = new StringBuilder("AdHocByteCodeCommandRequest(");
     boolean first = true;
 
+    sb.append("tablesToInvoke:");
+    if (this.tablesToInvoke == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.tablesToInvoke);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("arguments:");
     if (this.arguments == null) {
       sb.append("null");
@@ -625,15 +725,15 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
     }
   }
 
-  private static class AdhocByteCodeCommandRequestStandardSchemeFactory implements SchemeFactory {
-    public AdhocByteCodeCommandRequestStandardScheme getScheme() {
-      return new AdhocByteCodeCommandRequestStandardScheme();
+  private static class AdHocByteCodeCommandRequestStandardSchemeFactory implements SchemeFactory {
+    public AdHocByteCodeCommandRequestStandardScheme getScheme() {
+      return new AdHocByteCodeCommandRequestStandardScheme();
     }
   }
 
-  private static class AdhocByteCodeCommandRequestStandardScheme extends StandardScheme<AdhocByteCodeCommandRequest> {
+  private static class AdHocByteCodeCommandRequestStandardScheme extends StandardScheme<AdHocByteCodeCommandRequest> {
 
-    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, AdhocByteCodeCommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, AdHocByteCodeCommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -643,17 +743,35 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
           break;
         }
         switch (schemeField.id) {
-          case 1: // ARGUMENTS
+          case 1: // TABLES_TO_INVOKE
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET) {
+              {
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set232 = iprot.readSetBegin();
+                struct.tablesToInvoke = new HashSet<String>(2*_set232.size);
+                for (int _i233 = 0; _i233 < _set232.size; ++_i233)
+                {
+                  String _elem234; // required
+                  _elem234 = iprot.readString();
+                  struct.tablesToInvoke.add(_elem234);
+                }
+                iprot.readSetEnd();
+              }
+              struct.setTablesToInvokeIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // ARGUMENTS
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list232 = iprot.readListBegin();
-                struct.arguments = new ArrayList<Value>(_list232.size);
-                for (int _i233 = 0; _i233 < _list232.size; ++_i233)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list235 = iprot.readListBegin();
+                struct.arguments = new ArrayList<Value>(_list235.size);
+                for (int _i236 = 0; _i236 < _list235.size; ++_i236)
                 {
-                  Value _elem234; // required
-                  _elem234 = new Value();
-                  _elem234.read(iprot);
-                  struct.arguments.add(_elem234);
+                  Value _elem237; // required
+                  _elem237 = new Value();
+                  _elem237.read(iprot);
+                  struct.arguments.add(_elem237);
                 }
                 iprot.readListEnd();
               }
@@ -662,7 +780,7 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // INSTANCE_DATA
+          case 3: // INSTANCE_DATA
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.instanceData = iprot.readBinary();
               struct.setInstanceDataIsSet(true);
@@ -670,18 +788,18 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // CLASS_DATA
+          case 4: // CLASS_DATA
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map235 = iprot.readMapBegin();
-                struct.classData = new HashMap<String,ByteBuffer>(2*_map235.size);
-                for (int _i236 = 0; _i236 < _map235.size; ++_i236)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map238 = iprot.readMapBegin();
+                struct.classData = new HashMap<String,ByteBuffer>(2*_map238.size);
+                for (int _i239 = 0; _i239 < _map238.size; ++_i239)
                 {
-                  String _key237; // optional
-                  ByteBuffer _val238; // required
-                  _key237 = iprot.readString();
-                  _val238 = iprot.readBinary();
-                  struct.classData.put(_key237, _val238);
+                  String _key240; // optional
+                  ByteBuffer _val241; // required
+                  _key240 = iprot.readString();
+                  _val241 = iprot.readBinary();
+                  struct.classData.put(_key240, _val241);
                 }
                 iprot.readMapEnd();
               }
@@ -690,16 +808,16 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // LIBRARIES
+          case 5: // LIBRARIES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list239 = iprot.readListBegin();
-                struct.libraries = new ArrayList<String>(_list239.size);
-                for (int _i240 = 0; _i240 < _list239.size; ++_i240)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list242 = iprot.readListBegin();
+                struct.libraries = new ArrayList<String>(_list242.size);
+                for (int _i243 = 0; _i243 < _list242.size; ++_i243)
                 {
-                  String _elem241; // required
-                  _elem241 = iprot.readString();
-                  struct.libraries.add(_elem241);
+                  String _elem244; // required
+                  _elem244 = iprot.readString();
+                  struct.libraries.add(_elem244);
                 }
                 iprot.readListEnd();
               }
@@ -719,17 +837,29 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
       struct.validate();
     }
 
-    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, AdhocByteCodeCommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, AdHocByteCodeCommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.tablesToInvoke != null) {
+        oprot.writeFieldBegin(TABLES_TO_INVOKE_FIELD_DESC);
+        {
+          oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.tablesToInvoke.size()));
+          for (String _iter245 : struct.tablesToInvoke)
+          {
+            oprot.writeString(_iter245);
+          }
+          oprot.writeSetEnd();
+        }
+        oprot.writeFieldEnd();
+      }
       if (struct.arguments != null) {
         oprot.writeFieldBegin(ARGUMENTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.arguments.size()));
-          for (Value _iter242 : struct.arguments)
+          for (Value _iter246 : struct.arguments)
           {
-            _iter242.write(oprot);
+            _iter246.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -744,10 +874,10 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
         oprot.writeFieldBegin(CLASS_DATA_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.classData.size()));
-          for (Map.Entry<String, ByteBuffer> _iter243 : struct.classData.entrySet())
+          for (Map.Entry<String, ByteBuffer> _iter247 : struct.classData.entrySet())
           {
-            oprot.writeString(_iter243.getKey());
-            oprot.writeBinary(_iter243.getValue());
+            oprot.writeString(_iter247.getKey());
+            oprot.writeBinary(_iter247.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -757,9 +887,9 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
         oprot.writeFieldBegin(LIBRARIES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.libraries.size()));
-          for (String _iter244 : struct.libraries)
+          for (String _iter248 : struct.libraries)
           {
-            oprot.writeString(_iter244);
+            oprot.writeString(_iter248);
           }
           oprot.writeListEnd();
         }
@@ -771,37 +901,49 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
 
   }
 
-  private static class AdhocByteCodeCommandRequestTupleSchemeFactory implements SchemeFactory {
-    public AdhocByteCodeCommandRequestTupleScheme getScheme() {
-      return new AdhocByteCodeCommandRequestTupleScheme();
+  private static class AdHocByteCodeCommandRequestTupleSchemeFactory implements SchemeFactory {
+    public AdHocByteCodeCommandRequestTupleScheme getScheme() {
+      return new AdHocByteCodeCommandRequestTupleScheme();
     }
   }
 
-  private static class AdhocByteCodeCommandRequestTupleScheme extends TupleScheme<AdhocByteCodeCommandRequest> {
+  private static class AdHocByteCodeCommandRequestTupleScheme extends TupleScheme<AdHocByteCodeCommandRequest> {
 
     @Override
-    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, AdhocByteCodeCommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, AdHocByteCodeCommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetArguments()) {
+      if (struct.isSetTablesToInvoke()) {
         optionals.set(0);
       }
-      if (struct.isSetInstanceData()) {
+      if (struct.isSetArguments()) {
         optionals.set(1);
       }
-      if (struct.isSetClassData()) {
+      if (struct.isSetInstanceData()) {
         optionals.set(2);
       }
-      if (struct.isSetLibraries()) {
+      if (struct.isSetClassData()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetLibraries()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
+      if (struct.isSetTablesToInvoke()) {
+        {
+          oprot.writeI32(struct.tablesToInvoke.size());
+          for (String _iter249 : struct.tablesToInvoke)
+          {
+            oprot.writeString(_iter249);
+          }
+        }
+      }
       if (struct.isSetArguments()) {
         {
           oprot.writeI32(struct.arguments.size());
-          for (Value _iter245 : struct.arguments)
+          for (Value _iter250 : struct.arguments)
           {
-            _iter245.write(oprot);
+            _iter250.write(oprot);
           }
         }
       }
@@ -811,70 +953,83 @@ public class AdhocByteCodeCommandRequest implements org.apache.blur.thirdparty.t
       if (struct.isSetClassData()) {
         {
           oprot.writeI32(struct.classData.size());
-          for (Map.Entry<String, ByteBuffer> _iter246 : struct.classData.entrySet())
+          for (Map.Entry<String, ByteBuffer> _iter251 : struct.classData.entrySet())
           {
-            oprot.writeString(_iter246.getKey());
-            oprot.writeBinary(_iter246.getValue());
+            oprot.writeString(_iter251.getKey());
+            oprot.writeBinary(_iter251.getValue());
           }
         }
       }
       if (struct.isSetLibraries()) {
         {
           oprot.writeI32(struct.libraries.size());
-          for (String _iter247 : struct.libraries)
+          for (String _iter252 : struct.libraries)
           {
-            oprot.writeString(_iter247);
+            oprot.writeString(_iter252);
           }
         }
       }
     }
 
     @Override
-    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, AdhocByteCodeCommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, AdHocByteCodeCommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list248 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.arguments = new ArrayList<Value>(_list248.size);
-          for (int _i249 = 0; _i249 < _list248.size; ++_i249)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set253 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.tablesToInvoke = new HashSet<String>(2*_set253.size);
+          for (int _i254 = 0; _i254 < _set253.size; ++_i254)
           {
-            Value _elem250; // required
-            _elem250 = new Value();
-            _elem250.read(iprot);
-            struct.arguments.add(_elem250);
+            String _elem255; // required
+            _elem255 = iprot.readString();
+            struct.tablesToInvoke.add(_elem255);
+          }
+        }
+        struct.setTablesToInvokeIsSet(true);
+      }
+      if (incoming.get(1)) {
+        {
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list256 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.arguments = new ArrayList<Value>(_list256.size);
+          for (int _i257 = 0; _i257 < _list256.size; ++_i257)
+          {
+            Value _elem258; // required
+            _elem258 = new Value();
+            _elem258.read(iprot);
+            struct.arguments.add(_elem258);
           }
         }
         struct.setArgumentsIsSet(true);
       }
-      if (incoming.get(1)) {
+      if (incoming.get(2)) {
         struct.instanceData = iprot.readBinary();
         struct.setInstanceDataIsSet(true);
       }
-      if (incoming.get(2)) {
+      if (incoming.get(3)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map251 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.classData = new HashMap<String,ByteBuffer>(2*_map251.size);
-          for (int _i252 = 0; _i252 < _map251.size; ++_i252)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map259 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.classData = new HashMap<String,ByteBuffer>(2*_map259.size);
+          for (int _i260 = 0; _i260 < _map259.size; ++_i260)
           {
-            String _key253; // optional
-            ByteBuffer _val254; // required
-            _key253 = iprot.readString();
-            _val254 = iprot.readBinary();
-            struct.classData.put(_key253, _val254);
+            String _key261; // optional
+            ByteBuffer _val262; // required
+            _key261 = iprot.readString();
+            _val262 = iprot.readBinary();
+            struct.classData.put(_key261, _val262);
           }
         }
         struct.setClassDataIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(4)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list255 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.libraries = new ArrayList<String>(_list255.size);
-          for (int _i256 = 0; _i256 < _list255.size; ++_i256)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list263 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+          struct.libraries = new ArrayList<String>(_list263.size);
+          for (int _i264 = 0; _i264 < _list263.size; ++_i264)
           {
-            String _elem257; // required
-            _elem257 = iprot.readString();
-            struct.libraries.add(_elem257);
+            String _elem265; // required
+            _elem265 = iprot.readString();
+            struct.libraries.add(_elem265);
           }
         }
         struct.setLibrariesIsSet(true);

@@ -49,15 +49,15 @@ import java.util.Arrays;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
-public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<AdhocByteCodeCommandResponse, AdhocByteCodeCommandResponse._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("AdhocByteCodeCommandResponse");
+public class AdHocByteCodeCommandResponse implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<AdHocByteCodeCommandResponse, AdHocByteCodeCommandResponse._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("AdHocByteCodeCommandResponse");
 
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RESULT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("result", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
-    schemes.put(StandardScheme.class, new AdhocByteCodeCommandResponseStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new AdhocByteCodeCommandResponseTupleSchemeFactory());
+    schemes.put(StandardScheme.class, new AdHocByteCodeCommandResponseStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new AdHocByteCodeCommandResponseTupleSchemeFactory());
   }
 
   public Value result; // required
@@ -127,13 +127,13 @@ public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.
     tmpMap.put(_Fields.RESULT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("result", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Value.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(AdhocByteCodeCommandResponse.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(AdHocByteCodeCommandResponse.class, metaDataMap);
   }
 
-  public AdhocByteCodeCommandResponse() {
+  public AdHocByteCodeCommandResponse() {
   }
 
-  public AdhocByteCodeCommandResponse(
+  public AdHocByteCodeCommandResponse(
     Value result)
   {
     this();
@@ -143,14 +143,14 @@ public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public AdhocByteCodeCommandResponse(AdhocByteCodeCommandResponse other) {
+  public AdHocByteCodeCommandResponse(AdHocByteCodeCommandResponse other) {
     if (other.isSetResult()) {
       this.result = new Value(other.result);
     }
   }
 
-  public AdhocByteCodeCommandResponse deepCopy() {
-    return new AdhocByteCodeCommandResponse(this);
+  public AdHocByteCodeCommandResponse deepCopy() {
+    return new AdHocByteCodeCommandResponse(this);
   }
 
   @Override
@@ -162,7 +162,7 @@ public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.
     return this.result;
   }
 
-  public AdhocByteCodeCommandResponse setResult(Value result) {
+  public AdHocByteCodeCommandResponse setResult(Value result) {
     this.result = result;
     return this;
   }
@@ -221,12 +221,12 @@ public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof AdhocByteCodeCommandResponse)
-      return this.equals((AdhocByteCodeCommandResponse)that);
+    if (that instanceof AdHocByteCodeCommandResponse)
+      return this.equals((AdHocByteCodeCommandResponse)that);
     return false;
   }
 
-  public boolean equals(AdhocByteCodeCommandResponse that) {
+  public boolean equals(AdHocByteCodeCommandResponse that) {
     if (that == null)
       return false;
 
@@ -247,13 +247,13 @@ public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.
     return 0;
   }
 
-  public int compareTo(AdhocByteCodeCommandResponse other) {
+  public int compareTo(AdHocByteCodeCommandResponse other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    AdhocByteCodeCommandResponse typedOther = (AdhocByteCodeCommandResponse)other;
+    AdHocByteCodeCommandResponse typedOther = (AdHocByteCodeCommandResponse)other;
 
     lastComparison = Boolean.valueOf(isSetResult()).compareTo(typedOther.isSetResult());
     if (lastComparison != 0) {
@@ -282,7 +282,7 @@ public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("AdhocByteCodeCommandResponse(");
+    StringBuilder sb = new StringBuilder("AdHocByteCodeCommandResponse(");
     boolean first = true;
 
     sb.append("result:");
@@ -320,15 +320,15 @@ public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.
     }
   }
 
-  private static class AdhocByteCodeCommandResponseStandardSchemeFactory implements SchemeFactory {
-    public AdhocByteCodeCommandResponseStandardScheme getScheme() {
-      return new AdhocByteCodeCommandResponseStandardScheme();
+  private static class AdHocByteCodeCommandResponseStandardSchemeFactory implements SchemeFactory {
+    public AdHocByteCodeCommandResponseStandardScheme getScheme() {
+      return new AdHocByteCodeCommandResponseStandardScheme();
     }
   }
 
-  private static class AdhocByteCodeCommandResponseStandardScheme extends StandardScheme<AdhocByteCodeCommandResponse> {
+  private static class AdHocByteCodeCommandResponseStandardScheme extends StandardScheme<AdHocByteCodeCommandResponse> {
 
-    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, AdhocByteCodeCommandResponse struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, AdHocByteCodeCommandResponse struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -358,7 +358,7 @@ public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.
       struct.validate();
     }
 
-    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, AdhocByteCodeCommandResponse struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, AdHocByteCodeCommandResponse struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -373,16 +373,16 @@ public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.
 
   }
 
-  private static class AdhocByteCodeCommandResponseTupleSchemeFactory implements SchemeFactory {
-    public AdhocByteCodeCommandResponseTupleScheme getScheme() {
-      return new AdhocByteCodeCommandResponseTupleScheme();
+  private static class AdHocByteCodeCommandResponseTupleSchemeFactory implements SchemeFactory {
+    public AdHocByteCodeCommandResponseTupleScheme getScheme() {
+      return new AdHocByteCodeCommandResponseTupleScheme();
     }
   }
 
-  private static class AdhocByteCodeCommandResponseTupleScheme extends TupleScheme<AdhocByteCodeCommandResponse> {
+  private static class AdHocByteCodeCommandResponseTupleScheme extends TupleScheme<AdHocByteCodeCommandResponse> {
 
     @Override
-    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, AdhocByteCodeCommandResponse struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, AdHocByteCodeCommandResponse struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetResult()) {
@@ -395,7 +395,7 @@ public class AdhocByteCodeCommandResponse implements org.apache.blur.thirdparty.
     }
 
     @Override
-    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, AdhocByteCodeCommandResponse struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, AdHocByteCodeCommandResponse struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {

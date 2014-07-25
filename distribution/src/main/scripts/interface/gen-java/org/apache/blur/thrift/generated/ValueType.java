@@ -30,6 +30,9 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.blur.thirdparty.thrift_0_9_0.TEnum;
 
+/**
+ * The type of the value, this determines how the bytes are interpreted.
+ */
 public enum ValueType implements org.apache.blur.thirdparty.thrift_0_9_0.TEnum {
   STRING(0),
   INTEGER(1),

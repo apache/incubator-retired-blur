@@ -8,8 +8,12 @@
 //HELPER FUNCTIONS AND STRUCTURES
 
 BlurPlatform_execute_args = function(args) {
+  this.cluster = null;
   this.request = null;
   if (args) {
+    if (args.cluster !== undefined) {
+      this.cluster = args.cluster;
+    }
     if (args.request !== undefined) {
       this.request = args.request;
     }
@@ -30,6 +34,13 @@ BlurPlatform_execute_args.prototype.read = function(input) {
     switch (fid)
     {
       case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.cluster = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
       if (ftype == Thrift.Type.STRUCT) {
         this.request = new BlurCommandRequest();
         this.request.read(input);
@@ -37,9 +48,6 @@ BlurPlatform_execute_args.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
-      case 0:
-        input.skip(ftype);
-        break;
       default:
         input.skip(ftype);
     }
@@ -51,8 +59,13 @@ BlurPlatform_execute_args.prototype.read = function(input) {
 
 BlurPlatform_execute_args.prototype.write = function(output) {
   output.writeStructBegin('BlurPlatform_execute_args');
+  if (this.cluster !== null && this.cluster !== undefined) {
+    output.writeFieldBegin('cluster', Thrift.Type.STRING, 1);
+    output.writeString(this.cluster);
+    output.writeFieldEnd();
+  }
   if (this.request !== null && this.request !== undefined) {
-    output.writeFieldBegin('request', Thrift.Type.STRUCT, 1);
+    output.writeFieldBegin('request', Thrift.Type.STRUCT, 2);
     this.request.write(output);
     output.writeFieldEnd();
   }
@@ -139,14 +152,15 @@ BlurPlatformClient = function(input, output) {
     this.seqid = 0;
 };
 BlurPlatformClient.prototype = {};
-BlurPlatformClient.prototype.execute = function(request) {
-  this.send_execute(request);
+BlurPlatformClient.prototype.execute = function(cluster, request) {
+  this.send_execute(cluster, request);
   return this.recv_execute();
 };
 
-BlurPlatformClient.prototype.send_execute = function(request) {
+BlurPlatformClient.prototype.send_execute = function(cluster, request) {
   this.output.writeMessageBegin('execute', Thrift.MessageType.CALL, this.seqid);
   var args = new BlurPlatform_execute_args();
+  args.cluster = cluster;
   args.request = request;
   args.write(this.output);
   this.output.writeMessageEnd();

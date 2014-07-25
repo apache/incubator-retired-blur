@@ -49,6 +49,9 @@ import java.util.Arrays;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
+/**
+ * Value carries serialized values.
+ */
 public class Value implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Value, Value._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("Value");
 

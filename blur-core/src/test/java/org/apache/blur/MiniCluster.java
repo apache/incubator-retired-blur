@@ -61,6 +61,7 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkMiniCluster;
 import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.hadoop.conf.Configuration;
@@ -123,6 +124,7 @@ public class MiniCluster {
   }
 
   public void startBlurCluster(String path, int controllerCount, int shardCount, boolean randomPort) {
+    MemoryReporter.enable();
     startDfs(path + "/hdfs");
     startZooKeeper(path + "/zk", randomPort);
     setupBuffers();

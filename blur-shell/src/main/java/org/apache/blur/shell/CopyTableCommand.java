@@ -141,14 +141,14 @@ public class CopyTableCommand extends Command {
       if (cmd.hasOption("h")) {
         HelpFormatter formatter = new HelpFormatter();
         PrintWriter pw = new PrintWriter(out, true);
-        formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "create", null, options,
+        formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "copy", null, options,
             HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null, false);
         return null;
       }
     } catch (ParseException e) {
       HelpFormatter formatter = new HelpFormatter();
       PrintWriter pw = new PrintWriter(out, true);
-      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "create", null, options,
+      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "copy", null, options,
           HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null, false);
       return null;
     }

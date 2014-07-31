@@ -21,8 +21,7 @@ import java.util.Map;
 
 public interface DistributedLayoutFactory {
 
-  DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> shardServerList,
-      List<String> offlineShardServers);
+  DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> onlineShardServerList);
   
   DistributedLayout readCurrentLayout(String table);
 

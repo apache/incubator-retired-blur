@@ -39,6 +39,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_HTTP_STATUS_RUNNING_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
@@ -84,7 +85,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
       ReporterSetup.setupReporters(configuration);
       MemoryReporter.enable();
       setupJvmMetrics();
-      ThriftServer server = createServer(serverIndex, configuration, false);
+      ThriftServer server = createServer(serverIndex, configuration);
       server.start();
     } catch (Throwable t) {
       t.printStackTrace();
@@ -92,25 +93,25 @@ public class ThriftBlurControllerServer extends ThriftServer {
     }
   }
 
-  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort)
-      throws Exception {
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
-    int bindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
-    bindPort += serverIndex;
-    if (randomPort) {
-      bindPort = 0;
+    int configBindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
+    int instanceBindPort = configBindPort + serverIndex;
+    if (configBindPort == 0) {
+      instanceBindPort = 0;
     }
-    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress, bindPort);
-    if (randomPort) {
-      bindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
+    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress,
+        instanceBindPort);
+    if (configBindPort == 0) {
+      instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
     }
 
-    LOG.info("Controller Server using index [{0}] bind address [{1}] random port assignment [{2}]", serverIndex,
-        bindAddress + ":" + bindPort, randomPort);
+    LOG.info("Controller Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":"
+        + instanceBindPort);
 
     String nodeName = getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
-    nodeName = nodeName + ":" + bindPort;
+    nodeName = nodeName + ":" + instanceBindPort;
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
@@ -171,13 +172,18 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setAcceptQueueSizePerThread(configuration.getInt(BLUR_CONTROLLER_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD, 4));
     server.setMaxReadBufferBytes(configuration.getLong(BLUR_CONTROLLER_THRIFT_MAX_READ_BUFFER_BYTES, Long.MAX_VALUE));
     server.setSelectorThreads(configuration.getInt(BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS, 2));
-    server.setMaxFrameSize(configuration.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, 16384000));
+    server.setMaxFrameSize(configuration.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE));
 
-    int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));
+    int configGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));
+    int instanceGuiPort = configGuiPort + serverIndex;
+
+    if (configGuiPort == 0) {
+      instanceGuiPort = 0;
+    }
+
     final HttpJettyServer httpServer;
-    if (baseGuiPort >= 0) {
-      int webServerPort = baseGuiPort + serverIndex;
-      httpServer = new HttpJettyServer(HttpJettyServer.class, webServerPort);
+    if (configGuiPort >= 0) {
+      httpServer = new HttpJettyServer(HttpJettyServer.class, instanceGuiPort);
       int port = httpServer.getLocalPort();
       configuration.setInt(BLUR_HTTP_STATUS_RUNNING_PORT, port);
     } else {

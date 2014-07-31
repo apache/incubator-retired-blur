@@ -2,6 +2,7 @@ package org.apache.blur.thrift;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
+
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
@@ -16,6 +17,11 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
+
+import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -23,11 +29,19 @@ import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.commands.BlurCommand;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.zookeeper.ZkUtils;
+import org.apache.blur.zookeeper.ZookeeperPathConstants;
+import org.apache.commons.lang.StringUtils;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
+
+
 
 public class BlurClient {
 
@@ -77,6 +91,20 @@ public class BlurClient {
     }
 
   }
+  
+  public static Iface getClient() {
+	try {
+	  return getClient(new BlurConfiguration());
+	} catch (IOException e) {
+		throw new RuntimeException("Unable to load configurations.", e);
+	}
+  }
+  
+  public static Iface getClient(BlurConfiguration conf) {
+	List<String> onlineControllers = getOnlineControllers(conf);
+	  
+	return getClient(StringUtils.join(onlineControllers, ","));
+  }
 
   /**
    * Returns a client interface to Blur based on the connectionStr.
@@ -122,6 +150,23 @@ public class BlurClient {
   public static Iface getClient(List<Connection> connections, int maxRetries, long backOffTime, long maxBackOffTime) {
     return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
         new BlurClientInvocationHandler(connections, maxRetries, backOffTime, maxBackOffTime));
+  }
+  
+  private static List<String> getOnlineControllers(BlurConfiguration conf) {
+	  String zkConn = conf.getExpected(BLUR_ZOOKEEPER_CONNECTION);
+	  int zkSessionTimeout = conf.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
+	  
+	  ZooKeeper zkClient = null;
+	  try {
+		  zkClient = ZkUtils.newZooKeeper(zkConn, zkSessionTimeout);
+		  return zkClient.getChildren(ZookeeperPathConstants.getOnlineControllersPath(), false);
+	  } catch (KeeperException e) {
+		  throw new RuntimeException("Error communicating with Zookeeper", e);
+	  } catch (InterruptedException e) {
+		  throw new RuntimeException("Error communicating with Zookeeper", e);
+	  } catch (IOException e) {
+		  throw new RuntimeException("Unable to initialize Zookeeper", e);
+	  }
   }
 
 }

@@ -42,7 +42,6 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ClusterStatus.Action;
-import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexReadOnly;
@@ -60,6 +59,7 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
+import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
@@ -140,7 +140,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     _internalSearchThreads = internalSearchThreads;
     _warmupThreads = warmupThreads;
     _blockCacheDirectoryFactory = blockCacheDirectoryFactory;
-    _distributedLayoutFactory = distributedLayoutFactory == null ? getDefaultLayoutFactory() : distributedLayoutFactory;
+    _distributedLayoutFactory = distributedLayoutFactory;
 
     _closer.register(_shardStateManager);
 
@@ -202,33 +202,6 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       _watchOnlineShards.close();
       _timerTableWarmer.interrupt();
     }
-  }
-
-  private DistributedLayoutFactory getDefaultLayoutFactory() {
-    return new DistributedLayoutFactory() {
-
-      @Override
-      public DistributedLayout createDistributedLayout(String table, List<String> shardList,
-          List<String> shardServerList, List<String> offlineShardServers) {
-        DistributedLayoutManager layoutManager = new DistributedLayoutManager();
-        layoutManager.setNodes(shardServerList);
-        layoutManager.setNodesOffline(offlineShardServers);
-        layoutManager.setShards(shardList);
-        layoutManager.init();
-        return layoutManager;
-      }
-
-      @Override
-      public DistributedLayout readCurrentLayout(String table) {
-        throw new RuntimeException("Not implemented");
-      }
-
-      @Override
-      public Map<String, ?> getLayoutCache() {
-        throw new RuntimeException("Not implemented");
-      }
-
-    };
   }
 
   public static interface ReleaseReader {
@@ -677,8 +650,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     if (cluster == null) {
       throw new RuntimeException("Table [" + table + "] is not found.");
     }
-    List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
-    List<String> offlineShardServers = new ArrayList<String>(_clusterStatus.getOfflineShardServers(false, cluster));
+    List<String> onlineShardServerList = _clusterStatus.getOnlineShardServers(false, cluster);
     List<String> shardList = getShardList(table);
 
     String shutdownPath = ZookeeperPathConstants.getShutdownPath(cluster);
@@ -688,7 +660,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     DistributedLayout layoutManager = _distributedLayoutFactory.createDistributedLayout(table, shardList,
-        shardServerList, offlineShardServers);
+        onlineShardServerList);
 
     Map<String, String> layout = layoutManager.getLayout();
     String nodeName = getNodeName();

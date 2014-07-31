@@ -1,4 +1,4 @@
-package org.apache.blur.manager.clusterstatus;
+package org.apache.blur.zookeeper;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more

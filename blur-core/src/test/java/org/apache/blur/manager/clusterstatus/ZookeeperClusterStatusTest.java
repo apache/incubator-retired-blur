@@ -35,6 +35,7 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
+import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;

@@ -46,6 +46,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_SELECTOR_THR
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_WARMUP_DISABLED;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_WARMUP_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
@@ -121,7 +122,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       setupJvmMetrics();
       // make this configurable
       GCWatcher.init(0.75);
-      ThriftServer server = createServer(serverIndex, configuration, false);
+      ThriftServer server = createServer(serverIndex, configuration);
       server.start();
     } catch (Throwable t) {
       t.printStackTrace();
@@ -129,32 +130,21 @@ public class ThriftBlurShardServer extends ThriftServer {
     }
   }
 
-  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration, boolean randomPort)
-      throws Exception {
+  public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
     Configuration config = new Configuration();
     TableContext.setSystemBlurConfiguration(configuration);
     TableContext.setSystemConfiguration(config);
 
     String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
-    int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);
-    bindPort += serverIndex;
-    if (randomPort) {
-      bindPort = 0;
+    int configBindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);
+    int instanceBindPort = configBindPort + serverIndex;
+    if (configBindPort == 0) {
+      instanceBindPort = 0;
     }
-    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress, bindPort);
-    if (randomPort) {
-      bindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
-    }
-
-    int baseGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
-    final HttpJettyServer httpServer;
-    if (baseGuiPort > 0) {
-      int webServerPort = baseGuiPort + serverIndex;
-      httpServer = new HttpJettyServer(HttpJettyServer.class, webServerPort);
-      int port = httpServer.getLocalPort();
-      configuration.setInt(BLUR_HTTP_STATUS_RUNNING_PORT, port);
-    } else {
-      httpServer = null;
+    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress,
+        instanceBindPort);
+    if (configBindPort == 0) {
+      instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
     }
 
     Set<Entry<String, String>> set = configuration.getProperties().entrySet();
@@ -180,11 +170,10 @@ public class ThriftBlurShardServer extends ThriftServer {
     } else {
       throw new RuntimeException("Unknown block cache version [" + blockCacheVersion + "] can be [v1,v2]");
     }
-    LOG.info("Shard Server using index [{0}] bind address [{1}] random port assignment [{2}]", serverIndex, bindAddress
-        + ":" + bindPort, randomPort);
+    LOG.info("Shard Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":" + instanceBindPort);
 
     String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
-    String nodeName = nodeNameHostName + ":" + bindPort;
+    String nodeName = nodeNameHostName + ":" + instanceBindPort;
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
@@ -258,6 +247,22 @@ public class ThriftBlurShardServer extends ThriftServer {
     iface = BlurUtil.runWithUser(iface, false);
     iface = BlurUtil.runTrace(iface, false);
     iface = BlurUtil.lastChanceErrorHandling(iface, Iface.class);
+
+    int configGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_SHARD_PORT));
+    int instanceGuiPort = configGuiPort + serverIndex;
+
+    if (configGuiPort == 0) {
+      instanceGuiPort = 0;
+    }
+
+    final HttpJettyServer httpServer;
+    if (configGuiPort >= 0) {
+      httpServer = new HttpJettyServer(HttpJettyServer.class, instanceGuiPort);
+      int port = httpServer.getLocalPort();
+      configuration.setInt(BLUR_HTTP_STATUS_RUNNING_PORT, port);
+    } else {
+      httpServer = null;
+    }
     if (httpServer != null) {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),
@@ -281,7 +286,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setAcceptQueueSizePerThread(configuration.getInt(BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD, 4));
     server.setMaxReadBufferBytes(configuration.getLong(BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES, Long.MAX_VALUE));
     server.setSelectorThreads(configuration.getInt(BLUR_SHARD_THRIFT_SELECTOR_THREADS, 2));
-    server.setMaxFrameSize(config.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, 16384000));
+    server.setMaxFrameSize(config.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE));
 
     // This will shutdown the server when the correct path is set in zk
     BlurShutdown shutdown = new BlurShutdown() {

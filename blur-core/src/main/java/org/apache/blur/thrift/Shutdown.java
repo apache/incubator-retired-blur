@@ -25,8 +25,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT
 import java.io.IOException;
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.zookeeper.ZkUtils;
+import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;

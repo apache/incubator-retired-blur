@@ -38,9 +38,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
+import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -105,11 +105,10 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   }
 
   @Override
-  public DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> shardServerList,
-      List<String> offlineShardServers) {
+  public DistributedLayout createDistributedLayout(String table, List<String> shardList, List<String> onlineShardServerList) {
     LOG.info("Creating layout for table [{0}]", table);
     MasterBasedDistributedLayout layout = _cachedLayoutMap.get(table);
-    List<String> onlineShardServerList = getOnlineShardServerList(shardServerList, offlineShardServers);
+    
     if (layout == null || layout.isOutOfDate(shardList, onlineShardServerList)) {
       LOG.info("Layout out of date, recalculating for table [{0}].", table);
       MasterBasedDistributedLayout newLayout = newLayout(table, shardList, onlineShardServerList);
@@ -121,11 +120,6 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
     }
   }
 
-  private List<String> getOnlineShardServerList(List<String> shardServerList, List<String> offlineShardServers) {
-    List<String> list = new ArrayList<String>(shardServerList);
-    list.removeAll(offlineShardServers);
-    return list;
-  }
 
   private MasterBasedDistributedLayout newLayout(String table, List<String> shardList,
       List<String> onlineShardServerList) {

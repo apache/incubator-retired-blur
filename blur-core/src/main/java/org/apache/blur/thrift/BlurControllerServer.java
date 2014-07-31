@@ -53,7 +53,6 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurPartitioner;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.IndexManager;
-import org.apache.blur.manager.clusterstatus.ZookeeperPathConstants;
 import org.apache.blur.manager.indexserver.DistributedLayout;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
@@ -100,6 +99,7 @@ import org.apache.blur.utils.ForkJoin;
 import org.apache.blur.utils.ForkJoin.Merger;
 import org.apache.blur.utils.ForkJoin.ParallelCall;
 import org.apache.blur.zookeeper.WatchChildren;
+import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeExistance;
 import org.apache.zookeeper.CreateMode;
@@ -273,7 +273,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private void setupZookeeper() throws KeeperException, InterruptedException {
     BlurUtil.createIfMissing(_zookeeper, "/blur");
     BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getOnlineControllersPath());
-    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getControllersPath());
     BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getClustersPath());
   }
 
@@ -387,20 +386,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   private void registerMyself() {
-    // Register Node
-    try {
-      String controllerPath = ZookeeperPathConstants.getControllersPath() + "/" + _nodeName;
-      if (_zookeeper.exists(controllerPath, false) == null) {
-        // Don't set the version for the registered nodes but only to the online
-        // nodes.
-        _zookeeper.create(controllerPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-      }
-    } catch (KeeperException e) {
-      throw new RuntimeException(e);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-
     // Wait for other instances (named the same name) to die
     try {
       String version = BlurUtil.getVersion();

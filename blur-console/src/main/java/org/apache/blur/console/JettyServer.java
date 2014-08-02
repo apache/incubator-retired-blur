@@ -36,7 +36,7 @@ public class JettyServer {
   private boolean devMode;
 
   private static final String DEV_WEBAPPDIR = "src/main/webapp/public/";
-  private static final String PROD_WEBAPPDIR = "webapp/public/";
+  private static final String PROD_WEBAPPDIR = "webapp/";
   private static final String CONTEXTPATH = "/console";
 
   private final Log log = LogFactory.getLog(JettyServer.class);

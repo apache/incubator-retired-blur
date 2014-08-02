@@ -19,7 +19,10 @@ package org.apache.blur.console.util;
 
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.console.providers.BaseProvider;
+import org.apache.blur.console.providers.AuthenticationDenied;
+import org.apache.blur.console.providers.EmptyAuthorization;
+import org.apache.blur.console.providers.IAuthenticationProvider;
+import org.apache.blur.console.providers.IAuthorizationProvider;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -49,8 +52,8 @@ public class Config {
   private static ZookeeperClusterStatus zk;
   private static String blurConnection;
   private static Object cluster;
-  private static Map<String, Map<String, String>> globalUserProperties;
-  private static BaseProvider provider;
+  private static IAuthenticationProvider authenticationProvider;
+  private static IAuthorizationProvider authorizationProvider;
 
   public static int getConsolePort() {
     return port;
@@ -71,8 +74,7 @@ public class Config {
     zk = new ZookeeperClusterStatus(blurConfig.get("blur.zookeeper.connection"), blurConfig);
     blurConnection = buildConnectionString();
     port = blurConfig.getInt("blur.console.port", DEFAULT_PORT);
-    parseSecurity();
-    setupProvider();
+    setupProviders();
   }
 
   private static void setDevelopmentZookeeperConnection() {
@@ -96,36 +98,41 @@ public class Config {
     }
   }
 
-  private static void parseSecurity() {
-    String securityFile = blurConfig.get("blur.console.security.file");
+  private static void setupProviders() throws Exception {
+    String authenticationProviderClassName = blurConfig.get("blur.console.authentication.provider", "org.apache.blur.console.providers.AllAuthenticated");
+    String authorizationProviderClassName = blurConfig.get("blur.console.authorization.provider");
 
-    if (securityFile != null) {
-      JsonFactory factory = new JsonFactory();
-      ObjectMapper mapper = new ObjectMapper(factory);
-      File from = new File(securityFile);
-      TypeReference<Map<String, Map<String, String>>> typeRef = new TypeReference<Map<String, Map<String, String>>>() {
-      };
 
-      try {
-        globalUserProperties = mapper.readValue(from, typeRef);
-      } catch (Exception e) {
-        log.error("Unable to parse security file.  Search may not work right.", e);
-        globalUserProperties = null;
+    Class authenticationProviderClass = Class.forName(authenticationProviderClassName, false, Config.class.getClassLoader());
+
+    if (authenticationProviderClass == null) {
+      authenticationProvider = new AuthenticationDenied();
+      log.error("Error in blur.console.authentication.provider: AuthenticationDenied");
+    } else {
+      authenticationProvider = (IAuthenticationProvider) authenticationProviderClass.newInstance();
+      log.info("Using " + authenticationProviderClassName + " for authentication");
+      if(authenticationProviderClassName.equals(authorizationProviderClassName)) {
+        log.info("authentication and authorization providers are the same, reusing");
+        authorizationProvider = (IAuthorizationProvider) authenticationProvider;
       }
     }
-  }
+    authenticationProvider.setupProvider(blurConfig);
 
-  private static void setupProvider() throws Exception {
-    String providerClassName = blurConfig.get("blur.console.auth.provider", "org.apache.blur.console.providers.AllAllowedProvider");
-
-
-    Class providerClass = Class.forName(providerClassName, false, Config.class.getClassLoader());
-
-    if (providerClass != null) {
-      provider = (BaseProvider) providerClass.newInstance();
-      provider.setupProvider(blurConfig);
+    if(authorizationProvider == null) {
+      if(authorizationProviderClassName != null) {
+        Class authorizationProviderClass = Class.forName(authorizationProviderClassName, false, Config.class.getClassLoader());
+        if (authorizationProviderClass == null) {
+          log.error("Error in blur.console.authorization.provider: EmptyAuthorization");
+          authorizationProvider = new EmptyAuthorization();
+        } else {
+          log.info("Using " + authorizationProviderClassName + " for authorization");
+          authorizationProvider = (IAuthorizationProvider) authorizationProviderClass.newInstance();
+        }
+      } else {
+        authorizationProvider = new EmptyAuthorization();
+      }
+      authorizationProvider.setupProvider(blurConfig);
     }
-
   }
 
   public static String getConnectionString() throws IOException {
@@ -178,11 +185,11 @@ public class Config {
     }
   }
 
-  public static Iface getClient(String username, String securityUser) throws IOException {
+  public static Iface getClient(org.apache.blur.console.model.User user, String securityUser) throws IOException {
     Iface client = BlurClient.getClient(getConnectionString());
-
-    if (globalUserProperties != null && globalUserProperties.get(securityUser) != null) {
-      UserContext.setUser(new User(username, globalUserProperties.get(securityUser)));
+    Map<String, String> securityAttributes = user.getSecurityAttributes(securityUser);
+    if(securityAttributes != null) {
+      UserContext.setUser(new User(user.getName(), securityAttributes));
     }
 
     return client;
@@ -192,16 +199,11 @@ public class Config {
     return cluster != null;
   }
 
-  public static BaseProvider getProvider() {
-    return provider;
+  public static IAuthenticationProvider getAuthenticationProvider() {
+    return authenticationProvider;
   }
 
-  public static Collection<String> getSecurityUserNames() {
-    if (globalUserProperties != null) {
-      return globalUserProperties.keySet();
-    } else {
-      return new ArrayList<String>();
-    }
-
+  public static IAuthorizationProvider getAuthorizationProvider() {
+    return authorizationProvider;
   }
 }

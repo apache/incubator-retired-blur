@@ -1,9 +1,10 @@
 package org.apache.blur.console.util;
 
 import org.apache.blur.console.model.ResultRow;
+import org.apache.blur.console.model.User;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.*;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.user.UserContext;
 import org.apache.commons.lang.StringUtils;
 
@@ -35,7 +36,7 @@ public class SearchUtil {
   private static final String ROW_ROW_OPTION = "rowrow";
   private static final String RECORD_RECORD_OPTION = "recordrecord";
 
-  public static Map<String, Object> search(Map<String, String[]> params, String remoteHost) throws IOException, TException {
+  public static Map<String, Object> search(Map<String, String[]> params, User user) throws IOException, TException {
     String table = HttpUtil.getFirstParam(params.get("table"));
     String query = HttpUtil.getFirstParam(params.get("query"));
     String rowQuery = HttpUtil.getFirstParam(params.get("rowRecordOption"));
@@ -45,16 +46,16 @@ public class SearchUtil {
     String securityUser = HttpUtil.getFirstParam(params.get("securityUser"));
 
     if (query.indexOf("rowid:") >= 0) {
-      return fetchRow(table, query, families, remoteHost, securityUser);
+      return fetchRow(table, query, families, user, securityUser);
     }
 
-    return searchAndFetch(table, query, rowQuery, start, fetch, families, remoteHost, securityUser);
+    return searchAndFetch(table, query, rowQuery, start, fetch, families, user, securityUser);
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families, String remoteHost, String securityUser) throws IOException, TException {
+  private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families, User user, String securityUser) throws IOException, TException {
     try {
-      Iface client = Config.getClient(remoteHost, securityUser);
+      Iface client = Config.getClient(user, securityUser);
 
       boolean recordsOnly = RECORD_RECORD_OPTION.equalsIgnoreCase(rowQuery);
 
@@ -64,7 +65,7 @@ public class SearchUtil {
       blurQuery.setQuery(q);
       blurQuery.setStart(Long.parseLong(start));
       blurQuery.setFetch(Integer.parseInt(fetch));
-      blurQuery.setUserContext(remoteHost);
+      blurQuery.setUserContext(user.getName());
 
       Selector s = new Selector();
       s.setRecordOnly(recordsOnly);
@@ -119,15 +120,15 @@ public class SearchUtil {
     }
   }
 
-  private static Map<String, Object> fullTextSearch(String table, String query, String remoteHost, String securityUser) throws IOException, TException {
+  private static Map<String, Object> fullTextSearch(String table, String query, User user, String securityUser) throws IOException, TException {
     try {
-      Iface client = Config.getClient(remoteHost, securityUser);
+      Iface client = Config.getClient(user, securityUser);
 
       BlurQuery blurQuery = new BlurQuery();
 
       Query q = new Query(query, true, ScoreType.SUPER, null, null);
       blurQuery.setQuery(q);
-      blurQuery.setUserContext(remoteHost);
+      blurQuery.setUserContext(user.getName());
       BlurResults blurResults = client.query(table, blurQuery);
 
       Map<String, Object> results = new HashMap<String, Object>();
@@ -139,9 +140,9 @@ public class SearchUtil {
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
-  private static Map<String, Object> fetchRow(String table, String query, String[] families, String remoteHost, String securityUser) throws IOException, TException {
+  private static Map<String, Object> fetchRow(String table, String query, String[] families, User user, String securityUser) throws IOException, TException {
     try {
-      Iface client = Config.getClient(remoteHost, securityUser);
+      Iface client = Config.getClient(user, securityUser);
 
       Selector selector = new Selector();
       String rowid = StringUtils.remove(query, "rowid:");

@@ -33,8 +33,7 @@ blurconsole.model = (function() {
       queryPerformance : [],
       queries : {},
       errors: [],
-      schema: {},
-      securityUserNames: null
+      schema: {}
     };
 
   //----------------------- Models ----------------------------------
@@ -493,23 +492,6 @@ blurconsole.model = (function() {
     };
   }());
 
-  var security = (function() {
-    function userNames(callback) {
-      if(stateMap.securityUserNames) {
-        callback(stateMap.securityUserNames);
-      } else {
-        configMap.poller.getSecurityUserNames(function(data) {
-          stateMap.securityUserNames = data;
-          callback(data);
-        });
-      }
-    }
-
-    return {
-      userNames: userNames
-    };
-  }());
-
   //----------------------- Private Methods -------------------------
   function _nodePoller() {
     configMap.poller.getNodeList(_updateNodes);
@@ -591,7 +573,6 @@ blurconsole.model = (function() {
     nodes : nodes,
     queries : queries,
     search : search,
-    logs: logs,
-    security: security
+    logs: logs
   };
 }());

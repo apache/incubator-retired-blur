@@ -32,10 +32,10 @@ import java.util.*;
 
 /**
  * Provider that reads from a tomcat-users.xml file
- * config blur.console.auth.provider.tomcat.usersfile to point to the xml file
+ * config blur.console.authentication.provider.tomcat.usersfile to point to the xml file
  * This file gets read once at startup
  */
-public class TomcatUsersProvider extends BaseProvider {
+public class TomcatUsers implements IAuthenticationProvider {
 
   private static class TomcatUser extends User {
 
@@ -53,6 +53,7 @@ public class TomcatUsersProvider extends BaseProvider {
   }
 
   private Map<String, TomcatUser> users = new HashMap<String, TomcatUser>();
+  private RoleMapper roleMapper;
 
   @Override
   public User login(HttpServletRequest request) {
@@ -71,8 +72,9 @@ public class TomcatUsersProvider extends BaseProvider {
   }
 
   @Override
-  protected void setupProviderInternal(BlurConfiguration config) throws IOException, JDOMException {
-    String usersFile = config.get("blur.console.auth.provider.tomcat.usersfile");
+  public void setupProvider(BlurConfiguration config) throws IOException, JDOMException {
+    roleMapper = new RoleMapper(config);
+    String usersFile = config.get("blur.console.authentication.provider.tomcat.usersfile");
     SAXBuilder builder = new SAXBuilder();
     Reader in = new FileReader(usersFile);
     Document doc = builder.build(in);
@@ -83,7 +85,7 @@ public class TomcatUsersProvider extends BaseProvider {
       String password = user.getAttribute("password").getValue();
       String roles = user.getAttribute("roles").getValue();
       Collection<String> splitRoles = Arrays.asList(roles.split(","));
-      users.put(username, new TomcatUser(username, password, mapRoles(splitRoles)));
+      users.put(username, new TomcatUser(username, password, roleMapper.mapRoles(splitRoles)));
     }
   }
 

@@ -18,6 +18,7 @@ package org.apache.blur.console.model;
  */
 
 import java.util.Collection;
+import java.util.Map;
 
 public class User {
 
@@ -30,6 +31,8 @@ public class User {
   protected String email;
 
   protected Collection<String> roles;
+
+  protected Map<String, Map<String, String>> securityAttributesMap;
 
   public String getName() {
     return name;
@@ -56,6 +59,27 @@ public class User {
       }
     }
     return false;
+  }
+
+  public void setSecurityAttributesMap(Map<String, Map<String, String>> securityAttributesMap) {
+    this.securityAttributesMap = securityAttributesMap;
+  }
+
+  public Collection<String> getSecurityNames() {
+    if(securityAttributesMap == null) {
+      return null;
+    }
+    return securityAttributesMap.keySet();
+  }
+
+  public Map<String,String> getSecurityAttributes(String name) {
+    if(securityAttributesMap == null || securityAttributesMap.isEmpty()) {
+      return null;
+    }
+    if(securityAttributesMap.size() == 1) {
+      return securityAttributesMap.values().iterator().next();
+    }
+    return securityAttributesMap.get(name);
   }
 
 }

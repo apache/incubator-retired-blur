@@ -120,14 +120,6 @@ blurconsole.data = (function() {
     });
   }
 
-  function getSecurityUserNames(callback) {
-    $.getJSON('/service/auth/securityUsers', function(data) {
-      callback(data.securityUserNames);
-    }).fail(function(xhr) {
-      _handleError(xhr, 'securityUsers');
-    });
-  }
-
   return {
     getTableList : getTableList,
     getNodeList : getNodeList,
@@ -139,7 +131,6 @@ blurconsole.data = (function() {
     deleteTable : deleteTable,
     getSchema : getSchema,
     findTerms : findTerms,
-    sendSearch : sendSearch,
-    getSecurityUserNames : getSecurityUserNames
+    sendSearch : sendSearch
   };
 }());

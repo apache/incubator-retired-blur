@@ -21,7 +21,7 @@ under the License.
 blurconsole.auth = (function() {
   'use strict';
 
-  var username, roles, fakeIt, container, loginDiv;
+  var username, roles, securityNames, fakeIt, container, loginDiv;
 
   //------------------- Private methods --------------------------
 
@@ -39,6 +39,7 @@ blurconsole.auth = (function() {
           if(data.user) {
             username = data.user.name;
             roles = data.user.roles;
+            securityNames = data.user.securityNames;
           }
           container.trigger('userLoggedIn');
         } else {
@@ -105,10 +106,15 @@ blurconsole.auth = (function() {
     return roles;
   }
 
+  function getSecurityNames() {
+    return securityNames;
+  }
+
   return {
     initModule: initModule,
     getUsername: getUsername,
     hasRole: hasRole,
-    getRoles: getRoles
+    getRoles: getRoles,
+    getSecurityNames: getSecurityNames
   };
 }());

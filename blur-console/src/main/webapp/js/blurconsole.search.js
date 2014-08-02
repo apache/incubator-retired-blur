@@ -243,17 +243,16 @@ blurconsole.search = (function () {
     }
     var user = $('#user');
     if (user.length > 0) {
-      blurconsole.model.security.userNames(function(names) {
-        if(names.length === 0) {
-          user.closest('.form-group').remove();
-        } else {
-          user.append('<option value=""></option>');
-          $.each(names, function(index, name) {
-            user.append('<option>'+name+'</option>');
-          });
-          user.val(stateMap.$userOption);
-        }
-      });
+      var names = blurconsole.auth.getSecurityNames();
+      if(names == null || names.length <= 1) {
+        user.closest('.form-group').remove();
+      } else {
+        user.append('<option value=""></option>');
+        $.each(names, function(index, name) {
+          user.append('<option>'+name+'</option>');
+        });
+        user.val(stateMap.$userOption);
+      }
     }
   }
 

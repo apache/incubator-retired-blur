@@ -57,16 +57,21 @@ public abstract class BaseConsoleServlet extends HttpServlet {
   }
 
   protected void authorize(HttpServletRequest request, String... roles) {
-    HttpSession session = request.getSession();
-    User user = (User) session.getAttribute("user");
-    if(user == null) {
-      throw new UnauthorizedException();
-    }
+    User user = currentUser(request);
     for(String role: roles) {
       if(user.hasRole(role)){
         return;
       }
     }
     throw new ForbiddenException();
+  }
+
+  protected User currentUser(HttpServletRequest request) {
+    HttpSession session = request.getSession();
+    User user = (User) session.getAttribute("user");
+    if(user == null) {
+      throw new UnauthorizedException();
+    }
+    return user;
   }
 }

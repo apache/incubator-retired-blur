@@ -45,11 +45,10 @@ public class SearchServlet extends BaseConsoleServlet {
 
   private void search(HttpServletRequest req, HttpServletResponse res) throws IOException {
     authorize(req, User.SEARCHER_ROLE);
-    Map<String, String[]> params =req.getParameterMap();
-    String remoteHost =req.getRemoteHost();
+    Map<String, String[]> params = req.getParameterMap();
     Map<String, Object> results = new HashMap<String, Object>();
     try {
-      results = SearchUtil.search(params, remoteHost);
+      results = SearchUtil.search(params, currentUser(req));
     } catch (IOException e) {
       throw new IOException(e);
     } catch (Exception e) {

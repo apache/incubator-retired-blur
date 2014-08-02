@@ -7,9 +7,9 @@ package org.apache.blur.console.providers;
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,26 +20,8 @@ package org.apache.blur.console.providers;
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.console.model.User;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
-import java.util.List;
+public interface IAuthorizationProvider {
+  void setupProvider(BlurConfiguration config) throws Exception;
 
-public class AllAllowedProvider extends BaseProvider {
-  private static class AllAllowedUser extends User {
-
-    private String password;
-
-    public AllAllowedUser() {
-      this.name = "User";
-      this.roles = Arrays.asList(ADMIN_ROLE);
-    }
-
-    private boolean checkPassword(String passwd) {
-      return password.equals(passwd);
-    }
-  }
-  @Override
-  public User login(HttpServletRequest request) {
-    return new AllAllowedUser();
-  }
+  void setUserSecurityAttributes(User user);
 }

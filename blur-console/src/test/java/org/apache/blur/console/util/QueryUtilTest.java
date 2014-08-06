@@ -64,9 +64,9 @@ public class QueryUtilTest extends ConsoleTestBase {
         null,
         null, //new Selector(false, null, null, null, null, null, 0, 10, null),
         false, 0, 10, 1, 2000, UUID.randomUUID().toString(), "testUser", false, System.currentTimeMillis(), null, null);
+    int currentCount = QueryUtil.getCurrentQueryCount();
     client.query("queryUnitTable", query);
-
-    assertEquals(1, QueryUtil.getCurrentQueryCount());
+    assertEquals(currentCount + 1, QueryUtil.getCurrentQueryCount());
   }
 
   @SuppressWarnings("unchecked")
@@ -78,12 +78,20 @@ public class QueryUtilTest extends ConsoleTestBase {
         null,
         null, //new Selector(false, null, null, null, null, null, 0, 10, null),
         false, 0, 10, 1, 2000, UUID.randomUUID().toString(), "testUser", false, System.currentTimeMillis(), null, null);
+    int currentCount = 0;
+    {
+      Map<String, Object> queries = QueryUtil.getQueries();
+      Object o = queries.get("queries");
+      if (o != null) {
+        currentCount = ((List<Map<String, Object>>) o).size();
+      }
+    }
     client.query("queryUnitTable", query);
 
     Map<String, Object> queries = QueryUtil.getQueries();
 
     assertEquals(0, queries.get("slowQueries"));
-    assertEquals(2, ((List<Map<String, Object>>) queries.get("queries")).size());
+    assertEquals(currentCount + 1, ((List<Map<String, Object>>) queries.get("queries")).size());
     assertEquals("testUser", ((List<Map<String, Object>>) queries.get("queries")).get(0).get("user"));
   }
 }

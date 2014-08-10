@@ -27,6 +27,7 @@ import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.util.BytesRef;
 
 public class StoredFieldTypeDefinition extends FieldTypeDefinition {
 
@@ -103,5 +104,10 @@ public class StoredFieldTypeDefinition extends FieldTypeDefinition {
   @Override
   public SortField getSortField(boolean reverse) {
     throw new RuntimeException("Sort not supported.");
+  }
+  
+  @Override
+  public String readTerm(BytesRef byteRef) {
+	return byteRef.utf8ToString();
   }
 }

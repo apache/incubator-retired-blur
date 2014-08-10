@@ -27,6 +27,8 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.NumericUtils;
 
 public class LongFieldTypeDefinition extends NumericFieldTypeDefinition {
 
@@ -101,6 +103,13 @@ public class LongFieldTypeDefinition extends NumericFieldTypeDefinition {
     } else {
       return Long.parseLong(number);
     }
+  }
+
+  @Override
+  public String readTerm(BytesRef byteRef) {
+	  if(NumericUtils.getPrefixCodedLongShift(byteRef) == 0)
+		  return Long.toString(NumericUtils.getPrefixCodedLongShift(byteRef));
+	  return null;
   }
 
 }

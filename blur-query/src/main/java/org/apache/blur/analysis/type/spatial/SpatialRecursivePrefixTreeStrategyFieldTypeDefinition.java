@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.spatial.query.SpatialOperation;
+import org.apache.lucene.util.BytesRef;
 
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Shape;
@@ -48,4 +49,8 @@ public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinition extends BaseS
     addSupportedOperations(SpatialOperation.Contains);
   }
 
+  @Override
+  public String readTerm(BytesRef byteRef) {
+	return byteRef.utf8ToString();
+  }
 }

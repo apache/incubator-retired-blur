@@ -35,6 +35,8 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
+import org.apache.lucene.util.BytesRef;
+import org.apache.lucene.util.NumericUtils;
 
 public class DateFieldTypeDefinition extends NumericFieldTypeDefinition {
 
@@ -128,4 +130,10 @@ public class DateFieldTypeDefinition extends NumericFieldTypeDefinition {
     return new SortField(getFieldName(), Type.LONG);
   }
 
+  @Override
+  public String readTerm(BytesRef byteRef) {
+	  if(NumericUtils.getPrefixCodedLongShift(byteRef) == 0)
+		  return _simpleDateFormat.get().format(new Date(NumericUtils.getPrefixCodedLongShift(byteRef)));
+	  return null;
+  }
 }

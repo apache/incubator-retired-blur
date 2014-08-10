@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.spatial.prefix.TermQueryPrefixTreeStrategy;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.spatial.query.SpatialOperation;
+import org.apache.lucene.util.BytesRef;
 
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Point;
@@ -43,5 +44,10 @@ public class SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition extends BaseS
     _shapeReadWriter = new ShapeReadWriter<SpatialContext>(_ctx);
     addSupportedIndexedShapes(Point.class);
     addSupportedOperations(SpatialOperation.Intersects);
+  }
+  
+  @Override
+  public String readTerm(BytesRef byteRef) {
+	return byteRef.utf8ToString();
   }
 }

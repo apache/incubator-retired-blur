@@ -1034,7 +1034,6 @@ public class IndexManager {
     do {
     	
       String readTerm = typeDef.readTerm(currentTermText);
-      System.out.println("Read term: " + readTerm);
       if(readTerm != null)
     	  terms.add(readTerm);
       if (terms.size() >= size) {

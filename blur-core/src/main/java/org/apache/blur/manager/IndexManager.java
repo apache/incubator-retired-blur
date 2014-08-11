@@ -1029,7 +1029,7 @@ public class IndexManager {
 
     termEnum.seekCeil(term.bytes());
 
-		BytesRef currentTermText = termEnum.term();
+    BytesRef currentTermText = termEnum.term();
     do {
 
       String readTerm = typeDef.readTerm(currentTermText);

@@ -976,9 +976,8 @@ public class IndexManager {
     
     TableContext tableContext = getTableContext(table);
     FieldManager fieldManager = tableContext.getFieldManager();
-    //TODO: isn't there a util or something available to concat these?
+    // TODO: isn't there a util or something available to concat these?
     final FieldTypeDefinition typeDefinition = fieldManager.getFieldTypeDefinition(columnFamily + "." + columnName);
-
     
     return ForkJoin.execute(_executor, blurIndexes.entrySet(),
         new ParallelCall<Entry<String, BlurIndex>, List<String>>() {
@@ -1030,12 +1029,12 @@ public class IndexManager {
 
     termEnum.seekCeil(term.bytes());
 
-    BytesRef currentTermText = termEnum.term();
+		BytesRef currentTermText = termEnum.term();
     do {
-    	
+
       String readTerm = typeDef.readTerm(currentTermText);
-      if(readTerm != null)
-    	  terms.add(readTerm);
+      if (readTerm != null)
+        terms.add(readTerm);
       if (terms.size() >= size) {
         return terms;
       }

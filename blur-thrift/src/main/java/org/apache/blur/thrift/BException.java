@@ -17,12 +17,12 @@ package org.apache.blur.thrift;
  * limitations under the License.
  */
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ErrorType;
-
 
 public class BException extends BlurException {
 
@@ -49,5 +49,9 @@ public class BException extends BlurException {
     t.printStackTrace(writer);
     writer.close();
     return new String(outputStream.toByteArray());
+  }
+
+  public static BlurException wrap(IOException e) {
+    return new BException(e.getMessage(), e);
   }
 }

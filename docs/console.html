@@ -36,7 +36,7 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-	        <li class="active"><a href="index.html">Main</a></li>
+            <li class="active"><a href="index.html">Main</a></li>
             <li><a href="getting-started.html">Getting Started</a></li>
             <li><a href="data-model.html">Data Model</a></li>
             <li><a href="cluster-setup.html">Cluster Setup</a></li>
@@ -49,14 +49,59 @@
         </div>
       </div>
     </div>
-    <div class="container">
-      <div class="jumbotron">
-        <h1>Apache Blur (Incubator)</h1>
-        <p>
-          Blur is an open source search platform capable of querying massive amounts of data at incredible speeds. Blur is built on top of Lucene, Hadoop, Thrift, and ZooKeeper. Tables consist of a series of shards (Lucene indexes) that are distributed across a cluster of commodity servers. All index information is stored in HDFS, cluster coordination is handled by Apache ZooKeeper, Apache Thrift is used for the RPC, and Lucene handles all of the indexing and data storage.
-        </p>
-        <a href="getting-started.html" class="btn btn-primary btn-large">Get Started &raquo;</a>
-        <a href="release-notes.html" class="btn btn-primary btn-large">View Release Notes &raquo;</a>
+    <div class="container bs-docs-container">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="bs-sidebar hidden-print affix" role="complementary">
+            <ul class="nav bs-sidenav">
+              <li><a href="#configuration">Configuration</a></li>
+              <li><a href="#security">Security</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-9" role="main">
+          <section>
+            <div class="page-header">
+              <h1 id="configuration">Configuration</h1>
+            </div>
+            <p class="lead">
+              Below you will find a list of available options and their appropriate defaults for the Blur Console component. All options can be set in the blur-site.properties file.
+            </p>
+            <table class="table table-bordered table-striped table-condensed">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+        </section>
+        <section>
+          <div class="page-header">
+            <h1 id="security">Security</h1>
+          </div>
+          <p class="lead">
+            Blur Console itself provides some hooks and default implementations to allow for authentication and authorization to both the tool as well as the data.
+          </p>
+          <h3>Authentication Provider</h3>
+          <p>
+
+          </p>
+          <h3>Authorization Provider</h3>
+          <p>
+
+          </p>
+          <h3>Available Implementations</h3>
+          <p>
+
+          </p>
+        </section>
       </div>
     </div>
 

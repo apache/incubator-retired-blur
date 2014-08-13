@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<!-- 
+<!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
   The ASF licenses this file to You under the Apache License, Version 2.0
   (the "License"); you may not use this file except in compliance with
   the License.  You may obtain a copy of the License at
-  
+
        http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,6 +42,7 @@
             <li><a href="cluster-setup.html">Cluster Setup</a></li>
             <li><a href="using-blur.html">Using Blur</a></li>
             <li><a href="Blur.html">Blur API</a></li>
+            <li><a href="console.html">Console</a></li>
             <li><a href="site/index.html" target="_blank">Maven Site</a></li>
             <li><a href="site/apidocs/index.html" target="_blank">Javadocs</a></li>
           </ul>
@@ -100,7 +101,7 @@
                   <li><a href="#custom_types_using">Using</a>
 				    <ul class="nav">
                       <li><a href="#custom_types_using_cluster">&nbsp;&nbsp;Cluster Wide</a></li>
-                      <li><a href="#custom_types_using_table">&nbsp;&nbsp;Single Table</a></li>	
+                      <li><a href="#custom_types_using_table">&nbsp;&nbsp;Single Table</a></li>
                     </ul>
                   </li>
                 </ul>
@@ -220,9 +221,9 @@ To run a query to find all the rows that contain a column with a word that match
 </p>
 
               <h3 id="string_query">String</h3>
-<p>String fields are indexed Columns that are not analyzed they are indexed as is.  Do not use String fields for 
-large amount of text, this will increase the size of your index and probably not give you the desired behavior.  
-So given the string "Hadoop" and "hadoop", these will be indexed as two different term because the String field 
+<p>String fields are indexed Columns that are not analyzed they are indexed as is.  Do not use String fields for
+large amount of text, this will increase the size of your index and probably not give you the desired behavior.
+So given the string "Hadoop" and "hadoop", these will be indexed as two different term because the String field
 is case sensitive.  Also if the string contains "The cow jumps over the moon." the single term that will be placed
 into the index is "The cow jumps over the moon." as a single string.  This field type is normally used for id or
 type lookups.
@@ -299,7 +300,7 @@ To run a query to find all the rows that contain a column with a starting value 
 
               <h3 id="spatial_query">Spatial</h3>
 <p>
-Spatial queries are supported through the Lucene spatial module.  There are currently three 
+Spatial queries are supported through the Lucene spatial module.  There are currently three
 different types of strategies:
 <ul>
 <li>Point Vector</li>
@@ -308,9 +309,9 @@ different types of strategies:
 </ul>
 Currently all of the built in spatial types are using a GEO spatial context, meaning the assumed
 coordinates are on the planet Earth.  Each of these strategies support different indexing features
-such as the shapes they can index, the shapes they can query with, and the operations they 
+such as the shapes they can index, the shapes they can query with, and the operations they
 support during the query.  See the type section below to get a list of supported operations and
-shapes per strategy. 
+shapes per strategy.
 </p>
 <h4>Examples:</h4>
 <p>
@@ -338,7 +339,7 @@ To run a query to find all the rows that contain a location within 10 miles of g
               <ul>
               <li>&quot;stopWordPath&quot; -Optional- default value is no stop words.  This should be a HDFS path.
 	<br/>This will load stop words into the StandardAnalyzer for this field, one term per line.</li>
-	
+
 	          <li>&quot;analyzerClass&quot; -Optional- default value is a standard analyzer with no stop words.<br/>This could be any Analyzer class that has a default constructor or one that takes a Lucene Version enum.</li>
               </ul>
 		  </p>
@@ -398,7 +399,7 @@ To run a query to find all the rows that contain a location within 10 miles of g
 				      <li>&quot;numericPrecisionStep&quot; -Optional- default value is &quot;4&quot;</li>
 		              </ul>
 				  </p>
- 
+
               <h3 id="stored_type">Stored</h3>
               <p>
               The Stored Type has the type name of:
@@ -492,7 +493,7 @@ To run a query to find all the rows that contain a location within 10 miles of g
 	         <p class="lead">Custom types in Blur allow you to create your own types in Lucene
 		     as well as plugging into the query parser so that you can use your custom type.</p>
 	         <h3 id="custom_types_creating">Creating</h3>
-	         <p>		
+	         <p>
 You will need to extend the "org.apache.blur.analysis.FieldTypeDefinition" class found in the blur-query module.  If you need to use a different Analyzer than the StandardAnalyzer used in the "text" type just extend the "org.apache.blur.analysis.type.TextFieldTypeDefinition" and make the appropriate changes.
 		     </p>
 <p>
@@ -507,7 +508,7 @@ Below is a simple type that is basically the same as a "string" type, however it
 
   /**
    * Get the name of the type.
-   * 
+   *
    * @return the name.
    */
   @Override
@@ -517,7 +518,7 @@ Below is a simple type that is basically the same as a "string" type, however it
 
   /**
    * Configures this instance for the type.
-   * 
+   *
    * @param fieldNameForThisInstance
    *          the field name for this instance.
    * @param properties
@@ -526,7 +527,7 @@ Below is a simple type that is basically the same as a "string" type, however it
    *          method.
    */
   @Override
-  public void configure(String fieldNameForThisInstance, Map<String, String> properties, 
+  public void configure(String fieldNameForThisInstance, Map<String, String> properties,
                         Configuration configuration) {
     _fieldNameForThisInstance = fieldNameForThisInstance;
   }
@@ -534,12 +535,12 @@ Below is a simple type that is basically the same as a "string" type, however it
   /**
    * Create {@link Field}s for the index as well as for storing the original
    * data for retrieval.
-   * 
+   *
    * @param family
    *          the family name.
    * @param column
    *          the column that holds the name and value.
-   * 
+   *
    * @return the {@link Iterable} of {@link Field}s.
    */
   @Override
@@ -552,18 +553,18 @@ Below is a simple type that is basically the same as a "string" type, however it
   /**
    * Create {@link Field}s for the index do NOT store the data because the is a
    * sub column.
-   * 
+   *
    * @param family
    *          the family name.
    * @param column
    *          the column that holds the name and value.
    * @param subName
    *          the sub column name.
-   * 
+   *
    * @return the {@link Iterable} of {@link Field}s.
    */
   @Override
-  public Iterable&lt;? extends Field&gt; getFieldsForSubColumn(String family, Column column, 
+  public Iterable&lt;? extends Field&gt; getFieldsForSubColumn(String family, Column column,
        String subName) {
     String name = family + "." + column.getName() + "." + subName;
     String value = column.getValue();
@@ -572,7 +573,7 @@ Below is a simple type that is basically the same as a "string" type, however it
 
   /**
    * Gets the query from the text provided by the query parser.
-   * 
+   *
    * @param text
    *          the text provided by the query parser.
    * @return the {@link Query}.
@@ -584,7 +585,7 @@ Below is a simple type that is basically the same as a "string" type, however it
 
 }
 </code></pre>
-	
+
 </p>
 
 	         <h3 id="custom_types_distributing">Distributing</h3>
@@ -601,9 +602,9 @@ Please note that the prefix of "blur.fieldtype." is all that is used from the pr
 </p>
 	         <h4 id="custom_types_using_table">Single Table</h4>
 	         <p>For a single table configuration you will need to add the new field types into the tableProperties map in the TableDescriptor as you define the table.
-<pre><code class="java">tableDescriptor.putToTableProperties("blur.fieldtype.customtype1", 
+<pre><code class="java">tableDescriptor.putToTableProperties("blur.fieldtype.customtype1",
 	"org.apache.blur.analysis.type.ExampleType1");
-tableDescriptor.putToTableProperties("blur.fieldtype.customtype2", 
+tableDescriptor.putToTableProperties("blur.fieldtype.customtype2",
 	"org.apache.blur.analysis.type.ExampleType2");
 ...</code></pre>
 
@@ -614,7 +615,7 @@ Please note that the prefix of "blur.fieldtype." is all that is used from the pr
     </div>
 
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-    
+
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="resources/js/jquery-2.0.3.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->

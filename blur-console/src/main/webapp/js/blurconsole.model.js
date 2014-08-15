@@ -52,7 +52,11 @@ blurconsole.model = (function() {
 
       $.each(stateMap.currentTables, function(idx, table) {
         if (table.cluster === cluster && table.enabled) {
-          data.push({name:table.name, rowCount:table.rows, recordCount:table.records});
+          data.push({
+            name:table.name,
+            rowCount:table.rows,
+            recordCount:table.records
+          });
         }
       });
 

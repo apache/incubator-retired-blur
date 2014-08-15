@@ -29,8 +29,8 @@ blurconsole.tables = (function () {
       {label:'Table Name', key: function(row){
         return row.name + ' <i class="glyphicon glyphicon-exclamation-sign" data-table="' + row.name + '" style="display:none" title="Activity detected"></i>';
       }},
-      {label:'Row Count', key: 'rowCount'},
-      {label:'Record Count', key: 'recordCount'},
+      {label:'Row Count', key: 'rowCount', format:'number'},
+      {label:'Record Count', key: 'recordCount', format:'number'},
       {label:'Actions', key: function(row) {
         var actions = '', table = row.name;
         actions += '<a href="#" class="schemaTrigger btn btn-default" data-name="' + table + '"><i class="glyphicon glyphicon-list-alt"></i> Schema</a> ';

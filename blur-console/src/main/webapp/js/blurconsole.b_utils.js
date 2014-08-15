@@ -39,11 +39,16 @@ blurconsole.browserUtils = (function(){
         tableMarkup += '<tr>';
         $.each(def, function(ic, col) {
           tableMarkup += '<td>';
+          var val;
           if ($.isFunction(col.key)) {
-            tableMarkup += col.key(row);
+            val = col.key(row);
           } else {
-            tableMarkup += row[col.key];
+            val = row[col.key];
           }
+          if(col.format === 'number') {
+            val = blurconsole.utils.formatNumber(val);
+          }
+          tableMarkup += val;
           tableMarkup += '</td>';
         });
         tableMarkup += '</tr>';

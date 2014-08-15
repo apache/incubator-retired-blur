@@ -61,6 +61,7 @@ public class ConsoleTestBase {
 
   protected void setupConfigIfNeeded() throws Exception {
     if (Config.getBlurConfig() == null) {
+      System.setProperty("blur.console.refreshtime", "0");
       Config.setupConfig();
     }
   }

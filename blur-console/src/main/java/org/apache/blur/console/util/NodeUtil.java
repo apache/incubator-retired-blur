@@ -19,6 +19,7 @@ package org.apache.blur.console.util;
 
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.blur.thrift.generated.Blur.Iface;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,6 +34,7 @@ public class NodeUtil {
 
   @SuppressWarnings("unchecked")
   public static Map<String, Object> getControllerStatus() throws IOException {
+    Iface client = Config.getClient();
     ZookeeperClusterStatus zk = Config.getZookeeper();
 
     List<String> allControllers = new ArrayList<String>();

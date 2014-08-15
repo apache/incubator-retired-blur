@@ -18,8 +18,6 @@
 package org.apache.blur.console.util;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -32,7 +30,7 @@ public class TableUtil {
 
   @SuppressWarnings("rawtypes")
   public static Map<String, List> getTableSummaries() throws IOException, TException {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
+    CachingBlurClient client = Config.getCachingBlurClient();
 
     List<Map<String, Object>> summaries = new ArrayList<Map<String, Object>>();
 
@@ -73,7 +71,7 @@ public class TableUtil {
   }
 
   public static Map<String, Map<String, Map<String, Object>>> getSchema(String table) throws IOException, TException {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
+    CachingBlurClient client = Config.getCachingBlurClient();
 
     Schema schema = client.schema(table);
 
@@ -95,26 +93,20 @@ public class TableUtil {
   }
 
   public static List<String> getTerms(String table, String family, String column, String startWith) throws IOException, TException {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
+    CachingBlurClient client = Config.getCachingBlurClient();
 
     return client.terms(table, family, column, startWith, (short) 10);
   }
 
   public static void disableTable(String table) throws TException, IOException {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
-
-    client.disableTable(table);
+    Config.getCachingBlurClient().disableTable(table);
   }
 
   public static void enableTable(String table) throws TException, IOException {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
-
-    client.enableTable(table);
+    Config.getCachingBlurClient().enableTable(table);
   }
 
   public static void deleteTable(String table, boolean includeFiles) throws TException, IOException {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
-
-    client.removeTable(table, includeFiles);
+    Config.getCachingBlurClient().removeTable(table, includeFiles);
   }
 }

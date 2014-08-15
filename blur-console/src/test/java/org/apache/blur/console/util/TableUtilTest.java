@@ -17,15 +17,11 @@
 package org.apache.blur.console.util;
 
 import org.apache.blur.console.ConsoleTestBase;
-import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +33,7 @@ public class TableUtilTest extends ConsoleTestBase {
   public void ensureCleanTables() throws Exception {
     setupConfigIfNeeded();
 
-    Iface client = BlurClient.getClient(Config.getConnectionString());
+    Iface client = Config.getClient();
     List<String> tableList = client.tableList();
     if (!tableList.isEmpty()) {
       for (String table : tableList) {
@@ -58,7 +54,7 @@ public class TableUtilTest extends ConsoleTestBase {
   @SuppressWarnings({"unchecked", "rawtypes"})
   @Test
   public void testGetTableSummaries() throws Exception {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
+    Iface client = Config.getClient();
 
     TableDescriptor td = new TableDescriptor();
     td.setShardCount(11);

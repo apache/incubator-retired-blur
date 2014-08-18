@@ -73,13 +73,16 @@ public class JettyServer {
     server.setHandler(new WebAppContext(warUrlString, CONTEXTPATH));
 
     // for localhost:port/service/dashboard, etc.
-    final Context context = new Context(server, "/service", Context.SESSIONS);
-    context.addServlet(AuthServlet.class, "/auth/*");
-    context.addServlet(NodesServlet.class, "/nodes/*");
-    context.addServlet(TablesServlet.class, "/tables/*");
-    context.addServlet(QueriesServlet.class, "/queries/*");
-    context.addServlet(SearchServlet.class, "/search/*");
-    context.addFilter(LoggedInFilter.class, "/*", Handler.REQUEST);
+    Context serviceContext = new Context(server, "/service", Context.SESSIONS);
+    serviceContext.addServlet(AuthServlet.class, "/auth/*");
+    serviceContext.addServlet(NodesServlet.class, "/nodes/*");
+    serviceContext.addServlet(TablesServlet.class, "/tables/*");
+    serviceContext.addServlet(QueriesServlet.class, "/queries/*");
+    serviceContext.addServlet(SearchServlet.class, "/search/*");
+    serviceContext.addServlet(JavascriptServlet.class, "/config.js");
+    serviceContext.addFilter(LoggedInFilter.class, "/*", Handler.REQUEST);
+
+
 
     System.out.println("started server on http://localhost:" + port + CONTEXTPATH);
     try {

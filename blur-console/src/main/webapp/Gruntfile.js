@@ -233,7 +233,7 @@ module.exports = function (grunt) {
     grunt.registerTask('development', 'Build for development', ['clean', 'less:development', 'uglify:js', 'copy:main', 'version-assets']);
     grunt.registerTask('production', 'Build for production', ['clean', 'less:production', 'uglify:js', 'copy:main', 'version-assets']);
     grunt.registerTask('serve', 'Run development server', ['clean','development', 'connect:livereload','watch']);
-    grunt.registerTask('default', ['clean', 'style:development', 'development', 'watch']);
+    grunt.registerTask('default', ['clean', 'development', 'watch']);
     grunt.registerTask('version-assets-css-map', function() {
         var Version = require("node-version-assets");
         var versionInstance = new Version({

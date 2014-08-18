@@ -214,7 +214,7 @@ blurconsole.fake = (function() {
   function sendSearch(query, table, args, callback) {
     console.log('sending fake search [' + query + '] on table [' + table + ']');
 
-    var fams = args.families, results = {}, total = (fams !== null && fams.indexOf('rowid') >= 0) ? 1 : _randomNumber(1000);
+    var fams = args.families, results = {}, total = (fams !== null && fams.indexOf('rowid') >= 0) ? 1 : _randomNumber(5000);
 
     if (fams === null || fams.length === 0) {
       $.each(tableList.tables, function(i, t) {

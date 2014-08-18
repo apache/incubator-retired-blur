@@ -18,8 +18,6 @@
 package org.apache.blur.console.util;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.Status;
 
@@ -32,10 +30,10 @@ import java.util.Map;
 public class QueryUtil {
 
   public static int getCurrentQueryCount() throws IOException, TException {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
+    CachingBlurClient client = Config.getCachingBlurClient();
 
     int count = 0;
-    List<String> tableList = client.tableList();
+    List<String> tableList = client.enabledTables();
     for (String table : tableList) {
       List<String> queries = client.queryStatusIdList(table);
       count += queries.size();
@@ -51,8 +49,8 @@ public class QueryUtil {
 
     List<Map<String, Object>> queries = new ArrayList<Map<String, Object>>();
 
-    Iface client = BlurClient.getClient(Config.getConnectionString());
-    List<String> tableList = client.tableList();
+    CachingBlurClient client = Config.getCachingBlurClient();
+    List<String> tableList = client.enabledTables();
 
     for (String table : tableList) {
       List<String> queriesForTable = client.queryStatusIdList(table);
@@ -87,7 +85,7 @@ public class QueryUtil {
   }
 
   public static void cancelQuery(String table, String uuid) throws IOException, TException {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
+    CachingBlurClient client = Config.getCachingBlurClient();
 
     client.cancelQuery(table, uuid);
   }

@@ -244,7 +244,7 @@ blurconsole.search = (function () {
     var user = $('#user');
     if (user.length > 0) {
       var names = blurconsole.auth.getSecurityNames();
-      if(names == null || names.length <= 1) {
+      if(names === null || names.length <= 1) {
         user.closest('.form-group').remove();
       } else {
         user.append('<option value=""></option>');
@@ -400,7 +400,7 @@ blurconsole.search = (function () {
 
   function _drawResults(evt, families) {
     var results = blurconsole.model.search.getResults();
-    jqueryMap.$countHolder.html('<small>Found ' + blurconsole.model.search.getTotal() + ' total results</small>');
+    jqueryMap.$countHolder.html('<small>Found ' + blurconsole.utils.formatNumber(blurconsole.model.search.getTotal()) + ' total results</small>');
     //jqueryMap.$facetTrigger.show();
 
     if (typeof families !== 'undefined' && families !== null) {

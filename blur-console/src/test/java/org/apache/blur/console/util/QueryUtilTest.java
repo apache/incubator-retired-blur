@@ -20,8 +20,8 @@ package org.apache.blur.console.util;
 import org.apache.blur.console.ConsoleTestBase;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.*;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ public class QueryUtilTest extends ConsoleTestBase {
   public void setup() throws Exception {
     setupConfigIfNeeded();
 
-    Iface client = BlurClient.getClient(Config.getConnectionString());
+    Iface client = Config.getClient();
 
     if (!client.tableList().contains("queryUnitTable")) {
       TableDescriptor td = new TableDescriptor();
@@ -58,7 +58,7 @@ public class QueryUtilTest extends ConsoleTestBase {
 
   @Test
   public void testGetCurrentQueryCount() throws BlurException, IOException, TException {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
+    Iface client = Config.getClient();
     BlurQuery query = new BlurQuery(
         new Query("fam0.col0:*", true, ScoreType.SUPER, null, null),
         null,
@@ -72,7 +72,7 @@ public class QueryUtilTest extends ConsoleTestBase {
   @SuppressWarnings("unchecked")
   @Test
   public void testGetQueries() throws IOException, BlurException, TException {
-    Iface client = BlurClient.getClient(Config.getConnectionString());
+    Iface client = Config.getClient();
     BlurQuery query = new BlurQuery(
         new Query("fam0.col0:*", true, ScoreType.SUPER, null, null),
         null,

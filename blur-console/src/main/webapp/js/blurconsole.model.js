@@ -52,7 +52,11 @@ blurconsole.model = (function() {
 
       $.each(stateMap.currentTables, function(idx, table) {
         if (table.cluster === cluster && table.enabled) {
-          data.push({name:table.name, rowCount:table.rows, recordCount:table.records});
+          data.push({
+            name:table.name,
+            rowCount:table.rows,
+            recordCount:table.records
+          });
         }
       });
 
@@ -515,7 +519,7 @@ blurconsole.model = (function() {
       stateMap.nodeMap = nodes;
       $.gevent.publish('node-status-updated');
     }
-    setTimeout(_nodePoller, 5000);
+    setTimeout(_nodePoller, blurconsole.config.refreshtime);
   }
 
   function _updateTables(data) {
@@ -527,7 +531,7 @@ blurconsole.model = (function() {
         $.gevent.publish('tables-updated');
       }
     }
-    setTimeout(_tablePoller, 5000);
+    setTimeout(_tablePoller, blurconsole.config.refreshtime);
   }
 
   function _updateQueryPerformance(performanceMetric) {
@@ -539,7 +543,7 @@ blurconsole.model = (function() {
       stateMap.queryPerformance.push(performanceMetric);
       $.gevent.publish('query-perf-updated');
     }
-    setTimeout(_queryPerformancePoller, 5000);
+    setTimeout(_queryPerformancePoller, blurconsole.config.refreshtime);
   }
 
   function _updateQueries(queries) {
@@ -547,7 +551,7 @@ blurconsole.model = (function() {
       stateMap.queries = queries;
       $.gevent.publish('queries-updated');
     }
-    setTimeout(_queryPoller, 5000);
+    setTimeout(_queryPoller, blurconsole.config.refreshtime);
   }
 
   //----------------------- Public API ------------------------------

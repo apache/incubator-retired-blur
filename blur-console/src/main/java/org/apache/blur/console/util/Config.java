@@ -32,20 +32,21 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class Config {
 
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/mini-cluster"));
   private static final Log log = LogFactory.getLog(Config.class);
   private static final int DEFAULT_PORT = 8080;
+  public static final int DEFAULT_REFRESH_TIME = 5000;
 
   private static int port;
   private static BlurConfiguration blurConfig;
@@ -54,6 +55,7 @@ public class Config {
   private static Object cluster;
   private static IAuthenticationProvider authenticationProvider;
   private static IAuthorizationProvider authorizationProvider;
+  private static CachingBlurClient cachingBlurClient;
 
   public static int getConsolePort() {
     return port;
@@ -74,6 +76,7 @@ public class Config {
     zk = new ZookeeperClusterStatus(blurConfig.get("blur.zookeeper.connection"), blurConfig);
     blurConnection = buildConnectionString();
     port = blurConfig.getInt("blur.console.port", DEFAULT_PORT);
+    cachingBlurClient = new CachingBlurClient(blurConfig.getInt("blur.console.refreshtime", DEFAULT_REFRESH_TIME));
     setupProviders();
   }
 
@@ -111,15 +114,15 @@ public class Config {
     } else {
       authenticationProvider = (IAuthenticationProvider) authenticationProviderClass.newInstance();
       log.info("Using " + authenticationProviderClassName + " for authentication");
-      if(authenticationProviderClassName.equals(authorizationProviderClassName)) {
+      if (authenticationProviderClassName.equals(authorizationProviderClassName)) {
         log.info("authentication and authorization providers are the same, reusing");
         authorizationProvider = (IAuthorizationProvider) authenticationProvider;
       }
     }
     authenticationProvider.setupProvider(blurConfig);
 
-    if(authorizationProvider == null) {
-      if(authorizationProviderClassName != null) {
+    if (authorizationProvider == null) {
+      if (authorizationProviderClassName != null) {
         Class authorizationProviderClass = Class.forName(authorizationProviderClassName, false, Config.class.getClassLoader());
         if (authorizationProviderClass == null) {
           log.error("Error in blur.console.authorization.provider: EmptyAuthorization");
@@ -135,7 +138,7 @@ public class Config {
     }
   }
 
-  public static String getConnectionString() throws IOException {
+  public static String getConnectionString() {
     return blurConnection;
   }
 
@@ -178,6 +181,10 @@ public class Config {
         cluster = clusterClass.newInstance();
         Method startBlurCluster = clusterClass.getDeclaredMethod("startBlurCluster", String.class, int.class, int.class, boolean.class);
         startBlurCluster.invoke(cluster, new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
+        Method getControllerConnectionStr = clusterClass.getDeclaredMethod("getControllerConnectionStr");
+        String controllerConnectionStr = (String) getControllerConnectionStr.invoke(cluster);
+        System.out.println("MiniCluster started at " + controllerConnectionStr);
+
       }
     } catch (Exception e) {
       log.fatal("Unable to start in dev mode because MiniCluster isn't in classpath", e);
@@ -188,11 +195,22 @@ public class Config {
   public static Iface getClient(org.apache.blur.console.model.User user, String securityUser) throws IOException {
     Iface client = BlurClient.getClient(getConnectionString());
     Map<String, String> securityAttributes = user.getSecurityAttributes(securityUser);
-    if(securityAttributes != null) {
+    if (securityAttributes != null) {
       UserContext.setUser(new User(user.getName(), securityAttributes));
     }
-
     return client;
+  }
+
+  public static int getInt(String name, int defaultValue) {
+    return blurConfig.getInt(name, defaultValue);
+  }
+
+  public static Iface getClient() {
+    return BlurClient.getClient(getConnectionString());
+  }
+
+  public static CachingBlurClient getCachingBlurClient() {
+    return cachingBlurClient;
   }
 
   public static boolean isClusterSetup() {

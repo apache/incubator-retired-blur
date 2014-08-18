@@ -17,7 +17,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-/*global blurconsole:false */
+/*global blurconsole:false, Intl:false */
 blurconsole.utils = (function(){
   'use strict';
     
@@ -33,6 +33,13 @@ blurconsole.utils = (function(){
     });
 
     return accumulator;
+  }
+
+  function formatNumber(num){
+    if(typeof Intl !== 'undefined' && typeof Intl.NumberFormat !== 'undefined') {
+      num = Intl.NumberFormat().format(num);
+    }
+    return num;
   }
 
   function unique(collection, sort) {
@@ -91,6 +98,7 @@ blurconsole.utils = (function(){
     equals: equals,
     keys: keys,
     findFamilies: findFamilies,
-    reject: reject
+    reject: reject,
+    formatNumber: formatNumber
   };
 }());

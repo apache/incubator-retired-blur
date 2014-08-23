@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<!-- 
+<!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
   The ASF licenses this file to You under the Apache License, Version 2.0
   (the "License"); you may not use this file except in compliance with
   the License.  You may obtain a copy of the License at
-  
+
        http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,6 +42,7 @@
             <li><a href="cluster-setup.html">Cluster Setup</a></li>
             <li><a href="using-blur.html">Using Blur</a></li>
             <li><a href="Blur.html">Blur API</a></li>
+            <li><a href="console.html">Console</a></li>
             <li><a href="site/index.html" target="_blank">Maven Site</a></li>
             <li><a href="site/apidocs/index.html" target="_blank">Javadocs</a></li>
           </ul>
@@ -164,12 +165,12 @@ mvn install -DskipTests -Dhadoop2</code></pre>
             <p>
               You should see:
             </p>
-            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.4-incubating-SNAPSHOT/bin/start-all.sh 
+            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.4-incubating-SNAPSHOT/bin/start-all.sh
 localhost: ZooKeeper starting as process 6650.
 localhost: Shard [0] starting as process 6783.
 localhost: Controller [0] starting as process 6933.</code></pre>
             <p>If you run the start command again you should see:</p>
-            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.4-incubating-SNAPSHOT/bin/stop-all.sh 
+            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.4-incubating-SNAPSHOT/bin/stop-all.sh
 localhost: Stopping Controller [0] server with pid [6933].
 localhost: Stopping Shard [0] server with pid [6783].
 localhost: Stopping ZooKeeper with pid [6650].</code></pre>
@@ -241,7 +242,7 @@ highlight of query command is now on
 </p>
 <h3 id="shell-query-highlight">Query with Highlights</h3>
 <p>
-<pre><code class="bash">blur> #Runs a query on testtable with highlighting on, notice &lt;&lt;&lt;value1&gt;&gt;&gt; is highlighted 
+<pre><code class="bash">blur> #Runs a query on testtable with highlighting on, notice &lt;&lt;&lt;value1&gt;&gt;&gt; is highlighted
 blur> query testtable2 fam0.col1:value1
  - Results Summary -
     total : 1
@@ -264,7 +265,7 @@ blur></code></pre>
     </div>
 
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-    
+
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="resources/js/jquery-2.0.3.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->

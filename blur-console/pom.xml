@@ -48,6 +48,11 @@
       <artifactId>blur-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.blur</groupId>
+      <artifactId>blur-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <!-- Development and Runtime Libraries -->
     <dependency>
@@ -331,6 +336,11 @@
           <version>${hadoop.version}</version>
           <scope>test</scope>
         </dependency>
+        <dependency>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty</artifactId>
+          <version>6.1.26</version>
+        </dependency>
       </dependencies>
     </profile>
     <profile>
@@ -354,6 +364,11 @@
           <artifactId>hadoop-minicluster</artifactId>
           <version>${hadoop.version}</version>
           <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>jetty</artifactId>
+          <version>6.1.26</version>
         </dependency>
       </dependencies>
     </profile>

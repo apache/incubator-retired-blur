@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<!-- 
+<!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
   The ASF licenses this file to You under the Apache License, Version 2.0
   (the "License"); you may not use this file except in compliance with
   the License.  You may obtain a copy of the License at
-  
+
        http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,6 +42,7 @@
             <li class="active"><a href="cluster-setup.html">Cluster Setup</a></li>
             <li><a href="using-blur.html">Using Blur</a></li>
             <li><a href="Blur.html">Blur API</a></li>
+            <li><a href="console.html">Console</a></li>
             <li><a href="site/index.html" target="_blank">Maven Site</a></li>
             <li><a href="site/apidocs/index.html" target="_blank">Javadocs</a></li>
           </ul>
@@ -96,8 +97,8 @@
               <h1 id="general">General Configuration</h1>
             </div>
 <p>
-The basic cluster setup involves editing the blur-site.properties and the blur-env.sh 
-files in the $BLUR_HOME/conf directory. It is recommended that a standalone ZooKeeper 
+The basic cluster setup involves editing the blur-site.properties and the blur-env.sh
+files in the $BLUR_HOME/conf directory. It is recommended that a standalone ZooKeeper
 be setup. Also a modern version of Hadoop with append support is required for proper data
 management (the write ahead log requires the sync operation).
 
@@ -124,7 +125,7 @@ blur.zookeeper.connection=127.0.0.1
 
 blur.cluster.name=default
 
-# Sets the default table location in hdfs.  If left null or omitted the table uri property in 
+# Sets the default table location in hdfs.  If left null or omitted the table uri property in
 # the table descriptor will be required for all tables.
 
 blur.cluster.default.table.uri=hdfs://namenode/blur/tables</code>
@@ -136,9 +137,9 @@ blur.cluster.default.table.uri=hdfs://namenode/blur/tables</code>
 			</table>
             <h3 id="general-hadoop">Hadoop</h3>
 <p>
-The current version of Blur has Hadoop 1.2.1 embedded in the &quot;apache-blur-*/lib/hadoop-1.2.1&quot; path.  However if 
-you are using a different version of Hadoop or want Blur to use the Hadoop configuration in your installed 
-version you will need to set the &quot;HADOOP_HOME&quot; environment variable in the 
+The current version of Blur has Hadoop 1.2.1 embedded in the &quot;apache-blur-*/lib/hadoop-1.2.1&quot; path.  However if
+you are using a different version of Hadoop or want Blur to use the Hadoop configuration in your installed
+version you will need to set the &quot;HADOOP_HOME&quot; environment variable in the
 &quot;blur-env.sh&quot; script found in &quot;apache-blur-*/conf/&quot;.
 <pre>
 <code class="bash"># Edit the blur-env.sh
@@ -189,7 +190,7 @@ In Hadoop the dfs.datanode.max.xcievers should be increased to at least 4096 if 
     &lt;value&gt;4096&lt;/value&gt;
 &lt;/property&gt;</code></pre>
 <br/>
-In blur-env.sh set the cache memory for the shard processes.  DO NOT over allocate this will 
+In blur-env.sh set the cache memory for the shard processes.  DO NOT over allocate this will
 likely crash your server.
 <pre><code class="bash">-XX:MaxDirectMemorySize=13g</code></pre>
 <div class="bs-callout bs-callout-warning"><h4>Caution</h4>
@@ -342,7 +343,7 @@ blur.metrics.reporter.graphite.prefix=[""]</code></pre>
         </div>
       </div>
     </div>
-    
+
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="resources/js/jquery-2.0.3.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->

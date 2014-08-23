@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<!--
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+  <head>
+    <title>Apache Blur (Incubator) Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://incubator.apache.org/blur">Apache Blur (Incubator)</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Main</a></li>
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="data-model.html">Data Model</a></li>
+            <li><a href="cluster-setup.html">Cluster Setup</a></li>
+            <li><a href="using-blur.html">Using Blur</a></li>
+            <li><a href="Blur.html">Blur API</a></li>
+            <li class="active"><a href="console.html">Console</a></li>
+            <li><a href="site/index.html" target="_blank">Maven Site</a></li>
+            <li><a href="site/apidocs/index.html" target="_blank">Javadocs</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container bs-docs-container">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="bs-sidebar hidden-print affix" role="complementary">
+            <ul class="nav bs-sidenav">
+              <li><a href="#configuration">Configuration</a></li>
+              <li><a href="#security">Security</a></li>
+              <li><a href="#dev">Dev Mode</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-9" role="main">
+          <section>
+            <div class="page-header">
+              <h1 id="configuration">Configuration</h1>
+            </div>
+            <p class="lead">
+              Below you will find a list of available options and their appropriate defaults for the Blur Console component. All options can be set in the blur-site.properties file.
+            </p>
+            <h3>Base Settings</h3>
+            <table class="table table-bordered table-striped table-condensed">
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>blur.console.port</td>
+                  <td>8080</td>
+                  <td>The port that the embedded Jetty server will run on when started.</td>
+                </tr>
+                <tr>
+                  <td>blur.console.authentication.provider</td>
+                  <td>org.apache.blur.console.providers.AllAuthenticated</td>
+                  <td>The class name that will implement the IAuthenticationProvider interface and provide security to the tool.</td>
+                </tr>
+                <tr>
+                  <td>blur.console.authorization.provider</td>
+                  <td>org.apache.blur.console.providers.EmptyAuthorization</td>
+                  <td>The class name that will implement the IAuthorizationProvider interface and provide authorization to the data.</td>
+                </tr>
+                <tr>
+                  <td>blur.console.authentication.roles.admin</td>
+                  <td>admin</td>
+                  <td>Used to aide in the mapping of custom provider roles to console roles. This maps the administrator role.</td>
+                </tr>
+                <tr>
+                  <td>blur.console.authentication.roles.searcher</td>
+                  <td>searcher</td>
+                  <td>Used to aide in the mapping of custom provider roles to console roles. This maps the searcher role.</td>
+                </tr>
+                <tr>
+                  <td>blur.console.authentication.roles.manager</td>
+                  <td>manager</td>
+                  <td>Used to aide in the mapping of custom provider roles to console roles. This maps the manager role.</td>
+                </tr>
+                <tr>
+                  <td>blur.console.refreshtime</td>
+                  <td>5000</td>
+                  <td>Time to indicate how long calls to Blur should be cached (in milliseconds).</td>
+                </tr>
+              </tbody>
+            </table>
+            <h3>Included Security Provider Settings</h3>
+            <table class="table table-bordered table-striped table-condensed">
+              <thead>
+                <tr>
+                  <th>Provider</th>
+                  <th>Property</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>org.apache.blur.console.providers.TomcatUsers</td>
+                  <td>blur.console.authentication.provider.tomcat.usersfile</td>
+                  <td>The location of the file containing the users, passwords, and roles.</td>
+                </tr>
+                <tr>
+                  <td>org.apache.blur.console.providers.GlobalJsonAuthorization</td>
+                  <td>blur.console.authorization.provider.globaljson.file</td>
+                  <td>The location of the file containing the access control to the data for various "users" that can be used during searching.</td>
+                </tr>
+              </tbody>
+            </table>
+        </section>
+        <section>
+          <div class="page-header">
+            <h1 id="security">Security</h1>
+          </div>
+          <p class="lead">
+            Blur Console itself provides some hooks and default implementations to allow for authentication and authorization to both the tool as well as the data.
+          </p>
+          <h3>Authentication Provider</h3>
+          <p>
+            The Authentication Provider (interface org.apache.blur.console.providers.IAuthenticationProvider) provides the ability to lock down the console tool to privileged users.  The interface
+            allows for logging in, retrieving a User, and providing roles for that user that give access to functionality within the tool.
+          </p>
+          <h3>Authorization Provider</h3>
+          <p>
+            The Authorization Provider (interface org.apache.blur.console.providers.IAuthorizationProvider) provides the ability to apply Blur level access control to the users of the console.
+          </p>
+          <h3>Roles</h3>
+          <table class="table table-bordered table-striped table-condensed">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>admin</td>
+                <td>Grants permission to ALL functionality of the console.</td>
+              </tr>
+              <tr>
+                <td>manager</td>
+                <td>Grants permission to Read, Search, and perform destructive actions (i.e. Disable/Delete tables).</td>
+              </tr>
+              <tr>
+                <td>searcher</td>
+                <td>Grants permission to Read and Search</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>Available Implementations</h3>
+          <table class="table table-bordered table-condensed table-striped">
+            <thead>
+              <tr>
+                <th>Provider</th>
+                <th>Interface</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>org.apache.blur.console.providers.AllAuthenticated</td>
+                <td>IAuthenticationProvider</td>
+                <td>Allows anyone to access all functionality of the console. Bypasses user login.</td>
+              </tr>
+              <tr>
+                <td>org.apache.blur.console.providers.EmptyAuthorization</td>
+                <td>IAuthorizationProvider</td>
+                <td>This provider does not set up any attributes for Blur security for the users of the console.</td>
+              </tr>
+              <tr>
+                <td>org.apache.blur.console.providers.GlobalJsonAuthorization</td>
+                <td>IAuthorizationProvider</td>
+                <td>
+                  Provides a list of users and their security attributes defined in a JSON file.  These users can be selected from the search screen and will have their access applied during searching.
+                  <br/>
+                  <code>
+                    "user1":{
+                    <br/>
+                      &nbsp;&nbsp;"attribute1":"foo,bar,baz",
+                    <br/>
+                    &nbsp;&nbsp;"attribute2":"zzzzz"
+                    <br/>
+                     },
+                    <br/>
+                    "user2":{
+                    <br/>
+                    &nbsp;&nbsp;"attribute1":"foo",
+                    <br/>
+                    &nbsp;&nbsp;"attribute2":"12345"
+                    <br/>
+                    }
+                  </code>
+                </td>
+              </tr>
+              <tr>
+                <td>org.apache.blur.console.providers.TomcatUsers</td>
+                <td>IAuthenticationProvider</td>
+                <td>Provides a list of users, roles, and passwords in an xml file.  The format of this file is identical to a tomcat-users file.</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="alert alert-info">
+            <strong>Note:</strong>
+            Custom Providers can be created by implementing the interfaces, placing the jar in the runtime blur lib directory, and adding the classnames to the config file.
+          </div>
+          <div class="alert alert-info">
+            <strong>Note:</strong>
+            Configuring the same class for authentication and authorization providers will reuse the same instance for both.
+          </div>
+        </section>
+        <section>
+          <div class="page-header">
+            <h1 id="dev">Dev Mode</h1>
+          </div>
+          <p class="lead">
+            To try the console without having a full Blur Cluster setup you can add --dev to the arguments when starting the console.  This will run a MiniCluster in the
+            process and attach to it.  In order to access the running MiniCluster you will need to grab the controller uri from the Dashboard and access through the shell.
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="resources/js/jquery-2.0.3.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="resources/js/bootstrap.min.js"></script>
+    <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+    <script src="resources/js/respond.min.js"></script>
+    <script src="resources/js/docs.js"></script>
+  </body>
+</html>

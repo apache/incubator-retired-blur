@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<!-- 
+<!--
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
   The ASF licenses this file to You under the Apache License, Version 2.0
   (the "License"); you may not use this file except in compliance with
   the License.  You may obtain a copy of the License at
-  
+
        http://www.apache.org/licenses/LICENSE-2.0
-  
+
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -42,6 +42,7 @@
             <li><a href="cluster-setup.html">Cluster Setup</a></li>
             <li class="active"><a href="using-blur.html">Using Blur</a></li>
             <li><a href="Blur.html">Blur API</a></li>
+            <li><a href="console.html">Console</a></li>
             <li><a href="site/index.html" target="_blank">Maven Site</a></li>
             <li><a href="site/apidocs/index.html" target="_blank">Javadocs</a></li>
           </ul>
@@ -107,7 +108,7 @@ The following examples are of using the Thrift API directly.  You will need to f
 <p>
 <br/>
 <h4 id="simple_connection_example_constr">Connection String</h4>
-The connection string can be parsed or constructed through "Connection" object.  If you are using the 
+The connection string can be parsed or constructed through "Connection" object.  If you are using the
 parsed version there are some options.  At a minimum you will have to provide hostname and port:
 <pre><code class="bash">host1:40010</code></pre>
 
@@ -174,7 +175,7 @@ for (BlurResult result : results.getResults()) {
 <h3 id="simple_query_example_data">Query Example with Data</h3>
 <p>
 This is an example of how to run a query via the Thrift API and get back search results with data. All
-the columns in the "fam0" family are returned for each Record in the Row.  
+the columns in the "fam0" family are returned for each Record in the Row.
 
 </p>
 <pre><code class="java">Iface client = BlurClient.getClient("controller1:40010,controller2:40010");
@@ -209,7 +210,7 @@ for (BlurResult result : results.getResults()) {
 <h3 id="simple_query_sorting">Query Example with Sorting</h3>
 <p>
 This is an example of how to run a query via the Thrift API and get back search results with
- data being sorted by the &quot;docs.timestamp&quot; column. All the columns in the records 
+ data being sorted by the &quot;docs.timestamp&quot; column. All the columns in the records
 will be returned.
 <div class="bs-callout bs-callout-info"><h4>Note</h4>Sorting is only allowed on Record queries at this point.</div>
 </p>
@@ -247,7 +248,7 @@ query.setQuery(&quot;+docs.body:\&quot;Hadoop is awesome\&quot;&quot;);
 
 final BlurQuery blurQuery = new BlurQuery();
 blurQuery.setQuery(query);
-// This facet will stop counting once the count has reached 10000.  However this is only counted 
+// This facet will stop counting once the count has reached 10000.  However this is only counted
 // on each server, so it is likely you will receive a count larger than your max.
 blurQuery.addToFacets(new Facet("fam1.col1:value1 OR fam1.col1:value2", 10000));
 blurQuery.addToFacets(new Facet("fam1.col1:value100 AND fam1.col1:value200", Long.MAX_VALUE));
@@ -296,25 +297,25 @@ record1.setRecordId("recordid1");
 record1.setFamily("fam0");
 record1.addToColumns(new Column("col0", "val0"));
 record1.addToColumns(new Column("col1", "val1"));
-    
+
 Record record2 = new Record();
 record2.setRecordId("recordid2");
 record2.setFamily("fam1");
 record2.addToColumns(new Column("col4", "val4"));
 record2.addToColumns(new Column("col5", "val5"));
-    
+
 List<RecordMutation> recordMutations = new ArrayList<RecordMutation>();
-    
+
 recordMutations.add(new RecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, record1));
 recordMutations.add(new RecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD, record2));
 
 // This will replace the exiting Row of "rowid1" (if one exists) in table "table1". It will
-// write the mutate to the write ahead log (WAL) and it will not block waiting for the 
-// mutate to become visible. 
+// write the mutate to the write ahead log (WAL) and it will not block waiting for the
+// mutate to become visible.
 RowMutation mutation = new RowMutation("table1", "rowid1", true, RowMutationType.REPLACE_ROW,
                                        recordMutations, false);
 mutation.setRecordMutations(recordMutations);
-    
+
 client.mutate(mutation);
 </code></pre>
 
@@ -327,8 +328,8 @@ This is the same example as above but is shorted with a help class.
 Iface client = BlurClient.getClient("controller1:40010,controller2:40010");
 
 // This will replace the exiting Row of "rowid1" (if one exists) in table "table1". It will
-// write the mutate to the write ahead log (WAL) and it will not block waiting for the 
-// mutate to become visible. 
+// write the mutate to the write ahead log (WAL) and it will not block waiting for the
+// mutate to become visible.
 RowMutation mutation = newRowMutation("table1", "rowid1",
     newRecordMutation("fam0", "recordid1", newColumn("col0", "val0"), newColumn("col1", "val2")),
     newRecordMutation("fam1", "recordid2", newColumn("col4", "val4"), newColumn("col5", "val4")));
@@ -417,7 +418,7 @@ job.waitForCompletion(true);</code></pre>
             </div>
 <p>
 The CSV Loader program can be invoked by running:<pre><code class="bash">$BLUR_HOME/bin/blur csvloader</code></pre>
-<div class="bs-callout bs-callout-warning"><h4>Caution</h4>Also the machine that will execute this command will need to have Hadoop installed and configured locally, 
+<div class="bs-callout bs-callout-warning"><h4>Caution</h4>Also the machine that will execute this command will need to have Hadoop installed and configured locally,
 otherwise the scripts will not work correctly.</div>
 <pre><code class="bash">usage: csvloader
 The "csvloader" command is used to load delimited into a Blur table.
@@ -487,7 +488,7 @@ Here is a screenshot of the JDBC driver in SQuirrel:
         </div>
       </div>
     </div>
-    
+
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="resources/js/jquery-2.0.3.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->

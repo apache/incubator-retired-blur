@@ -108,6 +108,11 @@
                   <td>manager</td>
                   <td>Used to aide in the mapping of custom provider roles to console roles. This maps the manager role.</td>
                 </tr>
+                <tr>
+                  <td>blur.console.refreshtime</td>
+                  <td>5000</td>
+                  <td>Time to indicate how long calls to Blur should be cached (in milliseconds).</td>
+                </tr>
               </tbody>
             </table>
             <h3>Included Security Provider Settings</h3>
@@ -150,6 +155,28 @@
             The Authorization Provider (interface org.apache.blur.console.providers.IAuthorizationProvider) provides the ability to apply Blur level access control to the users of the console.
           </p>
           <h3>Roles</h3>
+          <table class="table table-bordered table-striped table-condensed">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>admin</td>
+                <td>Grants permission to ALL functionality of the console.</td>
+              </tr>
+              <tr>
+                <td>manager</td>
+                <td>Grants permission to Read, Search, and perform destructive actions (i.e. Disable/Delete tables).</td>
+              </tr>
+              <tr>
+                <td>searcher</td>
+                <td>Grants permission to Read and Search</td>
+              </tr>
+            </tbody>
+          </table>
 
           <h3>Available Implementations</h3>
           <table class="table table-bordered table-condensed table-striped">
@@ -216,7 +243,10 @@
           <div class="page-header">
             <h1 id="dev">Dev Mode</h1>
           </div>
-          <p>Adding --dev to the arguments when running Blur Console</p>
+          <p class="lead">
+            To try the console without having a full Blur Cluster setup you can add --dev to the arguments when starting the console.  This will run a MiniCluster in the
+            process and attach to it.  In order to access the running MiniCluster you will need to grab the controller uri from the Dashboard and access through the shell.
+          </p>
         </section>
       </div>
     </div>

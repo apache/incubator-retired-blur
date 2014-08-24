@@ -21,10 +21,10 @@ import static org.apache.blur.metrics.MetricsConstants.JVM;
 import static org.apache.blur.metrics.MetricsConstants.OFF_HEAP_MEMORY;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 
-import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.metrics.AtomicLongGauge;
+import org.apache.blur.store.util.UnsafeUtil;
 
 import sun.misc.Unsafe;
 
@@ -33,19 +33,11 @@ import com.yammer.metrics.core.MetricName;
 
 public class UnsafeCacheValue extends BaseCacheValue {
 
-  private static final String JAVA_NIO_BITS = "java.nio.Bits";
   private static final Unsafe _unsafe;
   private static final AtomicLong _offHeapMemorySize = new AtomicLong();
 
   static {
-    try {
-      Class<?> clazz = Class.forName(JAVA_NIO_BITS);
-      Field field = clazz.getDeclaredField("unsafe");
-      field.setAccessible(true);
-      _unsafe = (Unsafe) field.get(null);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    _unsafe = UnsafeUtil.getUnsafe();
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, JVM, OFF_HEAP_MEMORY), new AtomicLongGauge(_offHeapMemorySize));
   }
 

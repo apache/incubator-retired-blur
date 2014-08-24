@@ -72,22 +72,22 @@ public class CachedDecompressor extends Decompressor {
   }
 
   static class Entry {
-    IndexInput _indexInput;
     String _name;
     long _filePointer = -1;
     BytesRef _cache = new BytesRef();
+    int _indexInputHashCode;
 
     void setup(IndexInput indexInput, String name, long filePointer) {
-      _indexInput = indexInput;
+      _indexInputHashCode = System.identityHashCode(indexInput);
       _name = name;
       _filePointer = filePointer;
     }
 
     boolean isValid(IndexInput indexInput, String name, long filePointer) {
-      if (_indexInput != indexInput) {
+      if (_indexInputHashCode != System.identityHashCode(indexInput)) {
         return false;
       }
-      if (!name.equals(_name)) {
+      if (!_name.equals(name)) {
         return false;
       }
       if (_filePointer != filePointer) {

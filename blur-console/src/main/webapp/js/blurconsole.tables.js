@@ -18,10 +18,10 @@ specific language governing permissions and limitations
 under the License.
 */
 
-/*global blurconsole:false */
+/*global blurconsole:false, alert:false */
 blurconsole.tables = (function () {
   'use strict';
-    
+
     //------------------------ Configuration and State ----------------------
   var configMap = {
     view : 'views/tables.tpl.html',
@@ -35,6 +35,7 @@ blurconsole.tables = (function () {
         var actions = '', table = row.name;
         actions += '<a href="#" class="schemaTrigger btn btn-default" data-name="' + table + '"><i class="glyphicon glyphicon-list-alt"></i> Schema</a> ';
         if(blurconsole.auth.hasRole('manager')) {
+          actions += '<a href="#" class="copyTrigger btn btn-default" data-name="' + table + '"><i class="glyphicon glyphicon-export"></i> Copy</a> ';
           actions += '<a href="#" class="disableTrigger btn btn-danger" data-name="' + table + '"><i class="glyphicon glyphicon-cloud-download"></i> Disable</a> ';
         }
         return actions;
@@ -72,7 +73,7 @@ blurconsole.tables = (function () {
       setTimeout(_waitForData, 100);
     }
   }
-    
+
   function _registerPageEvents() {
     // Tab control
     jqueryMap.$tableInfoHolder.on('click', 'ul.nav a', function(e) {
@@ -120,6 +121,43 @@ blurconsole.tables = (function () {
       });
       return false;
     });
+
+    // Copy Table
+    jqueryMap.$tableInfoHolder.on('click', 'a.copyTrigger', function() {
+      var tableName = $(this).data('name');
+
+      var modalBody = '<form><div class="form-group"><label for="clusters">Destination Cluster:</label><select id="clusters" class="form-control">';
+      $.each(blurconsole.model.tables.getClusters(), function(i, cluster) {
+        modalBody += '<option value="' + cluster + '">' + cluster + '</option>';
+      });
+      modalBody += '</select></div><div class="form-group"><label for="newName">New Table Name:</label><input type="text" class="form-control" id="newName"/></div>';
+      modalBody += '<div class="form-group"><label for="newName">New Table Location:</label><input type="text" class="form-control" id="newLocation"/></div></form>';
+
+      var modalContent = blurconsole.browserUtils.modal('copyInfo', 'Where do you want to copy table ' + tableName, modalBody, [
+        {classes: 'btn-primary copyTable', label: 'Copy'},
+        {classes: 'btn-default cancel', label: 'Cancel', data: {dismiss:'modal'}}
+      ], 'medium');
+
+      var modal = $(modalContent).modal().on('shown.bs.modal', function(e) {
+        $(e.currentTarget).on('click', '.copyTable', function() {
+          var newTableName = $('#newName').val();
+          var newCluster = $('#clusters').val();
+          var newLocation = $('#newLocation').val();
+
+          if (newTableName === '' || newLocation === '') {
+            alert('New Table Name and New Table Location are required');
+          } else if (blurconsole.model.tables.getTableNamesForCluster(newCluster).indexOf(newTableName) >= 0) {
+            alert('Table ' + newTableName + ' already exists in cluster ' + newCluster);
+          } else {
+            blurconsole.model.tables.copyTable(tableName, newTableName, newLocation, newCluster);
+            modal.modal('hide');
+          }
+        });
+      }).on('hidden.bs.modal', function(e) {
+        $(e.currentTarget).remove();
+      });
+      return false;
+    });
   }
 
   function _unregisterPageEvents() {
@@ -127,7 +165,7 @@ blurconsole.tables = (function () {
       jqueryMap.$tableInfoHolder.off();
     }
   }
-    
+
     //------------------------- Event Handling and DOM Methods ---------------------------
   function _buildTabs() {
     var clusters = blurconsole.model.tables.getClusters();
@@ -178,7 +216,7 @@ blurconsole.tables = (function () {
       }
     });
   }
-  
+
   function _updateActivityIndicators() {
     var clusters = blurconsole.model.tables.getClusters();
 
@@ -202,7 +240,7 @@ blurconsole.tables = (function () {
       }
     });
   }
-    
+
     //-------------------------- Public API ------------------------------
   function unloadModule() {
     $.gevent.unsubscribe(jqueryMap.$container, 'tables-updated');

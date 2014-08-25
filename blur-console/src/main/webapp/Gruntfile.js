@@ -84,9 +84,9 @@ module.exports = function (grunt) {
                     sourceMap: true,
                     sourceMapIncludeSources: true,
                     banner:'/*\n<%= banner %>\n*/',
-                    compress: {
-                        drop_console: true
-                    }
+//                    compress: {
+//                        drop_console: true
+//                    }
                 },
                 files: {
                     'public/js/blurconsole.js': all_js_files

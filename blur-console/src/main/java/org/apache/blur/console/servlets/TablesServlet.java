@@ -40,6 +40,7 @@ public class TablesServlet extends BaseConsoleServlet {
   private static Pattern tableDisablePattern = Pattern.compile("/(.*)/disable");
   private static Pattern tableDeletePattern = Pattern.compile("/(.*)/delete");
   private static Pattern tableTermsPattern = Pattern.compile("/(.*)/(.*)/(.*)/terms");
+  private static Pattern tableCopyPattern = Pattern.compile("/(.*)/copy");
 
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
@@ -57,6 +58,8 @@ public class TablesServlet extends BaseConsoleServlet {
       disable(req, res, m.group(1));
     } else if ((m = tableDeletePattern.matcher(path)).matches()) {
       delete(req, res, m.group(1), req.getParameter("includeFiles"));
+    } else if ((m = tableCopyPattern.matcher(path)).matches()) {
+      copy(req, res, m.group(1), req.getParameter("newName"), req.getParameter("newLocation"), req.getParameter("cluster"));
     } else {
       sendNotFound(res, req.getRequestURI());
     }
@@ -67,8 +70,6 @@ public class TablesServlet extends BaseConsoleServlet {
     Map<String, List> tableSummaries = new HashMap<String, List>();
     try {
       tableSummaries = TableUtil.getTableSummaries();
-    } catch (IOException e) {
-      throw new IOException(e);
     } catch (Exception e) {
       sendError(response, e);
       return;
@@ -81,8 +82,6 @@ public class TablesServlet extends BaseConsoleServlet {
     Object schema;
     try {
       schema = TableUtil.getSchema(table);
-    } catch (IOException e) {
-      throw new IOException(e);
     } catch (Exception e) {
       sendError(response, e);
       return;
@@ -96,8 +95,6 @@ public class TablesServlet extends BaseConsoleServlet {
     List<String> terms = new ArrayList<String>();
     try {
       terms = TableUtil.getTerms(table, family, column, startsWith);
-    } catch (IOException e) {
-      throw new IOException(e);
     } catch (Exception e) {
       sendError(res, e);
       return;
@@ -110,8 +107,6 @@ public class TablesServlet extends BaseConsoleServlet {
     authorize(request, User.MANAGER_ROLE);
     try {
       TableUtil.enableTable(table);
-    } catch (IOException e) {
-      throw new IOException(e);
     } catch (Exception e) {
       sendError(response, e);
       return;
@@ -123,8 +118,6 @@ public class TablesServlet extends BaseConsoleServlet {
     authorize(request, User.MANAGER_ROLE);
     try {
       TableUtil.disableTable(table);
-    } catch (IOException e) {
-      throw new IOException(e);
     } catch (Exception e) {
       sendError(response, e);
       return;
@@ -136,8 +129,17 @@ public class TablesServlet extends BaseConsoleServlet {
     authorize(request, User.MANAGER_ROLE);
     try {
       TableUtil.deleteTable(table, Boolean.parseBoolean(includeFiles));
-    } catch (IOException e) {
-      throw new IOException(e);
+    } catch (Exception e) {
+      sendError(response, e);
+      return;
+    }
+    sendGenericOk(response);
+  }
+
+  private void copy(HttpServletRequest request, HttpServletResponse response, String srcTable, String destTable, String destLocation, String cluster) throws IOException {
+    authorize(request, User.MANAGER_ROLE);
+    try {
+      TableUtil.copyTable(srcTable, destTable, destLocation, cluster);
     } catch (Exception e) {
       sendError(response, e);
       return;

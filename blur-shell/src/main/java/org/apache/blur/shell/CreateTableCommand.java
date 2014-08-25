@@ -119,7 +119,7 @@ public class CreateTableCommand extends Command {
 
   @Override
   public String usage() {
-    return "-t <tablename> -c <shardcount>";
+    return "-t <tablename> -c <shardcount> -l <location>";
   }
 
   @Override

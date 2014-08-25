@@ -211,6 +211,10 @@ blurconsole.fake = (function() {
     _sendCallback(callback, terms);
   }
 
+  function copyTable(srcTable, destTable, destLocation, cluster) {
+    console.log('Fake sending request to copy table [' + srcTable + '] to [' + destTable + '] on cluster [' + cluster + '] stored in location [' + destLocation + ']');
+  }
+
   function sendSearch(query, table, args, callback) {
     console.log('sending fake search [' + query + '] on table [' + table + ']');
 
@@ -286,6 +290,7 @@ blurconsole.fake = (function() {
     deleteTable : deleteTable,
     getSchema : getSchema,
     findTerms : findTerms,
+    copyTable : copyTable,
     sendSearch : sendSearch
   };
 }());

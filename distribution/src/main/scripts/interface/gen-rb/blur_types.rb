@@ -935,4 +935,120 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Value < ::Thrift::Union
+    include ::Thrift::Struct_Union
+    class << self
+      def stringValue(val)
+        Value.new(:stringValue, val)
+      end
+
+      def intValue(val)
+        Value.new(:intValue, val)
+      end
+
+      def shortValue(val)
+        Value.new(:shortValue, val)
+      end
+
+      def longValue(val)
+        Value.new(:longValue, val)
+      end
+
+      def doubleValue(val)
+        Value.new(:doubleValue, val)
+      end
+
+      def floatValue(val)
+        Value.new(:floatValue, val)
+      end
+
+      def binaryValue(val)
+        Value.new(:binaryValue, val)
+      end
+
+      def booleanValue(val)
+        Value.new(:booleanValue, val)
+      end
+
+      def nullValue(val)
+        Value.new(:nullValue, val)
+      end
+    end
+
+    STRINGVALUE = 1
+    INTVALUE = 2
+    SHORTVALUE = 3
+    LONGVALUE = 4
+    DOUBLEVALUE = 5
+    FLOATVALUE = 6
+    BINARYVALUE = 7
+    BOOLEANVALUE = 8
+    NULLVALUE = 9
+
+    FIELDS = {
+      STRINGVALUE => {:type => ::Thrift::Types::STRING, :name => 'stringValue'},
+      INTVALUE => {:type => ::Thrift::Types::I32, :name => 'intValue'},
+      SHORTVALUE => {:type => ::Thrift::Types::I16, :name => 'shortValue'},
+      LONGVALUE => {:type => ::Thrift::Types::I64, :name => 'longValue'},
+      DOUBLEVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'doubleValue'},
+      FLOATVALUE => {:type => ::Thrift::Types::DOUBLE, :name => 'floatValue'},
+      BINARYVALUE => {:type => ::Thrift::Types::STRING, :name => 'binaryValue', :binary => true},
+      BOOLEANVALUE => {:type => ::Thrift::Types::BOOL, :name => 'booleanValue'},
+      NULLVALUE => {:type => ::Thrift::Types::BOOL, :name => 'nullValue'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      raise(StandardError, 'Union fields are not set.') if get_set_field.nil? || get_value.nil?
+    end
+
+    ::Thrift::Union.generate_accessors self
+  end
+
+  class Response < ::Thrift::Union
+    include ::Thrift::Struct_Union
+    class << self
+      def shardToValue(val)
+        Response.new(:shardToValue, val)
+      end
+
+      def value(val)
+        Response.new(:value, val)
+      end
+    end
+
+    SHARDTOVALUE = 1
+    VALUE = 2
+
+    FIELDS = {
+      SHARDTOVALUE => {:type => ::Thrift::Types::MAP, :name => 'shardToValue', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Value}},
+      VALUE => {:type => ::Thrift::Types::STRUCT, :name => 'value', :class => ::Blur::Value}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      raise(StandardError, 'Union fields are not set.') if get_set_field.nil? || get_value.nil?
+    end
+
+    ::Thrift::Union.generate_accessors self
+  end
+
+  class Arguments
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    VALUES = 1
+
+    FIELDS = {
+      VALUES => {:type => ::Thrift::Types::MAP, :name => 'values', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Value}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
 end

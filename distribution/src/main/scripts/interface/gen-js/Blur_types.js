@@ -3656,3 +3656,367 @@ Metric.prototype.write = function(output) {
   return;
 };
 
+Value = function(args) {
+  this.stringValue = null;
+  this.intValue = null;
+  this.shortValue = null;
+  this.longValue = null;
+  this.doubleValue = null;
+  this.floatValue = null;
+  this.binaryValue = null;
+  this.booleanValue = null;
+  this.nullValue = null;
+  if (args) {
+    if (args.stringValue !== undefined) {
+      this.stringValue = args.stringValue;
+    }
+    if (args.intValue !== undefined) {
+      this.intValue = args.intValue;
+    }
+    if (args.shortValue !== undefined) {
+      this.shortValue = args.shortValue;
+    }
+    if (args.longValue !== undefined) {
+      this.longValue = args.longValue;
+    }
+    if (args.doubleValue !== undefined) {
+      this.doubleValue = args.doubleValue;
+    }
+    if (args.floatValue !== undefined) {
+      this.floatValue = args.floatValue;
+    }
+    if (args.binaryValue !== undefined) {
+      this.binaryValue = args.binaryValue;
+    }
+    if (args.booleanValue !== undefined) {
+      this.booleanValue = args.booleanValue;
+    }
+    if (args.nullValue !== undefined) {
+      this.nullValue = args.nullValue;
+    }
+  }
+};
+Value.prototype = {};
+Value.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.stringValue = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.I32) {
+        this.intValue = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.I16) {
+        this.shortValue = input.readI16().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 4:
+      if (ftype == Thrift.Type.I64) {
+        this.longValue = input.readI64().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 5:
+      if (ftype == Thrift.Type.DOUBLE) {
+        this.doubleValue = input.readDouble().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 6:
+      if (ftype == Thrift.Type.DOUBLE) {
+        this.floatValue = input.readDouble().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 7:
+      if (ftype == Thrift.Type.STRING) {
+        this.binaryValue = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 8:
+      if (ftype == Thrift.Type.BOOL) {
+        this.booleanValue = input.readBool().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 9:
+      if (ftype == Thrift.Type.BOOL) {
+        this.nullValue = input.readBool().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Value.prototype.write = function(output) {
+  output.writeStructBegin('Value');
+  if (this.stringValue !== null && this.stringValue !== undefined) {
+    output.writeFieldBegin('stringValue', Thrift.Type.STRING, 1);
+    output.writeString(this.stringValue);
+    output.writeFieldEnd();
+  }
+  if (this.intValue !== null && this.intValue !== undefined) {
+    output.writeFieldBegin('intValue', Thrift.Type.I32, 2);
+    output.writeI32(this.intValue);
+    output.writeFieldEnd();
+  }
+  if (this.shortValue !== null && this.shortValue !== undefined) {
+    output.writeFieldBegin('shortValue', Thrift.Type.I16, 3);
+    output.writeI16(this.shortValue);
+    output.writeFieldEnd();
+  }
+  if (this.longValue !== null && this.longValue !== undefined) {
+    output.writeFieldBegin('longValue', Thrift.Type.I64, 4);
+    output.writeI64(this.longValue);
+    output.writeFieldEnd();
+  }
+  if (this.doubleValue !== null && this.doubleValue !== undefined) {
+    output.writeFieldBegin('doubleValue', Thrift.Type.DOUBLE, 5);
+    output.writeDouble(this.doubleValue);
+    output.writeFieldEnd();
+  }
+  if (this.floatValue !== null && this.floatValue !== undefined) {
+    output.writeFieldBegin('floatValue', Thrift.Type.DOUBLE, 6);
+    output.writeDouble(this.floatValue);
+    output.writeFieldEnd();
+  }
+  if (this.binaryValue !== null && this.binaryValue !== undefined) {
+    output.writeFieldBegin('binaryValue', Thrift.Type.STRING, 7);
+    output.writeString(this.binaryValue);
+    output.writeFieldEnd();
+  }
+  if (this.booleanValue !== null && this.booleanValue !== undefined) {
+    output.writeFieldBegin('booleanValue', Thrift.Type.BOOL, 8);
+    output.writeBool(this.booleanValue);
+    output.writeFieldEnd();
+  }
+  if (this.nullValue !== null && this.nullValue !== undefined) {
+    output.writeFieldBegin('nullValue', Thrift.Type.BOOL, 9);
+    output.writeBool(this.nullValue);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Response = function(args) {
+  this.shardToValue = null;
+  this.value = null;
+  if (args) {
+    if (args.shardToValue !== undefined) {
+      this.shardToValue = args.shardToValue;
+    }
+    if (args.value !== undefined) {
+      this.value = args.value;
+    }
+  }
+};
+Response.prototype = {};
+Response.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.MAP) {
+        var _size232 = 0;
+        var _rtmp3236;
+        this.shardToValue = {};
+        var _ktype233 = 0;
+        var _vtype234 = 0;
+        _rtmp3236 = input.readMapBegin();
+        _ktype233 = _rtmp3236.ktype;
+        _vtype234 = _rtmp3236.vtype;
+        _size232 = _rtmp3236.size;
+        for (var _i237 = 0; _i237 < _size232; ++_i237)
+        {
+          if (_i237 > 0 ) {
+            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+              input.rstack.pop();
+            }
+          }
+          var key238 = null;
+          var val239 = null;
+          key238 = input.readString().value;
+          val239 = new Value();
+          val239.read(input);
+          this.shardToValue[key238] = val239;
+        }
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.value = new Value();
+        this.value.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Response.prototype.write = function(output) {
+  output.writeStructBegin('Response');
+  if (this.shardToValue !== null && this.shardToValue !== undefined) {
+    output.writeFieldBegin('shardToValue', Thrift.Type.MAP, 1);
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.shardToValue));
+    for (var kiter240 in this.shardToValue)
+    {
+      if (this.shardToValue.hasOwnProperty(kiter240))
+      {
+        var viter241 = this.shardToValue[kiter240];
+        output.writeString(kiter240);
+        viter241.write(output);
+      }
+    }
+    output.writeMapEnd();
+    output.writeFieldEnd();
+  }
+  if (this.value !== null && this.value !== undefined) {
+    output.writeFieldBegin('value', Thrift.Type.STRUCT, 2);
+    this.value.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Arguments = function(args) {
+  this.values = null;
+  if (args) {
+    if (args.values !== undefined) {
+      this.values = args.values;
+    }
+  }
+};
+Arguments.prototype = {};
+Arguments.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.MAP) {
+        var _size242 = 0;
+        var _rtmp3246;
+        this.values = {};
+        var _ktype243 = 0;
+        var _vtype244 = 0;
+        _rtmp3246 = input.readMapBegin();
+        _ktype243 = _rtmp3246.ktype;
+        _vtype244 = _rtmp3246.vtype;
+        _size242 = _rtmp3246.size;
+        for (var _i247 = 0; _i247 < _size242; ++_i247)
+        {
+          if (_i247 > 0 ) {
+            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+              input.rstack.pop();
+            }
+          }
+          var key248 = null;
+          var val249 = null;
+          key248 = input.readString().value;
+          val249 = new Value();
+          val249.read(input);
+          this.values[key248] = val249;
+        }
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Arguments.prototype.write = function(output) {
+  output.writeStructBegin('Arguments');
+  if (this.values !== null && this.values !== undefined) {
+    output.writeFieldBegin('values', Thrift.Type.MAP, 1);
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.values));
+    for (var kiter250 in this.values)
+    {
+      if (this.values.hasOwnProperty(kiter250))
+      {
+        var viter251 = this.values[kiter250];
+        output.writeString(kiter250);
+        viter251.write(output);
+      }
+    }
+    output.writeMapEnd();
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+

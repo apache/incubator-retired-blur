@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -36,10 +37,14 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.IndexServer;
+import org.apache.blur.manager.command.Args;
+import org.apache.blur.manager.command.CommandManager;
+import org.apache.blur.manager.command.Response;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -55,6 +60,7 @@ import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.thrift.generated.User;
+import org.apache.blur.thrift.generated.Value;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.QueryCache;
@@ -75,6 +81,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   private ExecutorService _dataFetch;
   private String _cluster = BlurConstants.BLUR_CLUSTER;
   private int _dataFetchThreadCount = 32;
+  private CommandManager _commandManager;
 
   public void init() throws BlurException {
     _queryCache = new QueryCache("shard-cache", _maxQueryCacheElements, _maxTimeToLive);
@@ -583,4 +590,79 @@ public class BlurShardServer extends TableAdmin implements Iface {
     return false;
   }
 
+  @Override
+  public org.apache.blur.thrift.generated.Response execute(String table, String commandName, Arguments arguments)
+      throws BlurException, TException {
+    try {
+      Response response = _commandManager.execute(table, commandName, convert(arguments));
+      return convert(response);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  private org.apache.blur.thrift.generated.Response convert(Response response) throws BlurException {
+    org.apache.blur.thrift.generated.Response converted = new org.apache.blur.thrift.generated.Response();
+    if (response.isAggregatedResults()) {
+      converted.setValue(toValue(response.getServerResult()));
+    } else {
+      converted.setShardToValue(convert(response.getShardResults()));
+    }
+    return converted;
+  }
+
+  private Map<String, Value> convert(Map<String, Object> map) throws BlurException {
+    Map<String, Value> result = new HashMap<String, Value>();
+    for (Entry<String, Object> e : map.entrySet()) {
+      result.put(e.getKey(), toValue(e.getValue()));
+    }
+    return result;
+  }
+
+  private Value toValue(Object o) throws BlurException {
+    Value value = new Value();
+    if (o == null) {
+      value.setNullValue(true);
+      return value;
+    }
+    if (o instanceof Long) {
+      value.setLongValue((Long) o);
+      return value;
+    } else if (o instanceof String) {
+      value.setStringValue((String) o);
+      return value;
+    } else if (o instanceof Integer) {
+      value.setIntValue((Integer) o);
+      return value;
+    }
+    throw new BException("Object [{0}] not supported.", o);
+  }
+
+  private Args convert(Arguments arguments) {
+    if (arguments == null) {
+      return null;
+    }
+    Args args = new Args();
+    Map<String, Value> values = arguments.getValues();
+    Set<Entry<String, Value>> entrySet = values.entrySet();
+    for (Entry<String, Value> e : entrySet) {
+      args.set(e.getKey(), toObject(e.getValue()));
+    }
+    return args;
+  }
+
+  private Object toObject(Value value) {
+    if (value.getNullValue()) {
+      return null;
+    }
+    return value.getFieldValue();
+  }
+
+  public void setCommandManager(CommandManager commandManager) {
+    _commandManager = commandManager;
+  }
 }

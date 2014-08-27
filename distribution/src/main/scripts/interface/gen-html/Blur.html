@@ -22,6 +22,7 @@
 <li><a href="Blur.html#Fn_Blur_enableTable">enableTable</a></li>
 <li><a href="Blur.html#Fn_Blur_enqueueMutate">enqueueMutate</a></li>
 <li><a href="Blur.html#Fn_Blur_enqueueMutateBatch">enqueueMutateBatch</a></li>
+<li><a href="Blur.html#Fn_Blur_execute">execute</a></li>
 <li><a href="Blur.html#Fn_Blur_fetchRow">fetchRow</a></li>
 <li><a href="Blur.html#Fn_Blur_fetchRowBatch">fetchRowBatch</a></li>
 <li><a href="Blur.html#Fn_Blur_isInSafeMode">isInSafeMode</a></li>
@@ -57,7 +58,8 @@
 <li><a href="Blur.html#Fn_Blur_traceRequestList">traceRequestList</a></li>
 </ul>
 </td>
-<td><a href="Blur.html#Struct_BlurException">BlurException</a><br/>
+<td><a href="Blur.html#Struct_Arguments">Arguments</a><br/>
+<a href="Blur.html#Struct_BlurException">BlurException</a><br/>
 <a href="Blur.html#Struct_BlurQuery">BlurQuery</a><br/>
 <a href="Blur.html#Struct_BlurQueryStatus">BlurQueryStatus</a><br/>
 <a href="Blur.html#Struct_BlurResult">BlurResult</a><br/>
@@ -78,6 +80,7 @@
 <a href="Blur.html#Struct_Record">Record</a><br/>
 <a href="Blur.html#Struct_RecordMutation">RecordMutation</a><br/>
 <a href="Blur.html#Enum_RecordMutationType">RecordMutationType</a><br/>
+<a href="Blur.html#Struct_Response">Response</a><br/>
 <a href="Blur.html#Struct_Row">Row</a><br/>
 <a href="Blur.html#Struct_RowMutation">RowMutation</a><br/>
 <a href="Blur.html#Enum_RowMutationType">RowMutationType</a><br/>
@@ -91,6 +94,7 @@
 <a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a><br/>
 <a href="Blur.html#Struct_TableStats">TableStats</a><br/>
 <a href="Blur.html#Struct_User">User</a><br/>
+<a href="Blur.html#Struct_Value">Value</a><br/>
 </td>
 <td></code></td>
 </tr></table>
@@ -574,11 +578,34 @@ be family dot column, "family.column".
 <tr><td>4</td><td>doubleMap</td><td><code>map&lt;<code>string</code>, <code>double</code>&gt;</code></td><td>map of double values emitted by the Metric.
 </td><td>default</td><td></td></tr>
 </table><br/>The Metric will hold all the information for a given Metric.
-<br/></div><hr/><h2 id="Services">Services</h2>
+<br/></div><div class="definition"><h3 id="Struct_Value">Struct: Value</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>stringValue</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>intValue</td><td><code>i32</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>shortValue</td><td><code>i16</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>4</td><td>longValue</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>5</td><td>doubleValue</td><td><code>double</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>6</td><td>floatValue</td><td><code>double</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>7</td><td>binaryValue</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>8</td><td>booleanValue</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>9</td><td>nullValue</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
+</table><br/></div><div class="definition"><h3 id="Struct_Response">Struct: Response</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>shardToValue</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_Value">Value</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>value</td><td><code><a href="Blur.html#Struct_Value">Value</a></code></td><td></td><td>default</td><td></td></tr>
+</table><br/></div><div class="definition"><h3 id="Struct_Arguments">Struct: Arguments</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>values</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_Value">Value</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+</table><br/></div><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
 The Blur service API.  This API is the same for both controller servers as well as
 shards servers.  Each of the methods are documented.
-<br/><div class="definition"><h4 id="Fn_Blur_createTable">Function: Blur.createTable</h4>
+<br/><div class="definition"><h4 id="Fn_Blur_execute">Function: Blur.execute</h4>
+<pre><code><a href="Blur.html#Struct_Response">Response</a></code> execute(<code>string</code> table,
+                 <code>string</code> commandName,
+                 <code><a href="Blur.html#Struct_Arguments">Arguments</a></code> arguments)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_createTable">Function: Blur.createTable</h4>
 <pre><code>void</code> createTable(<code><a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a></code> tableDescriptor)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Creates a table with the given TableDescriptor.

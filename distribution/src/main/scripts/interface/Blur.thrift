@@ -830,11 +830,34 @@ enum Level {
   ALL
 }
 
+union Value {
+  1:string stringValue,
+  2:i32 intValue,
+  3:i16 shortValue,
+  4:i64 longValue,
+  5:double doubleValue,
+  6:double floatValue,
+  7:binary binaryValue,
+  8:bool booleanValue,
+  9:bool nullValue
+}
+
+union Response {
+  1:map<string, Value> shardToValue,
+  2:Value value
+}
+
+struct Arguments {
+  1:map<string,Value> values
+}
+
 /**
  * The Blur service API.  This API is the same for both controller servers as well as 
  * shards servers.  Each of the methods are documented.
  */
 service Blur {
+
+  Response execute(1:string table, 2:string commandName, 3:Arguments arguments) throws (1:BlurException ex)
 
   //Table Commands
 
@@ -1246,6 +1269,7 @@ service Blur {
    * Resets the logging for this instance to match the log4j file.  NOTE: This will allow for dynamically changing to logging file at runtime.
    */
   void resetLogging() throws (1:BlurException ex)
+
 }
 
 

@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -32,6 +33,7 @@ import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Level;
 import org.apache.blur.thrift.generated.Metric;
 import org.apache.blur.thrift.generated.Query;
+import org.apache.blur.thrift.generated.Response;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
@@ -242,6 +244,11 @@ public class FilteredBlurServer implements Iface {
   @Override
   public void enqueueMutateBatch(List<RowMutation> mutations) throws BlurException, TException {
     _iface.enqueueMutateBatch(mutations);
+  }
+
+  @Override
+  public Response execute(String table, String commandName, Arguments arguments) throws BlurException, TException {
+    return _iface.execute(table, commandName, arguments);
   }
 
 }

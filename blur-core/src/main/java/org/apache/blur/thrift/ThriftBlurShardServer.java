@@ -45,8 +45,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_MAX_READ_BUF
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_SELECTOR_THREADS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_WARMUP_DISABLED;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_WARMUP_THREAD_COUNT;
-import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
@@ -70,6 +70,7 @@ import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.DefaultBlurFilterCache;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
+import org.apache.blur.manager.command.CommandManager;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
@@ -228,7 +229,10 @@ public class ThriftBlurShardServer extends ThriftServer {
         fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay, facetThreadCount,
         deepPagingCache);
 
+    final CommandManager commandManager = new CommandManager(indexServer, 16);
+
     final BlurShardServer shardServer = new BlurShardServer();
+    shardServer.setCommandManager(commandManager);
     shardServer.setIndexServer(indexServer);
     shardServer.setIndexManager(indexManager);
     shardServer.setZookeeper(zooKeeper);
@@ -293,8 +297,8 @@ public class ThriftBlurShardServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(traceStorage, refresher, server, shardServer, indexManager, indexServer, threadWatcher,
-            clusterStatus, zooKeeper, httpServer);
+        quietClose(commandManager, traceStorage, refresher, server, shardServer, indexManager, indexServer,
+            threadWatcher, clusterStatus, zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);

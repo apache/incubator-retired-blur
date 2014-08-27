@@ -70,6 +70,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TSocket;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
 import org.apache.blur.thrift.commands.BlurCommand;
+import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
@@ -82,6 +83,7 @@ import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Query;
+import org.apache.blur.thrift.generated.Response;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
@@ -99,9 +101,9 @@ import org.apache.blur.utils.ForkJoin;
 import org.apache.blur.utils.ForkJoin.Merger;
 import org.apache.blur.utils.ForkJoin.ParallelCall;
 import org.apache.blur.zookeeper.WatchChildren;
-import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeExistance;
+import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -1490,6 +1492,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     ControllerServerContext context = ControllerServerContext.getControllerServerContext();
     context.setTraceRootId(rootId);
     context.setTraceRequestId(requestId);
+  }
+
+  @Override
+  public Response execute(String table, String commandName, Arguments arguments) throws BlurException, TException {
+    throw new BlurException("not implemented", null, ErrorType.UNKNOWN);
   }
 
 }

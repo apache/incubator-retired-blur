@@ -12,6 +12,22 @@ module Blur
     class Client
       include ::Thrift::Client
 
+      def execute(table, commandName, arguments)
+        send_execute(table, commandName, arguments)
+        return recv_execute()
+      end
+
+      def send_execute(table, commandName, arguments)
+        send_message('execute', Execute_args, :table => table, :commandName => commandName, :arguments => arguments)
+      end
+
+      def recv_execute()
+        result = receive_message(Execute_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'execute failed: unknown result')
+      end
+
       def createTable(tableDescriptor)
         send_createTable(tableDescriptor)
         recv_createTable()
@@ -686,6 +702,17 @@ module Blur
     class Processor
       include ::Thrift::Processor
 
+      def process_execute(seqid, iprot, oprot)
+        args = read_args(iprot, Execute_args)
+        result = Execute_result.new()
+        begin
+          result.success = @handler.execute(args.table, args.commandName, args.arguments)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'execute', seqid)
+      end
+
       def process_createTable(seqid, iprot, oprot)
         args = read_args(iprot, CreateTable_args)
         result = CreateTable_result.new()
@@ -1159,6 +1186,44 @@ module Blur
     end
 
     # HELPER FUNCTIONS AND STRUCTURES
+
+    class Execute_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      COMMANDNAME = 2
+      ARGUMENTS = 3
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        COMMANDNAME => {:type => ::Thrift::Types::STRING, :name => 'commandName'},
+        ARGUMENTS => {:type => ::Thrift::Types::STRUCT, :name => 'arguments', :class => ::Blur::Arguments}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Execute_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::Response},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
 
     class CreateTable_args
       include ::Thrift::Struct, ::Thrift::Struct_Union

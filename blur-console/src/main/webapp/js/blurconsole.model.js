@@ -85,6 +85,17 @@ blurconsole.model = (function() {
       return tableMap;
     }
 
+    function getTableNamesForCluster(cluster) {
+      var list = [];
+      $.each(stateMap.currentTables, function(idx, table) {
+        if (table.cluster === cluster) {
+          list.push(table.name);
+        }
+      });
+
+      return list;
+    }
+
     function isDataLoaded() {
       return stateMap.currentTables !== null;
     }
@@ -136,6 +147,10 @@ blurconsole.model = (function() {
       configMap.poller.findTerms(table, family, column, startsWith, callback);
     }
 
+    function copyTable(srcTable, destTable, destLocation, cluster) {
+      configMap.poller.copyTable(srcTable, destTable, destLocation, cluster);
+    }
+
     return {
       getClusters : getClusters,
       getEnabledTables : getEnabledTables,
@@ -147,7 +162,9 @@ blurconsole.model = (function() {
       getSchema : getSchema,
       findTerms : findTerms,
       getAllEnabledTables : getAllEnabledTables,
-      getFamilies : getFamilies
+      getFamilies : getFamilies,
+      copyTable : copyTable,
+      getTableNamesForCluster : getTableNamesForCluster
     };
   }());
 

@@ -20,7 +20,9 @@ package org.apache.blur.console.util;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
+import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
@@ -126,6 +128,15 @@ public class CachingBlurClient {
   public void cancelQuery(String table, String uuid) throws TException {
     getClient().cancelQuery(table, uuid);
     invalidateQuery(table, uuid);
+  }
+
+  public void createTable(TableDescriptor td) throws TException {
+    getClient().createTable(td);
+    cleanup(tableListCache);
+  }
+  
+  public void addColumnDefinition(String table, ColumnDefinition def) throws BlurException, TException {
+	  getClient().addColumnDefinition(table, def);
   }
 
   private void invalidateQuery(String table, String uuid) {

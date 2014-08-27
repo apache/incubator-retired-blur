@@ -108,6 +108,19 @@ blurconsole.data = (function() {
     });
   }
 
+  function copyTable(srcTable, destTable, destLocation, cluster) {
+    $.ajax('/service/tables/' + srcTable + '/copy', {
+      data: {
+        newName: destTable,
+        cluster: cluster,
+        newLocation: destLocation
+      },
+      error: function(xhr) {
+        _handleError(xhr, 'tables');
+      }
+    });
+  }
+
   function sendSearch(query, table, args, callback) {
     var params = $.extend({table:table, query:query}, args);
     $.ajax('/service/search', {
@@ -131,6 +144,7 @@ blurconsole.data = (function() {
     deleteTable : deleteTable,
     getSchema : getSchema,
     findTerms : findTerms,
+    copyTable : copyTable,
     sendSearch : sendSearch
   };
 }());

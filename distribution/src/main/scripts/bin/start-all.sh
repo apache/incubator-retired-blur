@@ -25,3 +25,4 @@ if [ "$BLUR_MANAGE_ZK" == "true" ]; then
 fi
 $BLUR_HOME/bin/start-shards.sh
 $BLUR_HOME/bin/start-controllers.sh
+$BLUR_HOME/bin/start-consoles.sh

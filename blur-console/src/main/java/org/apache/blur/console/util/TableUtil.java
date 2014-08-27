@@ -29,7 +29,7 @@ import java.util.*;
 public class TableUtil {
 
   @SuppressWarnings("rawtypes")
-  public static Map<String, List> getTableSummaries() throws IOException, TException {
+  public static Map<String, List> getTableSummaries() throws TException {
     CachingBlurClient client = Config.getCachingBlurClient();
 
     List<Map<String, Object>> summaries = new ArrayList<Map<String, Object>>();
@@ -70,7 +70,7 @@ public class TableUtil {
     return data;
   }
 
-  public static Map<String, Map<String, Map<String, Object>>> getSchema(String table) throws IOException, TException {
+  public static Map<String, Map<String, Map<String, Object>>> getSchema(String table) throws TException {
     CachingBlurClient client = Config.getCachingBlurClient();
 
     Schema schema = client.schema(table);
@@ -92,7 +92,7 @@ public class TableUtil {
     return schemaInfo;
   }
 
-  public static List<String> getTerms(String table, String family, String column, String startWith) throws IOException, TException {
+  public static List<String> getTerms(String table, String family, String column, String startWith) throws TException {
     CachingBlurClient client = Config.getCachingBlurClient();
 
     return client.terms(table, family, column, startWith, (short) 10);
@@ -108,5 +108,24 @@ public class TableUtil {
 
   public static void deleteTable(String table, boolean includeFiles) throws TException, IOException {
     Config.getCachingBlurClient().removeTable(table, includeFiles);
+  }
+
+  public static void copyTable(String srcTable, String destTable, String destLocation, String cluster) throws TException {
+    TableDescriptor td = Config.getCachingBlurClient().describe(srcTable);
+
+    td.setTableUri(destLocation);
+    td.setCluster(cluster);
+    td.setName(destTable);
+
+    CachingBlurClient client = Config.getCachingBlurClient();
+    client.createTable(td);
+    
+    Schema schema = client.schema(srcTable);
+    
+    for(Map<String, ColumnDefinition> column : schema.getFamilies().values()) {
+    	for (ColumnDefinition def : column.values()) {
+    		client.addColumnDefinition(destTable, def);
+    	}
+    }
   }
 }

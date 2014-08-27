@@ -21,10 +21,13 @@ package org.apache.blur.shell;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -77,6 +80,14 @@ public class CopyTableCommand extends Command {
       out.flush();
     }
     client.createTable(td);
+    
+    Schema schema = client.schema(src);
+    
+    for(Map<String, ColumnDefinition> column : schema.getFamilies().values()) {
+    	for (ColumnDefinition def : column.values()) {
+    		client.addColumnDefinition(dest, def);
+    	}
+    }
   }
     
   @Override
@@ -86,7 +97,7 @@ public class CopyTableCommand extends Command {
 
   @Override
   public String usage() {
-    return "-src <tablename> -to <desttable> -l <location> -c <cluster>";
+    return "-src <tablename> -dest <desttable> -l <location> -c <cluster>";
   }
 
   @Override

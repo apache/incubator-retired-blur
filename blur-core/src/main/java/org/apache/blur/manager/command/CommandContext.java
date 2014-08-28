@@ -21,6 +21,9 @@ import java.util.Map;
 
 public abstract class CommandContext {
 
-  public abstract <T> Map<String, T> execute(Args args, String string);
+  public abstract <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexReadCommand<T>> clazz);
 
+  public abstract <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombiningCommand<?, T>> clazz);
+
+  public abstract <T> T writeIndex(Args args, Class<? extends IndexWriteCommand<T>> clazz);
 }

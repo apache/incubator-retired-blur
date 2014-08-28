@@ -20,8 +20,12 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-public interface CommandAggregator<IN, OUT> {
+import org.apache.lucene.search.IndexSearcher;
 
-  OUT aggregate(Iterator<Entry<String, IN>> it) throws IOException;
+public interface IndexReadCombiningCommand<T1, T2> {
+
+  T1 execute(Args args, IndexSearcher searcher) throws IOException;
+
+  T2 combine(Iterator<Entry<String, T1>> it) throws IOException;
 
 }

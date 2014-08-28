@@ -67,24 +67,24 @@ public class ShardCommandManager implements Closeable {
     }
     if (command instanceof IndexReadCommand) {
       return toResponse(executeReadCommand(command, table, args), command);
-    } else if (command instanceof IndexReadWriteCommand) {
-      return toResponse(executeReadWriteCommand((IndexReadWriteCommand<?>) command, table, args), command);
+    } else if (command instanceof IndexWriteCommand) {
+      return toResponse(executeReadWriteCommand((IndexWriteCommand<?>) command, table, args), command);
     }
     throw new IOException("Command type of [" + command.getClass() + "] not supported.");
   }
 
   @SuppressWarnings("unchecked")
   private Response toResponse(Map<String, Object> results, BaseCommand command) throws IOException {
-    if (command instanceof CommandAggregator) {
-      CommandAggregator<Object, Object> primitiveCommandAggregator = (CommandAggregator<Object, Object>) command;
+    if (command instanceof IndexReadCombiningCommand) {
+      IndexReadCombiningCommand<Object, Object> primitiveCommandAggregator = (IndexReadCombiningCommand<Object, Object>) command;
       Iterator<Entry<String, Object>> iterator = results.entrySet().iterator();
-      Object object = primitiveCommandAggregator.aggregate(iterator);
+      Object object = primitiveCommandAggregator.combine(iterator);
       return Response.createNewAggregateResponse(object);
     }
     return Response.createNewResponse(results);
   }
 
-  private Map<String, Object> executeReadWriteCommand(IndexReadWriteCommand<?> command, String table, Args args) {
+  private Map<String, Object> executeReadWriteCommand(IndexWriteCommand<?> command, String table, Args args) {
     return null;
   }
 

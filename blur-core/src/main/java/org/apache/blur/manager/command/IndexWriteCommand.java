@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.search.IndexSearcher;
 
-public interface IndexReadWriteCommand<T> {
+public interface IndexWriteCommand<T> {
 
   public abstract T execute(Args args, IndexSearcher searcher, IndexWriter writer) throws IOException;
 

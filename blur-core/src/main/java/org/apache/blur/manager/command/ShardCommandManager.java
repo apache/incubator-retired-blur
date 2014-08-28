@@ -61,7 +61,7 @@ public class ShardCommandManager extends BaseCommandManager {
       Object object = primitiveCommandAggregator.combine(results);
       return Response.createNewAggregateResponse(object);
     }
-    return Response.createNewResponse(results);
+    return Response.createNewShardResponse(results);
   }
 
   private Map<Shard, Object> executeReadWriteCommand(IndexWriteCommand<?> command, TableContext tableContext, Args args) {
@@ -104,10 +104,6 @@ public class ShardCommandManager extends BaseCommandManager {
       resultMap.put(new Shard(e.getKey()), object);
     }
     return resultMap;
-  }
-
-  private BaseCommand getCommandObject(String commandName) {
-    return _command.get(commandName);
   }
 
   static class ShardIndexContext extends IndexContext {

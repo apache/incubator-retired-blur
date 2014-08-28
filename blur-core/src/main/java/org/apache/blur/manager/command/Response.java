@@ -21,13 +21,16 @@ import java.util.Map;
 public class Response {
 
   private final Map<Shard, Object> _shardResults;
+  private final Map<Server, Object> _serverResults;
   private final Object _serverResult;
   private final boolean _aggregatedResults;
 
-  private Response(Map<Shard, Object> shardResults, Object serverResult, boolean aggregatedResults) {
+  private Response(Map<Shard, Object> shardResults, Object serverResult, Map<Server, Object> serverResults,
+      boolean aggregatedResults) {
     _shardResults = shardResults;
     _serverResult = serverResult;
     _aggregatedResults = aggregatedResults;
+    _serverResults = serverResults;
   }
 
   public boolean isAggregatedResults() {
@@ -42,11 +45,19 @@ public class Response {
     return _serverResult;
   }
 
-  public static Response createNewAggregateResponse(Object object) {
-    return new Response(null, object, true);
+  public Map<Server, Object> getServerResults() {
+    return _serverResults;
   }
 
-  public static Response createNewResponse(Map<Shard, Object> map) {
-    return new Response(map, null, false);
+  public static Response createNewAggregateResponse(Object object) {
+    return new Response(null, object, null, true);
+  }
+
+  public static Response createNewShardResponse(Map<Shard, Object> map) {
+    return new Response(map, null, null, false);
+  }
+
+  public static Response createNewServerResponse(Map<Server, Object> result) {
+    return new Response(null, null, result, true);
   }
 }

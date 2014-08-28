@@ -54,4 +54,8 @@ public class BaseCommandManager implements Closeable {
       throw new IOException(e);
     }
   }
+  
+  protected BaseCommand getCommandObject(String commandName) {
+    return _command.get(commandName);
+  }
 }

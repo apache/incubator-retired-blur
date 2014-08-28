@@ -1,8 +1,10 @@
 package org.apache.blur.manager.command;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.blur.manager.command.primitive.BaseCommand;
+import org.apache.blur.server.TableContext;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -20,28 +22,62 @@ import org.apache.blur.manager.command.primitive.BaseCommand;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
+@SuppressWarnings("unchecked")
 public class ControllerCommandManager extends BaseCommandManager {
 
   public ControllerCommandManager(int threadCount) throws IOException {
     super(threadCount);
   }
 
-  public Response execute(String table, String commandName, Args args) {
-    ClusterContext context = createCommandContext(table);
-    BaseCommand command = getCommand(commandName);
-    
-    // For those commands that do not implement cluster command, run them in a base impl.
-    
-    throw new RuntimeException("Not Implemented");
+  public Response execute(TableContext tableContext, String commandName, Args args) throws IOException {
+    ClusterContext context = createCommandContext(tableContext, args);
+    BaseCommand command = getCommandObject(commandName);
+    if (command == null) {
+      throw new IOException("Command with name [" + commandName + "] not found.");
+    }
+    // For those commands that do not implement cluster command, run them in a
+    // base impl.
+
+    if (command instanceof ClusterCommand) {
+      return executeClusterCommand(context, command);
+    } else if (command instanceof IndexReadCombiningCommand) {
+      return executeIndexReadCombiningCommand(args, context, command);
+    } else if (command instanceof IndexReadCommand) {
+      return executeIndexReadCommand(args, context, command);
+    } else if (command instanceof IndexWriteCommand) {
+      return executeIndexWriteCommand(args, context, command);
+    } else {
+      throw new IOException("Command type of [" + command.getClass() + "] not supported.");
+    }
   }
 
-  private BaseCommand getCommand(String commandName) {
-    throw new RuntimeException("Not Implemented");
+  private Response executeClusterCommand(ClusterContext context, BaseCommand command) {
+    ClusterCommand<Object> clusterCommand = (ClusterCommand<Object>) command;
+    Object object = clusterCommand.clusterExecute(context);
+    return Response.createNewAggregateResponse(object);
   }
 
-  private ClusterContext createCommandContext(String table) {
-    throw new RuntimeException("Not Implemented");
+  private Response executeIndexWriteCommand(Args args, ClusterContext context, BaseCommand command) {
+    Class<? extends IndexWriteCommand<Object>> clazz = (Class<? extends IndexWriteCommand<Object>>) command.getClass();
+    Object object = context.writeIndex(args, clazz);
+    return Response.createNewAggregateResponse(object);
+  }
+
+  private Response executeIndexReadCommand(Args args, ClusterContext context, BaseCommand command) {
+    Class<? extends IndexReadCommand<Object>> clazz = (Class<? extends IndexReadCommand<Object>>) command.getClass();
+    Map<Shard, Object> result = context.readIndexes(args, clazz);
+    return Response.createNewShardResponse(result);
+  }
+
+  private Response executeIndexReadCombiningCommand(Args args, ClusterContext context, BaseCommand command) {
+    Class<? extends IndexReadCombiningCommand<Object, Object>> clazz = (Class<? extends IndexReadCombiningCommand<Object, Object>>) command
+        .getClass();
+    Map<Server, Object> result = context.readServers(args, clazz);
+    return Response.createNewServerResponse(result);
+  }
+
+  private ClusterContext createCommandContext(TableContext tableContext, Args args) {
+    return new ControllerClusterContext(tableContext, args);
   }
 
 }

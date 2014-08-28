@@ -229,9 +229,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   protected void tableContextWarmup() throws BlurException, TException {
     for (String table : tableList()) {
       LOG.debug("Warming the tablecontext for table [{0}]", table);
-      TableDescriptor describe = describe(table);
-      TableContext.create(describe);
+      getTableContext(table);
     }
+  }
+
+  private TableContext getTableContext(String table) throws BlurException, TException {
+    TableDescriptor describe = describe(table);
+    return TableContext.create(describe);
   }
 
   private long getRandomDelay(long min, long max) {
@@ -1500,7 +1504,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   @Override
   public org.apache.blur.thrift.generated.Response  execute(String table, String commandName, Arguments arguments) throws BlurException, TException {
     try {
-      Response response = _commandManager.execute(table, commandName, CommandUtil.convert(arguments));
+      TableContext tableContext = getTableContext(table);
+      Response response = _commandManager.execute(tableContext, commandName, CommandUtil.convert(arguments));
       return CommandUtil.convert(response);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);

@@ -22,7 +22,10 @@ public class ControllerCommandManager {
   public Response execute(String table, String commandName, Args args) {
     CommandContext context = createCommandContext(table);
     ClusterCommand clusterCommand = getCommand(commandName);
-    return clusterCommand.execute(args, context);
+    
+    // For those commands that do not implement cluster command, run them in a base impl.
+    
+    throw new RuntimeException("Not Implemented");
   }
 
   private ClusterCommand getCommand(String commandName) {

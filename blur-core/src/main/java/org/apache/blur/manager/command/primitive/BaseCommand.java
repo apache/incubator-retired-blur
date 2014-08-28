@@ -16,23 +16,20 @@
  */
 package org.apache.blur.manager.command.primitive;
 
-import java.io.IOException;
-
-import org.apache.blur.manager.command.Args;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.search.IndexSearcher;
+import java.io.Serializable;
 
 @SuppressWarnings("serial")
-public abstract class ReadWriteCommand<T> extends PrimitiveCommand {
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public ReadWriteCommand<T> clone() {
-    return (ReadWriteCommand<T>) super.clone();
-  }
+public abstract class BaseCommand implements Serializable, Cloneable {
 
   public abstract String getName();
 
-  public abstract T execute(Args args, IndexSearcher searcher, IndexWriter writer) throws IOException;
+  @Override
+  public BaseCommand clone() {
+    try {
+      return (BaseCommand) super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
 }

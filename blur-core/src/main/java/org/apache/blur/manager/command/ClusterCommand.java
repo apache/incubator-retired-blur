@@ -19,20 +19,8 @@ import java.io.Serializable;
  * the License.
  */
 
-@SuppressWarnings("serial")
-public abstract class ClusterCommand implements Serializable, Cloneable {
+public interface ClusterCommand<T> extends Serializable, Cloneable {
 
-  public abstract String getName();
-
-  @Override
-  public ClusterCommand clone() {
-    try {
-      return (ClusterCommand) super.clone();
-    } catch (CloneNotSupportedException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public abstract Response execute(Args args, CommandContext context);
+  T clusterExecute(Args args, CommandContext context);
 
 }

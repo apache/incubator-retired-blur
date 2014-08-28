@@ -14,14 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.manager.command.primitive;
+package org.apache.blur.manager.command;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map.Entry;
 
-public interface PrimitiveCommandAggregator<IN, OUT> {
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.search.IndexSearcher;
 
-  OUT aggregate(Iterator<Entry<String, IN>> it) throws IOException;
+public interface IndexReadWriteCommand<T> {
+
+  public abstract T execute(Args args, IndexSearcher searcher, IndexWriter writer) throws IOException;
 
 }

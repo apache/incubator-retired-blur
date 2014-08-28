@@ -19,14 +19,17 @@ package org.apache.blur.manager.command.primitive;
 import java.io.IOException;
 
 import org.apache.blur.manager.command.Args;
+import org.apache.blur.manager.command.IndexReadCommand;
 import org.apache.lucene.search.IndexSearcher;
 
 @SuppressWarnings("serial")
-public class DocumentCount extends ReadCommand<Integer> {
+public class DocumentCount extends BaseCommand implements IndexReadCommand<Integer> {
+
+  private static final String DOC_COUNT = "docCount";
 
   @Override
   public String getName() {
-    return "docCount";
+    return DOC_COUNT;
   }
 
   @Override

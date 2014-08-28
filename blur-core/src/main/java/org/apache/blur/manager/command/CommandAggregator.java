@@ -14,22 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.manager.command.primitive;
+package org.apache.blur.manager.command;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
-@SuppressWarnings("serial")
-public abstract class PrimitiveCommand implements Serializable, Cloneable {
+public interface CommandAggregator<IN, OUT> {
 
-  public abstract String getName();
-
-  @Override
-  public PrimitiveCommand clone() {
-    try {
-      return (PrimitiveCommand) super.clone();
-    } catch (CloneNotSupportedException e) {
-      throw new RuntimeException(e);
-    }
-  }
+  OUT aggregate(Iterator<Entry<String, IN>> it) throws IOException;
 
 }

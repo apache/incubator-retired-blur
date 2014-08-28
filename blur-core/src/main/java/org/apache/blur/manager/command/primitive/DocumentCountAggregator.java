@@ -18,14 +18,23 @@ package org.apache.blur.manager.command.primitive;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.blur.manager.command.Args;
+import org.apache.blur.manager.command.ClusterCommand;
+import org.apache.blur.manager.command.CommandAggregator;
+import org.apache.blur.manager.command.CommandContext;
+
 @SuppressWarnings("serial")
-public class DocumentCountAggregator extends DocumentCount implements PrimitiveCommandAggregator<Integer, Long> {
+public class DocumentCountAggregator extends DocumentCount implements ClusterCommand<Long>,
+    CommandAggregator<Integer, Long> {
+
+  private static final String DOC_COUNT_AGGREGATE = "docCountAggregate";
 
   @Override
   public String getName() {
-    return "docCountAggregate";
+    return DOC_COUNT_AGGREGATE;
   }
 
   @Override
@@ -33,6 +42,17 @@ public class DocumentCountAggregator extends DocumentCount implements PrimitiveC
     long total = 0;
     while (it.hasNext()) {
       total += it.next().getValue();
+    }
+    return total;
+  }
+
+  @Override
+  public Long clusterExecute(Args args, CommandContext context) {
+    // where the key is the server hostname
+    Map<String, Long> results = context.execute(args, DOC_COUNT_AGGREGATE);
+    long total = 0;
+    for (Entry<String, Long> e : results.entrySet()) {
+      total += e.getValue();
     }
     return total;
   }

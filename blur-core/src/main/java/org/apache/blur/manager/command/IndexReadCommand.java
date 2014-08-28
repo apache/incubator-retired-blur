@@ -14,24 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.manager.command.primitive;
+package org.apache.blur.manager.command;
 
 import java.io.IOException;
 
-import org.apache.blur.manager.command.Args;
 import org.apache.lucene.search.IndexSearcher;
 
-@SuppressWarnings("serial")
-public abstract class ReadCommand<T> extends PrimitiveCommand {
+public interface IndexReadCommand<T> {
 
-  @SuppressWarnings("unchecked")
-  @Override
-  public ReadCommand<T> clone() {
-    return (ReadCommand<T>) super.clone();
-  }
-
-  public abstract String getName();
-
-  public abstract T execute(Args args, IndexSearcher searcher) throws IOException;
+  T execute(Args args, IndexSearcher searcher) throws IOException;
 
 }

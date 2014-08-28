@@ -32,10 +32,7 @@ import org.apache.blur.concurrent.Executors;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.command.primitive.DocumentCount;
 import org.apache.blur.manager.command.primitive.DocumentCountAggregator;
-import org.apache.blur.manager.command.primitive.PrimitiveCommand;
-import org.apache.blur.manager.command.primitive.PrimitiveCommandAggregator;
-import org.apache.blur.manager.command.primitive.ReadCommand;
-import org.apache.blur.manager.command.primitive.ReadWriteCommand;
+import org.apache.blur.manager.command.primitive.BaseCommand;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.IndexSearcherClosable;
 
@@ -43,7 +40,7 @@ public class ShardCommandManager implements Closeable {
 
   private final IndexServer _indexServer;
   private final ExecutorService _executorService;
-  private final Map<String, PrimitiveCommand> _command = new ConcurrentHashMap<String, PrimitiveCommand>();
+  private final Map<String, BaseCommand> _command = new ConcurrentHashMap<String, BaseCommand>();
 
   public ShardCommandManager(IndexServer indexServer, int threadCount) throws IOException {
     register(DocumentCount.class);
@@ -52,9 +49,9 @@ public class ShardCommandManager implements Closeable {
     _executorService = Executors.newThreadPool("command-", threadCount);
   }
 
-  private void register(Class<? extends PrimitiveCommand> commandClass) throws IOException {
+  private void register(Class<? extends BaseCommand> commandClass) throws IOException {
     try {
-      PrimitiveCommand command = commandClass.newInstance();
+      BaseCommand command = commandClass.newInstance();
       _command.put(command.getName(), command);
     } catch (InstantiationException e) {
       throw new IOException(e);
@@ -64,22 +61,22 @@ public class ShardCommandManager implements Closeable {
   }
 
   public Response execute(String table, String commandName, Args args) throws IOException {
-    PrimitiveCommand command = getCommandObject(commandName);
+    BaseCommand command = getCommandObject(commandName);
     if (command == null) {
       throw new IOException("Command with name [" + commandName + "] not found.");
     }
-    if (command instanceof ReadCommand) {
-      return toResponse(executeReadCommand((ReadCommand<?>) command, table, args), command);
-    } else if (command instanceof ReadWriteCommand) {
-      return toResponse(executeReadWriteCommand((ReadWriteCommand<?>) command, table, args), command);
+    if (command instanceof IndexReadCommand) {
+      return toResponse(executeReadCommand(command, table, args), command);
+    } else if (command instanceof IndexReadWriteCommand) {
+      return toResponse(executeReadWriteCommand((IndexReadWriteCommand<?>) command, table, args), command);
     }
     throw new IOException("Command type of [" + command.getClass() + "] not supported.");
   }
 
   @SuppressWarnings("unchecked")
-  private Response toResponse(Map<String, Object> results, PrimitiveCommand command) throws IOException {
-    if (command instanceof PrimitiveCommandAggregator) {
-      PrimitiveCommandAggregator<Object, Object> primitiveCommandAggregator = (PrimitiveCommandAggregator<Object, Object>) command;
+  private Response toResponse(Map<String, Object> results, BaseCommand command) throws IOException {
+    if (command instanceof CommandAggregator) {
+      CommandAggregator<Object, Object> primitiveCommandAggregator = (CommandAggregator<Object, Object>) command;
       Iterator<Entry<String, Object>> iterator = results.entrySet().iterator();
       Object object = primitiveCommandAggregator.aggregate(iterator);
       return Response.createNewAggregateResponse(object);
@@ -87,18 +84,18 @@ public class ShardCommandManager implements Closeable {
     return Response.createNewResponse(results);
   }
 
-  private Map<String, Object> executeReadWriteCommand(ReadWriteCommand<?> command, String table, Args args) {
+  private Map<String, Object> executeReadWriteCommand(IndexReadWriteCommand<?> command, String table, Args args) {
     return null;
   }
 
-  private Map<String, Object> executeReadCommand(ReadCommand<?> command, String table, final Args args)
+  private Map<String, Object> executeReadCommand(BaseCommand command, String table, final Args args)
       throws IOException {
     Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
     Map<String, Future<?>> futureMap = new HashMap<String, Future<?>>();
     for (Entry<String, BlurIndex> e : indexes.entrySet()) {
       String shardId = e.getKey();
       final BlurIndex blurIndex = e.getValue();
-      final ReadCommand<?> readCommand = command.clone();
+      final IndexReadCommand<?> readCommand = (IndexReadCommand<?>) command.clone();
       Future<Object> future = _executorService.submit(new Callable<Object>() {
         @Override
         public Object call() throws Exception {
@@ -128,7 +125,7 @@ public class ShardCommandManager implements Closeable {
     return resultMap;
   }
 
-  private PrimitiveCommand getCommandObject(String commandName) {
+  private BaseCommand getCommandObject(String commandName) {
     return _command.get(commandName);
   }
 

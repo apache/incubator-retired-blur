@@ -53,6 +53,9 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurPartitioner;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.IndexManager;
+import org.apache.blur.manager.command.CommandUtil;
+import org.apache.blur.manager.command.ControllerCommandManager;
+import org.apache.blur.manager.command.Response;
 import org.apache.blur.manager.indexserver.DistributedLayout;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
@@ -83,7 +86,6 @@ import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Query;
-import org.apache.blur.thrift.generated.Response;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
@@ -193,6 +195,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private Timer _preconnectTimer;
   private Timer _tableContextWarmupTimer;
   private long _tableLayoutTimeoutNanos = TimeUnit.SECONDS.toNanos(30);
+  private ControllerCommandManager _commandManager;
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -1495,8 +1498,20 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public Response execute(String table, String commandName, Arguments arguments) throws BlurException, TException {
-    throw new BlurException("not implemented", null, ErrorType.UNKNOWN);
+  public org.apache.blur.thrift.generated.Response  execute(String table, String commandName, Arguments arguments) throws BlurException, TException {
+    try {
+      Response response = _commandManager.execute(table, commandName, CommandUtil.convert(arguments));
+      return CommandUtil.convert(response);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
   }
 
+  public void setCommandManager(ControllerCommandManager commandManager) {
+    _commandManager = commandManager;
+  }
 }

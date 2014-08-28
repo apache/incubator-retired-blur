@@ -39,13 +39,13 @@ import org.apache.blur.manager.command.primitive.ReadWriteCommand;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.IndexSearcherClosable;
 
-public class CommandManager implements Closeable {
+public class ShardCommandManager implements Closeable {
 
   private final IndexServer _indexServer;
   private final ExecutorService _executorService;
   private final Map<String, PrimitiveCommand> _command = new ConcurrentHashMap<String, PrimitiveCommand>();
 
-  public CommandManager(IndexServer indexServer, int threadCount) throws IOException {
+  public ShardCommandManager(IndexServer indexServer, int threadCount) throws IOException {
     register(DocumentCount.class);
     register(DocumentCountAggregator.class);
     _indexServer = indexServer;

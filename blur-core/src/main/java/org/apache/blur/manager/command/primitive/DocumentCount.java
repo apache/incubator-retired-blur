@@ -18,9 +18,8 @@ package org.apache.blur.manager.command.primitive;
 
 import java.io.IOException;
 
-import org.apache.blur.manager.command.Args;
+import org.apache.blur.manager.command.IndexContext;
 import org.apache.blur.manager.command.IndexReadCommand;
-import org.apache.lucene.search.IndexSearcher;
 
 @SuppressWarnings("serial")
 public class DocumentCount extends BaseCommand implements IndexReadCommand<Integer> {
@@ -33,8 +32,8 @@ public class DocumentCount extends BaseCommand implements IndexReadCommand<Integ
   }
 
   @Override
-  public Integer execute(Args args, IndexSearcher searcher) throws IOException {
-    return (int) searcher.getIndexReader().numDocs();
+  public Integer execute(IndexContext context) throws IOException {
+    return context.getIndexReader().numDocs();
   }
 
 }

@@ -17,16 +17,15 @@
 package org.apache.blur.manager.command.primitive;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.blur.manager.command.Args;
 import org.apache.blur.manager.command.ClusterCommand;
-import org.apache.blur.manager.command.CommandContext;
+import org.apache.blur.manager.command.ClusterContext;
+import org.apache.blur.manager.command.IndexContext;
 import org.apache.blur.manager.command.IndexReadCombiningCommand;
 import org.apache.blur.manager.command.Server;
-import org.apache.lucene.search.IndexSearcher;
+import org.apache.blur.manager.command.Shard;
 
 @SuppressWarnings("serial")
 public class DocumentCountAggregator extends BaseCommand implements ClusterCommand<Long>,
@@ -40,23 +39,22 @@ public class DocumentCountAggregator extends BaseCommand implements ClusterComma
   }
 
   @Override
-  public Integer execute(Args args, IndexSearcher searcher) throws IOException {
-    return (int) searcher.getIndexReader().numDocs();
+  public Integer execute(IndexContext context) throws IOException {
+    return context.getIndexReader().numDocs();
   }
 
   @Override
-  public Long combine(Iterator<Entry<String, Integer>> it) throws IOException {
+  public Long combine(Map<Shard, Integer> results) throws IOException {
     long total = 0;
-    while (it.hasNext()) {
-      total += it.next().getValue();
+    for (Integer i : results.values()) {
+      total += i;
     }
     return total;
   }
 
   @Override
-  public Long clusterExecute(Args args, CommandContext context) {
-    // where the key is the server hostname
-    Map<Server, Long> results = context.readServers(args, DocumentCountAggregator.class);
+  public Long clusterExecute(ClusterContext context) {
+    Map<Server, Long> results = context.readServers(null, DocumentCountAggregator.class);
     long total = 0;
     for (Entry<Server, Long> e : results.entrySet()) {
       total += e.getValue();

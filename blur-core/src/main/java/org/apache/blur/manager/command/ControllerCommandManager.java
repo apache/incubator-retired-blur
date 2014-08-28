@@ -1,5 +1,9 @@
 package org.apache.blur.manager.command;
 
+import java.io.IOException;
+
+import org.apache.blur.manager.command.primitive.BaseCommand;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
@@ -17,22 +21,26 @@ package org.apache.blur.manager.command;
  * the License.
  */
 
-public class ControllerCommandManager {
+public class ControllerCommandManager extends BaseCommandManager {
+
+  public ControllerCommandManager(int threadCount) throws IOException {
+    super(threadCount);
+  }
 
   public Response execute(String table, String commandName, Args args) {
-    CommandContext context = createCommandContext(table);
-    ClusterCommand clusterCommand = getCommand(commandName);
+    ClusterContext context = createCommandContext(table);
+    BaseCommand command = getCommand(commandName);
     
     // For those commands that do not implement cluster command, run them in a base impl.
     
     throw new RuntimeException("Not Implemented");
   }
 
-  private ClusterCommand getCommand(String commandName) {
+  private BaseCommand getCommand(String commandName) {
     throw new RuntimeException("Not Implemented");
   }
 
-  private CommandContext createCommandContext(String table) {
+  private ClusterContext createCommandContext(String table) {
     throw new RuntimeException("Not Implemented");
   }
 

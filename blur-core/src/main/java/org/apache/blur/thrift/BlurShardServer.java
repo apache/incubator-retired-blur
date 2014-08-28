@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -37,13 +36,13 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.IndexServer;
-import org.apache.blur.manager.command.Args;
 import org.apache.blur.manager.command.CommandUtil;
-import org.apache.blur.manager.command.ShardCommandManager;
 import org.apache.blur.manager.command.Response;
+import org.apache.blur.manager.command.ShardCommandManager;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -61,7 +60,6 @@ import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.thrift.generated.User;
-import org.apache.blur.thrift.generated.Value;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.QueryCache;
@@ -595,7 +593,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public org.apache.blur.thrift.generated.Response execute(String table, String commandName, Arguments arguments)
       throws BlurException, TException {
     try {
-      Response response = _commandManager.execute(table, commandName, CommandUtil.convert(arguments));
+      Response response = _commandManager.execute(getTableContext(table), commandName, CommandUtil.convert(arguments));
       return CommandUtil.convert(response);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
@@ -606,6 +604,9 @@ public class BlurShardServer extends TableAdmin implements Iface {
     }
   }
 
+  private TableContext getTableContext(final String table) {
+    return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table), table));
+  }
 
   public void setCommandManager(ShardCommandManager commandManager) {
     _commandManager = commandManager;

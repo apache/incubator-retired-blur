@@ -2,6 +2,8 @@ package org.apache.blur.manager.command;
 
 import java.util.Map;
 
+import org.apache.blur.server.TableContext;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
@@ -19,11 +21,16 @@ import java.util.Map;
  * the License.
  */
 
-public abstract class CommandContext {
+public abstract class ClusterContext {
+
+  public abstract Args getArgs();
+
+  public abstract TableContext getTableContext();
 
   public abstract <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexReadCommand<T>> clazz);
 
   public abstract <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombiningCommand<?, T>> clazz);
 
   public abstract <T> T writeIndex(Args args, Class<? extends IndexWriteCommand<T>> clazz);
+
 }

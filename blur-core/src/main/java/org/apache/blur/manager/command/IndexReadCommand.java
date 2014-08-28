@@ -18,10 +18,8 @@ package org.apache.blur.manager.command;
 
 import java.io.IOException;
 
-import org.apache.lucene.search.IndexSearcher;
-
 public interface IndexReadCommand<T> {
 
-  T execute(Args args, IndexSearcher searcher) throws IOException;
+  T execute(IndexContext context) throws IOException;
 
 }

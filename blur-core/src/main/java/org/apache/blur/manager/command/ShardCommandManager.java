@@ -16,84 +16,65 @@
  */
 package org.apache.blur.manager.command;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import org.apache.blur.concurrent.Executors;
 import org.apache.blur.manager.IndexServer;
-import org.apache.blur.manager.command.primitive.DocumentCount;
-import org.apache.blur.manager.command.primitive.DocumentCountAggregator;
 import org.apache.blur.manager.command.primitive.BaseCommand;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.server.TableContext;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.IndexSearcher;
 
-public class ShardCommandManager implements Closeable {
+public class ShardCommandManager extends BaseCommandManager {
 
   private final IndexServer _indexServer;
-  private final ExecutorService _executorService;
-  private final Map<String, BaseCommand> _command = new ConcurrentHashMap<String, BaseCommand>();
 
   public ShardCommandManager(IndexServer indexServer, int threadCount) throws IOException {
-    register(DocumentCount.class);
-    register(DocumentCountAggregator.class);
+    super(threadCount);
     _indexServer = indexServer;
-    _executorService = Executors.newThreadPool("command-", threadCount);
   }
 
-  private void register(Class<? extends BaseCommand> commandClass) throws IOException {
-    try {
-      BaseCommand command = commandClass.newInstance();
-      _command.put(command.getName(), command);
-    } catch (InstantiationException e) {
-      throw new IOException(e);
-    } catch (IllegalAccessException e) {
-      throw new IOException(e);
-    }
-  }
-
-  public Response execute(String table, String commandName, Args args) throws IOException {
+  public Response execute(TableContext tableContext, String commandName, Args args) throws IOException {
     BaseCommand command = getCommandObject(commandName);
     if (command == null) {
       throw new IOException("Command with name [" + commandName + "] not found.");
     }
     if (command instanceof IndexReadCommand) {
-      return toResponse(executeReadCommand(command, table, args), command);
+      return toResponse(executeReadCommand(command, tableContext, args), command);
     } else if (command instanceof IndexWriteCommand) {
-      return toResponse(executeReadWriteCommand((IndexWriteCommand<?>) command, table, args), command);
+      return toResponse(executeReadWriteCommand((IndexWriteCommand<?>) command, tableContext, args), command);
     }
     throw new IOException("Command type of [" + command.getClass() + "] not supported.");
   }
 
   @SuppressWarnings("unchecked")
-  private Response toResponse(Map<String, Object> results, BaseCommand command) throws IOException {
+  private Response toResponse(Map<Shard, Object> results, BaseCommand command) throws IOException {
     if (command instanceof IndexReadCombiningCommand) {
       IndexReadCombiningCommand<Object, Object> primitiveCommandAggregator = (IndexReadCombiningCommand<Object, Object>) command;
-      Iterator<Entry<String, Object>> iterator = results.entrySet().iterator();
-      Object object = primitiveCommandAggregator.combine(iterator);
+      Object object = primitiveCommandAggregator.combine(results);
       return Response.createNewAggregateResponse(object);
     }
     return Response.createNewResponse(results);
   }
 
-  private Map<String, Object> executeReadWriteCommand(IndexWriteCommand<?> command, String table, Args args) {
+  private Map<Shard, Object> executeReadWriteCommand(IndexWriteCommand<?> command, TableContext tableContext, Args args) {
     return null;
   }
 
-  private Map<String, Object> executeReadCommand(BaseCommand command, String table, final Args args)
+  private Map<Shard, Object> executeReadCommand(BaseCommand command, final TableContext tableContext, final Args args)
       throws IOException {
-    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+    Map<String, BlurIndex> indexes = _indexServer.getIndexes(tableContext.getTable());
     Map<String, Future<?>> futureMap = new HashMap<String, Future<?>>();
     for (Entry<String, BlurIndex> e : indexes.entrySet()) {
       String shardId = e.getKey();
+      final Shard shard = new Shard(shardId);
       final BlurIndex blurIndex = e.getValue();
       final IndexReadCommand<?> readCommand = (IndexReadCommand<?>) command.clone();
       Future<Object> future = _executorService.submit(new Callable<Object>() {
@@ -101,7 +82,7 @@ public class ShardCommandManager implements Closeable {
         public Object call() throws Exception {
           IndexSearcherClosable searcher = blurIndex.getIndexSearcher();
           try {
-            return readCommand.execute(args, searcher);
+            return readCommand.execute(new ShardIndexContext(tableContext, shard, searcher, args));
           } finally {
             searcher.close();
           }
@@ -109,7 +90,7 @@ public class ShardCommandManager implements Closeable {
       });
       futureMap.put(shardId, future);
     }
-    Map<String, Object> resultMap = new HashMap<String, Object>();
+    Map<Shard, Object> resultMap = new HashMap<Shard, Object>();
     for (Entry<String, Future<?>> e : futureMap.entrySet()) {
       Future<?> future = e.getValue();
       Object object;
@@ -120,7 +101,7 @@ public class ShardCommandManager implements Closeable {
       } catch (ExecutionException ex) {
         throw new IOException(ex.getCause());
       }
-      resultMap.put(e.getKey(), object);
+      resultMap.put(new Shard(e.getKey()), object);
     }
     return resultMap;
   }
@@ -129,9 +110,44 @@ public class ShardCommandManager implements Closeable {
     return _command.get(commandName);
   }
 
-  @Override
-  public void close() throws IOException {
-    _executorService.shutdownNow();
-  }
+  static class ShardIndexContext extends IndexContext {
 
+    private final TableContext _tableContext;
+    private final Shard _shard;
+    private final IndexSearcher _searcher;
+    private final Args _args;
+
+    public ShardIndexContext(TableContext tableContext, Shard shard, IndexSearcher searcher, Args args) {
+      _tableContext = tableContext;
+      _shard = shard;
+      _searcher = searcher;
+      _args = args;
+    }
+
+    @Override
+    public Args getArgs() {
+      return _args;
+    }
+
+    @Override
+    public IndexReader getIndexReader() {
+      return getIndexSearcher().getIndexReader();
+    }
+
+    @Override
+    public IndexSearcher getIndexSearcher() {
+      return _searcher;
+    }
+
+    @Override
+    public TableContext getTableContext() {
+      return _tableContext;
+    }
+
+    @Override
+    public Shard getShard() {
+      return _shard;
+    }
+
+  }
 }

@@ -1,6 +1,8 @@
 package org.apache.blur.manager.command;
 
-import java.io.Serializable;
+import org.apache.blur.server.TableContext;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.IndexSearcher;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -19,8 +21,17 @@ import java.io.Serializable;
  * the License.
  */
 
-public interface ClusterCommand<T> extends Serializable, Cloneable {
+public abstract class IndexContext {
 
-  T clusterExecute(ClusterContext context);
+  public abstract Args getArgs();
+
+  public abstract TableContext getTableContext();
+  
+  public abstract Shard getShard();
+
+  public abstract IndexReader getIndexReader();
+
+  public abstract IndexSearcher getIndexSearcher();
+
 
 }

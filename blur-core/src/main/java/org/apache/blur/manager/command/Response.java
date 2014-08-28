@@ -20,11 +20,11 @@ import java.util.Map;
 
 public class Response {
 
-  private final Map<String, Object> _shardResults;
+  private final Map<Shard, Object> _shardResults;
   private final Object _serverResult;
   private final boolean _aggregatedResults;
 
-  private Response(Map<String, Object> shardResults, Object serverResult, boolean aggregatedResults) {
+  private Response(Map<Shard, Object> shardResults, Object serverResult, boolean aggregatedResults) {
     _shardResults = shardResults;
     _serverResult = serverResult;
     _aggregatedResults = aggregatedResults;
@@ -34,7 +34,7 @@ public class Response {
     return _aggregatedResults;
   }
 
-  public Map<String, Object> getShardResults() {
+  public Map<Shard, Object> getShardResults() {
     return _shardResults;
   }
 
@@ -46,7 +46,7 @@ public class Response {
     return new Response(null, object, true);
   }
 
-  public static Response createNewResponse(Map<String, Object> map) {
+  public static Response createNewResponse(Map<Shard, Object> map) {
     return new Response(map, null, false);
   }
 }

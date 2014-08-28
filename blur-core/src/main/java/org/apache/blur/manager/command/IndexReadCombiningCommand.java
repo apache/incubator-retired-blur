@@ -17,15 +17,12 @@
 package org.apache.blur.manager.command;
 
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map.Entry;
-
-import org.apache.lucene.search.IndexSearcher;
+import java.util.Map;
 
 public interface IndexReadCombiningCommand<T1, T2> {
 
-  T1 execute(Args args, IndexSearcher searcher) throws IOException;
+  T1 execute(IndexContext context) throws IOException;
 
-  T2 combine(Iterator<Entry<String, T1>> it) throws IOException;
+  T2 combine(Map<Shard, T1> results) throws IOException;
 
 }

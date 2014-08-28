@@ -39,10 +39,11 @@ public class CommandUtil {
     return converted;
   }
 
-  public static Map<String, Value> convert(Map<String, Object> map) throws BlurException {
+  public static Map<String, Value> convert(Map<Shard, Object> map) throws BlurException {
     Map<String, Value> result = new HashMap<String, Value>();
-    for (Entry<String, Object> e : map.entrySet()) {
-      result.put(e.getKey(), toValue(e.getValue()));
+    for (Entry<Shard, Object> e : map.entrySet()) {
+      // @TODO need to make different setters for shard and server results
+      result.put(e.getKey().getShard(), toValue(e.getValue()));
     }
     return result;
   }

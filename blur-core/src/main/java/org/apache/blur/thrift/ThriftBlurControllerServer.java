@@ -54,6 +54,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
+import org.apache.blur.manager.command.ControllerCommandManager;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.metrics.ReporterSetup;
@@ -127,8 +128,11 @@ public class ThriftBlurControllerServer extends ThriftServer {
     int timeout = configuration.getInt(BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT, 60000);
     BlurControllerServer.BlurClient client = new BlurControllerServer.BlurClientRemote(timeout);
 
+    ControllerCommandManager controllerCommandManager = new ControllerCommandManager(16);
+
     final BlurControllerServer controllerServer = new BlurControllerServer();
     controllerServer.setClient(client);
+    controllerServer.setCommandManager(controllerCommandManager);
     controllerServer.setClusterStatus(clusterStatus);
     controllerServer.setZookeeper(zooKeeper);
     controllerServer.setNodeName(nodeName);

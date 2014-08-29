@@ -29,9 +29,10 @@ import org.apache.blur.manager.command.cmds.DocumentCountAggregator;
  */
 
 public class BaseCommandManager implements Closeable {
-  
+
   protected final ExecutorService _executorService;
   protected final Map<String, BaseCommand> _command = new ConcurrentHashMap<String, BaseCommand>();
+  protected final Map<Class<? extends BaseCommand>, String> _commandNameLookup = new ConcurrentHashMap<Class<? extends BaseCommand>, String>();
 
   public BaseCommandManager(int threadCount) throws IOException {
     register(DocumentCount.class);
@@ -48,14 +49,19 @@ public class BaseCommandManager implements Closeable {
     try {
       BaseCommand command = commandClass.newInstance();
       _command.put(command.getName(), command);
+      _commandNameLookup.put(commandClass, command.getName());
     } catch (InstantiationException e) {
       throw new IOException(e);
     } catch (IllegalAccessException e) {
       throw new IOException(e);
     }
   }
-  
+
   protected BaseCommand getCommandObject(String commandName) {
     return _command.get(commandName);
+  }
+
+  protected String getCommandName(Class<? extends BaseCommand> clazz) {
+    return _commandNameLookup.get(clazz);
   }
 }

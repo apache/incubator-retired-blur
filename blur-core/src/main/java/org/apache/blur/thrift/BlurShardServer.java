@@ -593,7 +593,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public org.apache.blur.thrift.generated.Response execute(String table, String commandName, Arguments arguments)
       throws BlurException, TException {
     try {
-      Response response = _commandManager.execute(getTableContext(table), commandName, CommandUtil.convert(arguments));
+      Response response = _commandManager.execute(getTableContext(table), commandName, CommandUtil.toArgs(arguments));
       return CommandUtil.convert(response);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);

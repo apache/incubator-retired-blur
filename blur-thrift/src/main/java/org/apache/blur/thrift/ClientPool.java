@@ -186,6 +186,15 @@ public class ClientPool {
     return new LinkedBlockingQueue<Client>(_maxConnectionsPerHost);
   }
 
+  /**
+   * Get a client from the pool or creates a new one if the pool is empty. Also
+   * the clients are tested before being returned.
+   * 
+   * @param connection
+   * @return
+   * @throws TTransportException
+   * @throws IOException
+   */
   public Client getClient(Connection connection) throws TTransportException, IOException {
     BlockingQueue<Client> blockingQueue = getQueue(connection);
     if (blockingQueue.isEmpty()) {

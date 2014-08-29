@@ -1,5 +1,6 @@
 package org.apache.blur.manager.command;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -21,6 +22,6 @@ import java.io.Serializable;
 
 public interface ClusterCommand<T> extends Serializable, Cloneable {
 
-  T clusterExecute(ClusterContext context);
+  T clusterExecute(ClusterContext context) throws IOException;
 
 }

@@ -1502,10 +1502,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public org.apache.blur.thrift.generated.Response  execute(String table, String commandName, Arguments arguments) throws BlurException, TException {
+  public org.apache.blur.thrift.generated.Response execute(String table, String commandName, Arguments arguments)
+      throws BlurException, TException {
     try {
       TableContext tableContext = getTableContext(table);
-      Response response = _commandManager.execute(tableContext, commandName, CommandUtil.convert(arguments));
+      Map<String, String> tableLayout = getTableLayout(table);
+      Response response = _commandManager.execute(tableContext, commandName, CommandUtil.toArgs(arguments),
+          tableLayout);
       return CommandUtil.convert(response);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);

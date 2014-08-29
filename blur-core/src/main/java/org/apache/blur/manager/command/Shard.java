@@ -17,8 +17,8 @@ package org.apache.blur.manager.command;
  * the License.
  */
 
-public class Shard  implements Comparable<Shard> {
-  
+public class Shard implements Comparable<Shard> {
+
   private final String _shard;
 
   public Shard(String shard) {
@@ -53,7 +53,7 @@ public class Shard  implements Comparable<Shard> {
   public String getShard() {
     return _shard;
   }
-  
+
   @Override
   public int compareTo(Shard o) {
     if (o == null) {
@@ -61,4 +61,10 @@ public class Shard  implements Comparable<Shard> {
     }
     return _shard.compareTo(o._shard);
   }
+
+  @Override
+  public String toString() {
+    return "Shard [shard=" + _shard + "]";
+  }
+
 }

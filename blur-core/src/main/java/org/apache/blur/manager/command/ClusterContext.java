@@ -1,6 +1,8 @@
 package org.apache.blur.manager.command;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 import org.apache.blur.server.TableContext;
 
@@ -27,10 +29,21 @@ public abstract class ClusterContext {
 
   public abstract TableContext getTableContext();
 
-  public abstract <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexReadCommand<T>> clazz);
+  public abstract <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexReadCommand<T>> clazz)
+      throws IOException;
 
-  public abstract <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombiningCommand<?, T>> clazz);
+  public abstract <T> Map<Shard, Future<T>> readIndexesAsync(Args args, Class<? extends IndexReadCommand<T>> clazz)
+      throws IOException;
 
-  public abstract <T> T writeIndex(Args args, Class<? extends IndexWriteCommand<T>> clazz);
+  public abstract <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombiningCommand<?, T>> clazz)
+      throws IOException;
+
+  public abstract <T> Map<Server, Future<T>> readServersAsync(Args args,
+      Class<? extends IndexReadCombiningCommand<?, T>> clazz) throws IOException;
+
+  public abstract <T> T writeIndex(Args args, Class<? extends IndexWriteCommand<T>> clazz) throws IOException;
+
+  public abstract <T> Future<T> writeIndexAsync(Args args, Class<? extends IndexWriteCommand<T>> clazz)
+      throws IOException;
 
 }

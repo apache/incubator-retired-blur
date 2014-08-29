@@ -67,7 +67,7 @@ public class CommandUtil {
     throw new BException("Object [{0}] not supported.", o);
   }
 
-  public static Args convert(Arguments arguments) {
+  public static Args toArgs(Arguments arguments) {
     if (arguments == null) {
       return null;
     }
@@ -81,9 +81,21 @@ public class CommandUtil {
   }
 
   public static Object toObject(Value value) {
-    if (value.getNullValue()) {
+    if (value.isSetNullValue()) {
       return null;
     }
     return value.getFieldValue();
+  }
+
+  public static Arguments toArguments(Args args) throws BlurException {
+    if (args == null) {
+      return null;
+    }
+    Arguments arguments = new Arguments();
+    Set<Entry<String, Object>> entrySet = args.getValues().entrySet();
+    for (Entry<String, Object> e : entrySet) {
+      arguments.putToValues(e.getKey(), toValue(e.getValue()));
+    }
+    return arguments;
   }
 }

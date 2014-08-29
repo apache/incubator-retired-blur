@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class Args {
 
-  private Map<String, Object> _values = new HashMap<String, Object>();
+  private final Map<String, Object> _values = new HashMap<String, Object>();
 
   @SuppressWarnings("unchecked")
   public <T> T get(String name) {
@@ -39,4 +39,9 @@ public class Args {
   public <T> void set(String name, T value) {
     _values.put(name, value);
   }
+
+  public Map<String, Object> getValues() {
+    return _values;
+  }
+
 }

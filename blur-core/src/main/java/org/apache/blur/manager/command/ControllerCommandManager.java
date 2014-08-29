@@ -29,8 +29,9 @@ public class ControllerCommandManager extends BaseCommandManager {
     super(threadCount);
   }
 
-  public Response execute(TableContext tableContext, String commandName, Args args) throws IOException {
-    ClusterContext context = createCommandContext(tableContext, args);
+  public Response execute(TableContext tableContext, String commandName, Args args, Map<String, String> tableLayout)
+      throws IOException {
+    ClusterContext context = createCommandContext(tableContext, args, tableLayout);
     BaseCommand command = getCommandObject(commandName);
     if (command == null) {
       throw new IOException("Command with name [" + commandName + "] not found.");
@@ -51,33 +52,35 @@ public class ControllerCommandManager extends BaseCommandManager {
     }
   }
 
-  private Response executeClusterCommand(ClusterContext context, BaseCommand command) {
+  private Response executeClusterCommand(ClusterContext context, BaseCommand command) throws IOException {
     ClusterCommand<Object> clusterCommand = (ClusterCommand<Object>) command;
     Object object = clusterCommand.clusterExecute(context);
     return Response.createNewAggregateResponse(object);
   }
 
-  private Response executeIndexWriteCommand(Args args, ClusterContext context, BaseCommand command) {
+  private Response executeIndexWriteCommand(Args args, ClusterContext context, BaseCommand command) throws IOException {
     Class<? extends IndexWriteCommand<Object>> clazz = (Class<? extends IndexWriteCommand<Object>>) command.getClass();
     Object object = context.writeIndex(args, clazz);
     return Response.createNewAggregateResponse(object);
   }
 
-  private Response executeIndexReadCommand(Args args, ClusterContext context, BaseCommand command) {
+  private Response executeIndexReadCommand(Args args, ClusterContext context, BaseCommand command) throws IOException {
     Class<? extends IndexReadCommand<Object>> clazz = (Class<? extends IndexReadCommand<Object>>) command.getClass();
     Map<Shard, Object> result = context.readIndexes(args, clazz);
     return Response.createNewShardResponse(result);
   }
 
-  private Response executeIndexReadCombiningCommand(Args args, ClusterContext context, BaseCommand command) {
+  private Response executeIndexReadCombiningCommand(Args args, ClusterContext context, BaseCommand command)
+      throws IOException {
     Class<? extends IndexReadCombiningCommand<Object, Object>> clazz = (Class<? extends IndexReadCombiningCommand<Object, Object>>) command
         .getClass();
     Map<Server, Object> result = context.readServers(args, clazz);
     return Response.createNewServerResponse(result);
   }
 
-  private ClusterContext createCommandContext(TableContext tableContext, Args args) {
-    return new ControllerClusterContext(tableContext, args);
+  private ClusterContext createCommandContext(TableContext tableContext, Args args, Map<String, String> tableLayout)
+      throws IOException {
+    return new ControllerClusterContext(tableContext, args, tableLayout, _executorService, this);
   }
 
 }

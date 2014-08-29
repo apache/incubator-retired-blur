@@ -62,4 +62,9 @@ public class Server implements Comparable<Server> {
     return _server.compareTo(o._server);
   }
 
+  @Override
+  public String toString() {
+    return "Server [server=" + _server + "]";
+  }
+
 }

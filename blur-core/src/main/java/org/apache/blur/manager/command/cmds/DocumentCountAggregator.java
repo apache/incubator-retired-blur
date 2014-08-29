@@ -53,7 +53,7 @@ public class DocumentCountAggregator extends BaseCommand implements ClusterComma
   }
 
   @Override
-  public Long clusterExecute(ClusterContext context) {
+  public Long clusterExecute(ClusterContext context) throws IOException {
     Map<Server, Long> results = context.readServers(null, DocumentCountAggregator.class);
     long total = 0;
     for (Entry<Server, Long> e : results.entrySet()) {

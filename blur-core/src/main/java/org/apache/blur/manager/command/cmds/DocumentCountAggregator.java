@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.manager.command.primitive;
+package org.apache.blur.manager.command.cmds;
 
 import java.io.IOException;
 import java.util.Map;

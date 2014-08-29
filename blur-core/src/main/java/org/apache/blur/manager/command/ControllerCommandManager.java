@@ -3,7 +3,7 @@ package org.apache.blur.manager.command;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.blur.manager.command.primitive.BaseCommand;
+import org.apache.blur.manager.command.cmds.BaseCommand;
 import org.apache.blur.server.TableContext;
 
 /**

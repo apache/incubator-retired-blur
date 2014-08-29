@@ -14,26 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.manager.command.primitive;
+package org.apache.blur.manager.command.cmds;
 
-import java.io.IOException;
-
-import org.apache.blur.manager.command.IndexContext;
-import org.apache.blur.manager.command.IndexReadCommand;
+import java.io.Serializable;
 
 @SuppressWarnings("serial")
-public class DocumentCount extends BaseCommand implements IndexReadCommand<Integer> {
+public abstract class BaseCommand implements Serializable, Cloneable {
 
-  private static final String DOC_COUNT = "docCount";
-
-  @Override
-  public String getName() {
-    return DOC_COUNT;
-  }
+  public abstract String getName();
 
   @Override
-  public Integer execute(IndexContext context) throws IOException {
-    return context.getIndexReader().numDocs();
+  public BaseCommand clone() {
+    try {
+      return (BaseCommand) super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

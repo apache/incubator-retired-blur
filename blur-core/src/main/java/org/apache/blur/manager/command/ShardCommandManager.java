@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.apache.blur.manager.IndexServer;
-import org.apache.blur.manager.command.primitive.BaseCommand;
+import org.apache.blur.manager.command.cmds.BaseCommand;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.TableContext;

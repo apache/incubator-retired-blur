@@ -7,9 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.concurrent.Executors;
-import org.apache.blur.manager.command.primitive.BaseCommand;
-import org.apache.blur.manager.command.primitive.DocumentCount;
-import org.apache.blur.manager.command.primitive.DocumentCountAggregator;
+import org.apache.blur.manager.command.cmds.BaseCommand;
+import org.apache.blur.manager.command.cmds.DocumentCount;
+import org.apache.blur.manager.command.cmds.DocumentCountAggregator;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more

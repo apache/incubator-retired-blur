@@ -28,7 +28,7 @@ import org.apache.blur.manager.command.Server;
 import org.apache.blur.manager.command.Shard;
 
 @SuppressWarnings("serial")
-public class DocumentCountAggregator extends BaseCommand implements ClusterCommand<Long>,
+public class DocumentCountCombiner extends BaseCommand implements ClusterCommand<Long>,
     IndexReadCombiningCommand<Integer, Long> {
 
   private static final String DOC_COUNT_AGGREGATE = "docCountAggregate";
@@ -54,7 +54,7 @@ public class DocumentCountAggregator extends BaseCommand implements ClusterComma
 
   @Override
   public Long clusterExecute(ClusterContext context) throws IOException {
-    Map<Server, Long> results = context.readServers(null, DocumentCountAggregator.class);
+    Map<Server, Long> results = context.readServers(null, DocumentCountCombiner.class);
     long total = 0;
     for (Entry<Server, Long> e : results.entrySet()) {
       total += e.getValue();

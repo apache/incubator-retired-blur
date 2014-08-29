@@ -9,7 +9,8 @@ import java.util.concurrent.ExecutorService;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.manager.command.cmds.BaseCommand;
 import org.apache.blur.manager.command.cmds.DocumentCount;
-import org.apache.blur.manager.command.cmds.DocumentCountAggregator;
+import org.apache.blur.manager.command.cmds.DocumentCountCombiner;
+import org.apache.blur.manager.command.cmds.DocumentCountNoCombine;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -36,7 +37,8 @@ public class BaseCommandManager implements Closeable {
 
   public BaseCommandManager(int threadCount) throws IOException {
     register(DocumentCount.class);
-    register(DocumentCountAggregator.class);
+    register(DocumentCountNoCombine.class);
+    register(DocumentCountCombiner.class);
     _executorService = Executors.newThreadPool("command-", threadCount);
   }
 

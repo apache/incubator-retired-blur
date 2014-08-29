@@ -28,6 +28,7 @@ public class CommandExample {
   public static void main(String[] args) throws BlurException, TException, IOException {
     Iface client = BlurClient.getClient("localhost:40010");
     System.out.println(client.execute("test", "docCount", null));
+    System.out.println(client.execute("test", "docCountNoCombine", null));
     System.out.println(client.execute("test", "docCountAggregate", null));
   }
 }

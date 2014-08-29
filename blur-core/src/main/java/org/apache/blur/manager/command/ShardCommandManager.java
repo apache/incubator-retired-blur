@@ -46,7 +46,7 @@ public class ShardCommandManager extends BaseCommandManager {
     if (command == null) {
       throw new IOException("Command with name [" + commandName + "] not found.");
     }
-    if (command instanceof IndexReadCommand) {
+    if (command instanceof IndexReadCommand || command instanceof IndexReadCombiningCommand) {
       return toResponse(executeReadCommand(command, tableContext, args), command);
     } else if (command instanceof IndexWriteCommand) {
       return toResponse(executeReadWriteCommand((IndexWriteCommand<?>) command, tableContext, args), command);
@@ -76,18 +76,17 @@ public class ShardCommandManager extends BaseCommandManager {
       String shardId = e.getKey();
       final Shard shard = new Shard(shardId);
       final BlurIndex blurIndex = e.getValue();
-      final IndexReadCommand<?> readCommand = (IndexReadCommand<?>) command.clone();
-      Future<Object> future = _executorService.submit(new Callable<Object>() {
-        @Override
-        public Object call() throws Exception {
-          IndexSearcherClosable searcher = blurIndex.getIndexSearcher();
-          try {
-            return readCommand.execute(new ShardIndexContext(tableContext, shard, searcher, args));
-          } finally {
-            searcher.close();
-          }
-        }
-      });
+      Callable<Object> callable;
+      if (command instanceof IndexReadCommand) {
+        final IndexReadCommand<?> readCommand = (IndexReadCommand<?>) command.clone();
+        callable = getCallable(tableContext, args, shard, blurIndex, readCommand);
+      } else if (command instanceof IndexReadCombiningCommand) {
+        final IndexReadCombiningCommand<?, ?> readCombiningCommand = (IndexReadCombiningCommand<?, ?>) command.clone();
+        callable = getCallable(tableContext, args, shard, blurIndex, readCombiningCommand);
+      } else {
+        throw new IOException("Command type of [" + command.getClass() + "] not supported.");
+      }
+      Future<Object> future = _executorService.submit(callable);
       futureMap.put(shardId, future);
     }
     Map<Shard, Object> resultMap = new HashMap<Shard, Object>();
@@ -104,6 +103,36 @@ public class ShardCommandManager extends BaseCommandManager {
       resultMap.put(new Shard(e.getKey()), object);
     }
     return resultMap;
+  }
+
+  private Callable<Object> getCallable(final TableContext tableContext, final Args args, final Shard shard,
+      final BlurIndex blurIndex, final IndexReadCombiningCommand<?, ?> readCombiningCommand) {
+    return new Callable<Object>() {
+      @Override
+      public Object call() throws Exception {
+        IndexSearcherClosable searcher = blurIndex.getIndexSearcher();
+        try {
+          return readCombiningCommand.execute(new ShardIndexContext(tableContext, shard, searcher, args));
+        } finally {
+          searcher.close();
+        }
+      }
+    };
+  }
+
+  private Callable<Object> getCallable(final TableContext tableContext, final Args args, final Shard shard,
+      final BlurIndex blurIndex, final IndexReadCommand<?> readCommand) {
+    return new Callable<Object>() {
+      @Override
+      public Object call() throws Exception {
+        IndexSearcherClosable searcher = blurIndex.getIndexSearcher();
+        try {
+          return readCommand.execute(new ShardIndexContext(tableContext, shard, searcher, args));
+        } finally {
+          searcher.close();
+        }
+      }
+    };
   }
 
   static class ShardIndexContext extends IndexContext {

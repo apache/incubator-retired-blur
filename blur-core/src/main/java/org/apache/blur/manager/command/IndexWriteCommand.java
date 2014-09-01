@@ -18,12 +18,9 @@ package org.apache.blur.manager.command;
 
 import java.io.IOException;
 
-import org.apache.blur.server.TableContext;
 import org.apache.lucene.index.IndexWriter;
 
 public interface IndexWriteCommand<T> {
-  
-  public abstract Shard route(Args args, TableContext context) throws IOException;
 
   public abstract T execute(IndexContext context, IndexWriter writer) throws IOException;
 

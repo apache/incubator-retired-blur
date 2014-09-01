@@ -92,6 +92,7 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
+import org.apache.blur.thrift.generated.TimeoutException;
 import org.apache.blur.thrift.generated.User;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Trace.TraceId;
@@ -1509,7 +1510,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       Map<String, String> tableLayout = getTableLayout(table);
       Response response = _commandManager.execute(tableContext, commandName, CommandUtil.toArgs(arguments),
           tableLayout);
-      return CommandUtil.convert(response);
+      return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
       if (e instanceof BlurException) {
@@ -1521,5 +1522,16 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   public void setCommandManager(ControllerCommandManager commandManager) {
     _commandManager = commandManager;
+  }
+
+  @Override
+  public org.apache.blur.thrift.generated.Response reconnect(String executionId) throws BlurException,
+      TimeoutException, TException {
+    throw new BException("Not implemented yet.");
+  }
+
+  @Override
+  public void refresh() throws TException {
+    // This is a NO-OP at this point for the controller.
   }
 }

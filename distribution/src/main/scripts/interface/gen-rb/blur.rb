@@ -24,10 +24,35 @@ module Blur
       def recv_execute()
         result = receive_message(Execute_result)
         return result.success unless result.success.nil?
-        raise result.ex unless result.ex.nil?
+        raise result.bex unless result.bex.nil?
+        raise result.tex unless result.tex.nil?
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'execute failed: unknown result')
       end
 
+      def reconnect(executionId)
+        send_reconnect(executionId)
+        return recv_reconnect()
+      end
+
+      def send_reconnect(executionId)
+        send_message('reconnect', Reconnect_args, :executionId => executionId)
+      end
+
+      def recv_reconnect()
+        result = receive_message(Reconnect_result)
+        return result.success unless result.success.nil?
+        raise result.bex unless result.bex.nil?
+        raise result.tex unless result.tex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'reconnect failed: unknown result')
+      end
+
+      def refresh()
+        send_refresh()
+      end
+
+      def send_refresh()
+        send_message('refresh', Refresh_args)
+      end
       def createTable(tableDescriptor)
         send_createTable(tableDescriptor)
         recv_createTable()
@@ -707,10 +732,31 @@ module Blur
         result = Execute_result.new()
         begin
           result.success = @handler.execute(args.table, args.commandName, args.arguments)
-        rescue ::Blur::BlurException => ex
-          result.ex = ex
+        rescue ::Blur::BlurException => bex
+          result.bex = bex
+        rescue ::Blur::TimeoutException => tex
+          result.tex = tex
         end
         write_result(result, oprot, 'execute', seqid)
+      end
+
+      def process_reconnect(seqid, iprot, oprot)
+        args = read_args(iprot, Reconnect_args)
+        result = Reconnect_result.new()
+        begin
+          result.success = @handler.reconnect(args.executionId)
+        rescue ::Blur::BlurException => bex
+          result.bex = bex
+        rescue ::Blur::TimeoutException => tex
+          result.tex = tex
+        end
+        write_result(result, oprot, 'reconnect', seqid)
+      end
+
+      def process_refresh(seqid, iprot, oprot)
+        args = read_args(iprot, Refresh_args)
+        @handler.refresh()
+        return
       end
 
       def process_createTable(seqid, iprot, oprot)
@@ -1210,11 +1256,79 @@ module Blur
     class Execute_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
       SUCCESS = 0
-      EX = 1
+      BEX = 1
+      TEX = 2
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::Response},
-        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+        BEX => {:type => ::Thrift::Types::STRUCT, :name => 'bex', :class => ::Blur::BlurException},
+        TEX => {:type => ::Thrift::Types::STRUCT, :name => 'tex', :class => ::Blur::TimeoutException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Reconnect_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EXECUTIONID = 1
+
+      FIELDS = {
+        EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Reconnect_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      BEX = 1
+      TEX = 2
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::Response},
+        BEX => {:type => ::Thrift::Types::STRUCT, :name => 'bex', :class => ::Blur::BlurException},
+        TEX => {:type => ::Thrift::Types::STRUCT, :name => 'tex', :class => ::Blur::TimeoutException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Refresh_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Refresh_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
       }
 
       def struct_fields; FIELDS; end

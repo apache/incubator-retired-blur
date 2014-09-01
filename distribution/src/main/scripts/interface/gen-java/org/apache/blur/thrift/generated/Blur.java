@@ -57,7 +57,29 @@ public class Blur {
    */
   public interface Iface {
 
-    public Response execute(String table, String commandName, Arguments arguments) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    /**
+     * Executes the given command by name on the table with the provided arguments.
+     * 
+     * @param table
+     * @param commandName
+     * @param arguments
+     */
+    public Response execute(String table, String commandName, Arguments arguments) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    /**
+     * If the execute command times out due to command taking longer than the configured
+     * network tcp timeout this method allows the client to reconnect to the already
+     * executing command.
+     * 
+     * @param executionId
+     */
+    public Response reconnect(String executionId) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    /**
+     * Releases and refreshes the read snapshots of the indexes in the session for the
+     * current connection.
+     */
+    public void refresh() throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Creates a table with the given TableDescriptor.
@@ -447,6 +469,10 @@ public class Blur {
 
     public void execute(String table, String commandName, Arguments arguments, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.execute_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
+    public void reconnect(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.reconnect_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    public void refresh(org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.refresh_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
     public void createTable(TableDescriptor tableDescriptor, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.createTable_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void enableTable(String table, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.enableTable_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
@@ -557,7 +583,7 @@ public class Blur {
       super(iprot, oprot);
     }
 
-    public Response execute(String table, String commandName, Arguments arguments) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public Response execute(String table, String commandName, Arguments arguments) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       send_execute(table, commandName, arguments);
       return recv_execute();
@@ -572,17 +598,60 @@ public class Blur {
       sendBase("execute", args);
     }
 
-    public Response recv_execute() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public Response recv_execute() throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       execute_result result = new execute_result();
       receiveBase(result, "execute");
       if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.bex != null) {
+        throw result.bex;
+      }
+      if (result.tex != null) {
+        throw result.tex;
       }
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "execute failed: unknown result");
+    }
+
+    public Response reconnect(String executionId) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      send_reconnect(executionId);
+      return recv_reconnect();
+    }
+
+    public void send_reconnect(String executionId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      reconnect_args args = new reconnect_args();
+      args.setExecutionId(executionId);
+      sendBase("reconnect", args);
+    }
+
+    public Response recv_reconnect() throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      reconnect_result result = new reconnect_result();
+      receiveBase(result, "reconnect");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.bex != null) {
+        throw result.bex;
+      }
+      if (result.tex != null) {
+        throw result.tex;
+      }
+      throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "reconnect failed: unknown result");
+    }
+
+    public void refresh() throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      send_refresh();
+    }
+
+    public void send_refresh() throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      refresh_args args = new refresh_args();
+      sendBase("refresh", args);
     }
 
     public void createTable(TableDescriptor tableDescriptor) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
@@ -1710,13 +1779,73 @@ public class Blur {
         prot.writeMessageEnd();
       }
 
-      public Response getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      public Response getResult() throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
         if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport memoryTransport = new org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
         return (new Client(prot)).recv_execute();
+      }
+    }
+
+    public void reconnect(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<reconnect_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      checkReady();
+      reconnect_call method_call = new reconnect_call(executionId, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class reconnect_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
+      private String executionId;
+      public reconnect_call(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<reconnect_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.executionId = executionId;
+      }
+
+      public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("reconnect", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
+        reconnect_args args = new reconnect_args();
+        args.setExecutionId(executionId);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public Response getResult() throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport memoryTransport = new org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_reconnect();
+      }
+    }
+
+    public void refresh(org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<refresh_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      checkReady();
+      refresh_call method_call = new refresh_call(resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class refresh_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
+      public refresh_call(org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<refresh_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        super(client, protocolFactory, transport, resultHandler, true);
+      }
+
+      public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("refresh", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
+        refresh_args args = new refresh_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport memoryTransport = new org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
       }
     }
 
@@ -3182,6 +3311,8 @@ public class Blur {
 
     private static <I extends Iface> Map<String,  org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, ? extends  org.apache.blur.thirdparty.thrift_0_9_0.TBase>> getProcessMap(Map<String,  org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, ? extends  org.apache.blur.thirdparty.thrift_0_9_0.TBase>> processMap) {
       processMap.put("execute", new execute());
+      processMap.put("reconnect", new reconnect());
+      processMap.put("refresh", new refresh());
       processMap.put("createTable", new createTable());
       processMap.put("enableTable", new enableTable());
       processMap.put("disableTable", new disableTable());
@@ -3246,10 +3377,57 @@ public class Blur {
         execute_result result = new execute_result();
         try {
           result.success = iface.execute(args.table, args.commandName, args.arguments);
-        } catch (BlurException ex) {
-          result.ex = ex;
+        } catch (BlurException bex) {
+          result.bex = bex;
+        } catch (TimeoutException tex) {
+          result.tex = tex;
         }
         return result;
+      }
+    }
+
+    public static class reconnect<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, reconnect_args> {
+      public reconnect() {
+        super("reconnect");
+      }
+
+      public reconnect_args getEmptyArgsInstance() {
+        return new reconnect_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public reconnect_result getResult(I iface, reconnect_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        reconnect_result result = new reconnect_result();
+        try {
+          result.success = iface.reconnect(args.executionId);
+        } catch (BlurException bex) {
+          result.bex = bex;
+        } catch (TimeoutException tex) {
+          result.tex = tex;
+        }
+        return result;
+      }
+    }
+
+    public static class refresh<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, refresh_args> {
+      public refresh() {
+        super("refresh");
+      }
+
+      public refresh_args getEmptyArgsInstance() {
+        return new refresh_args();
+      }
+
+      protected boolean isOneway() {
+        return true;
+      }
+
+      public org.apache.blur.thirdparty.thrift_0_9_0.TBase getResult(I iface, refresh_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        iface.refresh();
+        return null;
       }
     }
 
@@ -4863,7 +5041,8 @@ public class Blur {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("execute_result");
 
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SUCCESS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("success", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)0);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("ex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BEX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TEX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("tex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -4872,12 +5051,14 @@ public class Blur {
     }
 
     public Response success; // required
-    public BlurException ex; // required
+    public BlurException bex; // required
+    public TimeoutException tex; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
       SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BEX((short)1, "bex"),
+      TEX((short)2, "tex");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -4894,8 +5075,10 @@ public class Blur {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BEX
+            return BEX;
+          case 2: // TEX
+            return TEX;
           default:
             return null;
         }
@@ -4941,7 +5124,9 @@ public class Blur {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("success", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Response.class)));
-      tmpMap.put(_Fields.EX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("ex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BEX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.TEX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("tex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(execute_result.class, metaDataMap);
@@ -4952,11 +5137,13 @@ public class Blur {
 
     public execute_result(
       Response success,
-      BlurException ex)
+      BlurException bex,
+      TimeoutException tex)
     {
       this();
       this.success = success;
-      this.ex = ex;
+      this.bex = bex;
+      this.tex = tex;
     }
 
     /**
@@ -4966,8 +5153,11 @@ public class Blur {
       if (other.isSetSuccess()) {
         this.success = new Response(other.success);
       }
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBex()) {
+        this.bex = new BlurException(other.bex);
+      }
+      if (other.isSetTex()) {
+        this.tex = new TimeoutException(other.tex);
       }
     }
 
@@ -4978,7 +5168,8 @@ public class Blur {
     @Override
     public void clear() {
       this.success = null;
-      this.ex = null;
+      this.bex = null;
+      this.tex = null;
     }
 
     public Response getSuccess() {
@@ -5005,27 +5196,51 @@ public class Blur {
       }
     }
 
-    public BlurException getEx() {
-      return this.ex;
+    public BlurException getBex() {
+      return this.bex;
     }
 
-    public execute_result setEx(BlurException ex) {
-      this.ex = ex;
+    public execute_result setBex(BlurException bex) {
+      this.bex = bex;
       return this;
     }
 
-    public void unsetEx() {
-      this.ex = null;
+    public void unsetBex() {
+      this.bex = null;
     }
 
-    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
+    /** Returns true if field bex is set (has been assigned a value) and false otherwise */
+    public boolean isSetBex() {
+      return this.bex != null;
     }
 
-    public void setExIsSet(boolean value) {
+    public void setBexIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.bex = null;
+      }
+    }
+
+    public TimeoutException getTex() {
+      return this.tex;
+    }
+
+    public execute_result setTex(TimeoutException tex) {
+      this.tex = tex;
+      return this;
+    }
+
+    public void unsetTex() {
+      this.tex = null;
+    }
+
+    /** Returns true if field tex is set (has been assigned a value) and false otherwise */
+    public boolean isSetTex() {
+      return this.tex != null;
+    }
+
+    public void setTexIsSet(boolean value) {
+      if (!value) {
+        this.tex = null;
       }
     }
 
@@ -5039,11 +5254,19 @@ public class Blur {
         }
         break;
 
-      case EX:
+      case BEX:
         if (value == null) {
-          unsetEx();
+          unsetBex();
         } else {
-          setEx((BlurException)value);
+          setBex((BlurException)value);
+        }
+        break;
+
+      case TEX:
+        if (value == null) {
+          unsetTex();
+        } else {
+          setTex((TimeoutException)value);
         }
         break;
 
@@ -5055,8 +5278,11 @@ public class Blur {
       case SUCCESS:
         return getSuccess();
 
-      case EX:
-        return getEx();
+      case BEX:
+        return getBex();
+
+      case TEX:
+        return getTex();
 
       }
       throw new IllegalStateException();
@@ -5071,8 +5297,10 @@ public class Blur {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BEX:
+        return isSetBex();
+      case TEX:
+        return isSetTex();
       }
       throw new IllegalStateException();
     }
@@ -5099,12 +5327,21 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_bex = true && this.isSetBex();
+      boolean that_present_bex = true && that.isSetBex();
+      if (this_present_bex || that_present_bex) {
+        if (!(this_present_bex && that_present_bex))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.bex.equals(that.bex))
+          return false;
+      }
+
+      boolean this_present_tex = true && this.isSetTex();
+      boolean that_present_tex = true && that.isSetTex();
+      if (this_present_tex || that_present_tex) {
+        if (!(this_present_tex && that_present_tex))
+          return false;
+        if (!this.tex.equals(that.tex))
           return false;
       }
 
@@ -5134,12 +5371,22 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetBex()).compareTo(typedOther.isSetBex());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {
-        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetBex()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.bex, typedOther.bex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTex()).compareTo(typedOther.isSetTex());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTex()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.tex, typedOther.tex);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5172,11 +5419,19 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("bex:");
+      if (this.bex == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.bex);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tex:");
+      if (this.tex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tex);
       }
       first = false;
       sb.append(")");
@@ -5231,11 +5486,20 @@ public class Blur {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 1: // EX
+            case 1: // BEX
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
-                struct.ex = new BlurException();
-                struct.ex.read(iprot);
-                struct.setExIsSet(true);
+                struct.bex = new BlurException();
+                struct.bex.read(iprot);
+                struct.setBexIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // TEX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.tex = new TimeoutException();
+                struct.tex.read(iprot);
+                struct.setTexIsSet(true);
               } else { 
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -5260,9 +5524,14 @@ public class Blur {
           struct.success.write(oprot);
           oprot.writeFieldEnd();
         }
-        if (struct.ex != null) {
-          oprot.writeFieldBegin(EX_FIELD_DESC);
-          struct.ex.write(oprot);
+        if (struct.bex != null) {
+          oprot.writeFieldBegin(BEX_FIELD_DESC);
+          struct.bex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.tex != null) {
+          oprot.writeFieldBegin(TEX_FIELD_DESC);
+          struct.tex.write(oprot);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -5286,32 +5555,1203 @@ public class Blur {
         if (struct.isSetSuccess()) {
           optionals.set(0);
         }
-        if (struct.isSetEx()) {
+        if (struct.isSetBex()) {
           optionals.set(1);
         }
-        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetTex()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
         if (struct.isSetSuccess()) {
           struct.success.write(oprot);
         }
-        if (struct.isSetEx()) {
-          struct.ex.write(oprot);
+        if (struct.isSetBex()) {
+          struct.bex.write(oprot);
+        }
+        if (struct.isSetTex()) {
+          struct.tex.write(oprot);
         }
       }
 
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, execute_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
           struct.success = new Response();
           struct.success.read(iprot);
           struct.setSuccessIsSet(true);
         }
         if (incoming.get(1)) {
-          struct.ex = new BlurException();
-          struct.ex.read(iprot);
-          struct.setExIsSet(true);
+          struct.bex = new BlurException();
+          struct.bex.read(iprot);
+          struct.setBexIsSet(true);
         }
+        if (incoming.get(2)) {
+          struct.tex = new TimeoutException();
+          struct.tex.read(iprot);
+          struct.setTexIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class reconnect_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<reconnect_args, reconnect_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("reconnect_args");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EXECUTION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("executionId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new reconnect_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new reconnect_argsTupleSchemeFactory());
+    }
+
+    public String executionId; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      EXECUTION_ID((short)1, "executionId");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // EXECUTION_ID
+            return EXECUTION_ID;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.EXECUTION_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("executionId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(reconnect_args.class, metaDataMap);
+    }
+
+    public reconnect_args() {
+    }
+
+    public reconnect_args(
+      String executionId)
+    {
+      this();
+      this.executionId = executionId;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public reconnect_args(reconnect_args other) {
+      if (other.isSetExecutionId()) {
+        this.executionId = other.executionId;
+      }
+    }
+
+    public reconnect_args deepCopy() {
+      return new reconnect_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.executionId = null;
+    }
+
+    public String getExecutionId() {
+      return this.executionId;
+    }
+
+    public reconnect_args setExecutionId(String executionId) {
+      this.executionId = executionId;
+      return this;
+    }
+
+    public void unsetExecutionId() {
+      this.executionId = null;
+    }
+
+    /** Returns true if field executionId is set (has been assigned a value) and false otherwise */
+    public boolean isSetExecutionId() {
+      return this.executionId != null;
+    }
+
+    public void setExecutionIdIsSet(boolean value) {
+      if (!value) {
+        this.executionId = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case EXECUTION_ID:
+        if (value == null) {
+          unsetExecutionId();
+        } else {
+          setExecutionId((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case EXECUTION_ID:
+        return getExecutionId();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case EXECUTION_ID:
+        return isSetExecutionId();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof reconnect_args)
+        return this.equals((reconnect_args)that);
+      return false;
+    }
+
+    public boolean equals(reconnect_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_executionId = true && this.isSetExecutionId();
+      boolean that_present_executionId = true && that.isSetExecutionId();
+      if (this_present_executionId || that_present_executionId) {
+        if (!(this_present_executionId && that_present_executionId))
+          return false;
+        if (!this.executionId.equals(that.executionId))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(reconnect_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      reconnect_args typedOther = (reconnect_args)other;
+
+      lastComparison = Boolean.valueOf(isSetExecutionId()).compareTo(typedOther.isSetExecutionId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetExecutionId()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.executionId, typedOther.executionId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("reconnect_args(");
+      boolean first = true;
+
+      sb.append("executionId:");
+      if (this.executionId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.executionId);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class reconnect_argsStandardSchemeFactory implements SchemeFactory {
+      public reconnect_argsStandardScheme getScheme() {
+        return new reconnect_argsStandardScheme();
+      }
+    }
+
+    private static class reconnect_argsStandardScheme extends StandardScheme<reconnect_args> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, reconnect_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // EXECUTION_ID
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.executionId = iprot.readString();
+                struct.setExecutionIdIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, reconnect_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.executionId != null) {
+          oprot.writeFieldBegin(EXECUTION_ID_FIELD_DESC);
+          oprot.writeString(struct.executionId);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class reconnect_argsTupleSchemeFactory implements SchemeFactory {
+      public reconnect_argsTupleScheme getScheme() {
+        return new reconnect_argsTupleScheme();
+      }
+    }
+
+    private static class reconnect_argsTupleScheme extends TupleScheme<reconnect_args> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, reconnect_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetExecutionId()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetExecutionId()) {
+          oprot.writeString(struct.executionId);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, reconnect_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.executionId = iprot.readString();
+          struct.setExecutionIdIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class reconnect_result implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<reconnect_result, reconnect_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("reconnect_result");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SUCCESS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("success", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)0);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BEX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TEX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("tex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new reconnect_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new reconnect_resultTupleSchemeFactory());
+    }
+
+    public Response success; // required
+    public BlurException bex; // required
+    public TimeoutException tex; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      BEX((short)1, "bex"),
+      TEX((short)2, "tex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // BEX
+            return BEX;
+          case 2: // TEX
+            return TEX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("success", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Response.class)));
+      tmpMap.put(_Fields.BEX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      tmpMap.put(_Fields.TEX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("tex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(reconnect_result.class, metaDataMap);
+    }
+
+    public reconnect_result() {
+    }
+
+    public reconnect_result(
+      Response success,
+      BlurException bex,
+      TimeoutException tex)
+    {
+      this();
+      this.success = success;
+      this.bex = bex;
+      this.tex = tex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public reconnect_result(reconnect_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new Response(other.success);
+      }
+      if (other.isSetBex()) {
+        this.bex = new BlurException(other.bex);
+      }
+      if (other.isSetTex()) {
+        this.tex = new TimeoutException(other.tex);
+      }
+    }
+
+    public reconnect_result deepCopy() {
+      return new reconnect_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.bex = null;
+      this.tex = null;
+    }
+
+    public Response getSuccess() {
+      return this.success;
+    }
+
+    public reconnect_result setSuccess(Response success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public BlurException getBex() {
+      return this.bex;
+    }
+
+    public reconnect_result setBex(BlurException bex) {
+      this.bex = bex;
+      return this;
+    }
+
+    public void unsetBex() {
+      this.bex = null;
+    }
+
+    /** Returns true if field bex is set (has been assigned a value) and false otherwise */
+    public boolean isSetBex() {
+      return this.bex != null;
+    }
+
+    public void setBexIsSet(boolean value) {
+      if (!value) {
+        this.bex = null;
+      }
+    }
+
+    public TimeoutException getTex() {
+      return this.tex;
+    }
+
+    public reconnect_result setTex(TimeoutException tex) {
+      this.tex = tex;
+      return this;
+    }
+
+    public void unsetTex() {
+      this.tex = null;
+    }
+
+    /** Returns true if field tex is set (has been assigned a value) and false otherwise */
+    public boolean isSetTex() {
+      return this.tex != null;
+    }
+
+    public void setTexIsSet(boolean value) {
+      if (!value) {
+        this.tex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((Response)value);
+        }
+        break;
+
+      case BEX:
+        if (value == null) {
+          unsetBex();
+        } else {
+          setBex((BlurException)value);
+        }
+        break;
+
+      case TEX:
+        if (value == null) {
+          unsetTex();
+        } else {
+          setTex((TimeoutException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case BEX:
+        return getBex();
+
+      case TEX:
+        return getTex();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case BEX:
+        return isSetBex();
+      case TEX:
+        return isSetTex();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof reconnect_result)
+        return this.equals((reconnect_result)that);
+      return false;
+    }
+
+    public boolean equals(reconnect_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_bex = true && this.isSetBex();
+      boolean that_present_bex = true && that.isSetBex();
+      if (this_present_bex || that_present_bex) {
+        if (!(this_present_bex && that_present_bex))
+          return false;
+        if (!this.bex.equals(that.bex))
+          return false;
+      }
+
+      boolean this_present_tex = true && this.isSetTex();
+      boolean that_present_tex = true && that.isSetTex();
+      if (this_present_tex || that_present_tex) {
+        if (!(this_present_tex && that_present_tex))
+          return false;
+        if (!this.tex.equals(that.tex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(reconnect_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      reconnect_result typedOther = (reconnect_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetBex()).compareTo(typedOther.isSetBex());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBex()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.bex, typedOther.bex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTex()).compareTo(typedOther.isSetTex());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTex()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.tex, typedOther.tex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("reconnect_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("bex:");
+      if (this.bex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.bex);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("tex:");
+      if (this.tex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.tex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class reconnect_resultStandardSchemeFactory implements SchemeFactory {
+      public reconnect_resultStandardScheme getScheme() {
+        return new reconnect_resultStandardScheme();
+      }
+    }
+
+    private static class reconnect_resultStandardScheme extends StandardScheme<reconnect_result> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, reconnect_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.success = new Response();
+                struct.success.read(iprot);
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 1: // BEX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.bex = new BlurException();
+                struct.bex.read(iprot);
+                struct.setBexIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // TEX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.tex = new TimeoutException();
+                struct.tex.read(iprot);
+                struct.setTexIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, reconnect_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          struct.success.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.bex != null) {
+          oprot.writeFieldBegin(BEX_FIELD_DESC);
+          struct.bex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.tex != null) {
+          oprot.writeFieldBegin(TEX_FIELD_DESC);
+          struct.tex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class reconnect_resultTupleSchemeFactory implements SchemeFactory {
+      public reconnect_resultTupleScheme getScheme() {
+        return new reconnect_resultTupleScheme();
+      }
+    }
+
+    private static class reconnect_resultTupleScheme extends TupleScheme<reconnect_result> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, reconnect_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        if (struct.isSetBex()) {
+          optionals.set(1);
+        }
+        if (struct.isSetTex()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetSuccess()) {
+          struct.success.write(oprot);
+        }
+        if (struct.isSetBex()) {
+          struct.bex.write(oprot);
+        }
+        if (struct.isSetTex()) {
+          struct.tex.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, reconnect_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(3);
+        if (incoming.get(0)) {
+          struct.success = new Response();
+          struct.success.read(iprot);
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.bex = new BlurException();
+          struct.bex.read(iprot);
+          struct.setBexIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.tex = new TimeoutException();
+          struct.tex.read(iprot);
+          struct.setTexIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class refresh_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<refresh_args, refresh_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("refresh_args");
+
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new refresh_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new refresh_argsTupleSchemeFactory());
+    }
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(refresh_args.class, metaDataMap);
+    }
+
+    public refresh_args() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public refresh_args(refresh_args other) {
+    }
+
+    public refresh_args deepCopy() {
+      return new refresh_args(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof refresh_args)
+        return this.equals((refresh_args)that);
+      return false;
+    }
+
+    public boolean equals(refresh_args that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(refresh_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      refresh_args typedOther = (refresh_args)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("refresh_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class refresh_argsStandardSchemeFactory implements SchemeFactory {
+      public refresh_argsStandardScheme getScheme() {
+        return new refresh_argsStandardScheme();
+      }
+    }
+
+    private static class refresh_argsStandardScheme extends StandardScheme<refresh_args> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, refresh_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, refresh_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class refresh_argsTupleSchemeFactory implements SchemeFactory {
+      public refresh_argsTupleScheme getScheme() {
+        return new refresh_argsTupleScheme();
+      }
+    }
+
+    private static class refresh_argsTupleScheme extends TupleScheme<refresh_args> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, refresh_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, refresh_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
       }
     }
 
@@ -9891,13 +11331,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list252 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list252.size);
-                  for (int _i253 = 0; _i253 < _list252.size; ++_i253)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list262 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list262.size);
+                  for (int _i263 = 0; _i263 < _list262.size; ++_i263)
                   {
-                    String _elem254; // required
-                    _elem254 = iprot.readString();
-                    struct.success.add(_elem254);
+                    String _elem264; // required
+                    _elem264 = iprot.readString();
+                    struct.success.add(_elem264);
                   }
                   iprot.readListEnd();
                 }
@@ -9934,9 +11374,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (String _iter255 : struct.success)
+            for (String _iter265 : struct.success)
             {
-              oprot.writeString(_iter255);
+              oprot.writeString(_iter265);
             }
             oprot.writeListEnd();
           }
@@ -9975,9 +11415,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter256 : struct.success)
+            for (String _iter266 : struct.success)
             {
-              oprot.writeString(_iter256);
+              oprot.writeString(_iter266);
             }
           }
         }
@@ -9992,13 +11432,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list257 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list257.size);
-            for (int _i258 = 0; _i258 < _list257.size; ++_i258)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list267 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list267.size);
+            for (int _i268 = 0; _i268 < _list267.size; ++_i268)
             {
-              String _elem259; // required
-              _elem259 = iprot.readString();
-              struct.success.add(_elem259);
+              String _elem269; // required
+              _elem269 = iprot.readString();
+              struct.success.add(_elem269);
             }
           }
           struct.setSuccessIsSet(true);
@@ -10765,13 +12205,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list260 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list260.size);
-                  for (int _i261 = 0; _i261 < _list260.size; ++_i261)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list270 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list270.size);
+                  for (int _i271 = 0; _i271 < _list270.size; ++_i271)
                   {
-                    String _elem262; // required
-                    _elem262 = iprot.readString();
-                    struct.success.add(_elem262);
+                    String _elem272; // required
+                    _elem272 = iprot.readString();
+                    struct.success.add(_elem272);
                   }
                   iprot.readListEnd();
                 }
@@ -10808,9 +12248,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (String _iter263 : struct.success)
+            for (String _iter273 : struct.success)
             {
-              oprot.writeString(_iter263);
+              oprot.writeString(_iter273);
             }
             oprot.writeListEnd();
           }
@@ -10849,9 +12289,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter264 : struct.success)
+            for (String _iter274 : struct.success)
             {
-              oprot.writeString(_iter264);
+              oprot.writeString(_iter274);
             }
           }
         }
@@ -10866,13 +12306,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list265 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list265.size);
-            for (int _i266 = 0; _i266 < _list265.size; ++_i266)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list275 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list275.size);
+            for (int _i276 = 0; _i276 < _list275.size; ++_i276)
             {
-              String _elem267; // required
-              _elem267 = iprot.readString();
-              struct.success.add(_elem267);
+              String _elem277; // required
+              _elem277 = iprot.readString();
+              struct.success.add(_elem277);
             }
           }
           struct.setSuccessIsSet(true);
@@ -17508,25 +18948,25 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map268 = iprot.readMapBegin();
-                  struct.success = new HashMap<String,List<String>>(2*_map268.size);
-                  for (int _i269 = 0; _i269 < _map268.size; ++_i269)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map278 = iprot.readMapBegin();
+                  struct.success = new HashMap<String,List<String>>(2*_map278.size);
+                  for (int _i279 = 0; _i279 < _map278.size; ++_i279)
                   {
-                    String _key270; // optional
-                    List<String> _val271; // required
-                    _key270 = iprot.readString();
+                    String _key280; // optional
+                    List<String> _val281; // required
+                    _key280 = iprot.readString();
                     {
-                      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list272 = iprot.readListBegin();
-                      _val271 = new ArrayList<String>(_list272.size);
-                      for (int _i273 = 0; _i273 < _list272.size; ++_i273)
+                      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list282 = iprot.readListBegin();
+                      _val281 = new ArrayList<String>(_list282.size);
+                      for (int _i283 = 0; _i283 < _list282.size; ++_i283)
                       {
-                        String _elem274; // required
-                        _elem274 = iprot.readString();
-                        _val271.add(_elem274);
+                        String _elem284; // required
+                        _elem284 = iprot.readString();
+                        _val281.add(_elem284);
                       }
                       iprot.readListEnd();
                     }
-                    struct.success.put(_key270, _val271);
+                    struct.success.put(_key280, _val281);
                   }
                   iprot.readMapEnd();
                 }
@@ -17563,14 +19003,14 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, struct.success.size()));
-            for (Map.Entry<String, List<String>> _iter275 : struct.success.entrySet())
+            for (Map.Entry<String, List<String>> _iter285 : struct.success.entrySet())
             {
-              oprot.writeString(_iter275.getKey());
+              oprot.writeString(_iter285.getKey());
               {
-                oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, _iter275.getValue().size()));
-                for (String _iter276 : _iter275.getValue())
+                oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, _iter285.getValue().size()));
+                for (String _iter286 : _iter285.getValue())
                 {
-                  oprot.writeString(_iter276);
+                  oprot.writeString(_iter286);
                 }
                 oprot.writeListEnd();
               }
@@ -17612,14 +19052,14 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (Map.Entry<String, List<String>> _iter277 : struct.success.entrySet())
+            for (Map.Entry<String, List<String>> _iter287 : struct.success.entrySet())
             {
-              oprot.writeString(_iter277.getKey());
+              oprot.writeString(_iter287.getKey());
               {
-                oprot.writeI32(_iter277.getValue().size());
-                for (String _iter278 : _iter277.getValue())
+                oprot.writeI32(_iter287.getValue().size());
+                for (String _iter288 : _iter287.getValue())
                 {
-                  oprot.writeString(_iter278);
+                  oprot.writeString(_iter288);
                 }
               }
             }
@@ -17636,24 +19076,24 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map279 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, iprot.readI32());
-            struct.success = new HashMap<String,List<String>>(2*_map279.size);
-            for (int _i280 = 0; _i280 < _map279.size; ++_i280)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map289 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, iprot.readI32());
+            struct.success = new HashMap<String,List<String>>(2*_map289.size);
+            for (int _i290 = 0; _i290 < _map289.size; ++_i290)
             {
-              String _key281; // optional
-              List<String> _val282; // required
-              _key281 = iprot.readString();
+              String _key291; // optional
+              List<String> _val292; // required
+              _key291 = iprot.readString();
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list283 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-                _val282 = new ArrayList<String>(_list283.size);
-                for (int _i284 = 0; _i284 < _list283.size; ++_i284)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list293 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+                _val292 = new ArrayList<String>(_list293.size);
+                for (int _i294 = 0; _i294 < _list293.size; ++_i294)
                 {
-                  String _elem285; // required
-                  _elem285 = iprot.readString();
-                  _val282.add(_elem285);
+                  String _elem295; // required
+                  _elem295 = iprot.readString();
+                  _val292.add(_elem295);
                 }
               }
-              struct.success.put(_key281, _val282);
+              struct.success.put(_key291, _val292);
             }
           }
           struct.setSuccessIsSet(true);
@@ -20345,14 +21785,14 @@ public class Blur {
             case 2: // SELECTORS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list286 = iprot.readListBegin();
-                  struct.selectors = new ArrayList<Selector>(_list286.size);
-                  for (int _i287 = 0; _i287 < _list286.size; ++_i287)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list296 = iprot.readListBegin();
+                  struct.selectors = new ArrayList<Selector>(_list296.size);
+                  for (int _i297 = 0; _i297 < _list296.size; ++_i297)
                   {
-                    Selector _elem288; // required
-                    _elem288 = new Selector();
-                    _elem288.read(iprot);
-                    struct.selectors.add(_elem288);
+                    Selector _elem298; // required
+                    _elem298 = new Selector();
+                    _elem298.read(iprot);
+                    struct.selectors.add(_elem298);
                   }
                   iprot.readListEnd();
                 }
@@ -20385,9 +21825,9 @@ public class Blur {
           oprot.writeFieldBegin(SELECTORS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.selectors.size()));
-            for (Selector _iter289 : struct.selectors)
+            for (Selector _iter299 : struct.selectors)
             {
-              _iter289.write(oprot);
+              _iter299.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -20424,9 +21864,9 @@ public class Blur {
         if (struct.isSetSelectors()) {
           {
             oprot.writeI32(struct.selectors.size());
-            for (Selector _iter290 : struct.selectors)
+            for (Selector _iter300 : struct.selectors)
             {
-              _iter290.write(oprot);
+              _iter300.write(oprot);
             }
           }
         }
@@ -20442,14 +21882,14 @@ public class Blur {
         }
         if (incoming.get(1)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list291 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-            struct.selectors = new ArrayList<Selector>(_list291.size);
-            for (int _i292 = 0; _i292 < _list291.size; ++_i292)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list301 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+            struct.selectors = new ArrayList<Selector>(_list301.size);
+            for (int _i302 = 0; _i302 < _list301.size; ++_i302)
             {
-              Selector _elem293; // required
-              _elem293 = new Selector();
-              _elem293.read(iprot);
-              struct.selectors.add(_elem293);
+              Selector _elem303; // required
+              _elem303 = new Selector();
+              _elem303.read(iprot);
+              struct.selectors.add(_elem303);
             }
           }
           struct.setSelectorsIsSet(true);
@@ -20845,14 +22285,14 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list294 = iprot.readListBegin();
-                  struct.success = new ArrayList<FetchResult>(_list294.size);
-                  for (int _i295 = 0; _i295 < _list294.size; ++_i295)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list304 = iprot.readListBegin();
+                  struct.success = new ArrayList<FetchResult>(_list304.size);
+                  for (int _i305 = 0; _i305 < _list304.size; ++_i305)
                   {
-                    FetchResult _elem296; // required
-                    _elem296 = new FetchResult();
-                    _elem296.read(iprot);
-                    struct.success.add(_elem296);
+                    FetchResult _elem306; // required
+                    _elem306 = new FetchResult();
+                    _elem306.read(iprot);
+                    struct.success.add(_elem306);
                   }
                   iprot.readListEnd();
                 }
@@ -20889,9 +22329,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.success.size()));
-            for (FetchResult _iter297 : struct.success)
+            for (FetchResult _iter307 : struct.success)
             {
-              _iter297.write(oprot);
+              _iter307.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -20930,9 +22370,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (FetchResult _iter298 : struct.success)
+            for (FetchResult _iter308 : struct.success)
             {
-              _iter298.write(oprot);
+              _iter308.write(oprot);
             }
           }
         }
@@ -20947,14 +22387,14 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list299 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new ArrayList<FetchResult>(_list299.size);
-            for (int _i300 = 0; _i300 < _list299.size; ++_i300)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list309 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new ArrayList<FetchResult>(_list309.size);
+            for (int _i310 = 0; _i310 < _list309.size; ++_i310)
             {
-              FetchResult _elem301; // required
-              _elem301 = new FetchResult();
-              _elem301.read(iprot);
-              struct.success.add(_elem301);
+              FetchResult _elem311; // required
+              _elem311 = new FetchResult();
+              _elem311.read(iprot);
+              struct.success.add(_elem311);
             }
           }
           struct.setSuccessIsSet(true);
@@ -22744,14 +24184,14 @@ public class Blur {
             case 1: // MUTATIONS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list302 = iprot.readListBegin();
-                  struct.mutations = new ArrayList<RowMutation>(_list302.size);
-                  for (int _i303 = 0; _i303 < _list302.size; ++_i303)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list312 = iprot.readListBegin();
+                  struct.mutations = new ArrayList<RowMutation>(_list312.size);
+                  for (int _i313 = 0; _i313 < _list312.size; ++_i313)
                   {
-                    RowMutation _elem304; // required
-                    _elem304 = new RowMutation();
-                    _elem304.read(iprot);
-                    struct.mutations.add(_elem304);
+                    RowMutation _elem314; // required
+                    _elem314 = new RowMutation();
+                    _elem314.read(iprot);
+                    struct.mutations.add(_elem314);
                   }
                   iprot.readListEnd();
                 }
@@ -22779,9 +24219,9 @@ public class Blur {
           oprot.writeFieldBegin(MUTATIONS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.mutations.size()));
-            for (RowMutation _iter305 : struct.mutations)
+            for (RowMutation _iter315 : struct.mutations)
             {
-              _iter305.write(oprot);
+              _iter315.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -22812,9 +24252,9 @@ public class Blur {
         if (struct.isSetMutations()) {
           {
             oprot.writeI32(struct.mutations.size());
-            for (RowMutation _iter306 : struct.mutations)
+            for (RowMutation _iter316 : struct.mutations)
             {
-              _iter306.write(oprot);
+              _iter316.write(oprot);
             }
           }
         }
@@ -22826,14 +24266,14 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list307 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-            struct.mutations = new ArrayList<RowMutation>(_list307.size);
-            for (int _i308 = 0; _i308 < _list307.size; ++_i308)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list317 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+            struct.mutations = new ArrayList<RowMutation>(_list317.size);
+            for (int _i318 = 0; _i318 < _list317.size; ++_i318)
             {
-              RowMutation _elem309; // required
-              _elem309 = new RowMutation();
-              _elem309.read(iprot);
-              struct.mutations.add(_elem309);
+              RowMutation _elem319; // required
+              _elem319 = new RowMutation();
+              _elem319.read(iprot);
+              struct.mutations.add(_elem319);
             }
           }
           struct.setMutationsIsSet(true);
@@ -23520,14 +24960,14 @@ public class Blur {
             case 1: // MUTATIONS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list310 = iprot.readListBegin();
-                  struct.mutations = new ArrayList<RowMutation>(_list310.size);
-                  for (int _i311 = 0; _i311 < _list310.size; ++_i311)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list320 = iprot.readListBegin();
+                  struct.mutations = new ArrayList<RowMutation>(_list320.size);
+                  for (int _i321 = 0; _i321 < _list320.size; ++_i321)
                   {
-                    RowMutation _elem312; // required
-                    _elem312 = new RowMutation();
-                    _elem312.read(iprot);
-                    struct.mutations.add(_elem312);
+                    RowMutation _elem322; // required
+                    _elem322 = new RowMutation();
+                    _elem322.read(iprot);
+                    struct.mutations.add(_elem322);
                   }
                   iprot.readListEnd();
                 }
@@ -23555,9 +24995,9 @@ public class Blur {
           oprot.writeFieldBegin(MUTATIONS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.mutations.size()));
-            for (RowMutation _iter313 : struct.mutations)
+            for (RowMutation _iter323 : struct.mutations)
             {
-              _iter313.write(oprot);
+              _iter323.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -23588,9 +25028,9 @@ public class Blur {
         if (struct.isSetMutations()) {
           {
             oprot.writeI32(struct.mutations.size());
-            for (RowMutation _iter314 : struct.mutations)
+            for (RowMutation _iter324 : struct.mutations)
             {
-              _iter314.write(oprot);
+              _iter324.write(oprot);
             }
           }
         }
@@ -23602,14 +25042,14 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list315 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-            struct.mutations = new ArrayList<RowMutation>(_list315.size);
-            for (int _i316 = 0; _i316 < _list315.size; ++_i316)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list325 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+            struct.mutations = new ArrayList<RowMutation>(_list325.size);
+            for (int _i326 = 0; _i326 < _list325.size; ++_i326)
             {
-              RowMutation _elem317; // required
-              _elem317 = new RowMutation();
-              _elem317.read(iprot);
-              struct.mutations.add(_elem317);
+              RowMutation _elem327; // required
+              _elem327 = new RowMutation();
+              _elem327.read(iprot);
+              struct.mutations.add(_elem327);
             }
           }
           struct.setMutationsIsSet(true);
@@ -25561,13 +27001,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list318 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list318.size);
-                  for (int _i319 = 0; _i319 < _list318.size; ++_i319)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list328 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list328.size);
+                  for (int _i329 = 0; _i329 < _list328.size; ++_i329)
                   {
-                    String _elem320; // required
-                    _elem320 = iprot.readString();
-                    struct.success.add(_elem320);
+                    String _elem330; // required
+                    _elem330 = iprot.readString();
+                    struct.success.add(_elem330);
                   }
                   iprot.readListEnd();
                 }
@@ -25604,9 +27044,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (String _iter321 : struct.success)
+            for (String _iter331 : struct.success)
             {
-              oprot.writeString(_iter321);
+              oprot.writeString(_iter331);
             }
             oprot.writeListEnd();
           }
@@ -25645,9 +27085,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter322 : struct.success)
+            for (String _iter332 : struct.success)
             {
-              oprot.writeString(_iter322);
+              oprot.writeString(_iter332);
             }
           }
         }
@@ -25662,13 +27102,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list323 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list323.size);
-            for (int _i324 = 0; _i324 < _list323.size; ++_i324)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list333 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list333.size);
+            for (int _i334 = 0; _i334 < _list333.size; ++_i334)
             {
-              String _elem325; // required
-              _elem325 = iprot.readString();
-              struct.success.add(_elem325);
+              String _elem335; // required
+              _elem335 = iprot.readString();
+              struct.success.add(_elem335);
             }
           }
           struct.setSuccessIsSet(true);
@@ -27820,13 +29260,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list326 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list326.size);
-                  for (int _i327 = 0; _i327 < _list326.size; ++_i327)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list336 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list336.size);
+                  for (int _i337 = 0; _i337 < _list336.size; ++_i337)
                   {
-                    String _elem328; // required
-                    _elem328 = iprot.readString();
-                    struct.success.add(_elem328);
+                    String _elem338; // required
+                    _elem338 = iprot.readString();
+                    struct.success.add(_elem338);
                   }
                   iprot.readListEnd();
                 }
@@ -27863,9 +29303,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (String _iter329 : struct.success)
+            for (String _iter339 : struct.success)
             {
-              oprot.writeString(_iter329);
+              oprot.writeString(_iter339);
             }
             oprot.writeListEnd();
           }
@@ -27904,9 +29344,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter330 : struct.success)
+            for (String _iter340 : struct.success)
             {
-              oprot.writeString(_iter330);
+              oprot.writeString(_iter340);
             }
           }
         }
@@ -27921,13 +29361,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list331 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list331.size);
-            for (int _i332 = 0; _i332 < _list331.size; ++_i332)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list341 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list341.size);
+            for (int _i342 = 0; _i342 < _list341.size; ++_i342)
             {
-              String _elem333; // required
-              _elem333 = iprot.readString();
-              struct.success.add(_elem333);
+              String _elem343; // required
+              _elem343 = iprot.readString();
+              struct.success.add(_elem343);
             }
           }
           struct.setSuccessIsSet(true);
@@ -29732,13 +31172,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list334 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list334.size);
-                  for (int _i335 = 0; _i335 < _list334.size; ++_i335)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list344 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list344.size);
+                  for (int _i345 = 0; _i345 < _list344.size; ++_i345)
                   {
-                    String _elem336; // required
-                    _elem336 = iprot.readString();
-                    struct.success.add(_elem336);
+                    String _elem346; // required
+                    _elem346 = iprot.readString();
+                    struct.success.add(_elem346);
                   }
                   iprot.readListEnd();
                 }
@@ -29775,9 +31215,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (String _iter337 : struct.success)
+            for (String _iter347 : struct.success)
             {
-              oprot.writeString(_iter337);
+              oprot.writeString(_iter347);
             }
             oprot.writeListEnd();
           }
@@ -29816,9 +31256,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter338 : struct.success)
+            for (String _iter348 : struct.success)
             {
-              oprot.writeString(_iter338);
+              oprot.writeString(_iter348);
             }
           }
         }
@@ -29833,13 +31273,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list339 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list339.size);
-            for (int _i340 = 0; _i340 < _list339.size; ++_i340)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list349 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list349.size);
+            for (int _i350 = 0; _i350 < _list349.size; ++_i350)
             {
-              String _elem341; // required
-              _elem341 = iprot.readString();
-              struct.success.add(_elem341);
+              String _elem351; // required
+              _elem351 = iprot.readString();
+              struct.success.add(_elem351);
             }
           }
           struct.setSuccessIsSet(true);
@@ -30606,13 +32046,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list342 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list342.size);
-                  for (int _i343 = 0; _i343 < _list342.size; ++_i343)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list352 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list352.size);
+                  for (int _i353 = 0; _i353 < _list352.size; ++_i353)
                   {
-                    String _elem344; // required
-                    _elem344 = iprot.readString();
-                    struct.success.add(_elem344);
+                    String _elem354; // required
+                    _elem354 = iprot.readString();
+                    struct.success.add(_elem354);
                   }
                   iprot.readListEnd();
                 }
@@ -30649,9 +32089,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (String _iter345 : struct.success)
+            for (String _iter355 : struct.success)
             {
-              oprot.writeString(_iter345);
+              oprot.writeString(_iter355);
             }
             oprot.writeListEnd();
           }
@@ -30690,9 +32130,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter346 : struct.success)
+            for (String _iter356 : struct.success)
             {
-              oprot.writeString(_iter346);
+              oprot.writeString(_iter356);
             }
           }
         }
@@ -30707,13 +32147,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list347 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list347.size);
-            for (int _i348 = 0; _i348 < _list347.size; ++_i348)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list357 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list357.size);
+            for (int _i358 = 0; _i358 < _list357.size; ++_i358)
             {
-              String _elem349; // required
-              _elem349 = iprot.readString();
-              struct.success.add(_elem349);
+              String _elem359; // required
+              _elem359 = iprot.readString();
+              struct.success.add(_elem359);
             }
           }
           struct.setSuccessIsSet(true);
@@ -31360,13 +32800,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list350 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list350.size);
-                  for (int _i351 = 0; _i351 < _list350.size; ++_i351)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list360 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list360.size);
+                  for (int _i361 = 0; _i361 < _list360.size; ++_i361)
                   {
-                    String _elem352; // required
-                    _elem352 = iprot.readString();
-                    struct.success.add(_elem352);
+                    String _elem362; // required
+                    _elem362 = iprot.readString();
+                    struct.success.add(_elem362);
                   }
                   iprot.readListEnd();
                 }
@@ -31403,9 +32843,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (String _iter353 : struct.success)
+            for (String _iter363 : struct.success)
             {
-              oprot.writeString(_iter353);
+              oprot.writeString(_iter363);
             }
             oprot.writeListEnd();
           }
@@ -31444,9 +32884,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter354 : struct.success)
+            for (String _iter364 : struct.success)
             {
-              oprot.writeString(_iter354);
+              oprot.writeString(_iter364);
             }
           }
         }
@@ -31461,13 +32901,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list355 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list355.size);
-            for (int _i356 = 0; _i356 < _list355.size; ++_i356)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list365 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list365.size);
+            for (int _i366 = 0; _i366 < _list365.size; ++_i366)
             {
-              String _elem357; // required
-              _elem357 = iprot.readString();
-              struct.success.add(_elem357);
+              String _elem367; // required
+              _elem367 = iprot.readString();
+              struct.success.add(_elem367);
             }
           }
           struct.setSuccessIsSet(true);
@@ -32239,15 +33679,15 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map358 = iprot.readMapBegin();
-                  struct.success = new HashMap<String,String>(2*_map358.size);
-                  for (int _i359 = 0; _i359 < _map358.size; ++_i359)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map368 = iprot.readMapBegin();
+                  struct.success = new HashMap<String,String>(2*_map368.size);
+                  for (int _i369 = 0; _i369 < _map368.size; ++_i369)
                   {
-                    String _key360; // optional
-                    String _val361; // required
-                    _key360 = iprot.readString();
-                    _val361 = iprot.readString();
-                    struct.success.put(_key360, _val361);
+                    String _key370; // optional
+                    String _val371; // required
+                    _key370 = iprot.readString();
+                    _val371 = iprot.readString();
+                    struct.success.put(_key370, _val371);
                   }
                   iprot.readMapEnd();
                 }
@@ -32284,10 +33724,10 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (Map.Entry<String, String> _iter362 : struct.success.entrySet())
+            for (Map.Entry<String, String> _iter372 : struct.success.entrySet())
             {
-              oprot.writeString(_iter362.getKey());
-              oprot.writeString(_iter362.getValue());
+              oprot.writeString(_iter372.getKey());
+              oprot.writeString(_iter372.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -32326,10 +33766,10 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (Map.Entry<String, String> _iter363 : struct.success.entrySet())
+            for (Map.Entry<String, String> _iter373 : struct.success.entrySet())
             {
-              oprot.writeString(_iter363.getKey());
-              oprot.writeString(_iter363.getValue());
+              oprot.writeString(_iter373.getKey());
+              oprot.writeString(_iter373.getValue());
             }
           }
         }
@@ -32344,15 +33784,15 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map364 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new HashMap<String,String>(2*_map364.size);
-            for (int _i365 = 0; _i365 < _map364.size; ++_i365)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map374 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new HashMap<String,String>(2*_map374.size);
+            for (int _i375 = 0; _i375 < _map374.size; ++_i375)
             {
-              String _key366; // optional
-              String _val367; // required
-              _key366 = iprot.readString();
-              _val367 = iprot.readString();
-              struct.success.put(_key366, _val367);
+              String _key376; // optional
+              String _val377; // required
+              _key376 = iprot.readString();
+              _val377 = iprot.readString();
+              struct.success.put(_key376, _val377);
             }
           }
           struct.setSuccessIsSet(true);
@@ -33137,27 +34577,27 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map368 = iprot.readMapBegin();
-                  struct.success = new HashMap<String,Map<String,ShardState>>(2*_map368.size);
-                  for (int _i369 = 0; _i369 < _map368.size; ++_i369)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map378 = iprot.readMapBegin();
+                  struct.success = new HashMap<String,Map<String,ShardState>>(2*_map378.size);
+                  for (int _i379 = 0; _i379 < _map378.size; ++_i379)
                   {
-                    String _key370; // optional
-                    Map<String,ShardState> _val371; // required
-                    _key370 = iprot.readString();
+                    String _key380; // optional
+                    Map<String,ShardState> _val381; // required
+                    _key380 = iprot.readString();
                     {
-                      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map372 = iprot.readMapBegin();
-                      _val371 = new HashMap<String,ShardState>(2*_map372.size);
-                      for (int _i373 = 0; _i373 < _map372.size; ++_i373)
+                      org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map382 = iprot.readMapBegin();
+                      _val381 = new HashMap<String,ShardState>(2*_map382.size);
+                      for (int _i383 = 0; _i383 < _map382.size; ++_i383)
                       {
-                        String _key374; // optional
-                        ShardState _val375; // required
-                        _key374 = iprot.readString();
-                        _val375 = ShardState.findByValue(iprot.readI32());
-                        _val371.put(_key374, _val375);
+                        String _key384; // optional
+                        ShardState _val385; // required
+                        _key384 = iprot.readString();
+                        _val385 = ShardState.findByValue(iprot.readI32());
+                        _val381.put(_key384, _val385);
                       }
                       iprot.readMapEnd();
                     }
-                    struct.success.put(_key370, _val371);
+                    struct.success.put(_key380, _val381);
                   }
                   iprot.readMapEnd();
                 }
@@ -33194,15 +34634,15 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, struct.success.size()));
-            for (Map.Entry<String, Map<String,ShardState>> _iter376 : struct.success.entrySet())
+            for (Map.Entry<String, Map<String,ShardState>> _iter386 : struct.success.entrySet())
             {
-              oprot.writeString(_iter376.getKey());
+              oprot.writeString(_iter386.getKey());
               {
-                oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, _iter376.getValue().size()));
-                for (Map.Entry<String, ShardState> _iter377 : _iter376.getValue().entrySet())
+                oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, _iter386.getValue().size()));
+                for (Map.Entry<String, ShardState> _iter387 : _iter386.getValue().entrySet())
                 {
-                  oprot.writeString(_iter377.getKey());
-                  oprot.writeI32(_iter377.getValue().getValue());
+                  oprot.writeString(_iter387.getKey());
+                  oprot.writeI32(_iter387.getValue().getValue());
                 }
                 oprot.writeMapEnd();
               }
@@ -33244,15 +34684,15 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (Map.Entry<String, Map<String,ShardState>> _iter378 : struct.success.entrySet())
+            for (Map.Entry<String, Map<String,ShardState>> _iter388 : struct.success.entrySet())
             {
-              oprot.writeString(_iter378.getKey());
+              oprot.writeString(_iter388.getKey());
               {
-                oprot.writeI32(_iter378.getValue().size());
-                for (Map.Entry<String, ShardState> _iter379 : _iter378.getValue().entrySet())
+                oprot.writeI32(_iter388.getValue().size());
+                for (Map.Entry<String, ShardState> _iter389 : _iter388.getValue().entrySet())
                 {
-                  oprot.writeString(_iter379.getKey());
-                  oprot.writeI32(_iter379.getValue().getValue());
+                  oprot.writeString(_iter389.getKey());
+                  oprot.writeI32(_iter389.getValue().getValue());
                 }
               }
             }
@@ -33269,26 +34709,26 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map380 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, iprot.readI32());
-            struct.success = new HashMap<String,Map<String,ShardState>>(2*_map380.size);
-            for (int _i381 = 0; _i381 < _map380.size; ++_i381)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map390 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, iprot.readI32());
+            struct.success = new HashMap<String,Map<String,ShardState>>(2*_map390.size);
+            for (int _i391 = 0; _i391 < _map390.size; ++_i391)
             {
-              String _key382; // optional
-              Map<String,ShardState> _val383; // required
-              _key382 = iprot.readString();
+              String _key392; // optional
+              Map<String,ShardState> _val393; // required
+              _key392 = iprot.readString();
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map384 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, iprot.readI32());
-                _val383 = new HashMap<String,ShardState>(2*_map384.size);
-                for (int _i385 = 0; _i385 < _map384.size; ++_i385)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map394 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, iprot.readI32());
+                _val393 = new HashMap<String,ShardState>(2*_map394.size);
+                for (int _i395 = 0; _i395 < _map394.size; ++_i395)
                 {
-                  String _key386; // optional
-                  ShardState _val387; // required
-                  _key386 = iprot.readString();
-                  _val387 = ShardState.findByValue(iprot.readI32());
-                  _val383.put(_key386, _val387);
+                  String _key396; // optional
+                  ShardState _val397; // required
+                  _key396 = iprot.readString();
+                  _val397 = ShardState.findByValue(iprot.readI32());
+                  _val393.put(_key396, _val397);
                 }
               }
-              struct.success.put(_key382, _val383);
+              struct.success.put(_key392, _val393);
             }
           }
           struct.setSuccessIsSet(true);
@@ -34762,15 +36202,15 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map388 = iprot.readMapBegin();
-                  struct.success = new HashMap<String,String>(2*_map388.size);
-                  for (int _i389 = 0; _i389 < _map388.size; ++_i389)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map398 = iprot.readMapBegin();
+                  struct.success = new HashMap<String,String>(2*_map398.size);
+                  for (int _i399 = 0; _i399 < _map398.size; ++_i399)
                   {
-                    String _key390; // optional
-                    String _val391; // required
-                    _key390 = iprot.readString();
-                    _val391 = iprot.readString();
-                    struct.success.put(_key390, _val391);
+                    String _key400; // optional
+                    String _val401; // required
+                    _key400 = iprot.readString();
+                    _val401 = iprot.readString();
+                    struct.success.put(_key400, _val401);
                   }
                   iprot.readMapEnd();
                 }
@@ -34807,10 +36247,10 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (Map.Entry<String, String> _iter392 : struct.success.entrySet())
+            for (Map.Entry<String, String> _iter402 : struct.success.entrySet())
             {
-              oprot.writeString(_iter392.getKey());
-              oprot.writeString(_iter392.getValue());
+              oprot.writeString(_iter402.getKey());
+              oprot.writeString(_iter402.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -34849,10 +36289,10 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (Map.Entry<String, String> _iter393 : struct.success.entrySet())
+            for (Map.Entry<String, String> _iter403 : struct.success.entrySet())
             {
-              oprot.writeString(_iter393.getKey());
-              oprot.writeString(_iter393.getValue());
+              oprot.writeString(_iter403.getKey());
+              oprot.writeString(_iter403.getValue());
             }
           }
         }
@@ -34867,15 +36307,15 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map394 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new HashMap<String,String>(2*_map394.size);
-            for (int _i395 = 0; _i395 < _map394.size; ++_i395)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map404 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new HashMap<String,String>(2*_map404.size);
+            for (int _i405 = 0; _i405 < _map404.size; ++_i405)
             {
-              String _key396; // optional
-              String _val397; // required
-              _key396 = iprot.readString();
-              _val397 = iprot.readString();
-              struct.success.put(_key396, _val397);
+              String _key406; // optional
+              String _val407; // required
+              _key406 = iprot.readString();
+              _val407 = iprot.readString();
+              struct.success.put(_key406, _val407);
             }
           }
           struct.setSuccessIsSet(true);
@@ -35211,13 +36651,13 @@ public class Blur {
             case 1: // METRICS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.SET) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set398 = iprot.readSetBegin();
-                  struct.metrics = new HashSet<String>(2*_set398.size);
-                  for (int _i399 = 0; _i399 < _set398.size; ++_i399)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set408 = iprot.readSetBegin();
+                  struct.metrics = new HashSet<String>(2*_set408.size);
+                  for (int _i409 = 0; _i409 < _set408.size; ++_i409)
                   {
-                    String _elem400; // required
-                    _elem400 = iprot.readString();
-                    struct.metrics.add(_elem400);
+                    String _elem410; // required
+                    _elem410 = iprot.readString();
+                    struct.metrics.add(_elem410);
                   }
                   iprot.readSetEnd();
                 }
@@ -35245,9 +36685,9 @@ public class Blur {
           oprot.writeFieldBegin(METRICS_FIELD_DESC);
           {
             oprot.writeSetBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.metrics.size()));
-            for (String _iter401 : struct.metrics)
+            for (String _iter411 : struct.metrics)
             {
-              oprot.writeString(_iter401);
+              oprot.writeString(_iter411);
             }
             oprot.writeSetEnd();
           }
@@ -35278,9 +36718,9 @@ public class Blur {
         if (struct.isSetMetrics()) {
           {
             oprot.writeI32(struct.metrics.size());
-            for (String _iter402 : struct.metrics)
+            for (String _iter412 : struct.metrics)
             {
-              oprot.writeString(_iter402);
+              oprot.writeString(_iter412);
             }
           }
         }
@@ -35292,13 +36732,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set403 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.metrics = new HashSet<String>(2*_set403.size);
-            for (int _i404 = 0; _i404 < _set403.size; ++_i404)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet _set413 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TSet(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.metrics = new HashSet<String>(2*_set413.size);
+            for (int _i414 = 0; _i414 < _set413.size; ++_i414)
             {
-              String _elem405; // required
-              _elem405 = iprot.readString();
-              struct.metrics.add(_elem405);
+              String _elem415; // required
+              _elem415 = iprot.readString();
+              struct.metrics.add(_elem415);
             }
           }
           struct.setMetricsIsSet(true);
@@ -35699,16 +37139,16 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map406 = iprot.readMapBegin();
-                  struct.success = new HashMap<String,Metric>(2*_map406.size);
-                  for (int _i407 = 0; _i407 < _map406.size; ++_i407)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map416 = iprot.readMapBegin();
+                  struct.success = new HashMap<String,Metric>(2*_map416.size);
+                  for (int _i417 = 0; _i417 < _map416.size; ++_i417)
                   {
-                    String _key408; // optional
-                    Metric _val409; // required
-                    _key408 = iprot.readString();
-                    _val409 = new Metric();
-                    _val409.read(iprot);
-                    struct.success.put(_key408, _val409);
+                    String _key418; // optional
+                    Metric _val419; // required
+                    _key418 = iprot.readString();
+                    _val419 = new Metric();
+                    _val419.read(iprot);
+                    struct.success.put(_key418, _val419);
                   }
                   iprot.readMapEnd();
                 }
@@ -35745,10 +37185,10 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.success.size()));
-            for (Map.Entry<String, Metric> _iter410 : struct.success.entrySet())
+            for (Map.Entry<String, Metric> _iter420 : struct.success.entrySet())
             {
-              oprot.writeString(_iter410.getKey());
-              _iter410.getValue().write(oprot);
+              oprot.writeString(_iter420.getKey());
+              _iter420.getValue().write(oprot);
             }
             oprot.writeMapEnd();
           }
@@ -35787,10 +37227,10 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (Map.Entry<String, Metric> _iter411 : struct.success.entrySet())
+            for (Map.Entry<String, Metric> _iter421 : struct.success.entrySet())
             {
-              oprot.writeString(_iter411.getKey());
-              _iter411.getValue().write(oprot);
+              oprot.writeString(_iter421.getKey());
+              _iter421.getValue().write(oprot);
             }
           }
         }
@@ -35805,16 +37245,16 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map412 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-            struct.success = new HashMap<String,Metric>(2*_map412.size);
-            for (int _i413 = 0; _i413 < _map412.size; ++_i413)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map422 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+            struct.success = new HashMap<String,Metric>(2*_map422.size);
+            for (int _i423 = 0; _i423 < _map422.size; ++_i423)
             {
-              String _key414; // optional
-              Metric _val415; // required
-              _key414 = iprot.readString();
-              _val415 = new Metric();
-              _val415.read(iprot);
-              struct.success.put(_key414, _val415);
+              String _key424; // optional
+              Metric _val425; // required
+              _key424 = iprot.readString();
+              _val425 = new Metric();
+              _val425.read(iprot);
+              struct.success.put(_key424, _val425);
             }
           }
           struct.setSuccessIsSet(true);
@@ -36939,13 +38379,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list416 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list416.size);
-                  for (int _i417 = 0; _i417 < _list416.size; ++_i417)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list426 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list426.size);
+                  for (int _i427 = 0; _i427 < _list426.size; ++_i427)
                   {
-                    String _elem418; // required
-                    _elem418 = iprot.readString();
-                    struct.success.add(_elem418);
+                    String _elem428; // required
+                    _elem428 = iprot.readString();
+                    struct.success.add(_elem428);
                   }
                   iprot.readListEnd();
                 }
@@ -36982,9 +38422,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (String _iter419 : struct.success)
+            for (String _iter429 : struct.success)
             {
-              oprot.writeString(_iter419);
+              oprot.writeString(_iter429);
             }
             oprot.writeListEnd();
           }
@@ -37023,9 +38463,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter420 : struct.success)
+            for (String _iter430 : struct.success)
             {
-              oprot.writeString(_iter420);
+              oprot.writeString(_iter430);
             }
           }
         }
@@ -37040,13 +38480,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list421 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list421.size);
-            for (int _i422 = 0; _i422 < _list421.size; ++_i422)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list431 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list431.size);
+            for (int _i432 = 0; _i432 < _list431.size; ++_i432)
             {
-              String _elem423; // required
-              _elem423 = iprot.readString();
-              struct.success.add(_elem423);
+              String _elem433; // required
+              _elem433 = iprot.readString();
+              struct.success.add(_elem433);
             }
           }
           struct.setSuccessIsSet(true);
@@ -37813,13 +39253,13 @@ public class Blur {
             case 0: // SUCCESS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
-                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list424 = iprot.readListBegin();
-                  struct.success = new ArrayList<String>(_list424.size);
-                  for (int _i425 = 0; _i425 < _list424.size; ++_i425)
+                  org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list434 = iprot.readListBegin();
+                  struct.success = new ArrayList<String>(_list434.size);
+                  for (int _i435 = 0; _i435 < _list434.size; ++_i435)
                   {
-                    String _elem426; // required
-                    _elem426 = iprot.readString();
-                    struct.success.add(_elem426);
+                    String _elem436; // required
+                    _elem436 = iprot.readString();
+                    struct.success.add(_elem436);
                   }
                   iprot.readListEnd();
                 }
@@ -37856,9 +39296,9 @@ public class Blur {
           oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.success.size()));
-            for (String _iter427 : struct.success)
+            for (String _iter437 : struct.success)
             {
-              oprot.writeString(_iter427);
+              oprot.writeString(_iter437);
             }
             oprot.writeListEnd();
           }
@@ -37897,9 +39337,9 @@ public class Blur {
         if (struct.isSetSuccess()) {
           {
             oprot.writeI32(struct.success.size());
-            for (String _iter428 : struct.success)
+            for (String _iter438 : struct.success)
             {
-              oprot.writeString(_iter428);
+              oprot.writeString(_iter438);
             }
           }
         }
@@ -37914,13 +39354,13 @@ public class Blur {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list429 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-            struct.success = new ArrayList<String>(_list429.size);
-            for (int _i430 = 0; _i430 < _list429.size; ++_i430)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list439 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
+            struct.success = new ArrayList<String>(_list439.size);
+            for (int _i440 = 0; _i440 < _list439.size; ++_i440)
             {
-              String _elem431; // required
-              _elem431 = iprot.readString();
-              struct.success.add(_elem431);
+              String _elem441; // required
+              _elem441 = iprot.readString();
+              struct.success.add(_elem441);
             }
           }
           struct.setSuccessIsSet(true);

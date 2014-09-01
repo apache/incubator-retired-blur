@@ -110,6 +110,31 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  # TimeoutException occurs before the network connection timeout
+# happens so that the client can reconnect.
+  class TimeoutException < ::Thrift::Exception
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    def initialize(message=nil)
+      super()
+      self.executionId = message
+    end
+
+    def message; executionId end
+
+    EXECUTIONID = 1
+
+    FIELDS = {
+      EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   # The user object is used to pass user context to server
 # side session.
   class User
@@ -1006,11 +1031,47 @@ module Blur
     ::Thrift::Union.generate_accessors self
   end
 
+  class Shard
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SHARD = 1
+
+    FIELDS = {
+      SHARD => {:type => ::Thrift::Types::STRING, :name => 'shard'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Server
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SERVER = 1
+
+    FIELDS = {
+      SERVER => {:type => ::Thrift::Types::STRING, :name => 'server'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Response < ::Thrift::Union
     include ::Thrift::Struct_Union
     class << self
       def shardToValue(val)
         Response.new(:shardToValue, val)
+      end
+
+      def serverToValue(val)
+        Response.new(:serverToValue, val)
       end
 
       def value(val)
@@ -1019,10 +1080,12 @@ module Blur
     end
 
     SHARDTOVALUE = 1
-    VALUE = 2
+    SERVERTOVALUE = 2
+    VALUE = 3
 
     FIELDS = {
-      SHARDTOVALUE => {:type => ::Thrift::Types::MAP, :name => 'shardToValue', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Value}},
+      SHARDTOVALUE => {:type => ::Thrift::Types::MAP, :name => 'shardToValue', :key => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Shard}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Value}},
+      SERVERTOVALUE => {:type => ::Thrift::Types::MAP, :name => 'serverToValue', :key => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Server}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Value}},
       VALUE => {:type => ::Thrift::Types::STRUCT, :name => 'value', :class => ::Blur::Value}
     }
 

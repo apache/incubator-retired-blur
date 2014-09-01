@@ -29,21 +29,36 @@ import org.apache.blur.thrift.generated.Value;
 
 public class CommandUtil {
 
-  public static org.apache.blur.thrift.generated.Response convert(Response response) throws BlurException {
+  public static org.apache.blur.thrift.generated.Response fromObjectToThrift(Response response) throws BlurException {
     org.apache.blur.thrift.generated.Response converted = new org.apache.blur.thrift.generated.Response();
     if (response.isAggregatedResults()) {
       converted.setValue(toValue(response.getServerResult()));
     } else {
-      converted.setShardToValue(convert(response.getShardResults()));
+      Map<Server, Object> serverResults = response.getServerResults();
+      if (serverResults == null) {
+        Map<org.apache.blur.thrift.generated.Shard, Value> fromObjectToThrift = fromObjectToThrift(response
+            .getShardResults());
+        converted.setShardToValue(fromObjectToThrift);
+      } else {
+        Map<org.apache.blur.thrift.generated.Server, Value> fromObjectToThrift = fromObjectToThrift(serverResults);
+        converted.setServerToValue(fromObjectToThrift);
+      }
     }
     return converted;
   }
 
-  public static Map<String, Value> convert(Map<Shard, Object> map) throws BlurException {
-    Map<String, Value> result = new HashMap<String, Value>();
-    for (Entry<Shard, Object> e : map.entrySet()) {
-      // @TODO need to make different setters for shard and server results
-      result.put(e.getKey().getShard(), toValue(e.getValue()));
+  @SuppressWarnings("unchecked")
+  public static <T, R> Map<R, Value> fromObjectToThrift(Map<T, Object> map) throws BlurException {
+    Map<R, Value> result = new HashMap<R, Value>();
+    for (Entry<T, Object> e : map.entrySet()) {
+      T key = e.getKey();
+      if (key instanceof Shard) {
+        Shard shard = (Shard) key;
+        result.put((R) new org.apache.blur.thrift.generated.Shard(shard.getShard()), toValue(e.getValue()));
+      } else if (key instanceof Server) {
+        Server server = (Server) key;
+        result.put((R) new org.apache.blur.thrift.generated.Server(server.getServer()), toValue(e.getValue()));
+      }
     }
     return result;
   }
@@ -97,5 +112,14 @@ public class CommandUtil {
       arguments.putToValues(e.getKey(), toValue(e.getValue()));
     }
     return arguments;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> Map<Shard, T> fromThriftToObject(Map<org.apache.blur.thrift.generated.Shard, Value> shardToValue) {
+    Map<Shard, T> result = new HashMap<Shard, T>();
+    for (Entry<org.apache.blur.thrift.generated.Shard, Value> e : shardToValue.entrySet()) {
+      result.put(new Shard(e.getKey().getShard()), (T) CommandUtil.toObject(e.getValue()));
+    }
+    return result;
   }
 }

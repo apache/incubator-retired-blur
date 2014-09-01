@@ -12,6 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.command.cmds.BaseCommand;
@@ -24,6 +25,7 @@ import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Response;
 import org.apache.blur.thrift.generated.Value;
+import org.apache.hadoop.conf.Configuration;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -127,16 +129,8 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
         public Map<Shard, T> call() throws Exception {
           Arguments arguments = CommandUtil.toArguments(args);
           Response response = client.execute(getTable(), commandName, arguments);
-          Map<String, Value> shardToValue = response.getShardToValue();
-          return toShardResponse(shardToValue);
-        }
-
-        private Map<Shard, T> toShardResponse(Map<String, Value> values) {
-          Map<Shard, T> result = new HashMap<Shard, T>();
-          for (Entry<String, Value> e : values.entrySet()) {
-            result.put(new Shard(e.getKey()), (T) CommandUtil.toObject(e.getValue()));
-          }
-          return result;
+          Map<Shard, Object> shardToValue = CommandUtil.fromThriftToObject(response.getShardToValue());
+          return (Map<Shard, T>) shardToValue;
         }
       });
       Set<Shard> shards = getShardsOnServer(server);
@@ -215,5 +209,33 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
       throw new IOException(firstError);
     }
     return result;
+  }
+
+  @Override
+  public BlurConfiguration getBlurConfiguration() {
+    return _tableContext.getBlurConfiguration();
+  }
+
+  @Override
+  public Configuration getConfiguration() {
+    return _tableContext.getConfiguration();
+  }
+
+  @Override
+  public <T> T readIndex(Shard shard, Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
+    Future<T> future = readIndexAsync(shard, args, clazz);
+    try {
+      return future.get();
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    } catch (ExecutionException e) {
+      throw new IOException(e.getCause());
+    }
+  }
+
+  @Override
+  public <T> Future<T> readIndexAsync(Shard shard, Args args, Class<? extends IndexReadCommand<T>> clazz)
+      throws IOException {
+    throw new RuntimeException("Not Implemented.");
   }
 }

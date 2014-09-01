@@ -40,6 +40,7 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
+import org.apache.blur.thrift.generated.TimeoutException;
 import org.apache.blur.thrift.generated.User;
 
 public class FilteredBlurServer implements Iface {
@@ -249,6 +250,16 @@ public class FilteredBlurServer implements Iface {
   @Override
   public Response execute(String table, String commandName, Arguments arguments) throws BlurException, TException {
     return _iface.execute(table, commandName, arguments);
+  }
+
+  @Override
+  public Response reconnect(String executionId) throws BlurException, TimeoutException, TException {
+    return _iface.reconnect(executionId);
+  }
+
+  @Override
+  public void refresh() throws TException {
+    _iface.refresh();
   }
 
 }

@@ -55,6 +55,14 @@ exception BlurException {
   3:ErrorType errorType
 }
 
+/** 
+  * TimeoutException occurs before the network connection timeout 
+  * happens so that the client can reconnect. 
+  */
+exception TimeoutException {
+  1:string executionId
+}
+
 /**
   * <table class="table-bordered table-striped table-condensed">
   * <tr><td colspan="2">The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.</td></tr>
@@ -842,9 +850,18 @@ union Value {
   9:bool nullValue
 }
 
+struct Shard {
+  1:string shard
+}
+
+struct Server {
+  1:string server
+}
+
 union Response {
-  1:map<string, Value> shardToValue,
-  2:Value value
+  1:map<Shard, Value> shardToValue,
+  2:map<Server, Value> serverToValue,
+  3:Value value
 }
 
 struct Arguments {
@@ -857,7 +874,25 @@ struct Arguments {
  */
 service Blur {
 
-  Response execute(1:string table, 2:string commandName, 3:Arguments arguments) throws (1:BlurException ex)
+  // Platform Commands
+
+  /**
+   * Executes the given command by name on the table with the provided arguments.
+   */
+  Response execute(1:string table, 2:string commandName, 3:Arguments arguments) throws (1:BlurException bex, 2:TimeoutException tex)
+
+  /**
+   * If the execute command times out due to command taking longer than the configured 
+   * network tcp timeout this method allows the client to reconnect to the already 
+   * executing command.
+   */
+  Response reconnect(1:string executionId) throws (1:BlurException bex, 2:TimeoutException tex)
+
+  /**
+   * Releases and refreshes the read snapshots of the indexes in the session for the 
+   * current connection.
+   */
+  oneway void refresh()
 
   //Table Commands
 

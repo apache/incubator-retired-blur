@@ -58,6 +58,6 @@ public class Response {
   }
 
   public static Response createNewServerResponse(Map<Server, Object> result) {
-    return new Response(null, null, result, true);
+    return new Response(null, null, result, false);
   }
 }

@@ -19,16 +19,22 @@ package org.apache.blur.thrift.util;
 import java.io.IOException;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.BlurClientManager;
+import org.apache.blur.thrift.Connection;
+import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Response;
 
 public class CommandExample {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    Iface client = BlurClient.getClient("localhost:40010");
+    Client client = BlurClientManager.getClientPool().getClient(new Connection("localhost:40010"));
+
     System.out.println(client.execute("test", "docCount", null));
     System.out.println(client.execute("test", "docCountNoCombine", null));
-    System.out.println(client.execute("test", "docCountAggregate", null));
+    Response response = client.execute("test", "docCountAggregate", null);
+    long count = response.getValue().getLongValue();
+    System.out.println(count);
+
   }
 }

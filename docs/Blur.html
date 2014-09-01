@@ -69,6 +69,7 @@ limitations under the License.
 <li><a href="#Structs">Data structures</a>
 <ul class="nav">
 <li><a href="#Struct_BlurException">BlurException</a></li>
+<li><a href="#Struct_TimeoutException">TimeoutException</a></li>
 <li><a href="#Struct_User">User</a></li>
 <li><a href="#Struct_Column">Column</a></li>
 <li><a href="#Struct_Record">Record</a></li>
@@ -95,6 +96,8 @@ limitations under the License.
 <li><a href="#Struct_TableDescriptor">TableDescriptor</a></li>
 <li><a href="#Struct_Metric">Metric</a></li>
 <li><a href="#Struct_Value">Value</a></li>
+<li><a href="#Struct_Shard">Shard</a></li>
+<li><a href="#Struct_Server">Server</a></li>
 <li><a href="#Struct_Response">Response</a></li>
 <li><a href="#Struct_Arguments">Arguments</a></li>
 </ul>
@@ -103,6 +106,8 @@ limitations under the License.
 <ul class="nav">
 <li><a href="#Fn_Blur_execute">Table Methods</a><ul class="nav">
 <li><a href="#Fn_Blur_execute">&nbsp;&nbsp;execute</a></li>
+<li><a href="#Fn_Blur_reconnect">&nbsp;&nbsp;reconnect</a></li>
+<li><a href="#Fn_Blur_refresh">&nbsp;&nbsp;refresh</a></li>
 <li><a href="#Fn_Blur_createTable">&nbsp;&nbsp;createTable</a></li>
 <li><a href="#Fn_Blur_enableTable">&nbsp;&nbsp;enableTable</a></li>
 <li><a href="#Fn_Blur_disableTable">&nbsp;&nbsp;disableTable</a></li>
@@ -277,6 +282,11 @@ Logging level enum used to change the logging levels at runtime.
 <tr><td>3</td><td>errorType</td><td><code><a href="Blur.html#Enum_ErrorType">ErrorType</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/>BlurException that carries a message plus the original stack
 trace (if any).
+<br/></p></section><section><div class="page-header"><h3 id="Struct_TimeoutException">Exception: TimeoutException</h3></div><p class="lead">
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>executionId</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+</table><br/>TimeoutException occurs before the network connection timeout
+happens so that the client can reconnect.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_User">Struct: User</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>username</td><td><code>string</code></td><td>username.
@@ -649,10 +659,17 @@ be family dot column, "family.column".
 <tr><td>7</td><td>binaryValue</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>8</td><td>booleanValue</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>9</td><td>nullValue</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
+</table><br/></p></section><section><div class="page-header"><h3 id="Struct_Shard">Struct: Shard</h3></div><p class="lead">
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>shard</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+</table><br/></p></section><section><div class="page-header"><h3 id="Struct_Server">Struct: Server</h3></div><p class="lead">
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>server</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 </table><br/></p></section><section><div class="page-header"><h3 id="Struct_Response">Struct: Response</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>shardToValue</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_Value">Value</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>value</td><td><code><a href="Blur.html#Struct_Value">Value</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>1</td><td>shardToValue</td><td><code>map&lt;<code><a href="Blur.html#Struct_Shard">Shard</a></code>, <code><a href="Blur.html#Struct_Value">Value</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>serverToValue</td><td><code>map&lt;<code><a href="Blur.html#Struct_Server">Server</a></code>, <code><a href="Blur.html#Struct_Value">Value</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>value</td><td><code><a href="Blur.html#Struct_Value">Value</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/></p></section><section><div class="page-header"><h3 id="Struct_Arguments">Struct: Arguments</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>values</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_Value">Value</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
@@ -664,8 +681,19 @@ shards servers.  Each of the methods are documented.
 <pre><code><a href="Blur.html#Struct_Response">Response</a></code> execute(<code>string</code> table,
 <code>string</code> commandName,
 <code><a href="Blur.html#Struct_Arguments">Arguments</a></code> arguments)
-throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></p></section><section><div class="page-header"><h4 id="Fn_Blur_createTable">Function: Blur.createTable</h4></div><p class="lead">
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_TimeoutException">TimeoutException</a></code>
+</pre>Executes the given command by name on the table with the provided arguments.
+<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_reconnect">Function: Blur.reconnect</h4></div><p class="lead">
+<pre><code><a href="Blur.html#Struct_Response">Response</a></code> reconnect(<code>string</code> executionId)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_TimeoutException">TimeoutException</a></code>
+</pre>If the execute command times out due to command taking longer than the configured
+network tcp timeout this method allows the client to reconnect to the already
+executing command.
+<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_refresh">Function: Blur.refresh</h4></div><p class="lead">
+<pre><code>void</code> refresh()
+</pre>Releases and refreshes the read snapshots of the indexes in the session for the
+current connection.
+<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_createTable">Function: Blur.createTable</h4></div><p class="lead">
 <pre><code>void</code> createTable(<code><a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a></code> tableDescriptor)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Creates a table with the given TableDescriptor.

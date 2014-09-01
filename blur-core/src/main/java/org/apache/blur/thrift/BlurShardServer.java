@@ -59,6 +59,7 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.thrift.generated.TableStats;
+import org.apache.blur.thrift.generated.TimeoutException;
 import org.apache.blur.thrift.generated.User;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
@@ -594,7 +595,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
       throws BlurException, TException {
     try {
       Response response = _commandManager.execute(getTableContext(table), commandName, CommandUtil.toArgs(arguments));
-      return CommandUtil.convert(response);
+      return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
       if (e instanceof BlurException) {
@@ -610,5 +611,16 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   public void setCommandManager(ShardCommandManager commandManager) {
     _commandManager = commandManager;
+  }
+
+  @Override
+  public org.apache.blur.thrift.generated.Response reconnect(String executionId) throws BlurException,
+      TimeoutException, TException {
+    throw new BException("Not implemented yet.");
+  }
+
+  @Override
+  public void refresh() throws TException {
+    ShardServerContext.resetSearchers();
   }
 }

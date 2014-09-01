@@ -1,6 +1,8 @@
 package org.apache.blur.manager.command;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.server.TableContext;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 
@@ -26,12 +28,15 @@ public abstract class IndexContext {
   public abstract Args getArgs();
 
   public abstract TableContext getTableContext();
-  
+
   public abstract Shard getShard();
 
   public abstract IndexReader getIndexReader();
 
   public abstract IndexSearcher getIndexSearcher();
 
+  public abstract BlurConfiguration getBlurConfiguration();
+
+  public abstract Configuration getConfiguration();
 
 }

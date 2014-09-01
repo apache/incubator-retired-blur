@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.server.TableContext;
+import org.apache.hadoop.conf.Configuration;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -29,10 +31,20 @@ public abstract class ClusterContext {
 
   public abstract TableContext getTableContext();
 
+  public abstract BlurConfiguration getBlurConfiguration();
+
+  public abstract Configuration getConfiguration();
+
   public abstract <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexReadCommand<T>> clazz)
       throws IOException;
 
   public abstract <T> Map<Shard, Future<T>> readIndexesAsync(Args args, Class<? extends IndexReadCommand<T>> clazz)
+      throws IOException;
+
+  public abstract <T> T readIndex(Shard shard, Args args, Class<? extends IndexReadCommand<T>> clazz)
+      throws IOException;
+
+  public abstract <T> Future<T> readIndexAsync(Shard shard, Args args, Class<? extends IndexReadCommand<T>> clazz)
       throws IOException;
 
   public abstract <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombiningCommand<?, T>> clazz)

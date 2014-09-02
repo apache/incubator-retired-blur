@@ -83,6 +83,15 @@ module Blur
     VALID_VALUES = Set.new([OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL]).freeze
   end
 
+  module BlurObjectType
+    MAP = 0
+    LIST = 1
+    NAME = 2
+    VALUE = 3
+    VALUE_MAP = {0 => "MAP", 1 => "LIST", 2 => "NAME", 3 => "VALUE"}
+    VALID_VALUES = Set.new([MAP, LIST, NAME, VALUE]).freeze
+  end
+
   # BlurException that carries a message plus the original stack
 # trace (if any).
   class BlurException < ::Thrift::Exception
@@ -1063,6 +1072,58 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  class BlurPackedObject
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    PARENTID = 1
+    TYPE = 2
+    VALUE = 3
+
+    FIELDS = {
+      PARENTID => {:type => ::Thrift::Types::I32, :name => 'parentId'},
+      TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :enum_class => ::Blur::BlurObjectType},
+      VALUE => {:type => ::Thrift::Types::STRUCT, :name => 'value', :class => ::Blur::Value}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      unless @type.nil? || ::Blur::BlurObjectType::VALID_VALUES.include?(@type)
+        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+      end
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class ValueObject < ::Thrift::Union
+    include ::Thrift::Struct_Union
+    class << self
+      def value(val)
+        ValueObject.new(:value, val)
+      end
+
+      def blurObject(val)
+        ValueObject.new(:blurObject, val)
+      end
+    end
+
+    VALUE = 1
+    BLUROBJECT = 2
+
+    FIELDS = {
+      VALUE => {:type => ::Thrift::Types::STRUCT, :name => 'value', :class => ::Blur::Value},
+      BLUROBJECT => {:type => ::Thrift::Types::LIST, :name => 'blurObject', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::BlurPackedObject}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+      raise(StandardError, 'Union fields are not set.') if get_set_field.nil? || get_value.nil?
+    end
+
+    ::Thrift::Union.generate_accessors self
+  end
+
   class Response < ::Thrift::Union
     include ::Thrift::Struct_Union
     class << self
@@ -1084,9 +1145,9 @@ module Blur
     VALUE = 3
 
     FIELDS = {
-      SHARDTOVALUE => {:type => ::Thrift::Types::MAP, :name => 'shardToValue', :key => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Shard}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Value}},
-      SERVERTOVALUE => {:type => ::Thrift::Types::MAP, :name => 'serverToValue', :key => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Server}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Value}},
-      VALUE => {:type => ::Thrift::Types::STRUCT, :name => 'value', :class => ::Blur::Value}
+      SHARDTOVALUE => {:type => ::Thrift::Types::MAP, :name => 'shardToValue', :key => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Shard}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::ValueObject}},
+      SERVERTOVALUE => {:type => ::Thrift::Types::MAP, :name => 'serverToValue', :key => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Server}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::ValueObject}},
+      VALUE => {:type => ::Thrift::Types::STRUCT, :name => 'value', :class => ::Blur::ValueObject}
     }
 
     def struct_fields; FIELDS; end
@@ -1103,7 +1164,7 @@ module Blur
     VALUES = 1
 
     FIELDS = {
-      VALUES => {:type => ::Thrift::Types::MAP, :name => 'values', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::Value}}
+      VALUES => {:type => ::Thrift::Types::MAP, :name => 'values', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::ValueObject}}
     }
 
     def struct_fields; FIELDS; end

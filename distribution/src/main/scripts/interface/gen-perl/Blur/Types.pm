@@ -52,6 +52,11 @@ use constant INFO => 4;
 use constant DEBUG => 5;
 use constant TRACE => 6;
 use constant ALL => 7;
+package Blur::BlurObjectType;
+use constant MAP => 0;
+use constant LIST => 1;
+use constant NAME => 2;
+use constant VALUE => 3;
 package Blur::BlurException;
 use base qw(Thrift::TException);
 use base qw(Class::Accessor);
@@ -4196,6 +4201,203 @@ sub write {
   return $xfer;
 }
 
+package Blur::BlurPackedObject;
+use base qw(Class::Accessor);
+Blur::BlurPackedObject->mk_accessors( qw( parentId type value ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{parentId} = undef;
+  $self->{type} = undef;
+  $self->{value} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{parentId}) {
+      $self->{parentId} = $vals->{parentId};
+    }
+    if (defined $vals->{type}) {
+      $self->{type} = $vals->{type};
+    }
+    if (defined $vals->{value}) {
+      $self->{value} = $vals->{value};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'BlurPackedObject';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{parentId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{type});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^3$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{value} = new Blur::Value();
+        $xfer += $self->{value}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('BlurPackedObject');
+  if (defined $self->{parentId}) {
+    $xfer += $output->writeFieldBegin('parentId', TType::I32, 1);
+    $xfer += $output->writeI32($self->{parentId});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{type}) {
+    $xfer += $output->writeFieldBegin('type', TType::I32, 2);
+    $xfer += $output->writeI32($self->{type});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{value}) {
+    $xfer += $output->writeFieldBegin('value', TType::STRUCT, 3);
+    $xfer += $self->{value}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::ValueObject;
+use base qw(Class::Accessor);
+Blur::ValueObject->mk_accessors( qw( value blurObject ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{value} = undef;
+  $self->{blurObject} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{value}) {
+      $self->{value} = $vals->{value};
+    }
+    if (defined $vals->{blurObject}) {
+      $self->{blurObject} = $vals->{blurObject};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'ValueObject';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{value} = new Blur::Value();
+        $xfer += $self->{value}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size206 = 0;
+          $self->{blurObject} = [];
+          my $_etype209 = 0;
+          $xfer += $input->readListBegin(\$_etype209, \$_size206);
+          for (my $_i210 = 0; $_i210 < $_size206; ++$_i210)
+          {
+            my $elem211 = undef;
+            $elem211 = new Blur::BlurPackedObject();
+            $xfer += $elem211->read($input);
+            push(@{$self->{blurObject}},$elem211);
+          }
+          $xfer += $input->readListEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('ValueObject');
+  if (defined $self->{value}) {
+    $xfer += $output->writeFieldBegin('value', TType::STRUCT, 1);
+    $xfer += $self->{value}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{blurObject}) {
+    $xfer += $output->writeFieldBegin('blurObject', TType::LIST, 2);
+    {
+      $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{blurObject}}));
+      {
+        foreach my $iter212 (@{$self->{blurObject}}) 
+        {
+          $xfer += ${iter212}->write($output);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::Response;
 use base qw(Class::Accessor);
 Blur::Response->mk_accessors( qw( shardToValue serverToValue value ) );
@@ -4242,20 +4444,20 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size206 = 0;
+          my $_size213 = 0;
           $self->{shardToValue} = {};
-          my $_ktype207 = 0;
-          my $_vtype208 = 0;
-          $xfer += $input->readMapBegin(\$_ktype207, \$_vtype208, \$_size206);
-          for (my $_i210 = 0; $_i210 < $_size206; ++$_i210)
+          my $_ktype214 = 0;
+          my $_vtype215 = 0;
+          $xfer += $input->readMapBegin(\$_ktype214, \$_vtype215, \$_size213);
+          for (my $_i217 = 0; $_i217 < $_size213; ++$_i217)
           {
-            my $key211 = new Blur::Shard();
-            my $val212 = new Blur::Value();
-            $key211 = new Blur::Shard();
-            $xfer += $key211->read($input);
-            $val212 = new Blur::Value();
-            $xfer += $val212->read($input);
-            $self->{shardToValue}->{$key211} = $val212;
+            my $key218 = new Blur::Shard();
+            my $val219 = new Blur::ValueObject();
+            $key218 = new Blur::Shard();
+            $xfer += $key218->read($input);
+            $val219 = new Blur::ValueObject();
+            $xfer += $val219->read($input);
+            $self->{shardToValue}->{$key218} = $val219;
           }
           $xfer += $input->readMapEnd();
         }
@@ -4265,20 +4467,20 @@ sub read {
       last; };
       /^2$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size213 = 0;
+          my $_size220 = 0;
           $self->{serverToValue} = {};
-          my $_ktype214 = 0;
-          my $_vtype215 = 0;
-          $xfer += $input->readMapBegin(\$_ktype214, \$_vtype215, \$_size213);
-          for (my $_i217 = 0; $_i217 < $_size213; ++$_i217)
+          my $_ktype221 = 0;
+          my $_vtype222 = 0;
+          $xfer += $input->readMapBegin(\$_ktype221, \$_vtype222, \$_size220);
+          for (my $_i224 = 0; $_i224 < $_size220; ++$_i224)
           {
-            my $key218 = new Blur::Server();
-            my $val219 = new Blur::Value();
-            $key218 = new Blur::Server();
-            $xfer += $key218->read($input);
-            $val219 = new Blur::Value();
-            $xfer += $val219->read($input);
-            $self->{serverToValue}->{$key218} = $val219;
+            my $key225 = new Blur::Server();
+            my $val226 = new Blur::ValueObject();
+            $key225 = new Blur::Server();
+            $xfer += $key225->read($input);
+            $val226 = new Blur::ValueObject();
+            $xfer += $val226->read($input);
+            $self->{serverToValue}->{$key225} = $val226;
           }
           $xfer += $input->readMapEnd();
         }
@@ -4287,7 +4489,7 @@ sub read {
       }
       last; };
       /^3$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{value} = new Blur::Value();
+        $self->{value} = new Blur::ValueObject();
         $xfer += $self->{value}->read($input);
       } else {
         $xfer += $input->skip($ftype);
@@ -4310,10 +4512,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRUCT, TType::STRUCT, scalar(keys %{$self->{shardToValue}}));
       {
-        while( my ($kiter220,$viter221) = each %{$self->{shardToValue}}) 
+        while( my ($kiter227,$viter228) = each %{$self->{shardToValue}}) 
         {
-          $xfer += ${kiter220}->write($output);
-          $xfer += ${viter221}->write($output);
+          $xfer += ${kiter227}->write($output);
+          $xfer += ${viter228}->write($output);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -4325,10 +4527,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRUCT, TType::STRUCT, scalar(keys %{$self->{serverToValue}}));
       {
-        while( my ($kiter222,$viter223) = each %{$self->{serverToValue}}) 
+        while( my ($kiter229,$viter230) = each %{$self->{serverToValue}}) 
         {
-          $xfer += ${kiter222}->write($output);
-          $xfer += ${viter223}->write($output);
+          $xfer += ${kiter229}->write($output);
+          $xfer += ${viter230}->write($output);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -4383,19 +4585,19 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size224 = 0;
+          my $_size231 = 0;
           $self->{values} = {};
-          my $_ktype225 = 0;
-          my $_vtype226 = 0;
-          $xfer += $input->readMapBegin(\$_ktype225, \$_vtype226, \$_size224);
-          for (my $_i228 = 0; $_i228 < $_size224; ++$_i228)
+          my $_ktype232 = 0;
+          my $_vtype233 = 0;
+          $xfer += $input->readMapBegin(\$_ktype232, \$_vtype233, \$_size231);
+          for (my $_i235 = 0; $_i235 < $_size231; ++$_i235)
           {
-            my $key229 = '';
-            my $val230 = new Blur::Value();
-            $xfer += $input->readString(\$key229);
-            $val230 = new Blur::Value();
-            $xfer += $val230->read($input);
-            $self->{values}->{$key229} = $val230;
+            my $key236 = '';
+            my $val237 = new Blur::ValueObject();
+            $xfer += $input->readString(\$key236);
+            $val237 = new Blur::ValueObject();
+            $xfer += $val237->read($input);
+            $self->{values}->{$key236} = $val237;
           }
           $xfer += $input->readMapEnd();
         }
@@ -4420,10 +4622,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRUCT, scalar(keys %{$self->{values}}));
       {
-        while( my ($kiter231,$viter232) = each %{$self->{values}}) 
+        while( my ($kiter238,$viter239) = each %{$self->{values}}) 
         {
-          $xfer += $output->writeString($kiter231);
-          $xfer += ${viter232}->write($output);
+          $xfer += $output->writeString($kiter238);
+          $xfer += ${viter239}->write($output);
         }
       }
       $xfer += $output->writeMapEnd();

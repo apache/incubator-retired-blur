@@ -858,14 +858,29 @@ struct Server {
   1:string server
 }
 
+enum BlurObjectType {
+  MAP, LIST, NAME, VALUE
+}
+
+struct BlurPackedObject {
+  1:i32 parentId,
+  2:BlurObjectType type,
+  3:Value value,
+}
+
+union ValueObject {
+  1:Value value,
+  2:list<BlurPackedObject> blurObject
+}
+
 union Response {
-  1:map<Shard, Value> shardToValue,
-  2:map<Server, Value> serverToValue,
-  3:Value value
+  1:map<Shard, ValueObject> shardToValue,
+  2:map<Server, ValueObject> serverToValue,
+  3:ValueObject value
 }
 
 struct Arguments {
-  1:map<string,Value> values
+  1:map<string, ValueObject> values
 }
 
 /**

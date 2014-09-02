@@ -125,13 +125,13 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
     tmpMap.put(_Fields.SHARD_TO_VALUE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("shardToValue", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Shard.class), 
-            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Value.class))));
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ValueObject.class))));
     tmpMap.put(_Fields.SERVER_TO_VALUE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("serverToValue", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Server.class), 
-            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Value.class))));
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ValueObject.class))));
     tmpMap.put(_Fields.VALUE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("value", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Value.class)));
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ValueObject.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(Response.class, metaDataMap);
   }
@@ -151,19 +151,19 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
     return new Response(this);
   }
 
-  public static Response shardToValue(Map<Shard,Value> value) {
+  public static Response shardToValue(Map<Shard,ValueObject> value) {
     Response x = new Response();
     x.setShardToValue(value);
     return x;
   }
 
-  public static Response serverToValue(Map<Server,Value> value) {
+  public static Response serverToValue(Map<Server,ValueObject> value) {
     Response x = new Response();
     x.setServerToValue(value);
     return x;
   }
 
-  public static Response value(Value value) {
+  public static Response value(ValueObject value) {
     Response x = new Response();
     x.setValue(value);
     return x;
@@ -177,17 +177,17 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
         if (value instanceof Map) {
           break;
         }
-        throw new ClassCastException("Was expecting value of type Map<Shard,Value> for field 'shardToValue', but got " + value.getClass().getSimpleName());
+        throw new ClassCastException("Was expecting value of type Map<Shard,ValueObject> for field 'shardToValue', but got " + value.getClass().getSimpleName());
       case SERVER_TO_VALUE:
         if (value instanceof Map) {
           break;
         }
-        throw new ClassCastException("Was expecting value of type Map<Server,Value> for field 'serverToValue', but got " + value.getClass().getSimpleName());
+        throw new ClassCastException("Was expecting value of type Map<Server,ValueObject> for field 'serverToValue', but got " + value.getClass().getSimpleName());
       case VALUE:
-        if (value instanceof Value) {
+        if (value instanceof ValueObject) {
           break;
         }
-        throw new ClassCastException("Was expecting value of type Value for field 'value', but got " + value.getClass().getSimpleName());
+        throw new ClassCastException("Was expecting value of type ValueObject for field 'value', but got " + value.getClass().getSimpleName());
       default:
         throw new IllegalArgumentException("Unknown field id " + setField);
     }
@@ -200,19 +200,19 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
       switch (setField) {
         case SHARD_TO_VALUE:
           if (field.type == SHARD_TO_VALUE_FIELD_DESC.type) {
-            Map<Shard,Value> shardToValue;
+            Map<Shard,ValueObject> shardToValue;
             {
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map232 = iprot.readMapBegin();
-              shardToValue = new HashMap<Shard,Value>(2*_map232.size);
-              for (int _i233 = 0; _i233 < _map232.size; ++_i233)
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map240 = iprot.readMapBegin();
+              shardToValue = new HashMap<Shard,ValueObject>(2*_map240.size);
+              for (int _i241 = 0; _i241 < _map240.size; ++_i241)
               {
-                Shard _key234; // optional
-                Value _val235; // required
-                _key234 = new Shard();
-                _key234.read(iprot);
-                _val235 = new Value();
-                _val235.read(iprot);
-                shardToValue.put(_key234, _val235);
+                Shard _key242; // optional
+                ValueObject _val243; // required
+                _key242 = new Shard();
+                _key242.read(iprot);
+                _val243 = new ValueObject();
+                _val243.read(iprot);
+                shardToValue.put(_key242, _val243);
               }
               iprot.readMapEnd();
             }
@@ -223,19 +223,19 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
           }
         case SERVER_TO_VALUE:
           if (field.type == SERVER_TO_VALUE_FIELD_DESC.type) {
-            Map<Server,Value> serverToValue;
+            Map<Server,ValueObject> serverToValue;
             {
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map236 = iprot.readMapBegin();
-              serverToValue = new HashMap<Server,Value>(2*_map236.size);
-              for (int _i237 = 0; _i237 < _map236.size; ++_i237)
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map244 = iprot.readMapBegin();
+              serverToValue = new HashMap<Server,ValueObject>(2*_map244.size);
+              for (int _i245 = 0; _i245 < _map244.size; ++_i245)
               {
-                Server _key238; // optional
-                Value _val239; // required
-                _key238 = new Server();
-                _key238.read(iprot);
-                _val239 = new Value();
-                _val239.read(iprot);
-                serverToValue.put(_key238, _val239);
+                Server _key246; // optional
+                ValueObject _val247; // required
+                _key246 = new Server();
+                _key246.read(iprot);
+                _val247 = new ValueObject();
+                _val247.read(iprot);
+                serverToValue.put(_key246, _val247);
               }
               iprot.readMapEnd();
             }
@@ -246,8 +246,8 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
           }
         case VALUE:
           if (field.type == VALUE_FIELD_DESC.type) {
-            Value value;
-            value = new Value();
+            ValueObject value;
+            value = new ValueObject();
             value.read(iprot);
             return value;
           } else {
@@ -266,31 +266,31 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
   protected void standardSchemeWriteValue(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     switch (setField_) {
       case SHARD_TO_VALUE:
-        Map<Shard,Value> shardToValue = (Map<Shard,Value>)value_;
+        Map<Shard,ValueObject> shardToValue = (Map<Shard,ValueObject>)value_;
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, shardToValue.size()));
-          for (Map.Entry<Shard, Value> _iter240 : shardToValue.entrySet())
+          for (Map.Entry<Shard, ValueObject> _iter248 : shardToValue.entrySet())
           {
-            _iter240.getKey().write(oprot);
-            _iter240.getValue().write(oprot);
+            _iter248.getKey().write(oprot);
+            _iter248.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
         return;
       case SERVER_TO_VALUE:
-        Map<Server,Value> serverToValue = (Map<Server,Value>)value_;
+        Map<Server,ValueObject> serverToValue = (Map<Server,ValueObject>)value_;
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, serverToValue.size()));
-          for (Map.Entry<Server, Value> _iter241 : serverToValue.entrySet())
+          for (Map.Entry<Server, ValueObject> _iter249 : serverToValue.entrySet())
           {
-            _iter241.getKey().write(oprot);
-            _iter241.getValue().write(oprot);
+            _iter249.getKey().write(oprot);
+            _iter249.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
         return;
       case VALUE:
-        Value value = (Value)value_;
+        ValueObject value = (ValueObject)value_;
         value.write(oprot);
         return;
       default:
@@ -304,44 +304,44 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
     if (setField != null) {
       switch (setField) {
         case SHARD_TO_VALUE:
-          Map<Shard,Value> shardToValue;
+          Map<Shard,ValueObject> shardToValue;
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map242 = iprot.readMapBegin();
-            shardToValue = new HashMap<Shard,Value>(2*_map242.size);
-            for (int _i243 = 0; _i243 < _map242.size; ++_i243)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map250 = iprot.readMapBegin();
+            shardToValue = new HashMap<Shard,ValueObject>(2*_map250.size);
+            for (int _i251 = 0; _i251 < _map250.size; ++_i251)
             {
-              Shard _key244; // optional
-              Value _val245; // required
-              _key244 = new Shard();
-              _key244.read(iprot);
-              _val245 = new Value();
-              _val245.read(iprot);
-              shardToValue.put(_key244, _val245);
+              Shard _key252; // optional
+              ValueObject _val253; // required
+              _key252 = new Shard();
+              _key252.read(iprot);
+              _val253 = new ValueObject();
+              _val253.read(iprot);
+              shardToValue.put(_key252, _val253);
             }
             iprot.readMapEnd();
           }
           return shardToValue;
         case SERVER_TO_VALUE:
-          Map<Server,Value> serverToValue;
+          Map<Server,ValueObject> serverToValue;
           {
-            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map246 = iprot.readMapBegin();
-            serverToValue = new HashMap<Server,Value>(2*_map246.size);
-            for (int _i247 = 0; _i247 < _map246.size; ++_i247)
+            org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map254 = iprot.readMapBegin();
+            serverToValue = new HashMap<Server,ValueObject>(2*_map254.size);
+            for (int _i255 = 0; _i255 < _map254.size; ++_i255)
             {
-              Server _key248; // optional
-              Value _val249; // required
-              _key248 = new Server();
-              _key248.read(iprot);
-              _val249 = new Value();
-              _val249.read(iprot);
-              serverToValue.put(_key248, _val249);
+              Server _key256; // optional
+              ValueObject _val257; // required
+              _key256 = new Server();
+              _key256.read(iprot);
+              _val257 = new ValueObject();
+              _val257.read(iprot);
+              serverToValue.put(_key256, _val257);
             }
             iprot.readMapEnd();
           }
           return serverToValue;
         case VALUE:
-          Value value;
-          value = new Value();
+          ValueObject value;
+          value = new ValueObject();
           value.read(iprot);
           return value;
         default:
@@ -356,31 +356,31 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
   protected void tupleSchemeWriteValue(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     switch (setField_) {
       case SHARD_TO_VALUE:
-        Map<Shard,Value> shardToValue = (Map<Shard,Value>)value_;
+        Map<Shard,ValueObject> shardToValue = (Map<Shard,ValueObject>)value_;
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, shardToValue.size()));
-          for (Map.Entry<Shard, Value> _iter250 : shardToValue.entrySet())
+          for (Map.Entry<Shard, ValueObject> _iter258 : shardToValue.entrySet())
           {
-            _iter250.getKey().write(oprot);
-            _iter250.getValue().write(oprot);
+            _iter258.getKey().write(oprot);
+            _iter258.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
         return;
       case SERVER_TO_VALUE:
-        Map<Server,Value> serverToValue = (Map<Server,Value>)value_;
+        Map<Server,ValueObject> serverToValue = (Map<Server,ValueObject>)value_;
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, serverToValue.size()));
-          for (Map.Entry<Server, Value> _iter251 : serverToValue.entrySet())
+          for (Map.Entry<Server, ValueObject> _iter259 : serverToValue.entrySet())
           {
-            _iter251.getKey().write(oprot);
-            _iter251.getValue().write(oprot);
+            _iter259.getKey().write(oprot);
+            _iter259.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
         return;
       case VALUE:
-        Value value = (Value)value_;
+        ValueObject value = (ValueObject)value_;
         value.write(oprot);
         return;
       default:
@@ -417,43 +417,43 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
   }
 
 
-  public Map<Shard,Value> getShardToValue() {
+  public Map<Shard,ValueObject> getShardToValue() {
     if (getSetField() == _Fields.SHARD_TO_VALUE) {
-      return (Map<Shard,Value>)getFieldValue();
+      return (Map<Shard,ValueObject>)getFieldValue();
     } else {
       throw new RuntimeException("Cannot get field 'shardToValue' because union is currently set to " + getFieldDesc(getSetField()).name);
     }
   }
 
-  public void setShardToValue(Map<Shard,Value> value) {
+  public void setShardToValue(Map<Shard,ValueObject> value) {
     if (value == null) throw new NullPointerException();
     setField_ = _Fields.SHARD_TO_VALUE;
     value_ = value;
   }
 
-  public Map<Server,Value> getServerToValue() {
+  public Map<Server,ValueObject> getServerToValue() {
     if (getSetField() == _Fields.SERVER_TO_VALUE) {
-      return (Map<Server,Value>)getFieldValue();
+      return (Map<Server,ValueObject>)getFieldValue();
     } else {
       throw new RuntimeException("Cannot get field 'serverToValue' because union is currently set to " + getFieldDesc(getSetField()).name);
     }
   }
 
-  public void setServerToValue(Map<Server,Value> value) {
+  public void setServerToValue(Map<Server,ValueObject> value) {
     if (value == null) throw new NullPointerException();
     setField_ = _Fields.SERVER_TO_VALUE;
     value_ = value;
   }
 
-  public Value getValue() {
+  public ValueObject getValue() {
     if (getSetField() == _Fields.VALUE) {
-      return (Value)getFieldValue();
+      return (ValueObject)getFieldValue();
     } else {
       throw new RuntimeException("Cannot get field 'value' because union is currently set to " + getFieldDesc(getSetField()).name);
     }
   }
 
-  public void setValue(Value value) {
+  public void setValue(ValueObject value) {
     if (value == null) throw new NullPointerException();
     setField_ = _Fields.VALUE;
     value_ = value;

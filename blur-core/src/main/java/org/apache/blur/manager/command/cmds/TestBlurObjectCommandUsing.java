@@ -1,5 +1,3 @@
-package org.apache.blur.thrift.util;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,8 +14,12 @@ package org.apache.blur.thrift.util;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.blur.manager.command.cmds;
+
 import java.io.IOException;
 
+import org.apache.blur.manager.command.BlurObject;
+import org.apache.blur.manager.command.ObjectArrayPacking;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.Connection;
@@ -25,21 +27,15 @@ import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Response;
 
-public class CommandExample {
+public class TestBlurObjectCommandUsing {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
     Client client = BlurClientManager.getClientPool().getClient(new Connection("localhost:40010"));
-
-    System.out.println(client.execute("test", "docCount", null));
-    System.out.println(client.execute("test", "docCountNoCombine", null));
-    {
-      Response response = client.execute("test", "docCountAggregate", null);
-      long count = response.getValue().getValue().getLongValue();
-      System.out.println(count);
-    }
-    {
-      Response response = client.execute("test", "testBlurObject", null);
-      System.out.println(response);
-    }
+    Response response = client.execute("test", "testBlurObject", null);
+    BlurObject object = (BlurObject) ObjectArrayPacking.unpack(response.getValue().getBlurObject());
+    System.out.println(object);
+    // prints => {"docCount":10005}
+    System.out.println(object.getLong("docCount"));
+    // prints => 10005
   }
 }

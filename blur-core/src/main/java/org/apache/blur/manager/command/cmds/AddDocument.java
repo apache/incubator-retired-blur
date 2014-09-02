@@ -3,10 +3,10 @@ package org.apache.blur.manager.command.cmds;
 import java.io.IOException;
 
 import org.apache.blur.manager.command.Args;
-import org.apache.blur.manager.command.Argument;
-import org.apache.blur.manager.command.Arguments;
 import org.apache.blur.manager.command.IndexContext;
 import org.apache.blur.manager.command.IndexWriteCommand;
+import org.apache.blur.manager.command.annotation.Argument;
+import org.apache.blur.manager.command.annotation.Arguments;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 

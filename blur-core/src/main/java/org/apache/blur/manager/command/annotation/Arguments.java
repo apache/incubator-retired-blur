@@ -1,4 +1,4 @@
-package org.apache.blur.manager.command;
+package org.apache.blur.manager.command.annotation;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

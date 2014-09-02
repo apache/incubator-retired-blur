@@ -60,7 +60,7 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     schemes.put(TupleScheme.class, new ArgumentsTupleSchemeFactory());
   }
 
-  public Map<String,Value> values; // required
+  public Map<String,ValueObject> values; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -127,7 +127,7 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     tmpMap.put(_Fields.VALUES, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("values", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
-            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, Value.class))));
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ValueObject.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(Arguments.class, metaDataMap);
   }
@@ -136,7 +136,7 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
   }
 
   public Arguments(
-    Map<String,Value> values)
+    Map<String,ValueObject> values)
   {
     this();
     this.values = values;
@@ -147,15 +147,15 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
    */
   public Arguments(Arguments other) {
     if (other.isSetValues()) {
-      Map<String,Value> __this__values = new HashMap<String,Value>();
-      for (Map.Entry<String, Value> other_element : other.values.entrySet()) {
+      Map<String,ValueObject> __this__values = new HashMap<String,ValueObject>();
+      for (Map.Entry<String, ValueObject> other_element : other.values.entrySet()) {
 
         String other_element_key = other_element.getKey();
-        Value other_element_value = other_element.getValue();
+        ValueObject other_element_value = other_element.getValue();
 
         String __this__values_copy_key = other_element_key;
 
-        Value __this__values_copy_value = new Value(other_element_value);
+        ValueObject __this__values_copy_value = new ValueObject(other_element_value);
 
         __this__values.put(__this__values_copy_key, __this__values_copy_value);
       }
@@ -176,18 +176,18 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
     return (this.values == null) ? 0 : this.values.size();
   }
 
-  public void putToValues(String key, Value val) {
+  public void putToValues(String key, ValueObject val) {
     if (this.values == null) {
-      this.values = new HashMap<String,Value>();
+      this.values = new HashMap<String,ValueObject>();
     }
     this.values.put(key, val);
   }
 
-  public Map<String,Value> getValues() {
+  public Map<String,ValueObject> getValues() {
     return this.values;
   }
 
-  public Arguments setValues(Map<String,Value> values) {
+  public Arguments setValues(Map<String,ValueObject> values) {
     this.values = values;
     return this;
   }
@@ -213,7 +213,7 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       if (value == null) {
         unsetValues();
       } else {
-        setValues((Map<String,Value>)value);
+        setValues((Map<String,ValueObject>)value);
       }
       break;
 
@@ -363,16 +363,16 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
           case 1: // VALUES
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map252 = iprot.readMapBegin();
-                struct.values = new HashMap<String,Value>(2*_map252.size);
-                for (int _i253 = 0; _i253 < _map252.size; ++_i253)
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map260 = iprot.readMapBegin();
+                struct.values = new HashMap<String,ValueObject>(2*_map260.size);
+                for (int _i261 = 0; _i261 < _map260.size; ++_i261)
                 {
-                  String _key254; // optional
-                  Value _val255; // required
-                  _key254 = iprot.readString();
-                  _val255 = new Value();
-                  _val255.read(iprot);
-                  struct.values.put(_key254, _val255);
+                  String _key262; // optional
+                  ValueObject _val263; // required
+                  _key262 = iprot.readString();
+                  _val263 = new ValueObject();
+                  _val263.read(iprot);
+                  struct.values.put(_key262, _val263);
                 }
                 iprot.readMapEnd();
               }
@@ -400,10 +400,10 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
         oprot.writeFieldBegin(VALUES_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.values.size()));
-          for (Map.Entry<String, Value> _iter256 : struct.values.entrySet())
+          for (Map.Entry<String, ValueObject> _iter264 : struct.values.entrySet())
           {
-            oprot.writeString(_iter256.getKey());
-            _iter256.getValue().write(oprot);
+            oprot.writeString(_iter264.getKey());
+            _iter264.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -434,10 +434,10 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       if (struct.isSetValues()) {
         {
           oprot.writeI32(struct.values.size());
-          for (Map.Entry<String, Value> _iter257 : struct.values.entrySet())
+          for (Map.Entry<String, ValueObject> _iter265 : struct.values.entrySet())
           {
-            oprot.writeString(_iter257.getKey());
-            _iter257.getValue().write(oprot);
+            oprot.writeString(_iter265.getKey());
+            _iter265.getValue().write(oprot);
           }
         }
       }
@@ -449,16 +449,16 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map258 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
-          struct.values = new HashMap<String,Value>(2*_map258.size);
-          for (int _i259 = 0; _i259 < _map258.size; ++_i259)
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map266 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.values = new HashMap<String,ValueObject>(2*_map266.size);
+          for (int _i267 = 0; _i267 < _map266.size; ++_i267)
           {
-            String _key260; // optional
-            Value _val261; // required
-            _key260 = iprot.readString();
-            _val261 = new Value();
-            _val261.read(iprot);
-            struct.values.put(_key260, _val261);
+            String _key268; // optional
+            ValueObject _val269; // required
+            _key268 = iprot.readString();
+            _val269 = new ValueObject();
+            _val269.read(iprot);
+            struct.values.put(_key268, _val269);
           }
         }
         struct.setValuesIsSet(true);

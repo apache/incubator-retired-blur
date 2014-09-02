@@ -56,6 +56,12 @@ Level = {
 'TRACE' : 6,
 'ALL' : 7
 };
+BlurObjectType = {
+'MAP' : 0,
+'LIST' : 1,
+'NAME' : 2,
+'VALUE' : 3
+};
 BlurException = function(args) {
   this.message = null;
   this.stackTraceStr = null;
@@ -3994,6 +4000,179 @@ Server.prototype.write = function(output) {
   return;
 };
 
+BlurPackedObject = function(args) {
+  this.parentId = null;
+  this.type = null;
+  this.value = null;
+  if (args) {
+    if (args.parentId !== undefined) {
+      this.parentId = args.parentId;
+    }
+    if (args.type !== undefined) {
+      this.type = args.type;
+    }
+    if (args.value !== undefined) {
+      this.value = args.value;
+    }
+  }
+};
+BlurPackedObject.prototype = {};
+BlurPackedObject.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.I32) {
+        this.parentId = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.I32) {
+        this.type = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.value = new Value();
+        this.value.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+BlurPackedObject.prototype.write = function(output) {
+  output.writeStructBegin('BlurPackedObject');
+  if (this.parentId !== null && this.parentId !== undefined) {
+    output.writeFieldBegin('parentId', Thrift.Type.I32, 1);
+    output.writeI32(this.parentId);
+    output.writeFieldEnd();
+  }
+  if (this.type !== null && this.type !== undefined) {
+    output.writeFieldBegin('type', Thrift.Type.I32, 2);
+    output.writeI32(this.type);
+    output.writeFieldEnd();
+  }
+  if (this.value !== null && this.value !== undefined) {
+    output.writeFieldBegin('value', Thrift.Type.STRUCT, 3);
+    this.value.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+ValueObject = function(args) {
+  this.value = null;
+  this.blurObject = null;
+  if (args) {
+    if (args.value !== undefined) {
+      this.value = args.value;
+    }
+    if (args.blurObject !== undefined) {
+      this.blurObject = args.blurObject;
+    }
+  }
+};
+ValueObject.prototype = {};
+ValueObject.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.value = new Value();
+        this.value.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.LIST) {
+        var _size232 = 0;
+        var _rtmp3236;
+        this.blurObject = [];
+        var _etype235 = 0;
+        _rtmp3236 = input.readListBegin();
+        _etype235 = _rtmp3236.etype;
+        _size232 = _rtmp3236.size;
+        for (var _i237 = 0; _i237 < _size232; ++_i237)
+        {
+          var elem238 = null;
+          elem238 = new BlurPackedObject();
+          elem238.read(input);
+          this.blurObject.push(elem238);
+        }
+        input.readListEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+ValueObject.prototype.write = function(output) {
+  output.writeStructBegin('ValueObject');
+  if (this.value !== null && this.value !== undefined) {
+    output.writeFieldBegin('value', Thrift.Type.STRUCT, 1);
+    this.value.write(output);
+    output.writeFieldEnd();
+  }
+  if (this.blurObject !== null && this.blurObject !== undefined) {
+    output.writeFieldBegin('blurObject', Thrift.Type.LIST, 2);
+    output.writeListBegin(Thrift.Type.STRUCT, this.blurObject.length);
+    for (var iter239 in this.blurObject)
+    {
+      if (this.blurObject.hasOwnProperty(iter239))
+      {
+        iter239 = this.blurObject[iter239];
+        iter239.write(output);
+      }
+    }
+    output.writeListEnd();
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 Response = function(args) {
   this.shardToValue = null;
   this.serverToValue = null;
@@ -4026,40 +4205,9 @@ Response.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.MAP) {
-        var _size232 = 0;
-        var _rtmp3236;
-        this.shardToValue = {};
-        var _ktype233 = 0;
-        var _vtype234 = 0;
-        _rtmp3236 = input.readMapBegin();
-        _ktype233 = _rtmp3236.ktype;
-        _vtype234 = _rtmp3236.vtype;
-        _size232 = _rtmp3236.size;
-        for (var _i237 = 0; _i237 < _size232; ++_i237)
-        {
-          if (_i237 > 0 ) {
-            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
-              input.rstack.pop();
-            }
-          }
-          var key238 = null;
-          var val239 = null;
-          key238 = new Shard();
-          key238.read(input);
-          val239 = new Value();
-          val239.read(input);
-          this.shardToValue[key238] = val239;
-        }
-        input.readMapEnd();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 2:
-      if (ftype == Thrift.Type.MAP) {
         var _size240 = 0;
         var _rtmp3244;
-        this.serverToValue = {};
+        this.shardToValue = {};
         var _ktype241 = 0;
         var _vtype242 = 0;
         _rtmp3244 = input.readMapBegin();
@@ -4075,11 +4223,42 @@ Response.prototype.read = function(input) {
           }
           var key246 = null;
           var val247 = null;
-          key246 = new Server();
+          key246 = new Shard();
           key246.read(input);
-          val247 = new Value();
+          val247 = new ValueObject();
           val247.read(input);
-          this.serverToValue[key246] = val247;
+          this.shardToValue[key246] = val247;
+        }
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.MAP) {
+        var _size248 = 0;
+        var _rtmp3252;
+        this.serverToValue = {};
+        var _ktype249 = 0;
+        var _vtype250 = 0;
+        _rtmp3252 = input.readMapBegin();
+        _ktype249 = _rtmp3252.ktype;
+        _vtype250 = _rtmp3252.vtype;
+        _size248 = _rtmp3252.size;
+        for (var _i253 = 0; _i253 < _size248; ++_i253)
+        {
+          if (_i253 > 0 ) {
+            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+              input.rstack.pop();
+            }
+          }
+          var key254 = null;
+          var val255 = null;
+          key254 = new Server();
+          key254.read(input);
+          val255 = new ValueObject();
+          val255.read(input);
+          this.serverToValue[key254] = val255;
         }
         input.readMapEnd();
       } else {
@@ -4088,7 +4267,7 @@ Response.prototype.read = function(input) {
       break;
       case 3:
       if (ftype == Thrift.Type.STRUCT) {
-        this.value = new Value();
+        this.value = new ValueObject();
         this.value.read(input);
       } else {
         input.skip(ftype);
@@ -4108,13 +4287,13 @@ Response.prototype.write = function(output) {
   if (this.shardToValue !== null && this.shardToValue !== undefined) {
     output.writeFieldBegin('shardToValue', Thrift.Type.MAP, 1);
     output.writeMapBegin(Thrift.Type.STRUCT, Thrift.Type.STRUCT, Thrift.objectLength(this.shardToValue));
-    for (var kiter248 in this.shardToValue)
+    for (var kiter256 in this.shardToValue)
     {
-      if (this.shardToValue.hasOwnProperty(kiter248))
+      if (this.shardToValue.hasOwnProperty(kiter256))
       {
-        var viter249 = this.shardToValue[kiter248];
-        kiter248.write(output);
-        viter249.write(output);
+        var viter257 = this.shardToValue[kiter256];
+        kiter256.write(output);
+        viter257.write(output);
       }
     }
     output.writeMapEnd();
@@ -4123,13 +4302,13 @@ Response.prototype.write = function(output) {
   if (this.serverToValue !== null && this.serverToValue !== undefined) {
     output.writeFieldBegin('serverToValue', Thrift.Type.MAP, 2);
     output.writeMapBegin(Thrift.Type.STRUCT, Thrift.Type.STRUCT, Thrift.objectLength(this.serverToValue));
-    for (var kiter250 in this.serverToValue)
+    for (var kiter258 in this.serverToValue)
     {
-      if (this.serverToValue.hasOwnProperty(kiter250))
+      if (this.serverToValue.hasOwnProperty(kiter258))
       {
-        var viter251 = this.serverToValue[kiter250];
-        kiter250.write(output);
-        viter251.write(output);
+        var viter259 = this.serverToValue[kiter258];
+        kiter258.write(output);
+        viter259.write(output);
       }
     }
     output.writeMapEnd();
@@ -4169,28 +4348,28 @@ Arguments.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.MAP) {
-        var _size252 = 0;
-        var _rtmp3256;
+        var _size260 = 0;
+        var _rtmp3264;
         this.values = {};
-        var _ktype253 = 0;
-        var _vtype254 = 0;
-        _rtmp3256 = input.readMapBegin();
-        _ktype253 = _rtmp3256.ktype;
-        _vtype254 = _rtmp3256.vtype;
-        _size252 = _rtmp3256.size;
-        for (var _i257 = 0; _i257 < _size252; ++_i257)
+        var _ktype261 = 0;
+        var _vtype262 = 0;
+        _rtmp3264 = input.readMapBegin();
+        _ktype261 = _rtmp3264.ktype;
+        _vtype262 = _rtmp3264.vtype;
+        _size260 = _rtmp3264.size;
+        for (var _i265 = 0; _i265 < _size260; ++_i265)
         {
-          if (_i257 > 0 ) {
+          if (_i265 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key258 = null;
-          var val259 = null;
-          key258 = input.readString().value;
-          val259 = new Value();
-          val259.read(input);
-          this.values[key258] = val259;
+          var key266 = null;
+          var val267 = null;
+          key266 = input.readString().value;
+          val267 = new ValueObject();
+          val267.read(input);
+          this.values[key266] = val267;
         }
         input.readMapEnd();
       } else {
@@ -4214,13 +4393,13 @@ Arguments.prototype.write = function(output) {
   if (this.values !== null && this.values !== undefined) {
     output.writeFieldBegin('values', Thrift.Type.MAP, 1);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.values));
-    for (var kiter260 in this.values)
+    for (var kiter268 in this.values)
     {
-      if (this.values.hasOwnProperty(kiter260))
+      if (this.values.hasOwnProperty(kiter268))
       {
-        var viter261 = this.values[kiter260];
-        output.writeString(kiter260);
-        viter261.write(output);
+        var viter269 = this.values[kiter268];
+        output.writeString(kiter268);
+        viter269.write(output);
       }
     }
     output.writeMapEnd();

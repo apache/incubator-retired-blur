@@ -24,7 +24,7 @@ import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Response;
-import org.apache.blur.thrift.generated.Value;
+import org.apache.blur.thrift.generated.ValueObject;
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -170,8 +170,8 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
         public T call() throws Exception {
           Arguments arguments = CommandUtil.toArguments(args);
           Response response = client.execute(getTable(), commandName, arguments);
-          Value value = response.getValue();
-          return (T) CommandUtil.toObject(value);
+          ValueObject valueObject = response.getValue();
+          return (T) CommandUtil.toObject(valueObject);
         }
       });
       futureMap.put(server, future);

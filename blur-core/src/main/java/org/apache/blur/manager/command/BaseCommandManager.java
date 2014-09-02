@@ -11,6 +11,7 @@ import org.apache.blur.manager.command.cmds.BaseCommand;
 import org.apache.blur.manager.command.cmds.DocumentCount;
 import org.apache.blur.manager.command.cmds.DocumentCountCombiner;
 import org.apache.blur.manager.command.cmds.DocumentCountNoCombine;
+import org.apache.blur.manager.command.cmds.TestBlurObjectCommand;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -39,6 +40,7 @@ public class BaseCommandManager implements Closeable {
     register(DocumentCount.class);
     register(DocumentCountNoCombine.class);
     register(DocumentCountCombiner.class);
+    register(TestBlurObjectCommand.class);
     _executorService = Executors.newThreadPool("command-", threadCount);
   }
 

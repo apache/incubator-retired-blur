@@ -24,22 +24,39 @@ import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Response;
+import org.apache.blur.thrift.generated.TimeoutException;
 
 public class CommandExample {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    Client client = BlurClientManager.getClientPool().getClient(new Connection("localhost:40010"));
+    Client client = BlurClientManager.getClientPool().getClient(new Connection("localhost:40020"));
+    String executionId = null;
+    while (true) {
+      try {
+        Response response;
+        if (executionId == null) {
+          response = client.execute("test", "wait", null);
+        } else {
+          System.out.println("Reconecting...");
+          response = client.reconnect(executionId);
+        }
+        System.out.println(response);
+        break;
+      } catch (TimeoutException ex) {
+        executionId = ex.getExecutionId();
+      }
+    }
 
-    System.out.println(client.execute("test", "docCount", null));
-    System.out.println(client.execute("test", "docCountNoCombine", null));
-    {
-      Response response = client.execute("test", "docCountAggregate", null);
-      long count = response.getValue().getValue().getLongValue();
-      System.out.println(count);
-    }
-    {
-      Response response = client.execute("test", "testBlurObject", null);
-      System.out.println(response);
-    }
+    // System.out.println(client.execute("test", "docCount", null));
+    // System.out.println(client.execute("test", "docCountNoCombine", null));
+    // {
+    // Response response = client.execute("test", "docCountAggregate", null);
+    // long count = response.getValue().getValue().getLongValue();
+    // System.out.println(count);
+    // }
+    // {
+    // Response response = client.execute("test", "testBlurObject", null);
+    // System.out.println(response);
+    // }
   }
 }

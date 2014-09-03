@@ -597,6 +597,9 @@ public class BlurShardServer extends TableAdmin implements Iface {
       Response response = _commandManager.execute(getTableContext(table), commandName, CommandUtil.toArgs(arguments));
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
+      if (e instanceof org.apache.blur.manager.command.TimeoutException) {
+        throw new TimeoutException(((org.apache.blur.manager.command.TimeoutException) e).getExecutionId());
+      }
       LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
       if (e instanceof BlurException) {
         throw (BlurException) e;
@@ -616,7 +619,19 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public org.apache.blur.thrift.generated.Response reconnect(String executionId) throws BlurException,
       TimeoutException, TException {
-    throw new BException("Not implemented yet.");
+    try {
+      Response response = _commandManager.reconnect(executionId);
+      return CommandUtil.fromObjectToThrift(response);
+    } catch (Exception e) {
+      if (e instanceof org.apache.blur.manager.command.TimeoutException) {
+        throw new TimeoutException(((org.apache.blur.manager.command.TimeoutException) e).getExecutionId());
+      }
+      LOG.error("Unknown error while trying to reconnect to executing command [{0}]", e, executionId);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
   }
 
   @Override

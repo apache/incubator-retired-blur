@@ -229,7 +229,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay, facetThreadCount,
         deepPagingCache);
 
-    final ShardCommandManager commandManager = new ShardCommandManager(indexServer, 16);
+    final ShardCommandManager commandManager = new ShardCommandManager(indexServer, 16, Connection.DEFAULT_TIMEOUT);
 
     final BlurShardServer shardServer = new BlurShardServer();
     shardServer.setCommandManager(commandManager);

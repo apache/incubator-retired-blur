@@ -12,6 +12,7 @@ import org.apache.blur.manager.command.cmds.DocumentCount;
 import org.apache.blur.manager.command.cmds.DocumentCountCombiner;
 import org.apache.blur.manager.command.cmds.DocumentCountNoCombine;
 import org.apache.blur.manager.command.cmds.TestBlurObjectCommand;
+import org.apache.blur.manager.command.cmds.WaitForSeconds;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -35,18 +36,22 @@ public class BaseCommandManager implements Closeable {
   protected final ExecutorService _executorService;
   protected final Map<String, BaseCommand> _command = new ConcurrentHashMap<String, BaseCommand>();
   protected final Map<Class<? extends BaseCommand>, String> _commandNameLookup = new ConcurrentHashMap<Class<? extends BaseCommand>, String>();
+  protected final ExecutorService _executorServiceDriver;
 
   public BaseCommandManager(int threadCount) throws IOException {
     register(DocumentCount.class);
     register(DocumentCountNoCombine.class);
     register(DocumentCountCombiner.class);
     register(TestBlurObjectCommand.class);
+    register(WaitForSeconds.class);
     _executorService = Executors.newThreadPool("command-", threadCount);
+    _executorServiceDriver = Executors.newThreadPool("command-driver-", threadCount);
   }
 
   @Override
   public void close() throws IOException {
     _executorService.shutdownNow();
+    _executorServiceDriver.shutdownNow();
   }
 
   public void register(Class<? extends BaseCommand> commandClass) throws IOException {

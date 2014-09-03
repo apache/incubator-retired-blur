@@ -80,6 +80,21 @@ public class CommandUtil {
     } else if (o instanceof Integer) {
       value.setIntValue((Integer) o);
       return value;
+    } else if (o instanceof Boolean) {
+      value.setBooleanValue((Boolean) o);
+      return value;
+    } else if (o instanceof Short) {
+      value.setShortValue((Short) o);
+      return value;
+    } else if (o instanceof byte[]) {
+      value.setBinaryValue((byte[]) o);
+      return value;
+    } else if (o instanceof Double) {
+      value.setDoubleValue((Double) o);
+      return value;
+    } else if (o instanceof Float) {
+      value.setFloatValue((Float) o);
+      return value;
     }
     throw new BException("Object [{0}] not supported.", o);
   }
@@ -129,7 +144,8 @@ public class CommandUtil {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> Map<Shard, T> fromThriftToObject(Map<org.apache.blur.thrift.generated.Shard, ValueObject> shardToValue) {
+  public static <T> Map<Shard, T> fromThriftToObject(
+      Map<org.apache.blur.thrift.generated.Shard, ValueObject> shardToValue) {
     Map<Shard, T> result = new HashMap<Shard, T>();
     for (Entry<org.apache.blur.thrift.generated.Shard, ValueObject> e : shardToValue.entrySet()) {
       result.put(new Shard(e.getKey().getShard()), (T) CommandUtil.toObject(e.getValue()));

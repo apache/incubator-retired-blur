@@ -2,6 +2,7 @@ package org.apache.blur.manager.command;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.apache.blur.manager.command.cmds.BaseCommand;
 import org.apache.blur.server.TableContext;
@@ -25,31 +26,35 @@ import org.apache.blur.server.TableContext;
 @SuppressWarnings("unchecked")
 public class ControllerCommandManager extends BaseCommandManager {
 
-  public ControllerCommandManager(int threadCount) throws IOException {
-    super(threadCount);
+  public ControllerCommandManager(int threadCount, long connectionTimeout) throws IOException {
+    super(threadCount, connectionTimeout);
   }
 
-  public Response execute(TableContext tableContext, String commandName, Args args, Map<String, String> tableLayout)
-      throws IOException {
-    ClusterContext context = createCommandContext(tableContext, args, tableLayout);
-    BaseCommand command = getCommandObject(commandName);
+  public Response execute(TableContext tableContext, String commandName, final Args args, Map<String, String> tableLayout)
+      throws IOException, TimeoutException {
+    final ClusterContext context = createCommandContext(tableContext, args, tableLayout);
+    final BaseCommand command = getCommandObject(commandName);
     if (command == null) {
       throw new IOException("Command with name [" + commandName + "] not found.");
     }
-    // For those commands that do not implement cluster command, run them in a
-    // base impl.
-
-    if (command instanceof ClusterCommand) {
-      return executeClusterCommand(context, command);
-    } else if (command instanceof IndexReadCombiningCommand) {
-      return executeIndexReadCombiningCommand(args, context, command);
-    } else if (command instanceof IndexReadCommand) {
-      return executeIndexReadCommand(args, context, command);
-    } else if (command instanceof IndexWriteCommand) {
-      return executeIndexWriteCommand(args, context, command);
-    } else {
-      throw new IOException("Command type of [" + command.getClass() + "] not supported.");
-    }
+    return submitCallable(new Callable<Response>() {
+      @Override
+      public Response call() throws Exception {
+        // For those commands that do not implement cluster command, run them in a
+        // base impl.
+        if (command instanceof ClusterCommand) {
+          return executeClusterCommand(context, command);
+        } else if (command instanceof IndexReadCombiningCommand) {
+          return executeIndexReadCombiningCommand(args, context, command);
+        } else if (command instanceof IndexReadCommand) {
+          return executeIndexReadCommand(args, context, command);
+        } else if (command instanceof IndexWriteCommand) {
+          return executeIndexWriteCommand(args, context, command);
+        } else {
+          throw new IOException("Command type of [" + command.getClass() + "] not supported.");
+        }
+      }
+    });
   }
 
   private Response executeClusterCommand(ClusterContext context, BaseCommand command) throws IOException {

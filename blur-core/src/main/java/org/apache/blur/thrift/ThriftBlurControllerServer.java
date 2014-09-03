@@ -128,7 +128,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
     int timeout = configuration.getInt(BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT, 60000);
     BlurControllerServer.BlurClient client = new BlurControllerServer.BlurClientRemote(timeout);
 
-    final ControllerCommandManager controllerCommandManager = new ControllerCommandManager(16);
+    final ControllerCommandManager controllerCommandManager = new ControllerCommandManager(16,
+        Connection.DEFAULT_TIMEOUT);
 
     final BlurControllerServer controllerServer = new BlurControllerServer();
     controllerServer.setClient(client);

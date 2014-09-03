@@ -29,7 +29,7 @@ import org.apache.blur.thrift.generated.TimeoutException;
 public class CommandExample {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    Client client = BlurClientManager.getClientPool().getClient(new Connection("localhost:40020"));
+    Client client = BlurClientManager.getClientPool().getClient(new Connection("localhost:40010"));
     String executionId = null;
     while (true) {
       try {

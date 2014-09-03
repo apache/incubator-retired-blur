@@ -20,13 +20,9 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.UUID;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.manager.IndexServer;
@@ -42,38 +38,16 @@ import org.apache.lucene.search.IndexSearcher;
 public class ShardCommandManager extends BaseCommandManager {
 
   private final IndexServer _indexServer;
-  private final ConcurrentHashMap<String, Future<Response>> _runningMap = new ConcurrentHashMap<String, Future<Response>>();
-  private final long _connectionTimeout;
 
   public ShardCommandManager(IndexServer indexServer, int threadCount, long connectionTimeout) throws IOException {
-    super(threadCount);
+    super(threadCount, connectionTimeout);
     _indexServer = indexServer;
-    _connectionTimeout = connectionTimeout / 2;
-  }
-
-  public Response reconnect(String executionId) throws IOException, TimeoutException {
-    Future<Response> future = _runningMap.get(executionId);
-    if (future == null) {
-      throw new IOException("Command id [" + executionId + "] did not find any executing commands.");
-    }
-    try {
-      return future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
-    } catch (CancellationException e) {
-      throw new IOException(e);
-    } catch (InterruptedException e) {
-      throw new IOException(e);
-    } catch (ExecutionException e) {
-      throw new IOException(e.getCause());
-    } catch (java.util.concurrent.TimeoutException e) {
-      throw new TimeoutException(executionId);
-    }
   }
 
   public Response execute(final TableContext tableContext, final String commandName, final Args args)
       throws IOException, TimeoutException {
     final ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
-    String uuid = UUID.randomUUID().toString();
-    Future<Response> future = _executorServiceDriver.submit(new Callable<Response>() {
+    Callable<Response> callable = new Callable<Response>() {
       @Override
       public Response call() throws Exception {
         BaseCommand command = getCommandObject(commandName);
@@ -87,19 +61,8 @@ public class ShardCommandManager extends BaseCommandManager {
         }
         throw new IOException("Command type of [" + command.getClass() + "] not supported.");
       }
-    });
-    _runningMap.put(uuid, future);
-    try {
-      return future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
-    } catch (CancellationException e) {
-      throw new IOException(e);
-    } catch (InterruptedException e) {
-      throw new IOException(e);
-    } catch (ExecutionException e) {
-      throw new IOException(e.getCause());
-    } catch (java.util.concurrent.TimeoutException e) {
-      throw new TimeoutException(uuid);
-    }
+    };
+    return submitCallable(callable);
   }
 
   @SuppressWarnings("unchecked")

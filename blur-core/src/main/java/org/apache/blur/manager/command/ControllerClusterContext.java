@@ -17,13 +17,15 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.command.cmds.BaseCommand;
 import org.apache.blur.server.TableContext;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.ClientPool;
 import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Client;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Response;
+import org.apache.blur.thrift.generated.TimeoutException;
 import org.apache.blur.thrift.generated.ValueObject;
 import org.apache.hadoop.conf.Configuration;
 
@@ -70,8 +72,9 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     for (String serverStr : tableLayout.values()) {
       try {
         Client client = BlurClientManager.getClientPool().getClient(new Connection(serverStr));
+        client.refresh();
         clients.put(new Server(serverStr), client);
-      } catch (TTransportException e) {
+      } catch (TException e) {
         throw new IOException(e);
       }
     }
@@ -128,7 +131,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
         @Override
         public Map<Shard, T> call() throws Exception {
           Arguments arguments = CommandUtil.toArguments(args);
-          Response response = client.execute(getTable(), commandName, arguments);
+          Response response = waitForResponse(client, getTable(), commandName, arguments);
           Map<Shard, Object> shardToValue = CommandUtil.fromThriftToObject(response.getShardToValue());
           return (Map<Shard, T>) shardToValue;
         }
@@ -139,6 +142,29 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
       }
     }
     return futureMap;
+  }
+
+  protected static Response waitForResponse(Client client, String table, String commandName, Arguments arguments)
+      throws TException {
+    // TODO This should likely be changed to run of a AtomicBoolean used for
+    // the status of commands.
+    String executionId = null;
+    while (true) {
+      try {
+        if (executionId == null) {
+          return client.execute(table, commandName, arguments);
+        } else {
+          return client.reconnect(executionId);
+        }
+      } catch (BlurException e) {
+        throw e;
+      } catch (TimeoutException e) {
+        executionId = e.getExecutionId();
+        LOG.info("Execution fetch timed out, reconnecting using [{0}].", executionId);
+      } catch (TException e) {
+        throw e;
+      }
+    }
   }
 
   private Set<Shard> getShardsOnServer(Server server) {
@@ -169,7 +195,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
         @Override
         public T call() throws Exception {
           Arguments arguments = CommandUtil.toArguments(args);
-          Response response = client.execute(getTable(), commandName, arguments);
+          Response response = waitForResponse(client, getTable(), commandName, arguments);
           ValueObject valueObject = response.getValue();
           return (T) CommandUtil.toObject(valueObject);
         }

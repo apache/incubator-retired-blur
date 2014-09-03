@@ -128,7 +128,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     int timeout = configuration.getInt(BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT, 60000);
     BlurControllerServer.BlurClient client = new BlurControllerServer.BlurClientRemote(timeout);
 
-    ControllerCommandManager controllerCommandManager = new ControllerCommandManager(16);
+    final ControllerCommandManager controllerCommandManager = new ControllerCommandManager(16);
 
     final BlurControllerServer controllerServer = new BlurControllerServer();
     controllerServer.setClient(client);
@@ -206,7 +206,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(traceStorage, server, controllerServer, clusterStatus, zooKeeper, threadWatcher, httpServer);
+        quietClose(controllerCommandManager, traceStorage, server, controllerServer, clusterStatus, zooKeeper,
+            threadWatcher, httpServer);
       }
     };
     server.setShutdown(shutdown);

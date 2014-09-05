@@ -194,6 +194,26 @@ Let's say you want to find all the Rows that contain a Record with the family &q
 <pre><code class="json">+&lt;author.name:Jon&gt; +&lt;docs.body:Hadoop&gt;</code></pre>
 </p>
 
+<p>
+The meaning of the modifier on the outside of the &lt; indicates how you want Rows with matching Records
+handled. In the case above, we've asked for Blur to include all Rows that match the criteria.  However,
+we could also have negated Rows with matching Records as well. Suppose, we're interested in books that
+contain Hadoop but we happen to already own the one written by Jon, so we'd like to exclude them:
+<pre><code class="json">-&lt;author.name:Jon&gt; +&lt;docs.body:Hadoop&gt;</code></pre>
+</p>
+
+<p>
+So far, we've included only simple term queries inside the &lt; &gt; operators, but they support full
+query expressions too.  Suppose our previous query excluded to many good books because of our author criteria.
+Well, we happen to know that the book we have was written by Jon in Atlanta, so let's further limit that part
+of our criteria:
+<pre><code class="json">-&lt;+author.name:Jon +author.city:Atlanta&gt; +&lt;docs.body:Hadoop&gt;</code></pre>
+
+Seeing that positive (+) criteria inside the negated clause can be confusing, so let's "read" what we're asking
+for from the inside out.  First, the record criteria - find any Row that contains a Record with an author named
+Jon AND in the city of Atlanta.  Now, the negation (-) outside the &lt; says that we want to take all Rows
+that match that criteria and exclude them from our results.
+</p>
               <h3 id="text_query">Text</h3>
 <p>Text fields are analyzed with Lucene's standard analyzers, which mean that the string is broken down into terms
 and the terms capitalization is removed as well as any special punctuation.  See Lucene's documentation for further explanation.

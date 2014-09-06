@@ -393,7 +393,7 @@ blurconsole.model = (function() {
     }
 
     function cancelQuery(table, uuid) {
-      configMap.poller.cancelQuery(uuid);
+      configMap.poller.cancelQuery(table, uuid);
     }
 
     function tableHasActivity(table) {

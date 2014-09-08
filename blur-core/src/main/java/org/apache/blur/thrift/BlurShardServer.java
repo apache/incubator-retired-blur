@@ -50,6 +50,8 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResults;
+import org.apache.blur.thrift.generated.CommandStatus;
+import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Query;
@@ -637,5 +639,21 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public void refresh() throws TException {
     ShardServerContext.resetSearchers();
+  }
+
+  @Override
+  public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state) throws BlurException,
+      TException {
+    throw new BException("Not Implemented");
+  }
+
+  @Override
+  public CommandStatus commandStatus(String executionId) throws BlurException, TException {
+    throw new BException("Not Implemented");
+  }
+
+  @Override
+  public void commandCancel(String executionId) throws BlurException, TException {
+    throw new BException("Not Implemented");
   }
 }

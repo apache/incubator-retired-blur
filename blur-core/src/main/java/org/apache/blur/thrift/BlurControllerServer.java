@@ -82,6 +82,8 @@ import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.thrift.generated.CommandStatus;
+import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
@@ -1548,5 +1550,21 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   @Override
   public void refresh() throws TException {
     // This is a NO-OP at this point for the controller.
+  }
+  
+  @Override
+  public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state) throws BlurException,
+      TException {
+    throw new BException("Not Implemented");
+  }
+
+  @Override
+  public CommandStatus commandStatus(String executionId) throws BlurException, TException {
+    throw new BException("Not Implemented");
+  }
+
+  @Override
+  public void commandCancel(String executionId) throws BlurException, TException {
+    throw new BException("Not Implemented");
   }
 }

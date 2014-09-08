@@ -76,6 +76,27 @@ public void cancelQuery(java.lang.String arg0, java.lang.String arg1) throws org
 }
 
 @Override
+public void commandCancel(java.lang.String arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.commandCancel(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public org.apache.blur.thrift.generated.CommandStatus commandStatus(java.lang.String arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    return super.commandStatus(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public java.util.List commandStatusList(int arg0, short arg1, org.apache.blur.thrift.generated.CommandStatusState arg2) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    return super.commandStatusList(arg0, arg1, arg2);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public java.util.Map configuration() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.configuration();
@@ -268,6 +289,27 @@ public boolean recv_addColumnDefinition() throws org.apache.blur.thrift.generate
 public void recv_cancelQuery() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.recv_cancelQuery();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void recv_commandCancel() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_commandCancel();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public org.apache.blur.thrift.generated.CommandStatus recv_commandStatus() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    return super.recv_commandStatus();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public java.util.List recv_commandStatusList() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    return super.recv_commandStatusList();
   } finally {_lock.unlock();}
 }
 
@@ -611,6 +653,27 @@ public void send_addColumnDefinition(java.lang.String arg0, org.apache.blur.thri
 public void send_cancelQuery(java.lang.String arg0, java.lang.String arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_cancelQuery(arg0, arg1);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_commandCancel(java.lang.String arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_commandCancel(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_commandStatus(java.lang.String arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_commandStatus(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_commandStatusList(int arg0, short arg1, org.apache.blur.thrift.generated.CommandStatusState arg2) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_commandStatusList(arg0, arg1, arg2);
   } finally {_lock.unlock();}
 }
 

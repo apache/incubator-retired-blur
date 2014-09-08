@@ -62,6 +62,12 @@ BlurObjectType = {
 'NAME' : 2,
 'VALUE' : 3
 };
+CommandStatusState = {
+'RUNNING' : 0,
+'INTERRUPTED' : 1,
+'COMPLETE' : 2,
+'BACK_PRESSURE_INTERRUPTED' : 3
+};
 BlurException = function(args) {
   this.message = null;
   this.stackTraceStr = null;
@@ -4403,6 +4409,121 @@ Arguments.prototype.write = function(output) {
       }
     }
     output.writeMapEnd();
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+CommandStatus = function(args) {
+  this.executionId = null;
+  this.table = null;
+  this.commandName = null;
+  this.arguments = null;
+  this.state = null;
+  if (args) {
+    if (args.executionId !== undefined) {
+      this.executionId = args.executionId;
+    }
+    if (args.table !== undefined) {
+      this.table = args.table;
+    }
+    if (args.commandName !== undefined) {
+      this.commandName = args.commandName;
+    }
+    if (args.arguments !== undefined) {
+      this.arguments = args.arguments;
+    }
+    if (args.state !== undefined) {
+      this.state = args.state;
+    }
+  }
+};
+CommandStatus.prototype = {};
+CommandStatus.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.executionId = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.table = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.STRING) {
+        this.commandName = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 4:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.arguments = new Arguments();
+        this.arguments.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 5:
+      if (ftype == Thrift.Type.I32) {
+        this.state = input.readI32().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+CommandStatus.prototype.write = function(output) {
+  output.writeStructBegin('CommandStatus');
+  if (this.executionId !== null && this.executionId !== undefined) {
+    output.writeFieldBegin('executionId', Thrift.Type.STRING, 1);
+    output.writeString(this.executionId);
+    output.writeFieldEnd();
+  }
+  if (this.table !== null && this.table !== undefined) {
+    output.writeFieldBegin('table', Thrift.Type.STRING, 2);
+    output.writeString(this.table);
+    output.writeFieldEnd();
+  }
+  if (this.commandName !== null && this.commandName !== undefined) {
+    output.writeFieldBegin('commandName', Thrift.Type.STRING, 3);
+    output.writeString(this.commandName);
+    output.writeFieldEnd();
+  }
+  if (this.arguments !== null && this.arguments !== undefined) {
+    output.writeFieldBegin('arguments', Thrift.Type.STRUCT, 4);
+    this.arguments.write(output);
+    output.writeFieldEnd();
+  }
+  if (this.state !== null && this.state !== undefined) {
+    output.writeFieldBegin('state', Thrift.Type.I32, 5);
+    output.writeI32(this.state);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

@@ -13,6 +13,9 @@
 <ul>
 <li><a href="Blur.html#Fn_Blur_addColumnDefinition">addColumnDefinition</a></li>
 <li><a href="Blur.html#Fn_Blur_cancelQuery">cancelQuery</a></li>
+<li><a href="Blur.html#Fn_Blur_commandCancel">commandCancel</a></li>
+<li><a href="Blur.html#Fn_Blur_commandStatus">commandStatus</a></li>
+<li><a href="Blur.html#Fn_Blur_commandStatusList">commandStatusList</a></li>
 <li><a href="Blur.html#Fn_Blur_configuration">configuration</a></li>
 <li><a href="Blur.html#Fn_Blur_controllerServerList">controllerServerList</a></li>
 <li><a href="Blur.html#Fn_Blur_createSnapshot">createSnapshot</a></li>
@@ -70,6 +73,8 @@
 <a href="Blur.html#Struct_BlurResults">BlurResults</a><br/>
 <a href="Blur.html#Struct_Column">Column</a><br/>
 <a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a><br/>
+<a href="Blur.html#Struct_CommandStatus">CommandStatus</a><br/>
+<a href="Blur.html#Enum_CommandStatusState">CommandStatusState</a><br/>
 <a href="Blur.html#Struct_CpuTime">CpuTime</a><br/>
 <a href="Blur.html#Enum_ErrorType">ErrorType</a><br/>
 <a href="Blur.html#Struct_Facet">Facet</a><br/>
@@ -221,6 +226,13 @@ Logging level enum used to change the logging levels at runtime.
 <tr><td><code>LIST</code></td><td><code>1</code></td></tr>
 <tr><td><code>NAME</code></td><td><code>2</code></td></tr>
 <tr><td><code>VALUE</code></td><td><code>3</code></td></tr>
+</table></div>
+<div class="definition"><h3 id="Enum_CommandStatusState">Enumeration: CommandStatusState</h3>
+<br/><table class="table-bordered table-striped table-condensed">
+<tr><td><code>RUNNING</code></td><td><code>0</code></td></tr>
+<tr><td><code>INTERRUPTED</code></td><td><code>1</code></td></tr>
+<tr><td><code>COMPLETE</code></td><td><code>2</code></td></tr>
+<tr><td><code>BACK_PRESSURE_INTERRUPTED</code></td><td><code>3</code></td></tr>
 </table></div>
 <hr/><h2 id="Structs">Data structures</h2>
 <div class="definition"><h3 id="Struct_BlurException">Exception: BlurException</h3>
@@ -632,6 +644,13 @@ be family dot column, "family.column".
 </table><br/></div><div class="definition"><h3 id="Struct_Arguments">Struct: Arguments</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>values</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ValueObject">ValueObject</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+</table><br/></div><div class="definition"><h3 id="Struct_CommandStatus">Struct: CommandStatus</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>executionId</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>table</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>commandName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>4</td><td>arguments</td><td><code><a href="Blur.html#Struct_Arguments">Arguments</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_CommandStatusState">CommandStatusState</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/></div><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
 The Blur service API.  This API is the same for both controller servers as well as
@@ -648,6 +667,20 @@ shards servers.  Each of the methods are documented.
 </pre>If the execute command times out due to command taking longer than the configured
 network tcp timeout this method allows the client to reconnect to the already
 executing command.
+<br/></div><div class="definition"><h4 id="Fn_Blur_commandStatusList">Function: Blur.commandStatusList</h4>
+<pre><code>list&lt;<code>string</code>&gt;</code> commandStatusList(<code>i32</code> startingAt,
+                               <code>i16</code> fetch,
+                               <code><a href="Blur.html#Enum_CommandStatusState">CommandStatusState</a></code> state)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Fetches the command status ids in the order they were submitted.
+<br/></div><div class="definition"><h4 id="Fn_Blur_commandStatus">Function: Blur.commandStatus</h4>
+<pre><code><a href="Blur.html#Struct_CommandStatus">CommandStatus</a></code> commandStatus(<code>string</code> executionId)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Retrieves the command status by the given execution id.
+<br/></div><div class="definition"><h4 id="Fn_Blur_commandCancel">Function: Blur.commandCancel</h4>
+<pre><code>void</code> commandCancel(<code>string</code> executionId)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Cancels the command with the given execution id.
 <br/></div><div class="definition"><h4 id="Fn_Blur_refresh">Function: Blur.refresh</h4>
 <pre><code>void</code> refresh()
 </pre>Releases and refreshes the read snapshots of the indexes in the session for the

@@ -57,6 +57,11 @@ use constant MAP => 0;
 use constant LIST => 1;
 use constant NAME => 2;
 use constant VALUE => 3;
+package Blur::CommandStatusState;
+use constant RUNNING => 0;
+use constant INTERRUPTED => 1;
+use constant COMPLETE => 2;
+use constant BACK_PRESSURE_INTERRUPTED => 3;
 package Blur::BlurException;
 use base qw(Thrift::TException);
 use base qw(Class::Accessor);
@@ -4630,6 +4635,131 @@ sub write {
       }
       $xfer += $output->writeMapEnd();
     }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::CommandStatus;
+use base qw(Class::Accessor);
+Blur::CommandStatus->mk_accessors( qw( executionId table commandName arguments state ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{executionId} = undef;
+  $self->{table} = undef;
+  $self->{commandName} = undef;
+  $self->{arguments} = undef;
+  $self->{state} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{executionId}) {
+      $self->{executionId} = $vals->{executionId};
+    }
+    if (defined $vals->{table}) {
+      $self->{table} = $vals->{table};
+    }
+    if (defined $vals->{commandName}) {
+      $self->{commandName} = $vals->{commandName};
+    }
+    if (defined $vals->{arguments}) {
+      $self->{arguments} = $vals->{arguments};
+    }
+    if (defined $vals->{state}) {
+      $self->{state} = $vals->{state};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'CommandStatus';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{executionId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{table});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^3$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{commandName});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^4$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{arguments} = new Blur::Arguments();
+        $xfer += $self->{arguments}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^5$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{state});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('CommandStatus');
+  if (defined $self->{executionId}) {
+    $xfer += $output->writeFieldBegin('executionId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{executionId});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{table}) {
+    $xfer += $output->writeFieldBegin('table', TType::STRING, 2);
+    $xfer += $output->writeString($self->{table});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{commandName}) {
+    $xfer += $output->writeFieldBegin('commandName', TType::STRING, 3);
+    $xfer += $output->writeString($self->{commandName});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{arguments}) {
+    $xfer += $output->writeFieldBegin('arguments', TType::STRUCT, 4);
+    $xfer += $self->{arguments}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{state}) {
+    $xfer += $output->writeFieldBegin('state', TType::I32, 5);
+    $xfer += $output->writeI32($self->{state});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

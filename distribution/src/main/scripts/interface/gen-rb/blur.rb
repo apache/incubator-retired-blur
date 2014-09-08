@@ -46,6 +46,53 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'reconnect failed: unknown result')
       end
 
+      def commandStatusList(startingAt, fetch, state)
+        send_commandStatusList(startingAt, fetch, state)
+        return recv_commandStatusList()
+      end
+
+      def send_commandStatusList(startingAt, fetch, state)
+        send_message('commandStatusList', CommandStatusList_args, :startingAt => startingAt, :fetch => fetch, :state => state)
+      end
+
+      def recv_commandStatusList()
+        result = receive_message(CommandStatusList_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'commandStatusList failed: unknown result')
+      end
+
+      def commandStatus(executionId)
+        send_commandStatus(executionId)
+        return recv_commandStatus()
+      end
+
+      def send_commandStatus(executionId)
+        send_message('commandStatus', CommandStatus_args, :executionId => executionId)
+      end
+
+      def recv_commandStatus()
+        result = receive_message(CommandStatus_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'commandStatus failed: unknown result')
+      end
+
+      def commandCancel(executionId)
+        send_commandCancel(executionId)
+        recv_commandCancel()
+      end
+
+      def send_commandCancel(executionId)
+        send_message('commandCancel', CommandCancel_args, :executionId => executionId)
+      end
+
+      def recv_commandCancel()
+        result = receive_message(CommandCancel_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
       def refresh()
         send_refresh()
       end
@@ -753,6 +800,39 @@ module Blur
         write_result(result, oprot, 'reconnect', seqid)
       end
 
+      def process_commandStatusList(seqid, iprot, oprot)
+        args = read_args(iprot, CommandStatusList_args)
+        result = CommandStatusList_result.new()
+        begin
+          result.success = @handler.commandStatusList(args.startingAt, args.fetch, args.state)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'commandStatusList', seqid)
+      end
+
+      def process_commandStatus(seqid, iprot, oprot)
+        args = read_args(iprot, CommandStatus_args)
+        result = CommandStatus_result.new()
+        begin
+          result.success = @handler.commandStatus(args.executionId)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'commandStatus', seqid)
+      end
+
+      def process_commandCancel(seqid, iprot, oprot)
+        args = read_args(iprot, CommandCancel_args)
+        result = CommandCancel_result.new()
+        begin
+          @handler.commandCancel(args.executionId)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'commandCancel', seqid)
+      end
+
       def process_refresh(seqid, iprot, oprot)
         args = read_args(iprot, Refresh_args)
         @handler.refresh()
@@ -1299,6 +1379,113 @@ module Blur
         SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::Response},
         BEX => {:type => ::Thrift::Types::STRUCT, :name => 'bex', :class => ::Blur::BlurException},
         TEX => {:type => ::Thrift::Types::STRUCT, :name => 'tex', :class => ::Blur::TimeoutException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class CommandStatusList_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      STARTINGAT = 1
+      FETCH = 2
+      STATE = 3
+
+      FIELDS = {
+        STARTINGAT => {:type => ::Thrift::Types::I32, :name => 'startingAt'},
+        FETCH => {:type => ::Thrift::Types::I16, :name => 'fetch'},
+        STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::Blur::CommandStatusState}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+        unless @state.nil? || ::Blur::CommandStatusState::VALID_VALUES.include?(@state)
+          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
+        end
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class CommandStatusList_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class CommandStatus_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EXECUTIONID = 1
+
+      FIELDS = {
+        EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class CommandStatus_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::Blur::CommandStatus},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class CommandCancel_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EXECUTIONID = 1
+
+      FIELDS = {
+        EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class CommandCancel_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 
       def struct_fields; FIELDS; end

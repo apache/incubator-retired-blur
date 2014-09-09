@@ -26,20 +26,20 @@ blurconsole.queries = (function() {
     view: 'views/queries.tpl.html',
     states: ['Running', 'Interrupted', 'Complete', 'Back Pressure Interrupted'],
     queryDef: [
-      { label: 'User', key: 'user' },
-      { label: 'Query', key: 'query' },
-      { label: 'Time Started', key: function(row) {
+      { label: 'User', key: 'user', width: '0%', style: 'white-space:nowrap' },
+      { label: 'Query', key: 'query', style: 'text-overflow:ellipsis; overflow: hidden; max-width:1px;', width: '100%' },
+      { label: 'Time Started', width: '0%', style: 'white-space:nowrap', key: function(row) {
         var start = new Date(row.startTime);
-        return start.toTimeString(); //start.getHours() + ':' + start.getMinutes() + ':' + start.getSeconds();
+        return start.toLocaleTimeString(); //start.getHours() + ':' + start.getMinutes() + ':' + start.getSeconds();
       } },
-      { label: 'State', key: function(row) {
+      { label: 'State', width: '0%', style: 'white-space:nowrap', key: function(row) {
         var stateInfo = configMap.states[row.state];
-        if(row.state === 0) {
-          stateInfo += ' <div class="badge badge-info">' + row.percent + '%</div>';
+        if(row.state === 0 && row.percent) {
+          stateInfo += ' <div class="badge badge-info">' + Math.round(row.percent) + '%</div>';
         }
         return stateInfo;
       } },
-      { label: 'Actions', key: function(row) {
+      { label: 'Actions', width: '0%', style: 'white-space:nowrap', key: function(row) {
         var actions = '';
         if(row.state === 0 && blurconsole.auth.hasRole('manager')) {
           actions += '<a href="#" class="cancelTrigger btn btn-danger" data-uuid="' + row.uuid + '" data-query="' + row.query + '" data-table="' + row.table + '"><i class="glyphicon glyphicon-ban-circle"></i> Cancel</a> ';

@@ -30,15 +30,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.blur.command.CommandUtil;
+import org.apache.blur.command.Response;
+import org.apache.blur.command.ShardCommandManager;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.IndexServer;
-import org.apache.blur.manager.command.CommandUtil;
-import org.apache.blur.manager.command.Response;
-import org.apache.blur.manager.command.ShardCommandManager;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
@@ -599,8 +599,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
       Response response = _commandManager.execute(getTableContext(table), commandName, CommandUtil.toArgs(arguments));
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
-      if (e instanceof org.apache.blur.manager.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.manager.command.TimeoutException) e).getExecutionId());
+      if (e instanceof org.apache.blur.command.TimeoutException) {
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId());
       }
       LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
       if (e instanceof BlurException) {
@@ -625,8 +625,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
       Response response = _commandManager.reconnect(executionId);
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
-      if (e instanceof org.apache.blur.manager.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.manager.command.TimeoutException) e).getExecutionId());
+      if (e instanceof org.apache.blur.command.TimeoutException) {
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId());
       }
       LOG.error("Unknown error while trying to reconnect to executing command [{0}]", e, executionId);
       if (e instanceof BlurException) {

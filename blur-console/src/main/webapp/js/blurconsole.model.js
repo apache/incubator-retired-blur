@@ -385,7 +385,7 @@ blurconsole.model = (function() {
         if (sortDir === 'asc') {
           return a[sortField] > b[sortField];
         } else {
-          return b[sortField] > b[sortField];
+          return b[sortField] > a[sortField];
         }
       });
 
@@ -565,7 +565,34 @@ blurconsole.model = (function() {
 
   function _updateQueries(queries) {
     if (queries !== 'error' && !blurconsole.utils.equals(queries, stateMap.queries)) {
-      stateMap.queries = queries;
+      stateMap.queries.slowQueries = queries.slowQueries;
+      // age current queries
+      if(stateMap.queries.queries) {
+        $.each(stateMap.queries.queries, function(idx, query) {
+          query.age = (query.age || 0) + 1;
+        });
+      } else {
+        stateMap.queries.queries = [];
+      }
+      // update queries
+      $.each(queries.queries, function(idx, new_query){
+        var found = false;
+        $.each(stateMap.queries.queries, function(idx, old_query){
+          if(old_query.uuid === new_query.uuid) {
+            found = true;
+            old_query.age = 0;
+            old_query.state = new_query.state;
+            old_query.percent = new_query.percent;
+          }
+        });
+        if(!found) {
+          stateMap.queries.queries.push(new_query);
+        }
+      });
+      // remove old queries
+      stateMap.queries.queries = $.grep(stateMap.queries.queries, function(query){
+        return typeof query.age === 'undefined' || query.age < 5;
+      });
       $.gevent.publish('queries-updated');
     }
     setTimeout(_queryPoller, blurconsole.config.refreshtime);

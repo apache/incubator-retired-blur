@@ -38,11 +38,12 @@ blurconsole.fake = (function() {
     return _randomNumber(2) % 2 === 0;
   }
 
-  function _randomString() {
+  function _randomString(maxLength) {
+    maxLength = typeof maxLength !== 'undefined' ? maxLength : 30;
     var text = '';
-    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ';
 
-    for( var i=0; i < Math.floor(Math.random() * 30 + 1); i++ ) {
+    for( var i=0; i < Math.floor(Math.random() * maxLength + 1); i++ ) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
 
@@ -157,7 +158,7 @@ blurconsole.fake = (function() {
         randomQueries.push({
           uuid: _randomString(),
           user: 'user_' + _randomNumber(10, true),
-          query: _randomString(),
+          query: _randomString(500),
           table: 'testtable' + _randomNumber(5, true),
           state: _randomNumber(3, true),
           percent: _randomNumber(100, true),

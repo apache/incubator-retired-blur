@@ -24,7 +24,17 @@ blurconsole.browserUtils = (function(){
   function table(def, data) {
     var tableMarkup;
 
-    tableMarkup = '<table class="table table-bordered table-condensed table-hover table-striped"><thead><tr>';
+    tableMarkup = '<table class="table table-bordered table-condensed table-hover table-striped">';
+
+    // Add ColGroup
+    if(def && def.length  > 0 && def[0].width) {
+      tableMarkup += '<colgroup>';
+      $.each(def, function(idx, colDef) {
+        tableMarkup += '<col width="' + colDef.width + '"/>';
+      });
+      tableMarkup += '</colgroup>';
+    }
+    tableMarkup += '<thead><tr>';
 
     // Add headers
     $.each(def, function(idx, colDef){
@@ -38,7 +48,11 @@ blurconsole.browserUtils = (function(){
       $.each(data, function(ir, row){
         tableMarkup += '<tr>';
         $.each(def, function(ic, col) {
-          tableMarkup += '<td>';
+          if(col.style) {
+            tableMarkup += '<td style="'+col.style+'">';
+          } else {
+            tableMarkup += '<td>';
+          }
           var val;
           if ($.isFunction(col.key)) {
             val = col.key(row);

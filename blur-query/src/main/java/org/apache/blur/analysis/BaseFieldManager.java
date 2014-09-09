@@ -56,6 +56,7 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 
@@ -246,6 +247,14 @@ public abstract class BaseFieldManager extends FieldManager {
       }
     }
     return fields;
+  }
+
+  public List<IndexableField> getIndexableFields(String fieldname, String fieldValue) throws IOException {
+    throw new RuntimeException("Not implemented.");
+  }
+
+  public int getFieldId(String fieldName) throws IOException {
+    throw new RuntimeException("Not implemented.");
   }
 
   private void addFieldExistance(List<Field> fields, Record record) {

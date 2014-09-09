@@ -24,6 +24,7 @@ import java.util.Set;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 
@@ -38,6 +39,10 @@ public abstract class FieldManager {
    * @throws IOException
    */
   public abstract List<Field> getFields(String rowId, Record record) throws IOException;
+
+  public abstract List<IndexableField> getIndexableFields(String fieldname, String fieldValue) throws IOException;
+  
+  public abstract int getFieldId(String fieldName) throws IOException;
 
   /**
    * Adds a column definition.

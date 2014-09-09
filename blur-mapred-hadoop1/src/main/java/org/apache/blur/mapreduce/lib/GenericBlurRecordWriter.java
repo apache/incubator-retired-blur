@@ -46,10 +46,12 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
@@ -242,7 +244,6 @@ public class GenericBlurRecordWriter {
       // going to be doc 0.
       // Therefore the first document added is the prime doc
       List<List<Field>> docs = _documentBufferStrategy.getAndClearBuffer();
-      docs.get(0).add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
       for (List<Field> doc : docs) {
         _localTmpWriter.addDocument(doc);
       }
@@ -279,11 +280,13 @@ public class GenericBlurRecordWriter {
       flushToTmpIndex();
       _localTmpWriter.close(false);
       DirectoryReader reader = DirectoryReader.open(_localTmpDir);
+      AtomicReader atomicReader = SlowCompositeReaderWrapper.wrap(reader);
+      AtomicReader primeDocAtomicReader= PrimeDocOverFlowHelper.addPrimeDoc(atomicReader);
       if (_countersSetup) {
         _recordRateCounter.mark(reader.numDocs());
       }
-      _writer.addIndexes(reader);
-      reader.close();
+      _writer.addIndexes(primeDocAtomicReader);
+      primeDocAtomicReader.close();
       resetLocalTmp();
       _writer.maybeMerge();
       if (_countersSetup) {

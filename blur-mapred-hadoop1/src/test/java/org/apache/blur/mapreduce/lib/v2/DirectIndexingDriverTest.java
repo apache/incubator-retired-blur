@@ -16,6 +16,8 @@
  */
 package org.apache.blur.mapreduce.lib.v2;
 
+import static org.junit.Assert.*;
+
 import java.io.IOException;
 import java.util.Random;
 
@@ -31,15 +33,16 @@ import org.junit.Test;
 
 public class DirectIndexingDriverTest {
 
-//  @Test
+  @Test
   public void testIndexing() throws Exception {
     Configuration configuration = new Configuration();
-    Path path = new Path("./tmp/test_DirectIndexingDriverTest_input/");
-    FileSystem fileSystem = path.getFileSystem(configuration);
-    createInputDocument(fileSystem, configuration, path);
+    Path inputPath = new Path("./tmp/test_DirectIndexingDriverTest_input/");
+    Path outputPath = new Path("./tmp/test_DirectIndexingDriverTest_output/");
+    FileSystem fileSystem = inputPath.getFileSystem(configuration);
+    createInputDocument(fileSystem, configuration, inputPath);
     DirectIndexingDriver directIndexingDriver = new DirectIndexingDriver();
     directIndexingDriver.setConf(configuration);
-    directIndexingDriver.run(new String[] { path.toString() });
+    assertEquals(0, directIndexingDriver.run(new String[] { inputPath.toString(), outputPath.toString() }));
   }
 
   public static void createInputDocument(FileSystem fileSystem, Configuration configuration, Path path)

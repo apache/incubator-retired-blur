@@ -361,11 +361,32 @@ public abstract class BaseFieldManager extends FieldManager {
     } else {
       fieldName = baseFieldName;
     }
-    return addFieldTypeDefinition(family, columnName, subColumnName, fieldName, fieldLessIndexed, fieldType, sortable,
+    return addFieldTypeDefinition(baseFieldName, subColumnName, fieldName, fieldLessIndexed, fieldType, sortable,
+        props);
+  }
+  
+  public boolean addColumnDefinition(String baseFieldName, String subFieldName, boolean fieldLessIndexed,
+      String fieldType, boolean sortable, Map<String, String> props) throws IOException {
+    String fieldName;
+    if (subFieldName != null) {
+      FieldTypeDefinition primeFieldTypeDefinition = getFieldTypeDefinition(baseFieldName);
+      if (primeFieldTypeDefinition == null) {
+        throw new IllegalArgumentException("Base field of [" + baseFieldName
+            + "] not found, please add base before adding sub field.");
+      }
+      if (fieldLessIndexed) {
+        throw new IllegalArgumentException("Sub field of [" + subFieldName + "] from base of [" + baseFieldName
+            + "] cannot be added with fieldLessIndexing set to true.");
+      }
+      fieldName = baseFieldName + "." + subFieldName;
+    } else {
+      fieldName = baseFieldName;
+    }
+    return addFieldTypeDefinition(baseFieldName, subFieldName, fieldName, fieldLessIndexed, fieldType, sortable,
         props);
   }
 
-  private boolean addFieldTypeDefinition(String family, String columnName, String subColumnName, String fieldName,
+  private boolean addFieldTypeDefinition(String baseFieldName, String subFieldName, String fieldName,
       boolean fieldLessIndexed, String fieldType, boolean sortable, Map<String, String> props) throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
     if (fieldTypeDefinition != null) {
@@ -380,7 +401,7 @@ public abstract class BaseFieldManager extends FieldManager {
               + "], this field type definition cannot be added.");
         }
       }
-      setFields(fieldTypeDefinition, family, columnName, subColumnName, fieldLessIndexed, fieldType, props);
+      setFields(fieldTypeDefinition, baseFieldName, subFieldName, fieldLessIndexed, fieldType, props);
       if (!tryToStore(fieldTypeDefinition, fieldName)) {
         return false;
       }
@@ -389,8 +410,8 @@ public abstract class BaseFieldManager extends FieldManager {
     return true;
   }
 
-  private void setFields(FieldTypeDefinition fieldTypeDefinition, String family, String columnName,
-      String subColumnName, boolean fieldLessIndexed, String fieldType, Map<String, String> props) {
+  private void setFields(FieldTypeDefinition fieldTypeDefinition, String baseFieldName,
+      String subFieldName, boolean fieldLessIndexed, String fieldType, Map<String, String> props) {
     fieldTypeDefinition.setFamily(family);
     fieldTypeDefinition.setColumnName(columnName);
     fieldTypeDefinition.setSubColumnName(subColumnName);

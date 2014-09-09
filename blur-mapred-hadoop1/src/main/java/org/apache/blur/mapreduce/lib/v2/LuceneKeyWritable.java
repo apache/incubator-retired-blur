@@ -63,11 +63,29 @@ public class LuceneKeyWritable implements WritableComparable<LuceneKeyWritable> 
 
   }
 
-  public LuceneKeyWritable(int shardId, int fieldId, BytesRef text, Type type, int documentId, int position) {
+  public LuceneKeyWritable(int shardId, int fieldId, BytesRef text) {
     _shardId = shardId;
     _fieldId = fieldId;
     _text = text;
-    _type = type;
+    _type = Type.SHARD_FIELD_TEXT;
+    _documentId = -1;
+    _position = -1;
+  }
+
+  public LuceneKeyWritable(int shardId, int fieldId, BytesRef text, int documentId) {
+    _shardId = shardId;
+    _fieldId = fieldId;
+    _text = text;
+    _type = Type.SHARD_FIELD_TEXT_DOCUMENTID;
+    _documentId = documentId;
+    _position = -1;
+  }
+
+  public LuceneKeyWritable(int shardId, int fieldId, BytesRef text, int documentId, int position) {
+    _shardId = shardId;
+    _fieldId = fieldId;
+    _text = text;
+    _type = Type.SHARD_FIELD_TEXT_DOCUMENTID_POSITION;
     _documentId = documentId;
     _position = position;
   }

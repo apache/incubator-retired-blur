@@ -49,6 +49,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import org.apache.blur.command.CommandUtil;
 import org.apache.blur.command.ControllerCommandManager;
+import org.apache.blur.command.ExecutionId;
 import org.apache.blur.command.Response;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
@@ -1510,12 +1511,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     try {
       TableContext tableContext = getTableContext(table);
       Map<String, String> tableLayout = getTableLayout(table);
-      Response response = _commandManager.execute(tableContext, commandName, CommandUtil.toArgs(arguments),
-          tableLayout);
+      Response response = _commandManager
+          .execute(tableContext, commandName, CommandUtil.toArgs(arguments), tableLayout);
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId());
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
       }
       LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
       if (e instanceof BlurException) {
@@ -1533,11 +1534,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public org.apache.blur.thrift.generated.Response reconnect(String executionId) throws BlurException,
       TimeoutException, TException {
     try {
-      Response response = _commandManager.reconnect(executionId);
+      Response response = _commandManager.reconnect(new ExecutionId(executionId));
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId());
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
       }
       LOG.error("Unknown error while trying to reconnect to executing command [{0}]", e, executionId);
       if (e instanceof BlurException) {
@@ -1551,7 +1552,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public void refresh() throws TException {
     // This is a NO-OP at this point for the controller.
   }
-  
+
   @Override
   public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state) throws BlurException,
       TException {

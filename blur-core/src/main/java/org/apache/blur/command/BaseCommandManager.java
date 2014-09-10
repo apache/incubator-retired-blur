@@ -47,7 +47,7 @@ public class BaseCommandManager implements Closeable {
 
   private final ExecutorService _executorService;
   private final ExecutorService _executorServiceDriver;
-  
+
   protected final Map<String, Command> _command = new ConcurrentHashMap<String, Command>();
   protected final Map<Class<? extends Command>, String> _commandNameLookup = new ConcurrentHashMap<Class<? extends Command>, String>();
   protected final ConcurrentMap<ExecutionId, Future<Response>> _runningMap;
@@ -83,7 +83,7 @@ public class BaseCommandManager implements Closeable {
     }
   }
 
-  public Response reconnect(String executionId) throws IOException, TimeoutException {
+  public Response reconnect(ExecutionId executionId) throws IOException, TimeoutException {
     Future<Response> future = _runningMap.get(executionId);
     if (future == null) {
       throw new IOException("Command id [" + executionId + "] did not find any executing commands.");
@@ -117,8 +117,8 @@ public class BaseCommandManager implements Closeable {
     } catch (ExecutionException e) {
       throw new IOException(e.getCause());
     } catch (java.util.concurrent.TimeoutException e) {
-      LOG.info("Timeout of command [{0}]", executionId.getId());
-      throw new TimeoutException(executionId.getId());
+      LOG.info("Timeout of command [{0}]", executionId);
+      throw new TimeoutException(executionId);
     }
   }
 

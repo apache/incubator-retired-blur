@@ -17,6 +17,7 @@
 package org.apache.blur.command;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.command.Command;
 import org.apache.blur.command.IndexContext;
@@ -27,8 +28,10 @@ public class WaitForSeconds extends Command implements IndexReadCommand<Boolean>
 
   @Override
   public Boolean execute(IndexContext context) throws IOException {
+    Args args = context.getArgs();
+    int seconds = args.get("seconds", 30);
     try {
-      Thread.sleep(30000);
+      Thread.sleep(TimeUnit.SECONDS.toMillis(seconds));
     } catch (InterruptedException e) {
       throw new IOException(e);
     }

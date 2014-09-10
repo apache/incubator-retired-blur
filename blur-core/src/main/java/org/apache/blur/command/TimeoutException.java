@@ -19,13 +19,13 @@ package org.apache.blur.command;
 @SuppressWarnings("serial")
 public class TimeoutException extends Exception {
 
-  private final String _executionId;
+  private final ExecutionId _executionId;
 
-  public TimeoutException(String executionId) {
+  public TimeoutException(ExecutionId executionId) {
     _executionId = executionId;
   }
 
-  public String getExecutionId() {
+  public ExecutionId getExecutionId() {
     return _executionId;
   }
 

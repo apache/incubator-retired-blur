@@ -45,7 +45,7 @@ public class ShardCommandManager extends BaseCommandManager {
 
   public Response execute(final TableContext tableContext, final String commandName, final Args args)
       throws IOException, TimeoutException {
-    final ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
+    final ShardServerContext shardServerContext = getShardServerContext();
     Callable<Response> callable = new Callable<Response>() {
       @Override
       public Response call() throws Exception {
@@ -62,6 +62,14 @@ public class ShardCommandManager extends BaseCommandManager {
       }
     };
     return submitDriverCallable(callable);
+  }
+
+  private ShardServerContext getShardServerContext() {
+    ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
+    if (shardServerContext == null) {
+      shardServerContext = new ShardServerContext(null, null);
+    }
+    return shardServerContext;
   }
 
   @SuppressWarnings("unchecked")
@@ -200,6 +208,11 @@ public class ShardCommandManager extends BaseCommandManager {
       return _tableContext.getConfiguration();
     }
 
+  }
+
+  public void cancel(ExecutionId executionId) {
+    // TODO 
+    System.out.println("IMPLEMENT ME!!!!");
   }
 
 }

@@ -60,4 +60,11 @@ public class Response {
   public static Response createNewServerResponse(Map<Server, Object> result) {
     return new Response(null, null, result, false);
   }
+
+  @Override
+  public String toString() {
+    return "Response [_shardResults=" + _shardResults + ", _serverResults=" + _serverResults + ", _serverResult="
+        + _serverResult + ", _aggregatedResults=" + _aggregatedResults + "]";
+  }
+
 }

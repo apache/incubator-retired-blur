@@ -27,14 +27,10 @@ import org.apache.blur.command.IndexReadCommand;
 public class WaitForSeconds extends Command implements IndexReadCommand<Boolean> {
 
   @Override
-  public Boolean execute(IndexContext context) throws IOException {
+  public Boolean execute(IndexContext context) throws IOException, InterruptedException {
     Args args = context.getArgs();
     int seconds = args.get("seconds", 30);
-    try {
-      Thread.sleep(TimeUnit.SECONDS.toMillis(seconds));
-    } catch (InterruptedException e) {
-      throw new IOException(e);
-    }
+    Thread.sleep(TimeUnit.SECONDS.toMillis(seconds));
     return true;
   }
 

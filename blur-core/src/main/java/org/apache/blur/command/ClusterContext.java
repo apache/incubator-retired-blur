@@ -53,9 +53,4 @@ public abstract class ClusterContext {
   public abstract <T> Map<Server, Future<T>> readServersAsync(Args args,
       Class<? extends IndexReadCombiningCommand<?, T>> clazz) throws IOException;
 
-  public abstract <T> T writeIndex(Args args, Class<? extends IndexWriteCommand<T>> clazz) throws IOException;
-
-  public abstract <T> Future<T> writeIndexAsync(Args args, Class<? extends IndexWriteCommand<T>> clazz)
-      throws IOException;
-
 }

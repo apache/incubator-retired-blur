@@ -20,6 +20,6 @@ import java.io.IOException;
 
 public interface IndexReadCommand<T> {
 
-  T execute(IndexContext context) throws IOException;
+  T execute(IndexContext context) throws IOException, InterruptedException;
 
 }

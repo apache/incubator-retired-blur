@@ -48,8 +48,6 @@ public class ControllerCommandManager extends BaseCommandManager {
           return executeIndexReadCombiningCommand(args, context, command);
         } else if (command instanceof IndexReadCommand) {
           return executeIndexReadCommand(args, context, command);
-        } else if (command instanceof IndexWriteCommand) {
-          return executeIndexWriteCommand(args, context, command);
         } else {
           throw new IOException("Command type of [" + command.getClass() + "] not supported.");
         }
@@ -60,12 +58,6 @@ public class ControllerCommandManager extends BaseCommandManager {
   private Response executeClusterCommand(ClusterContext context, Command command) throws IOException {
     ClusterCommand<Object> clusterCommand = (ClusterCommand<Object>) command;
     Object object = clusterCommand.clusterExecute(context);
-    return Response.createNewAggregateResponse(object);
-  }
-
-  private Response executeIndexWriteCommand(Args args, ClusterContext context, Command command) throws IOException {
-    Class<? extends IndexWriteCommand<Object>> clazz = (Class<? extends IndexWriteCommand<Object>>) command.getClass();
-    Object object = context.writeIndex(args, clazz);
     return Response.createNewAggregateResponse(object);
   }
 

@@ -103,11 +103,6 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public <T> T writeIndex(Args args, Class<? extends IndexWriteCommand<T>> clazz) {
-    throw new RuntimeException("Not Implemented");
-  }
-
-  @Override
   public void close() throws IOException {
     ClientPool clientPool = BlurClientManager.getClientPool();
     for (Entry<Server, Client> e : _clientMap.entrySet()) {
@@ -199,12 +194,6 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
       futureMap.put(server, future);
     }
     return futureMap;
-  }
-
-  @Override
-  public <T> Future<T> writeIndexAsync(Args args, Class<? extends IndexWriteCommand<T>> clazz) {
-    // TODO Auto-generated method stub
-    return null;
   }
 
   private <K, T> Map<K, T> processFutures(Class<?> clazz, Map<K, Future<T>> futures, Map<K, T> result)

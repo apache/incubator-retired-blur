@@ -55,8 +55,6 @@ public class ShardCommandManager extends BaseCommandManager {
         }
         if (command instanceof IndexReadCommand || command instanceof IndexReadCombiningCommand) {
           return toResponse(executeReadCommand(shardServerContext, command, tableContext, args), command);
-        } else if (command instanceof IndexWriteCommand) {
-          return toResponse(executeReadWriteCommand(shardServerContext, command, tableContext, args), command);
         }
         throw new IOException("Command type of [" + command.getClass() + "] not supported.");
       }
@@ -80,11 +78,6 @@ public class ShardCommandManager extends BaseCommandManager {
       return Response.createNewAggregateResponse(object);
     }
     return Response.createNewShardResponse(results);
-  }
-
-  private Map<Shard, Object> executeReadWriteCommand(ShardServerContext shardServerContext, Command command,
-      TableContext tableContext, Args args) {
-    return null;
   }
 
   private Map<Shard, Object> executeReadCommand(ShardServerContext shardServerContext, Command command,
@@ -211,7 +204,7 @@ public class ShardCommandManager extends BaseCommandManager {
   }
 
   public void cancel(ExecutionId executionId) {
-    // TODO 
+    // TODO
     System.out.println("IMPLEMENT ME!!!!");
   }
 

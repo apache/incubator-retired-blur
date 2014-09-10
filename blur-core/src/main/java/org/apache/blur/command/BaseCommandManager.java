@@ -8,10 +8,10 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -20,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+
+import com.google.common.collect.MapMaker;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -41,14 +43,14 @@ import org.apache.blur.log.LogFactory;
 public class BaseCommandManager implements Closeable {
 
   private static final String META_INF_SERVICES_ORG_APACHE_BLUR_COMMAND_COMMANDS = "META-INF/services/org.apache.blur.command.Commands";
+  private static final Log LOG = LogFactory.getLog(BaseCommandManager.class);
 
-  private final static Log LOG = LogFactory.getLog(BaseCommandManager.class);
-
-  protected final ExecutorService _executorService;
+  private final ExecutorService _executorService;
+  private final ExecutorService _executorServiceDriver;
+  
   protected final Map<String, Command> _command = new ConcurrentHashMap<String, Command>();
   protected final Map<Class<? extends Command>, String> _commandNameLookup = new ConcurrentHashMap<Class<? extends Command>, String>();
-  protected final ExecutorService _executorServiceDriver;
-  protected final ConcurrentHashMap<String, Future<Response>> _runningMap = new ConcurrentHashMap<String, Future<Response>>();
+  protected final ConcurrentMap<ExecutionId, Future<Response>> _runningMap;
   protected final long _connectionTimeout;
 
   public BaseCommandManager(int threadCount, long connectionTimeout) throws IOException {
@@ -56,6 +58,7 @@ public class BaseCommandManager implements Closeable {
     _executorService = Executors.newThreadPool("command-", threadCount);
     _executorServiceDriver = Executors.newThreadPool("command-driver-", threadCount);
     _connectionTimeout = connectionTimeout / 2;
+    _runningMap = new MapMaker().weakKeys().makeMap();
   }
 
   @SuppressWarnings("unchecked")
@@ -99,9 +102,11 @@ public class BaseCommandManager implements Closeable {
     }
   }
 
-  protected Response submitCallable(Callable<Response> callable) throws IOException, TimeoutException {
-    String executionId = UUID.randomUUID().toString();
-    Future<Response> future = _executorServiceDriver.submit(callable);
+  protected Response submitDriverCallable(Callable<Response> callable) throws IOException, TimeoutException {
+    ExecutionContext executionContext = ExecutionContext.create();
+    Future<Response> future = _executorServiceDriver.submit(executionContext.wrapCallable(callable));
+    executionContext.registerDriverFuture(future);
+    ExecutionId executionId = executionContext.getExecutionId();
     _runningMap.put(executionId, future);
     try {
       return future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
@@ -112,9 +117,16 @@ public class BaseCommandManager implements Closeable {
     } catch (ExecutionException e) {
       throw new IOException(e.getCause());
     } catch (java.util.concurrent.TimeoutException e) {
-      LOG.info("Timeout of command [{0}]", executionId);
-      throw new TimeoutException(executionId);
+      LOG.info("Timeout of command [{0}]", executionId.getId());
+      throw new TimeoutException(executionId.getId());
     }
+  }
+
+  protected <T> Future<T> submitToExecutorService(Callable<T> callable) {
+    ExecutionContext executionContext = ExecutionContext.get();
+    Future<T> future = _executorService.submit(executionContext.wrapCallable(callable));
+    executionContext.registerFuture(future);
+    return future;
   }
 
   @Override

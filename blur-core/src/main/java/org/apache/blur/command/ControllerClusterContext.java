@@ -9,7 +9,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.apache.blur.BlurConfiguration;
@@ -52,16 +51,14 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   private final Args _args;
   private final TableContext _tableContext;
   private final Map<Server, Client> _clientMap;
-  private final ExecutorService _executorService;
   private final ControllerCommandManager _manager;
   private final Map<String, String> _tableLayout;
 
   public ControllerClusterContext(TableContext tableContext, Args args, Map<String, String> tableLayout,
-      ExecutorService executorService, ControllerCommandManager manager) throws IOException {
+      ControllerCommandManager manager) throws IOException {
     _tableContext = tableContext;
     _args = args;
     _clientMap = getBlurClientsForTable(_tableContext.getTable(), tableLayout);
-    _executorService = executorService;
     _manager = manager;
     _tableLayout = tableLayout;
   }
@@ -126,7 +123,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     for (Entry<Server, Client> e : _clientMap.entrySet()) {
       Server server = e.getKey();
       final Client client = e.getValue();
-      Future<Map<Shard, T>> future = _executorService.submit(new Callable<Map<Shard, T>>() {
+      Future<Map<Shard, T>> future = _manager.submitToExecutorService(new Callable<Map<Shard, T>>() {
         @Override
         public Map<Shard, T> call() throws Exception {
           Arguments arguments = CommandUtil.toArguments(args);
@@ -190,7 +187,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     for (Entry<Server, Client> e : _clientMap.entrySet()) {
       Server server = e.getKey();
       final Client client = e.getValue();
-      Future<T> future = _executorService.submit(new Callable<T>() {
+      Future<T> future = _manager.submitToExecutorService(new Callable<T>() {
         @Override
         public T call() throws Exception {
           Arguments arguments = CommandUtil.toArguments(args);

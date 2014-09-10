@@ -29,17 +29,18 @@ public class ControllerCommandManager extends BaseCommandManager {
     super(threadCount, connectionTimeout);
   }
 
-  public Response execute(TableContext tableContext, String commandName, final Args args, Map<String, String> tableLayout)
-      throws IOException, TimeoutException {
+  public Response execute(TableContext tableContext, String commandName, final Args args,
+      Map<String, String> tableLayout) throws IOException, TimeoutException {
     final ClusterContext context = createCommandContext(tableContext, args, tableLayout);
     final Command command = getCommandObject(commandName);
     if (command == null) {
       throw new IOException("Command with name [" + commandName + "] not found.");
     }
-    return submitCallable(new Callable<Response>() {
+    return submitDriverCallable(new Callable<Response>() {
       @Override
       public Response call() throws Exception {
-        // For those commands that do not implement cluster command, run them in a
+        // For those commands that do not implement cluster command, run them in
+        // a
         // base impl.
         if (command instanceof ClusterCommand) {
           return executeClusterCommand(context, command);
@@ -84,7 +85,7 @@ public class ControllerCommandManager extends BaseCommandManager {
 
   private ClusterContext createCommandContext(TableContext tableContext, Args args, Map<String, String> tableLayout)
       throws IOException {
-    return new ControllerClusterContext(tableContext, args, tableLayout, _executorService, this);
+    return new ControllerClusterContext(tableContext, args, tableLayout, this);
   }
 
 }

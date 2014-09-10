@@ -61,7 +61,7 @@ public class ShardCommandManager extends BaseCommandManager {
         throw new IOException("Command type of [" + command.getClass() + "] not supported.");
       }
     };
-    return submitCallable(callable);
+    return submitDriverCallable(callable);
   }
 
   @SuppressWarnings("unchecked")
@@ -97,7 +97,7 @@ public class ShardCommandManager extends BaseCommandManager {
       } else {
         throw new IOException("Command type of [" + command.getClass() + "] not supported.");
       }
-      Future<Object> future = _executorService.submit(callable);
+      Future<Object> future = submitToExecutorService(callable);
       futureMap.put(shardId, future);
     }
     Map<Shard, Object> resultMap = new HashMap<Shard, Object>();

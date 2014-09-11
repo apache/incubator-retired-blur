@@ -230,6 +230,8 @@ blurconsole.search = (function () {
   function _updateOptionDisplay() {
     var displayText = '';
     displayText += configMap.superQueryMap[stateMap.$rowRecordOption];
+    displayText += '<br/>User: ';
+    displayText += stateMap.$userOption;
     jqueryMap.$optionsDisplay.html(displayText);
   }
 

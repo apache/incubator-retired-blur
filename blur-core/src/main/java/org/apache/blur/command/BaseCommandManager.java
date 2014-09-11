@@ -8,6 +8,8 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -154,5 +156,60 @@ public class BaseCommandManager implements Closeable {
 
   protected String getCommandName(Class<? extends Command> clazz) {
     return _commandNameLookup.get(clazz);
+  }
+
+  protected Map<String, Set<Shard>> getShards(Command command, final Args args, Set<String> tables) throws IOException {
+    Map<String, Set<Shard>> shardMap = new TreeMap<String, Set<Shard>>();
+    if (command instanceof ShardRoute) {
+      ShardRoute shardRoute = (ShardRoute) command;
+      for (String table : tables) {
+        shardMap.put(table, shardRoute.resolveShards(table, args));
+      }
+    } else {
+      if (tables.size() > 1) {
+        throw new IOException(
+            "Cannot route to single shard when multiple tables are specified.  Implement ShardRoute on your command.");
+      }
+      String singleTable = tables.iterator().next();
+      Set<Shard> shardSet = new TreeSet<Shard>();
+      String shard = args.get("shard");
+      if (shard == null) {
+        BlurArray shardArray = args.get("shards");
+        if (shardArray != null) {
+          for (int i = 0; i < shardArray.length(); i++) {
+            shardSet.add(new Shard(singleTable, shardArray.getString(i)));
+          }
+        }
+      } else {
+        shardSet.add(new Shard(singleTable, shard));
+      }
+      shardMap.put(singleTable, shardSet);
+    }
+    return shardMap;
+  }
+
+  protected Set<String> getTables(Command command, final Args args) throws IOException {
+    Set<String> tables = new TreeSet<String>();
+    if (command instanceof TableRoute) {
+      TableRoute tableRoute = (TableRoute) command;
+      tables.addAll(tableRoute.resolveTables(args));
+    } else {
+      if (args == null) {
+        return tables;
+      }
+      String table = args.get("table");
+      if (table == null) {
+        BlurArray tableArray = args.get("tables");
+        if (tableArray == null) {
+          return tables;
+        }
+        for (int i = 0; i < tableArray.length(); i++) {
+          tables.add(tableArray.getString(i));
+        }
+      } else {
+        tables.add(table);
+      }
+    }
+    return tables;
   }
 }

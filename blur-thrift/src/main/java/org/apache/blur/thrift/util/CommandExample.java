@@ -21,42 +21,23 @@ import java.io.IOException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.Connection;
+import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.Response;
-import org.apache.blur.thrift.generated.TimeoutException;
+import org.apache.blur.thrift.generated.Value;
+import org.apache.blur.thrift.generated.ValueObject;
 
 public class CommandExample {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
     Client client = BlurClientManager.getClientPool().getClient(new Connection("localhost:40010"));
-    // String executionId = null;
-    // while (true) {
-    // try {
-    // Response response;
-    // if (executionId == null) {
-    // response = client.execute("test", "wait", null);
-    // } else {
-    // System.out.println("Reconecting...");
-    // response = client.reconnect(executionId);
-    // }
-    // System.out.println(response);
-    // break;
-    // } catch (TimeoutException ex) {
-    // executionId = ex.getExecutionId();
-    // }
-    // }
 
-    System.out.println(client.execute("docCount", null));
-    // System.out.println(client.execute("test", "docCountNoCombine", null));
-    // {
-    // Response response = client.execute("test", "docCountAggregate", null);
-    // long count = response.getValue().getValue().getLongValue();
-    // System.out.println(count);
-    // }
-    // {
-    // Response response = client.execute("test", "testBlurObject", null);
-    // System.out.println(response);
-    // }
+    Arguments arguments = new Arguments();
+    arguments.putToValues("table", new ValueObject(ValueObject._Fields.VALUE, new Value(Value._Fields.STRING_VALUE,
+        "test2")));
+    arguments.putToValues("shard", new ValueObject(ValueObject._Fields.VALUE, new Value(Value._Fields.STRING_VALUE,
+        "shard-00000000")));
+
+    System.out.println(client.execute("docCount", arguments));
   }
 }

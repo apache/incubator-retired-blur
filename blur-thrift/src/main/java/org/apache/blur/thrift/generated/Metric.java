@@ -707,7 +707,7 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
                 struct.strMap = new HashMap<String,String>(2*_map202.size);
                 for (int _i203 = 0; _i203 < _map202.size; ++_i203)
                 {
-                  String _key204; // required
+                  String _key204; // optional
                   String _val205; // required
                   _key204 = iprot.readString();
                   _val205 = iprot.readString();
@@ -727,7 +727,7 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
                 struct.longMap = new HashMap<String,Long>(2*_map206.size);
                 for (int _i207 = 0; _i207 < _map206.size; ++_i207)
                 {
-                  String _key208; // required
+                  String _key208; // optional
                   long _val209; // required
                   _key208 = iprot.readString();
                   _val209 = iprot.readI64();
@@ -747,7 +747,7 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
                 struct.doubleMap = new HashMap<String,Double>(2*_map210.size);
                 for (int _i211 = 0; _i211 < _map210.size; ++_i211)
                 {
-                  String _key212; // required
+                  String _key212; // optional
                   double _val213; // required
                   _key212 = iprot.readString();
                   _val213 = iprot.readDouble();
@@ -899,7 +899,7 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
           struct.strMap = new HashMap<String,String>(2*_map220.size);
           for (int _i221 = 0; _i221 < _map220.size; ++_i221)
           {
-            String _key222; // required
+            String _key222; // optional
             String _val223; // required
             _key222 = iprot.readString();
             _val223 = iprot.readString();
@@ -914,7 +914,7 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
           struct.longMap = new HashMap<String,Long>(2*_map224.size);
           for (int _i225 = 0; _i225 < _map224.size; ++_i225)
           {
-            String _key226; // required
+            String _key226; // optional
             long _val227; // required
             _key226 = iprot.readString();
             _val227 = iprot.readI64();
@@ -929,7 +929,7 @@ public class Metric implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Met
           struct.doubleMap = new HashMap<String,Double>(2*_map228.size);
           for (int _i229 = 0; _i229 < _map228.size; ++_i229)
           {
-            String _key230; // required
+            String _key230; // optional
             double _val231; // required
             _key230 = iprot.readString();
             _val231 = iprot.readDouble();

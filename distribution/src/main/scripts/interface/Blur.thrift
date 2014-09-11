@@ -851,7 +851,8 @@ union Value {
 }
 
 struct Shard {
-  1:string shard
+  1:string table,
+  2:string shard
 }
 
 struct Server {

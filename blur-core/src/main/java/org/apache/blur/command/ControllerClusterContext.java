@@ -14,7 +14,9 @@ import java.util.concurrent.Future;
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.server.LayoutFactory;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.TableContextFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.ClientPool;
@@ -49,27 +51,27 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   private final static Log LOG = LogFactory.getLog(ControllerClusterContext.class);
 
   private final Args _args;
-  private final TableContext _tableContext;
+  private final TableContextFactory _tableContextFactory;
   private final Map<Server, Client> _clientMap;
   private final ControllerCommandManager _manager;
-  private final Map<String, String> _tableLayout;
+  private final LayoutFactory _layoutFactory;
 
-  public ControllerClusterContext(TableContext tableContext, Args args, Map<String, String> tableLayout,
+  public ControllerClusterContext(TableContextFactory tableContextFactory, LayoutFactory layoutFactory, Args args,
       ControllerCommandManager manager) throws IOException {
-    _tableContext = tableContext;
+    _tableContextFactory = tableContextFactory;
     _args = args;
-    _clientMap = getBlurClientsForTable(_tableContext.getTable(), tableLayout);
+    _clientMap = getBlurClientsForCluster(layoutFactory.getServerConnections());
     _manager = manager;
-    _tableLayout = tableLayout;
+    _layoutFactory = layoutFactory;
   }
 
-  public Map<Server, Client> getBlurClientsForTable(String table, Map<String, String> tableLayout) throws IOException {
+  public Map<Server, Client> getBlurClientsForCluster(Set<Connection> serverConnections) throws IOException {
     Map<Server, Client> clients = new HashMap<Server, Client>();
-    for (String serverStr : tableLayout.values()) {
+    for (Connection serverConnection : serverConnections) {
       try {
-        Client client = BlurClientManager.getClientPool().getClient(new Connection(serverStr));
+        Client client = BlurClientManager.getClientPool().getClient(serverConnection);
         client.refresh();
-        clients.put(new Server(serverStr), client);
+        clients.put(new Server(serverConnection.getHost() + ":" + serverConnection.getPort()), client);
       } catch (TException e) {
         throw new IOException(e);
       }
@@ -83,8 +85,8 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public TableContext getTableContext() {
-    return _tableContext;
+  public TableContext getTableContext(String table) throws IOException {
+    return _tableContextFactory.getTableContext(table);
   }
 
   @Override
@@ -112,38 +114,55 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
 
   @SuppressWarnings("unchecked")
   @Override
-  public <T> Map<Shard, Future<T>> readIndexesAsync(final Args args, Class<? extends IndexReadCommand<T>> clazz) {
+  public <T> Map<Shard, Future<T>> readIndexesAsync(final Args args, Class<? extends IndexReadCommand<T>> clazz)
+      throws IOException {
     final String commandName = _manager.getCommandName((Class<? extends Command>) clazz);
+    Command command = _manager.getCommandObject(commandName);
     Map<Shard, Future<T>> futureMap = new HashMap<Shard, Future<T>>();
-    for (Entry<Server, Client> e : _clientMap.entrySet()) {
+    Set<String> tables = _manager.getTables(command, args);
+    Map<String, Set<Shard>> shards = _manager.getShards(command, args, tables);
+    Map<Server, Client> clientMap = getClientMap(command, args, tables, shards);
+
+    for (Entry<Server, Client> e : clientMap.entrySet()) {
       Server server = e.getKey();
       final Client client = e.getValue();
       Future<Map<Shard, T>> future = _manager.submitToExecutorService(new Callable<Map<Shard, T>>() {
         @Override
         public Map<Shard, T> call() throws Exception {
           Arguments arguments = CommandUtil.toArguments(args);
-          Response response = waitForResponse(client, getTable(), commandName, arguments);
+          Response response = waitForResponse(client, commandName, arguments);
           Map<Shard, Object> shardToValue = CommandUtil.fromThriftToObject(response.getShardToValue());
           return (Map<Shard, T>) shardToValue;
         }
       });
-      Set<Shard> shards = getShardsOnServer(server);
-      for (Shard shard : shards) {
+      for (Shard shard : getShardsOnServer(server, tables, shards)) {
         futureMap.put(shard, new ShardResultFuture<T>(shard, future));
       }
     }
     return futureMap;
   }
 
-  protected static Response waitForResponse(Client client, String table, String commandName, Arguments arguments)
-      throws TException {
+  private Map<Server, Client> getClientMap(Command command, Args args, Set<String> tables,
+      Map<String, Set<Shard>> shards) throws IOException {
+    Map<Server, Client> result = new HashMap<Server, Client>();
+
+    for (Entry<Server, Client> e : _clientMap.entrySet()) {
+      Server server = e.getKey();
+      if (_layoutFactory.isValidServer(server, tables, shards)) {
+        result.put(server, e.getValue());
+      }
+    }
+    return result;
+  }
+
+  protected static Response waitForResponse(Client client, String commandName, Arguments arguments) throws TException {
     // TODO This should likely be changed to run of a AtomicBoolean used for
     // the status of commands.
     String executionId = null;
     while (true) {
       try {
         if (executionId == null) {
-          return client.execute(table, commandName, arguments);
+          return client.execute(commandName, arguments);
         } else {
           return client.reconnect(executionId);
         }
@@ -158,35 +177,49 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     }
   }
 
-  private Set<Shard> getShardsOnServer(Server server) {
-    Set<Shard> shards = new HashSet<Shard>();
-    for (Entry<String, String> e : _tableLayout.entrySet()) {
-      String value = e.getValue();
-      if (value.equals(server.getServer())) {
-        shards.add(new Shard(e.getKey()));
+  private Set<Shard> getShardsOnServer(Server server, Set<String> tables, Map<String, Set<Shard>> shards)
+      throws IOException {
+    Set<Shard> serverLayout = _layoutFactory.getServerLayout(server);
+    Set<Shard> result = new HashSet<Shard>();
+    for (Shard shard : serverLayout) {
+      if (isValid(shard, tables, shards)) {
+        result.add(shard);
       }
     }
-    return shards;
+    return result;
   }
 
-  private String getTable() {
-    return getTableContext().getTable();
+  private boolean isValid(Shard shard, Set<String> tables, Map<String, Set<Shard>> shards) {
+    String table = shard.getTable();
+    if (!tables.contains(table)) {
+      return false;
+    }
+    Set<Shard> shardSet = shards.get(table);
+    if (shardSet.isEmpty()) {
+      return true;
+    } else {
+      return shardSet.contains(shard);
+    }
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <T> Map<Server, Future<T>> readServersAsync(final Args args,
-      Class<? extends IndexReadCombiningCommand<?, T>> clazz) {
+      Class<? extends IndexReadCombiningCommand<?, T>> clazz) throws IOException {
     final String commandName = _manager.getCommandName((Class<? extends Command>) clazz);
+    Command command = _manager.getCommandObject(commandName);
     Map<Server, Future<T>> futureMap = new HashMap<Server, Future<T>>();
-    for (Entry<Server, Client> e : _clientMap.entrySet()) {
+    Set<String> tables = _manager.getTables(command, args);
+    Map<String, Set<Shard>> shards = _manager.getShards(command, args, tables);
+    Map<Server, Client> clientMap = getClientMap(command, args, tables, shards);
+    for (Entry<Server, Client> e : clientMap.entrySet()) {
       Server server = e.getKey();
       final Client client = e.getValue();
       Future<T> future = _manager.submitToExecutorService(new Callable<T>() {
         @Override
         public T call() throws Exception {
           Arguments arguments = CommandUtil.toArguments(args);
-          Response response = waitForResponse(client, getTable(), commandName, arguments);
+          Response response = waitForResponse(client, commandName, arguments);
           ValueObject valueObject = response.getValue();
           return (T) CommandUtil.toObject(valueObject);
         }
@@ -223,13 +256,13 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public BlurConfiguration getBlurConfiguration() {
-    return _tableContext.getBlurConfiguration();
+  public BlurConfiguration getBlurConfiguration(String table) throws IOException {
+    return _tableContextFactory.getTableContext(table).getBlurConfiguration();
   }
 
   @Override
-  public Configuration getConfiguration() {
-    return _tableContext.getConfiguration();
+  public Configuration getConfiguration(String table) throws IOException {
+    return _tableContextFactory.getTableContext(table).getConfiguration();
   }
 
   @Override

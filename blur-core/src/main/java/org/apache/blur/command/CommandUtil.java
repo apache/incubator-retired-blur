@@ -56,7 +56,8 @@ public class CommandUtil {
       T key = e.getKey();
       if (key instanceof Shard) {
         Shard shard = (Shard) key;
-        result.put((R) new org.apache.blur.thrift.generated.Shard(shard.getShard()), toValueObject(e.getValue()));
+        result.put((R) new org.apache.blur.thrift.generated.Shard(shard.getTable(), shard.getShard()),
+            toValueObject(e.getValue()));
       } else if (key instanceof Server) {
         Server server = (Server) key;
         result.put((R) new org.apache.blur.thrift.generated.Server(server.getServer()), toValueObject(e.getValue()));
@@ -148,7 +149,8 @@ public class CommandUtil {
       Map<org.apache.blur.thrift.generated.Shard, ValueObject> shardToValue) {
     Map<Shard, T> result = new HashMap<Shard, T>();
     for (Entry<org.apache.blur.thrift.generated.Shard, ValueObject> e : shardToValue.entrySet()) {
-      result.put(new Shard(e.getKey().getShard()), (T) CommandUtil.toObject(e.getValue()));
+      org.apache.blur.thrift.generated.Shard shard = e.getKey();
+      result.put(new Shard(shard.getTable(), shard.getShard()), (T) CommandUtil.toObject(e.getValue()));
     }
     return result;
   }

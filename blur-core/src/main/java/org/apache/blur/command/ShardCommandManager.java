@@ -17,13 +17,10 @@
 package org.apache.blur.command;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -92,28 +89,41 @@ public class ShardCommandManager extends BaseCommandManager {
       throw new IOException("At least one table needs to specified.");
     }
     Map<String, Set<Shard>> shardMap = getShards(command, args, tables);
-    
-    Map<String, BlurIndex> indexes = _indexServer.getIndexes(tableContext.getTable());
-    Map<String, Future<?>> futureMap = new HashMap<String, Future<?>>();
-    for (Entry<String, BlurIndex> e : indexes.entrySet()) {
-      String shardId = e.getKey();
-      final Shard shard = new Shard(shardId);
-      final BlurIndex blurIndex = e.getValue();
-      Callable<Object> callable;
-      if (command instanceof IndexReadCommand) {
-        final IndexReadCommand<?> readCommand = (IndexReadCommand<?>) command.clone();
-        callable = getCallable(shardServerContext, tableContext, args, shard, blurIndex, readCommand);
-      } else if (command instanceof IndexReadCombiningCommand) {
-        final IndexReadCombiningCommand<?, ?> readCombiningCommand = (IndexReadCombiningCommand<?, ?>) command.clone();
-        callable = getCallable(shardServerContext, tableContext, args, shard, blurIndex, readCombiningCommand);
-      } else {
-        throw new IOException("Command type of [" + command.getClass() + "] not supported.");
+
+    Map<Shard, Future<?>> futureMap = new HashMap<Shard, Future<?>>();
+    for (String table : tables) {
+      Set<Shard> shardSet = shardMap.get(table);
+      boolean checkShards = !shardSet.isEmpty();
+      
+      TableContext tableContext = tableContextFactory.getTableContext(table);
+      Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+      for (Entry<String, BlurIndex> e : indexes.entrySet()) {
+        String shardId = e.getKey();
+        final Shard shard = new Shard(table, shardId);
+        if (checkShards) {
+          if (!shardSet.contains(shard)) {
+            continue;
+          }
+        }
+        final BlurIndex blurIndex = e.getValue();
+        Callable<Object> callable;
+        if (command instanceof IndexReadCommand) {
+          final IndexReadCommand<?> readCommand = (IndexReadCommand<?>) command.clone();
+          callable = getCallable(shardServerContext, tableContext, args, shard, blurIndex, readCommand);
+        } else if (command instanceof IndexReadCombiningCommand) {
+          final IndexReadCombiningCommand<?, ?> readCombiningCommand = (IndexReadCombiningCommand<?, ?>) command
+              .clone();
+          callable = getCallable(shardServerContext, tableContext, args, shard, blurIndex, readCombiningCommand);
+        } else {
+          throw new IOException("Command type of [" + command.getClass() + "] not supported.");
+        }
+        Future<Object> future = submitToExecutorService(callable);
+        futureMap.put(shard, future);
       }
-      Future<Object> future = submitToExecutorService(callable);
-      futureMap.put(shardId, future);
     }
     Map<Shard, Object> resultMap = new HashMap<Shard, Object>();
-    for (Entry<String, Future<?>> e : futureMap.entrySet()) {
+    for (Entry<Shard, Future<?>> e : futureMap.entrySet()) {
+      Shard shard = e.getKey();
       Future<?> future = e.getValue();
       Object object;
       try {
@@ -123,57 +133,12 @@ public class ShardCommandManager extends BaseCommandManager {
       } catch (ExecutionException ex) {
         throw new IOException(ex.getCause());
       }
-      resultMap.put(new Shard(e.getKey()), object);
+      resultMap.put(shard, object);
     }
     return resultMap;
   }
 
-  private Map<String, Set<Shard>> getShards(Command command, final Args args, Set<String> tables) throws IOException {
-    Map<String, Set<Shard>> shardMap = new TreeMap<String, Set<Shard>>();
-    if (command instanceof ShardRoute) {
-      ShardRoute shardRoute = (ShardRoute) command;
-      for (String table : tables) {
-        shardMap.put(table, shardRoute.resolveShards(table, args));
-      }
-    } else {
-      if (tables.size() > 1) {
-        throw new IOException(
-            "Cannot route to single shard when multiple tables are specified.  Implement ShardRoute on your command.");
-      }
-      Set<Shard> shardSet = new TreeSet<Shard>();
-      String shard = args.get("shard");
-      if (shard == null) {
-        BlurArray shardArray = args.get("shards");
-        for (int i = 0; i < shardArray.length(); i++) {
-          shardSet.add(new Shard(shardArray.getString(i)));
-        }
-      } else {
-        shardSet.add(new Shard(shard));
-      }
-      String singleTable = tables.iterator().next();
-      shardMap.put(singleTable, shardSet);
-    }
-    return shardMap;
-  }
 
-  private Set<String> getTables(Command command, final Args args) {
-    Set<String> tables = new TreeSet<String>();
-    if (command instanceof TableRoute) {
-      TableRoute tableRoute = (TableRoute) command;
-      tables.addAll(tableRoute.resolveTables(args));
-    } else {
-      String table = args.get("table");
-      if (table == null) {
-        BlurArray tableArray = args.get("tables");
-        for (int i = 0; i < tableArray.length(); i++) {
-          tables.add(tableArray.getString(i));
-        }
-      } else {
-        tables.add(table);
-      }
-    }
-    return tables;
-  }
 
   private Callable<Object> getCallable(final ShardServerContext shardServerContext, final TableContext tableContext,
       final Args args, final Shard shard, final BlurIndex blurIndex,

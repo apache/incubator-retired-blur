@@ -31,7 +31,7 @@ public class TestBlurObjectCommandUsing {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
     Client client = BlurClientManager.getClientPool().getClient(new Connection("localhost:40010"));
-    Response response = client.execute("test", "testBlurObject", null);
+    Response response = client.execute("testBlurObject", null);
     BlurObject object = (BlurObject) ObjectArrayPacking.unpack(response.getValue().getBlurObject());
     System.out.println(object);
     // prints => {"docCount":10005}

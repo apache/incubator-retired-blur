@@ -29,6 +29,7 @@ import org.apache.blur.manager.writer.IndexAction;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.TableContextFactory;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -73,17 +74,18 @@ public class ShardCommandManagerTest {
 
   @Test
   public void testShardCommandManagerNormalWait() throws IOException, TimeoutException {
-    TableContext tableContext = getTableContext();
     Response response;
     ExecutionId executionId = null;
 
     Args args = new Args();
     args.set("seconds", 5);
+    args.set("table", "test");
 
     while (true) {
       try {
         if (executionId == null) {
-          response = _manager.execute(tableContext, "wait", args);
+          TableContextFactory tableContextFactory = getTableContextFactory();
+          response = _manager.execute(tableContextFactory, "wait", args);
         } else {
           response = _manager.reconnect(executionId);
         }
@@ -97,15 +99,16 @@ public class ShardCommandManagerTest {
 
   @Test
   public void testShardCommandManagerNormalWithCancel() throws IOException, TimeoutException {
-    TableContext tableContext = getTableContext();
     Response response;
     ExecutionId executionId = null;
 
     Args args = new Args();
     args.set("seconds", 5);
+    args.set("table", "test");
 
     try {
-      response = _manager.execute(tableContext, "wait", args);
+      TableContextFactory tableContextFactory = getTableContextFactory();
+      response = _manager.execute(tableContextFactory, "wait", args);
     } catch (TimeoutException te) {
       _manager.cancel(te.getExecutionId());
       // some how validate the threads have cancelled.
@@ -113,8 +116,13 @@ public class ShardCommandManagerTest {
 
   }
 
-  private TableContext getTableContext() {
-    return TableContext.create(getTableDescriptor());
+  private TableContextFactory getTableContextFactory() {
+    return new TableContextFactory() {
+      @Override
+      public TableContext getTableContext(String table) throws IOException {
+        return TableContext.create(getTableDescriptor());
+      }
+    };
   }
 
   private TableDescriptor getTableDescriptor() {
@@ -180,7 +188,7 @@ public class ShardCommandManagerTest {
   }
 
   protected BlurIndex getNullBlurIndex(String shard) throws IOException {
-    ShardContext shardContext = ShardContext.create(getTableContext(), shard);
+    ShardContext shardContext = ShardContext.create(getTableContextFactory().getTableContext("test"), shard);
     return new BlurIndex(shardContext, null, null, null, null, null) {
 
       @Override

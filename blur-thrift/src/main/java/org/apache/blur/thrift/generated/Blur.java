@@ -21725,7 +21725,7 @@ public class Blur {
                   struct.success = new HashMap<String,List<String>>(2*_map294.size);
                   for (int _i295 = 0; _i295 < _map294.size; ++_i295)
                   {
-                    String _key296; // required
+                    String _key296; // optional
                     List<String> _val297; // required
                     _key296 = iprot.readString();
                     {
@@ -21853,7 +21853,7 @@ public class Blur {
             struct.success = new HashMap<String,List<String>>(2*_map305.size);
             for (int _i306 = 0; _i306 < _map305.size; ++_i306)
             {
-              String _key307; // required
+              String _key307; // optional
               List<String> _val308; // required
               _key307 = iprot.readString();
               {
@@ -36456,7 +36456,7 @@ public class Blur {
                   struct.success = new HashMap<String,String>(2*_map384.size);
                   for (int _i385 = 0; _i385 < _map384.size; ++_i385)
                   {
-                    String _key386; // required
+                    String _key386; // optional
                     String _val387; // required
                     _key386 = iprot.readString();
                     _val387 = iprot.readString();
@@ -36561,7 +36561,7 @@ public class Blur {
             struct.success = new HashMap<String,String>(2*_map390.size);
             for (int _i391 = 0; _i391 < _map390.size; ++_i391)
             {
-              String _key392; // required
+              String _key392; // optional
               String _val393; // required
               _key392 = iprot.readString();
               _val393 = iprot.readString();
@@ -37354,7 +37354,7 @@ public class Blur {
                   struct.success = new HashMap<String,Map<String,ShardState>>(2*_map394.size);
                   for (int _i395 = 0; _i395 < _map394.size; ++_i395)
                   {
-                    String _key396; // required
+                    String _key396; // optional
                     Map<String,ShardState> _val397; // required
                     _key396 = iprot.readString();
                     {
@@ -37362,7 +37362,7 @@ public class Blur {
                       _val397 = new HashMap<String,ShardState>(2*_map398.size);
                       for (int _i399 = 0; _i399 < _map398.size; ++_i399)
                       {
-                        String _key400; // required
+                        String _key400; // optional
                         ShardState _val401; // required
                         _key400 = iprot.readString();
                         _val401 = ShardState.findByValue(iprot.readI32());
@@ -37486,7 +37486,7 @@ public class Blur {
             struct.success = new HashMap<String,Map<String,ShardState>>(2*_map406.size);
             for (int _i407 = 0; _i407 < _map406.size; ++_i407)
             {
-              String _key408; // required
+              String _key408; // optional
               Map<String,ShardState> _val409; // required
               _key408 = iprot.readString();
               {
@@ -37494,7 +37494,7 @@ public class Blur {
                 _val409 = new HashMap<String,ShardState>(2*_map410.size);
                 for (int _i411 = 0; _i411 < _map410.size; ++_i411)
                 {
-                  String _key412; // required
+                  String _key412; // optional
                   ShardState _val413; // required
                   _key412 = iprot.readString();
                   _val413 = ShardState.findByValue(iprot.readI32());
@@ -38979,7 +38979,7 @@ public class Blur {
                   struct.success = new HashMap<String,String>(2*_map414.size);
                   for (int _i415 = 0; _i415 < _map414.size; ++_i415)
                   {
-                    String _key416; // required
+                    String _key416; // optional
                     String _val417; // required
                     _key416 = iprot.readString();
                     _val417 = iprot.readString();
@@ -39084,7 +39084,7 @@ public class Blur {
             struct.success = new HashMap<String,String>(2*_map420.size);
             for (int _i421 = 0; _i421 < _map420.size; ++_i421)
             {
-              String _key422; // required
+              String _key422; // optional
               String _val423; // required
               _key422 = iprot.readString();
               _val423 = iprot.readString();
@@ -39916,7 +39916,7 @@ public class Blur {
                   struct.success = new HashMap<String,Metric>(2*_map432.size);
                   for (int _i433 = 0; _i433 < _map432.size; ++_i433)
                   {
-                    String _key434; // required
+                    String _key434; // optional
                     Metric _val435; // required
                     _key434 = iprot.readString();
                     _val435 = new Metric();
@@ -40022,7 +40022,7 @@ public class Blur {
             struct.success = new HashMap<String,Metric>(2*_map438.size);
             for (int _i439 = 0; _i439 < _map438.size; ++_i439)
             {
-              String _key440; // required
+              String _key440; // optional
               Metric _val441; // required
               _key440 = iprot.readString();
               _val441 = new Metric();

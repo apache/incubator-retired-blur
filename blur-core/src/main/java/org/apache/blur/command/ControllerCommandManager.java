@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.apache.blur.server.TableContext;
+import org.apache.blur.server.LayoutFactory;
+import org.apache.blur.server.TableContextFactory;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -29,9 +30,9 @@ public class ControllerCommandManager extends BaseCommandManager {
     super(threadCount, connectionTimeout);
   }
 
-  public Response execute(TableContext tableContext, String commandName, final Args args,
-      Map<String, String> tableLayout) throws IOException, TimeoutException {
-    final ClusterContext context = createCommandContext(tableContext, args, tableLayout);
+  public Response execute(TableContextFactory tableContextFactory, LayoutFactory layoutFactory, String commandName,
+      final Args args) throws IOException, TimeoutException {
+    final ClusterContext context = createCommandContext(tableContextFactory, layoutFactory, args);
     final Command command = getCommandObject(commandName);
     if (command == null) {
       throw new IOException("Command with name [" + commandName + "] not found.");
@@ -75,9 +76,9 @@ public class ControllerCommandManager extends BaseCommandManager {
     return Response.createNewServerResponse(result);
   }
 
-  private ClusterContext createCommandContext(TableContext tableContext, Args args, Map<String, String> tableLayout)
-      throws IOException {
-    return new ControllerClusterContext(tableContext, args, tableLayout, this);
+  private ClusterContext createCommandContext(TableContextFactory tableContextFactory, LayoutFactory layoutFactory,
+      Args args) throws IOException {
+    return new ControllerClusterContext(tableContextFactory, layoutFactory, args, this);
   }
 
 }

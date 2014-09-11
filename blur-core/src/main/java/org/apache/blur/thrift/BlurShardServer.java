@@ -20,6 +20,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACH
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,6 +45,7 @@ import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.TableContextFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -597,7 +599,14 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public org.apache.blur.thrift.generated.Response execute(String commandName, Arguments arguments)
       throws BlurException, TException {
     try {
-      Response response = _commandManager.execute(getTableContext(table), commandName, CommandUtil.toArgs(arguments));
+      TableContextFactory tableContextFactory = new TableContextFactory() {
+        @Override
+        public TableContext getTableContext(String table) throws IOException {
+          return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table),
+              table));
+        }
+      };
+      Response response = _commandManager.execute(tableContextFactory, commandName, CommandUtil.toArgs(arguments));
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
@@ -609,10 +618,6 @@ public class BlurShardServer extends TableAdmin implements Iface {
       }
       throw new BException(e.getMessage(), e);
     }
-  }
-
-  private TableContext getTableContext(final String table) {
-    return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table), table));
   }
 
   public void setCommandManager(ShardCommandManager commandManager) {

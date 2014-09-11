@@ -148,11 +148,13 @@ blurconsole.search = (function () {
           break;
         case 'term':
           if(parsedQuery.term.length > 0) {
+            $('#queryField').addClass('spinner');
             blurconsole.model.tables.findTerms(table, parsedQuery.family, parsedQuery.column, parsedQuery.term, function(terms){
               terms = $.map(terms, function(suggestedTerm){
                 return buildSuggestionObject(query, parsedQuery.term, suggestedTerm);
               });
               cb(terms);
+              $('#queryField').removeClass('spinner');
             });
           } else {
             cb(null);

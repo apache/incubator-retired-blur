@@ -77,6 +77,8 @@ blurconsole.search = (function () {
       mode: null
     };
     query = query.toLowerCase();
+    query = query.replace(/ +/g, ' ');
+    query = query.replace(/: +/g, ':');
     var dotIndex = query.lastIndexOf('.');
     var colonIndex = query.lastIndexOf(':');
     var lParenIndex = query.lastIndexOf('(');

@@ -47,7 +47,7 @@ public class CommandExample {
     // }
     // }
 
-    System.out.println(client.execute("test2", "docCount", null));
+    System.out.println(client.execute("docCount", null));
     // System.out.println(client.execute("test", "docCountNoCombine", null));
     // {
     // Response response = client.execute("test", "docCountAggregate", null);

@@ -160,9 +160,9 @@ public void enqueueMutateBatch(java.util.List arg0) throws org.apache.blur.thrif
 }
 
 @Override
-public org.apache.blur.thrift.generated.Response execute(java.lang.String arg0, java.lang.String arg1, org.apache.blur.thrift.generated.Arguments arg2) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thrift.generated.TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public org.apache.blur.thrift.generated.Response execute(java.lang.String arg0, org.apache.blur.thrift.generated.Arguments arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thrift.generated.TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    return super.execute(arg0, arg1, arg2);
+    return super.execute(arg0, arg1);
   } finally {_lock.unlock();}
 }
 
@@ -741,9 +741,9 @@ public void send_enqueueMutateBatch(java.util.List arg0) throws org.apache.blur.
 }
 
 @Override
-public void send_execute(java.lang.String arg0, java.lang.String arg1, org.apache.blur.thrift.generated.Arguments arg2) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void send_execute(java.lang.String arg0, org.apache.blur.thrift.generated.Arguments arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.send_execute(arg0, arg1, arg2);
+    super.send_execute(arg0, arg1);
   } finally {_lock.unlock();}
 }
 

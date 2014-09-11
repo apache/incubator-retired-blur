@@ -41,10 +41,9 @@ public abstract class ClusterContext {
   public abstract <T> Map<Shard, Future<T>> readIndexesAsync(Args args, Class<? extends IndexReadCommand<T>> clazz)
       throws IOException;
 
-  public abstract <T> T readIndex(Shard shard, Args args, Class<? extends IndexReadCommand<T>> clazz)
-      throws IOException;
+  public abstract <T> T readIndex(Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException;
 
-  public abstract <T> Future<T> readIndexAsync(Shard shard, Args args, Class<? extends IndexReadCommand<T>> clazz)
+  public abstract <T> Future<T> readIndexAsync(Args args, Class<? extends IndexReadCommand<T>> clazz)
       throws IOException;
 
   public abstract <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombiningCommand<?, T>> clazz)

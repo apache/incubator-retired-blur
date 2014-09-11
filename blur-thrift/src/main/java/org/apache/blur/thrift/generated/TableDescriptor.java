@@ -1799,7 +1799,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
                 struct.tableProperties = new HashMap<String,String>(2*_map172.size);
                 for (int _i173 = 0; _i173 < _map172.size; ++_i173)
                 {
-                  String _key174; // optional
+                  String _key174; // required
                   String _val175; // required
                   _key174 = iprot.readString();
                   _val175 = iprot.readString();
@@ -1843,7 +1843,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
                 struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map176.size);
                 for (int _i177 = 0; _i177 < _map176.size; ++_i177)
                 {
-                  String _key178; // optional
+                  String _key178; // required
                   String _val179; // required
                   _key178 = iprot.readString();
                   _val179 = iprot.readString();
@@ -2169,7 +2169,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           struct.tableProperties = new HashMap<String,String>(2*_map194.size);
           for (int _i195 = 0; _i195 < _map194.size; ++_i195)
           {
-            String _key196; // optional
+            String _key196; // required
             String _val197; // required
             _key196 = iprot.readString();
             _val197 = iprot.readString();
@@ -2196,7 +2196,7 @@ public class TableDescriptor implements org.apache.blur.thirdparty.thrift_0_9_0.
           struct.defaultMissingFieldProps = new HashMap<String,String>(2*_map198.size);
           for (int _i199 = 0; _i199 < _map198.size; ++_i199)
           {
-            String _key200; // optional
+            String _key200; // required
             String _val201; // required
             _key200 = iprot.readString();
             _val201 = iprot.readString();

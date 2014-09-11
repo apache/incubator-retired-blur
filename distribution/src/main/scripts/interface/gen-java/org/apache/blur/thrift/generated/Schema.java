@@ -492,7 +492,7 @@ public class Schema implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Sch
                 struct.families = new HashMap<String,Map<String,ColumnDefinition>>(2*_map146.size);
                 for (int _i147 = 0; _i147 < _map146.size; ++_i147)
                 {
-                  String _key148; // optional
+                  String _key148; // required
                   Map<String,ColumnDefinition> _val149; // required
                   _key148 = iprot.readString();
                   {
@@ -500,7 +500,7 @@ public class Schema implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Sch
                     _val149 = new HashMap<String,ColumnDefinition>(2*_map150.size);
                     for (int _i151 = 0; _i151 < _map150.size; ++_i151)
                     {
-                      String _key152; // optional
+                      String _key152; // required
                       ColumnDefinition _val153; // required
                       _key152 = iprot.readString();
                       _val153 = new ColumnDefinition();
@@ -620,7 +620,7 @@ public class Schema implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Sch
           struct.families = new HashMap<String,Map<String,ColumnDefinition>>(2*_map158.size);
           for (int _i159 = 0; _i159 < _map158.size; ++_i159)
           {
-            String _key160; // optional
+            String _key160; // required
             Map<String,ColumnDefinition> _val161; // required
             _key160 = iprot.readString();
             {
@@ -628,7 +628,7 @@ public class Schema implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Sch
               _val161 = new HashMap<String,ColumnDefinition>(2*_map162.size);
               for (int _i163 = 0; _i163 < _map162.size; ++_i163)
               {
-                String _key164; // optional
+                String _key164; // required
                 ColumnDefinition _val165; // required
                 _key164 = iprot.readString();
                 _val165 = new ColumnDefinition();

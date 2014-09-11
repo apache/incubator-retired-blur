@@ -8,13 +8,9 @@
 //HELPER FUNCTIONS AND STRUCTURES
 
 Blur_execute_args = function(args) {
-  this.table = null;
   this.commandName = null;
   this.arguments = null;
   if (args) {
-    if (args.table !== undefined) {
-      this.table = args.table;
-    }
     if (args.commandName !== undefined) {
       this.commandName = args.commandName;
     }
@@ -39,19 +35,12 @@ Blur_execute_args.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.STRING) {
-        this.table = input.readString().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 2:
-      if (ftype == Thrift.Type.STRING) {
         this.commandName = input.readString().value;
       } else {
         input.skip(ftype);
       }
       break;
-      case 3:
+      case 2:
       if (ftype == Thrift.Type.STRUCT) {
         this.arguments = new Arguments();
         this.arguments.read(input);
@@ -70,18 +59,13 @@ Blur_execute_args.prototype.read = function(input) {
 
 Blur_execute_args.prototype.write = function(output) {
   output.writeStructBegin('Blur_execute_args');
-  if (this.table !== null && this.table !== undefined) {
-    output.writeFieldBegin('table', Thrift.Type.STRING, 1);
-    output.writeString(this.table);
-    output.writeFieldEnd();
-  }
   if (this.commandName !== null && this.commandName !== undefined) {
-    output.writeFieldBegin('commandName', Thrift.Type.STRING, 2);
+    output.writeFieldBegin('commandName', Thrift.Type.STRING, 1);
     output.writeString(this.commandName);
     output.writeFieldEnd();
   }
   if (this.arguments !== null && this.arguments !== undefined) {
-    output.writeFieldBegin('arguments', Thrift.Type.STRUCT, 3);
+    output.writeFieldBegin('arguments', Thrift.Type.STRUCT, 2);
     this.arguments.write(output);
     output.writeFieldEnd();
   }
@@ -6588,15 +6572,14 @@ BlurClient = function(input, output) {
     this.seqid = 0;
 };
 BlurClient.prototype = {};
-BlurClient.prototype.execute = function(table, commandName, arguments) {
-  this.send_execute(table, commandName, arguments);
+BlurClient.prototype.execute = function(commandName, arguments) {
+  this.send_execute(commandName, arguments);
   return this.recv_execute();
 };
 
-BlurClient.prototype.send_execute = function(table, commandName, arguments) {
+BlurClient.prototype.send_execute = function(commandName, arguments) {
   this.output.writeMessageBegin('execute', Thrift.MessageType.CALL, this.seqid);
   var args = new Blur_execute_args();
-  args.table = table;
   args.commandName = commandName;
   args.arguments = arguments;
   args.write(this.output);

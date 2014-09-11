@@ -233,8 +233,8 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public <T> T readIndex(Shard shard, Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
-    Future<T> future = readIndexAsync(shard, args, clazz);
+  public <T> T readIndex(Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
+    Future<T> future = readIndexAsync(args, clazz);
     try {
       return future.get();
     } catch (InterruptedException e) {
@@ -245,8 +245,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public <T> Future<T> readIndexAsync(Shard shard, Args args, Class<? extends IndexReadCommand<T>> clazz)
-      throws IOException {
+  public <T> Future<T> readIndexAsync(Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
     throw new RuntimeException("Not Implemented.");
   }
 }

@@ -1506,7 +1506,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public org.apache.blur.thrift.generated.Response execute(String table, String commandName, Arguments arguments)
+  public org.apache.blur.thrift.generated.Response execute(String commandName, Arguments arguments)
       throws BlurException, TException {
     try {
       TableContext tableContext = getTableContext(table);
@@ -1518,7 +1518,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       if (e instanceof org.apache.blur.command.TimeoutException) {
         throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
       }
-      LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
+      LOG.error("Unknown error while trying to execute command [{0}]", e, commandName);
       if (e instanceof BlurException) {
         throw (BlurException) e;
       }

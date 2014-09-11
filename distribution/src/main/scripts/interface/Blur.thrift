@@ -909,7 +909,7 @@ service Blur {
   /**
    * Executes the given command by name on the table with the provided arguments.
    */
-  Response execute(1:string table, 2:string commandName, 3:Arguments arguments) throws (1:BlurException bex, 2:TimeoutException tex)
+  Response execute(1:string commandName, 2:Arguments arguments) throws (1:BlurException bex, 2:TimeoutException tex)
 
   /**
    * If the execute command times out due to command taking longer than the configured 

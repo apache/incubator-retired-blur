@@ -37,6 +37,7 @@ module.exports = function (grunt) {
         'libs/bootstrap/js/popover.js',
         'libs/bootstrap/js/collapse.js',
         'libs/bootstrap/js/tab.js',
+        'libs/bootstrap/js/dropdown.js',
         'libs/flot/jquery.flot.js',
         'libs/flot/jquery.flot.pie.js',
         'libs/flot/jquery.flot.categories.js',
@@ -83,6 +84,8 @@ module.exports = function (grunt) {
                 options: {
                     sourceMap: true,
                     sourceMapIncludeSources: true,
+//                    mangle: false,
+//                    beautify: true,
                     banner:'/*\n<%= banner %>\n*/',
 //                    compress: {
 //                        drop_console: true
@@ -97,7 +100,7 @@ module.exports = function (grunt) {
         // Make sure code styles are up to par and there are no obvious mistakes
         jshint: {
             options: {
-                jshintrc: true,
+                jshintrc: true
             },
             development: {
                 src: ['js/**/*\.js', '!js/utils/**/*\.js']

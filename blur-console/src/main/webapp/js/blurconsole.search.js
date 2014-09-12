@@ -250,7 +250,7 @@ blurconsole.search = (function () {
     var user = $('#user');
     if (user.length > 0) {
       var names = blurconsole.auth.getSecurityNames();
-      if(names === null || names.length <= 1) {
+      if(names == null || names.length <= 1) {
         user.closest('.form-group').remove();
       } else {
         user.append('<option value=""></option>');
@@ -381,6 +381,7 @@ blurconsole.search = (function () {
     familyMarkup += '</div>';
 
     jqueryMap.$resultsHolder.html(familyMarkup);
+    jqueryMap.$resultsHolder.find('ul.nav-tabs').onelinetabs();
   }
 
   function _drawFetchHolder() {
@@ -409,13 +410,13 @@ blurconsole.search = (function () {
     jqueryMap.$countHolder.html('<small>Found ' + blurconsole.utils.formatNumber(blurconsole.model.search.getTotal()) + ' total results</small>');
     //jqueryMap.$facetTrigger.show();
 
-    if (typeof families !== 'undefined' && families !== null) {
+    if (families != null) {
       $.each(families, function(i, fam) {
         var famResults = results[fam],
           famId = '#' + blurconsole.browserUtils.cleanId(fam),
           famHolder = stateMap.$currentDisplay === 'fetch' ? $(famId + ' .panel-body') : $(famId);
 
-        if (typeof famResults === 'undefined' || famResults.length === 0) {
+        if (famResults == null || famResults.length === 0) {
           famHolder.html('<div class="alert alert-info">No Data Found</div>');
         } else {
           var table;

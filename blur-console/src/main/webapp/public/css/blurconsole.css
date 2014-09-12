@@ -6464,6 +6464,11 @@ tr.row-separator:hover th {
 .input-group .twitter-typeahead .form-control {
   border-radius: 4px 0px 0px 4px;
 }
+input.spinner {
+  background-image: url("../img/ajax-loader.gif");
+  background-repeat: no-repeat;
+  background-position: right center;
+}
 /*
 
 Licensed to the Apache Software Foundation (ASF) under one
@@ -6505,4 +6510,4 @@ under the License.
 .twitter-typeahead .tt-suggestion p {
   margin: 0;
 }
-/*# sourceMappingURL=blurconsole.css.ceee80d855b1fef6ff77eff6d731dee1.map */
+/*# sourceMappingURL=blurconsole.css.e2473a87f61e6af405b8d1575d504a83.map */

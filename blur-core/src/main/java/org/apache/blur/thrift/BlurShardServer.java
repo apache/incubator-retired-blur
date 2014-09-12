@@ -20,6 +20,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACH
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_COUNT;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,19 +31,21 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.blur.command.CommandUtil;
+import org.apache.blur.command.ExecutionId;
+import org.apache.blur.command.Response;
+import org.apache.blur.command.ShardCommandManager;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.IndexServer;
-import org.apache.blur.manager.command.CommandUtil;
-import org.apache.blur.manager.command.Response;
-import org.apache.blur.manager.command.ShardCommandManager;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.TableContextFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -593,25 +596,28 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public org.apache.blur.thrift.generated.Response execute(String table, String commandName, Arguments arguments)
+  public org.apache.blur.thrift.generated.Response execute(String commandName, Arguments arguments)
       throws BlurException, TException {
     try {
-      Response response = _commandManager.execute(getTableContext(table), commandName, CommandUtil.toArgs(arguments));
+      TableContextFactory tableContextFactory = new TableContextFactory() {
+        @Override
+        public TableContext getTableContext(String table) throws IOException {
+          return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table),
+              table));
+        }
+      };
+      Response response = _commandManager.execute(tableContextFactory, commandName, CommandUtil.toArgs(arguments));
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
-      if (e instanceof org.apache.blur.manager.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.manager.command.TimeoutException) e).getExecutionId());
+      if (e instanceof org.apache.blur.command.TimeoutException) {
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
       }
-      LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
+      LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName);
       if (e instanceof BlurException) {
         throw (BlurException) e;
       }
       throw new BException(e.getMessage(), e);
     }
-  }
-
-  private TableContext getTableContext(final String table) {
-    return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table), table));
   }
 
   public void setCommandManager(ShardCommandManager commandManager) {
@@ -622,11 +628,11 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public org.apache.blur.thrift.generated.Response reconnect(String executionId) throws BlurException,
       TimeoutException, TException {
     try {
-      Response response = _commandManager.reconnect(executionId);
+      Response response = _commandManager.reconnect(new ExecutionId(executionId));
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
-      if (e instanceof org.apache.blur.manager.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.manager.command.TimeoutException) e).getExecutionId());
+      if (e instanceof org.apache.blur.command.TimeoutException) {
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
       }
       LOG.error("Unknown error while trying to reconnect to executing command [{0}]", e, executionId);
       if (e instanceof BlurException) {

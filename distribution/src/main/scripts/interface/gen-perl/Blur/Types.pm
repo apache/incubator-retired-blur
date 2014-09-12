@@ -4080,14 +4080,18 @@ sub write {
 
 package Blur::Shard;
 use base qw(Class::Accessor);
-Blur::Shard->mk_accessors( qw( shard ) );
+Blur::Shard->mk_accessors( qw( table shard ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
+  $self->{table} = undef;
   $self->{shard} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{table}) {
+      $self->{table} = $vals->{table};
+    }
     if (defined $vals->{shard}) {
       $self->{shard} = $vals->{shard};
     }
@@ -4115,6 +4119,12 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{table});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
         $xfer += $input->readString(\$self->{shard});
       } else {
         $xfer += $input->skip($ftype);
@@ -4132,8 +4142,13 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Shard');
+  if (defined $self->{table}) {
+    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
+    $xfer += $output->writeString($self->{table});
+    $xfer += $output->writeFieldEnd();
+  }
   if (defined $self->{shard}) {
-    $xfer += $output->writeFieldBegin('shard', TType::STRING, 1);
+    $xfer += $output->writeFieldBegin('shard', TType::STRING, 2);
     $xfer += $output->writeString($self->{shard});
     $xfer += $output->writeFieldEnd();
   }

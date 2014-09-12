@@ -52,7 +52,8 @@ import java.util.Arrays;
 public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shard, Shard._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("Shard");
 
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SHARD_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("shard", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SHARD_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("shard", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -60,11 +61,13 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
     schemes.put(TupleScheme.class, new ShardTupleSchemeFactory());
   }
 
+  public String table; // required
   public String shard; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-    SHARD((short)1, "shard");
+    TABLE((short)1, "table"),
+    SHARD((short)2, "shard");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -79,7 +82,9 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SHARD
+        case 1: // TABLE
+          return TABLE;
+        case 2: // SHARD
           return SHARD;
         default:
           return null;
@@ -124,6 +129,8 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.SHARD, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("shard", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -134,9 +141,11 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
   }
 
   public Shard(
+    String table,
     String shard)
   {
     this();
+    this.table = table;
     this.shard = shard;
   }
 
@@ -144,6 +153,9 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
    * Performs a deep copy on <i>other</i>.
    */
   public Shard(Shard other) {
+    if (other.isSetTable()) {
+      this.table = other.table;
+    }
     if (other.isSetShard()) {
       this.shard = other.shard;
     }
@@ -155,7 +167,32 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
 
   @Override
   public void clear() {
+    this.table = null;
     this.shard = null;
+  }
+
+  public String getTable() {
+    return this.table;
+  }
+
+  public Shard setTable(String table) {
+    this.table = table;
+    return this;
+  }
+
+  public void unsetTable() {
+    this.table = null;
+  }
+
+  /** Returns true if field table is set (has been assigned a value) and false otherwise */
+  public boolean isSetTable() {
+    return this.table != null;
+  }
+
+  public void setTableIsSet(boolean value) {
+    if (!value) {
+      this.table = null;
+    }
   }
 
   public String getShard() {
@@ -184,6 +221,14 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case TABLE:
+      if (value == null) {
+        unsetTable();
+      } else {
+        setTable((String)value);
+      }
+      break;
+
     case SHARD:
       if (value == null) {
         unsetShard();
@@ -197,6 +242,9 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case TABLE:
+      return getTable();
+
     case SHARD:
       return getShard();
 
@@ -211,6 +259,8 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
     }
 
     switch (field) {
+    case TABLE:
+      return isSetTable();
     case SHARD:
       return isSetShard();
     }
@@ -229,6 +279,15 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
   public boolean equals(Shard that) {
     if (that == null)
       return false;
+
+    boolean this_present_table = true && this.isSetTable();
+    boolean that_present_table = true && that.isSetTable();
+    if (this_present_table || that_present_table) {
+      if (!(this_present_table && that_present_table))
+        return false;
+      if (!this.table.equals(that.table))
+        return false;
+    }
 
     boolean this_present_shard = true && this.isSetShard();
     boolean that_present_shard = true && that.isSetShard();
@@ -255,6 +314,16 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
     int lastComparison = 0;
     Shard typedOther = (Shard)other;
 
+    lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTable()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetShard()).compareTo(typedOther.isSetShard());
     if (lastComparison != 0) {
       return lastComparison;
@@ -285,6 +354,14 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
     StringBuilder sb = new StringBuilder("Shard(");
     boolean first = true;
 
+    sb.append("table:");
+    if (this.table == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.table);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("shard:");
     if (this.shard == null) {
       sb.append("null");
@@ -335,7 +412,15 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
           break;
         }
         switch (schemeField.id) {
-          case 1: // SHARD
+          case 1: // TABLE
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.table = iprot.readString();
+              struct.setTableIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // SHARD
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
               struct.shard = iprot.readString();
               struct.setShardIsSet(true);
@@ -358,6 +443,11 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (struct.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(struct.table);
+        oprot.writeFieldEnd();
+      }
       if (struct.shard != null) {
         oprot.writeFieldBegin(SHARD_FIELD_DESC);
         oprot.writeString(struct.shard);
@@ -381,10 +471,16 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
     public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Shard struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetShard()) {
+      if (struct.isSetTable()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetShard()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetTable()) {
+        oprot.writeString(struct.table);
+      }
       if (struct.isSetShard()) {
         oprot.writeString(struct.shard);
       }
@@ -393,8 +489,12 @@ public class Shard implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<Shar
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, Shard struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
+        struct.table = iprot.readString();
+        struct.setTableIsSet(true);
+      }
+      if (incoming.get(1)) {
         struct.shard = iprot.readString();
         struct.setShardIsSet(true);
       }

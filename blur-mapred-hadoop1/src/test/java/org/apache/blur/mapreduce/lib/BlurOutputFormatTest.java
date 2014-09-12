@@ -19,6 +19,7 @@ package org.apache.blur.mapreduce.lib;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Collection;
+import java.util.List;
 import java.util.TreeSet;
 
 import org.apache.blur.server.TableContext;
@@ -45,7 +47,13 @@ import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.DocsEnum;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.util.BytesRef;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -138,6 +146,7 @@ public class BlurOutputFormatTest {
     assertEquals(1, commitedTasks.size());
     DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, commitedTasks.iterator().next()));
     assertEquals(2, reader.numDocs());
+    validatePrimeDocs(reader);
     reader.close();
   }
 
@@ -189,7 +198,37 @@ public class BlurOutputFormatTest {
 
     DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, commitedTasks.iterator().next()));
     assertEquals(80000, reader.numDocs());
+    validatePrimeDocs(reader);
     reader.close();
+  }
+
+  private void validatePrimeDocs(DirectoryReader reader) throws IOException {
+    List<AtomicReaderContext> leaves = reader.leaves();
+    for (AtomicReaderContext context : leaves) {
+      AtomicReader atomicReader = context.reader();
+      Terms rowIdTerms = atomicReader.fields().terms("rowid");
+
+      TermsEnum rowIdTermsEnum = rowIdTerms.iterator(null);
+      BytesRef rowId;
+      while ((rowId = rowIdTermsEnum.next()) != null) {
+        DocsEnum rowIdDocsEnum = rowIdTermsEnum.docs(atomicReader.getLiveDocs(), null);
+        int nextDoc = rowIdDocsEnum.nextDoc();
+        checkPrimeDoc(atomicReader, nextDoc, rowId);
+      }
+    }
+  }
+
+  private void checkPrimeDoc(AtomicReader atomicReader, int docId, BytesRef rowId) throws IOException {
+    Terms primeDocTerms = atomicReader.fields().terms("_prime_");
+    TermsEnum primeDocTermsEnum = primeDocTerms.iterator(null);
+    if (!primeDocTermsEnum.seekExact(new BytesRef("true"), false)) {
+      fail("No Prime Docs...");
+    }
+    DocsEnum primeDocDocsEnum = primeDocTermsEnum.docs(atomicReader.getLiveDocs(), null);
+    int advance;
+    if ((advance = primeDocDocsEnum.advance(docId)) != docId) {
+      fail("FAIL:" + rowId.utf8ToString() + " " + advance + " " + docId);
+    }
   }
 
   @Test
@@ -231,6 +270,7 @@ public class BlurOutputFormatTest {
 
       DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, commitedTasks.iterator().next()));
       total += reader.numDocs();
+      validatePrimeDocs(reader);
       reader.close();
     }
     assertEquals(80000, total);
@@ -275,6 +315,7 @@ public class BlurOutputFormatTest {
       for (Path p : commitedTasks) {
         DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, p));
         total += reader.numDocs();
+        validatePrimeDocs(reader);
         reader.close();
       }
     }

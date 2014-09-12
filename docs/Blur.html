@@ -683,7 +683,8 @@ be family dot column, "family.column".
 <tr><td>9</td><td>nullValue</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
 </table><br/></p></section><section><div class="page-header"><h3 id="Struct_Shard">Struct: Shard</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>shard</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>1</td><td>table</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>shard</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 </table><br/></p></section><section><div class="page-header"><h3 id="Struct_Server">Struct: Server</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>server</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
@@ -716,8 +717,7 @@ be family dot column, "family.column".
 The Blur service API.  This API is the same for both controller servers as well as
 shards servers.  Each of the methods are documented.
 <br/><section><div class="page-header"><h4 id="Fn_Blur_execute">Function: Blur.execute</h4></div><p class="lead">
-<pre><code><a href="Blur.html#Struct_Response">Response</a></code> execute(<code>string</code> table,
-<code>string</code> commandName,
+<pre><code><a href="Blur.html#Struct_Response">Response</a></code> execute(<code>string</code> commandName,
 <code><a href="Blur.html#Struct_Arguments">Arguments</a></code> arguments)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_TimeoutException">TimeoutException</a></code>
 </pre>Executes the given command by name on the table with the provided arguments.

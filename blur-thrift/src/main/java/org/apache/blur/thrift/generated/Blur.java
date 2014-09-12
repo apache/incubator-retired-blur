@@ -60,11 +60,10 @@ public class Blur {
     /**
      * Executes the given command by name on the table with the provided arguments.
      * 
-     * @param table
      * @param commandName
      * @param arguments
      */
-    public Response execute(String table, String commandName, Arguments arguments) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public Response execute(String commandName, Arguments arguments) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * If the execute command times out due to command taking longer than the configured
@@ -490,7 +489,7 @@ public class Blur {
 
   public interface AsyncIface {
 
-    public void execute(String table, String commandName, Arguments arguments, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.execute_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void execute(String commandName, Arguments arguments, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.execute_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void reconnect(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.reconnect_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
@@ -612,16 +611,15 @@ public class Blur {
       super(iprot, oprot);
     }
 
-    public Response execute(String table, String commandName, Arguments arguments) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public Response execute(String commandName, Arguments arguments) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_execute(table, commandName, arguments);
+      send_execute(commandName, arguments);
       return recv_execute();
     }
 
-    public void send_execute(String table, String commandName, Arguments arguments) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_execute(String commandName, Arguments arguments) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       execute_args args = new execute_args();
-      args.setTable(table);
       args.setCommandName(commandName);
       args.setArguments(arguments);
       sendBase("execute", args);
@@ -1857,20 +1855,18 @@ public class Blur {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void execute(String table, String commandName, Arguments arguments, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<execute_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void execute(String commandName, Arguments arguments, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<execute_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      execute_call method_call = new execute_call(table, commandName, arguments, resultHandler, this, ___protocolFactory, ___transport);
+      execute_call method_call = new execute_call(commandName, arguments, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class execute_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
-      private String table;
       private String commandName;
       private Arguments arguments;
-      public execute_call(String table, String commandName, Arguments arguments, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<execute_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      public execute_call(String commandName, Arguments arguments, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<execute_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
         this.commandName = commandName;
         this.arguments = arguments;
       }
@@ -1878,7 +1874,6 @@ public class Blur {
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("execute", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         execute_args args = new execute_args();
-        args.setTable(table);
         args.setCommandName(commandName);
         args.setArguments(arguments);
         args.write(prot);
@@ -3587,7 +3582,7 @@ public class Blur {
       public execute_result getResult(I iface, execute_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         execute_result result = new execute_result();
         try {
-          result.success = iface.execute(args.table, args.commandName, args.arguments);
+          result.success = iface.execute(args.commandName, args.arguments);
         } catch (BlurException bex) {
           result.bex = bex;
         } catch (TimeoutException tex) {
@@ -4764,9 +4759,8 @@ public class Blur {
   public static class execute_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<execute_args, execute_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("execute_args");
 
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COMMAND_NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("commandName", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ARGUMENTS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("arguments", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)3);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COMMAND_NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("commandName", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ARGUMENTS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("arguments", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -4774,15 +4768,13 @@ public class Blur {
       schemes.put(TupleScheme.class, new execute_argsTupleSchemeFactory());
     }
 
-    public String table; // required
     public String commandName; // required
     public Arguments arguments; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      COMMAND_NAME((short)2, "commandName"),
-      ARGUMENTS((short)3, "arguments");
+      COMMAND_NAME((short)1, "commandName"),
+      ARGUMENTS((short)2, "arguments");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -4797,11 +4789,9 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // COMMAND_NAME
+          case 1: // COMMAND_NAME
             return COMMAND_NAME;
-          case 3: // ARGUMENTS
+          case 2: // ARGUMENTS
             return ARGUMENTS;
           default:
             return null;
@@ -4846,8 +4836,6 @@ public class Blur {
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.COMMAND_NAME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("commandName", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.ARGUMENTS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("arguments", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -4860,12 +4848,10 @@ public class Blur {
     }
 
     public execute_args(
-      String table,
       String commandName,
       Arguments arguments)
     {
       this();
-      this.table = table;
       this.commandName = commandName;
       this.arguments = arguments;
     }
@@ -4874,9 +4860,6 @@ public class Blur {
      * Performs a deep copy on <i>other</i>.
      */
     public execute_args(execute_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
       if (other.isSetCommandName()) {
         this.commandName = other.commandName;
       }
@@ -4891,33 +4874,8 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.table = null;
       this.commandName = null;
       this.arguments = null;
-    }
-
-    public String getTable() {
-      return this.table;
-    }
-
-    public execute_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
     }
 
     public String getCommandName() {
@@ -4970,14 +4928,6 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
       case COMMAND_NAME:
         if (value == null) {
           unsetCommandName();
@@ -4999,9 +4949,6 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
-
       case COMMAND_NAME:
         return getCommandName();
 
@@ -5019,8 +4966,6 @@ public class Blur {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
       case COMMAND_NAME:
         return isSetCommandName();
       case ARGUMENTS:
@@ -5041,15 +4986,6 @@ public class Blur {
     public boolean equals(execute_args that) {
       if (that == null)
         return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
 
       boolean this_present_commandName = true && this.isSetCommandName();
       boolean that_present_commandName = true && that.isSetCommandName();
@@ -5085,16 +5021,6 @@ public class Blur {
       int lastComparison = 0;
       execute_args typedOther = (execute_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {
-        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetCommandName()).compareTo(typedOther.isSetCommandName());
       if (lastComparison != 0) {
         return lastComparison;
@@ -5135,14 +5061,6 @@ public class Blur {
       StringBuilder sb = new StringBuilder("execute_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("commandName:");
       if (this.commandName == null) {
         sb.append("null");
@@ -5204,15 +5122,7 @@ public class Blur {
             break;
           }
           switch (schemeField.id) {
-            case 1: // TABLE
-              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-                struct.table = iprot.readString();
-                struct.setTableIsSet(true);
-              } else { 
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            case 2: // COMMAND_NAME
+            case 1: // COMMAND_NAME
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
                 struct.commandName = iprot.readString();
                 struct.setCommandNameIsSet(true);
@@ -5220,7 +5130,7 @@ public class Blur {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // ARGUMENTS
+            case 2: // ARGUMENTS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
                 struct.arguments = new Arguments();
                 struct.arguments.read(iprot);
@@ -5244,11 +5154,6 @@ public class Blur {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.table != null) {
-          oprot.writeFieldBegin(TABLE_FIELD_DESC);
-          oprot.writeString(struct.table);
-          oprot.writeFieldEnd();
-        }
         if (struct.commandName != null) {
           oprot.writeFieldBegin(COMMAND_NAME_FIELD_DESC);
           oprot.writeString(struct.commandName);
@@ -5277,19 +5182,13 @@ public class Blur {
       public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, execute_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetTable()) {
+        if (struct.isSetCommandName()) {
           optionals.set(0);
         }
-        if (struct.isSetCommandName()) {
+        if (struct.isSetArguments()) {
           optionals.set(1);
         }
-        if (struct.isSetArguments()) {
-          optionals.set(2);
-        }
-        oprot.writeBitSet(optionals, 3);
-        if (struct.isSetTable()) {
-          oprot.writeString(struct.table);
-        }
+        oprot.writeBitSet(optionals, 2);
         if (struct.isSetCommandName()) {
           oprot.writeString(struct.commandName);
         }
@@ -5301,16 +5200,12 @@ public class Blur {
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, execute_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(3);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
-          struct.table = iprot.readString();
-          struct.setTableIsSet(true);
-        }
-        if (incoming.get(1)) {
           struct.commandName = iprot.readString();
           struct.setCommandNameIsSet(true);
         }
-        if (incoming.get(2)) {
+        if (incoming.get(1)) {
           struct.arguments = new Arguments();
           struct.arguments.read(iprot);
           struct.setArgumentsIsSet(true);

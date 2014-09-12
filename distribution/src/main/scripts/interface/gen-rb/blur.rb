@@ -12,13 +12,13 @@ module Blur
     class Client
       include ::Thrift::Client
 
-      def execute(table, commandName, arguments)
-        send_execute(table, commandName, arguments)
+      def execute(commandName, arguments)
+        send_execute(commandName, arguments)
         return recv_execute()
       end
 
-      def send_execute(table, commandName, arguments)
-        send_message('execute', Execute_args, :table => table, :commandName => commandName, :arguments => arguments)
+      def send_execute(commandName, arguments)
+        send_message('execute', Execute_args, :commandName => commandName, :arguments => arguments)
       end
 
       def recv_execute()
@@ -778,7 +778,7 @@ module Blur
         args = read_args(iprot, Execute_args)
         result = Execute_result.new()
         begin
-          result.success = @handler.execute(args.table, args.commandName, args.arguments)
+          result.success = @handler.execute(args.commandName, args.arguments)
         rescue ::Blur::BlurException => bex
           result.bex = bex
         rescue ::Blur::TimeoutException => tex
@@ -1315,12 +1315,10 @@ module Blur
 
     class Execute_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      TABLE = 1
-      COMMANDNAME = 2
-      ARGUMENTS = 3
+      COMMANDNAME = 1
+      ARGUMENTS = 2
 
       FIELDS = {
-        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         COMMANDNAME => {:type => ::Thrift::Types::STRING, :name => 'commandName'},
         ARGUMENTS => {:type => ::Thrift::Types::STRUCT, :name => 'arguments', :class => ::Blur::Arguments}
       }

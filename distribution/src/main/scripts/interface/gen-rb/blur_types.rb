@@ -1051,9 +1051,11 @@ module Blur
 
   class Shard
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    SHARD = 1
+    TABLE = 1
+    SHARD = 2
 
     FIELDS = {
+      TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
       SHARD => {:type => ::Thrift::Types::STRING, :name => 'shard'}
     }
 

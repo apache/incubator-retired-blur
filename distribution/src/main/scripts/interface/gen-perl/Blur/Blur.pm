@@ -14,19 +14,15 @@ use Blur::Types;
 
 package Blur::Blur_execute_args;
 use base qw(Class::Accessor);
-Blur::Blur_execute_args->mk_accessors( qw( table commandName arguments ) );
+Blur::Blur_execute_args->mk_accessors( qw( commandName arguments ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{table} = undef;
   $self->{commandName} = undef;
   $self->{arguments} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{table}) {
-      $self->{table} = $vals->{table};
-    }
     if (defined $vals->{commandName}) {
       $self->{commandName} = $vals->{commandName};
     }
@@ -57,18 +53,12 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{table});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::STRING) {
         $xfer += $input->readString(\$self->{commandName});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^3$/ && do{      if ($ftype == TType::STRUCT) {
+      /^2$/ && do{      if ($ftype == TType::STRUCT) {
         $self->{arguments} = new Blur::Arguments();
         $xfer += $self->{arguments}->read($input);
       } else {
@@ -87,18 +77,13 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_execute_args');
-  if (defined $self->{table}) {
-    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
-    $xfer += $output->writeString($self->{table});
-    $xfer += $output->writeFieldEnd();
-  }
   if (defined $self->{commandName}) {
-    $xfer += $output->writeFieldBegin('commandName', TType::STRING, 2);
+    $xfer += $output->writeFieldBegin('commandName', TType::STRING, 1);
     $xfer += $output->writeString($self->{commandName});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{arguments}) {
-    $xfer += $output->writeFieldBegin('arguments', TType::STRUCT, 3);
+    $xfer += $output->writeFieldBegin('arguments', TType::STRUCT, 2);
     $xfer += $self->{arguments}->write($output);
     $xfer += $output->writeFieldEnd();
   }
@@ -7615,7 +7600,6 @@ use strict;
 
 sub execute{
   my $self = shift;
-  my $table = shift;
   my $commandName = shift;
   my $arguments = shift;
 
@@ -7995,10 +7979,9 @@ sub new {
 sub execute{
   my ($self, $request) = @_;
 
-  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
   my $commandName = ($request->{'commandName'}) ? $request->{'commandName'} : undef;
   my $arguments = ($request->{'arguments'}) ? $request->{'arguments'} : undef;
-  return $self->{impl}->execute($table, $commandName, $arguments);
+  return $self->{impl}->execute($commandName, $arguments);
 }
 
 sub reconnect{
@@ -8374,23 +8357,20 @@ sub new {
 
 sub execute{
   my $self = shift;
-  my $table = shift;
   my $commandName = shift;
   my $arguments = shift;
 
-    $self->send_execute($table, $commandName, $arguments);
+    $self->send_execute($commandName, $arguments);
   return $self->recv_execute();
 }
 
 sub send_execute{
   my $self = shift;
-  my $table = shift;
   my $commandName = shift;
   my $arguments = shift;
 
   $self->{output}->writeMessageBegin('execute', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_execute_args();
-  $args->{table} = $table;
   $args->{commandName} = $commandName;
   $args->{arguments} = $arguments;
   $args->write($self->{output});
@@ -10632,7 +10612,7 @@ sub process_execute {
     $input->readMessageEnd();
     my $result = new Blur::Blur_execute_result();
     eval {
-      $result->{success} = $self->{handler}->execute($args->table, $args->commandName, $args->arguments);
+      $result->{success} = $self->{handler}->execute($args->commandName, $args->arguments);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{bex} = $@;
         }; if( UNIVERSAL::isa($@,'Blur::TimeoutException') ){ 

@@ -58,6 +58,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.command.ShardCommandManager;
 import org.apache.blur.concurrent.SimpleUncaughtExceptionHandler;
 import org.apache.blur.concurrent.ThreadWatcher;
 import org.apache.blur.gui.HttpJettyServer;
@@ -70,7 +71,6 @@ import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.DefaultBlurFilterCache;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
-import org.apache.blur.manager.command.ShardCommandManager;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;

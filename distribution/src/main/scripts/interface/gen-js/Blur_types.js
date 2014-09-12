@@ -3901,8 +3901,12 @@ Value.prototype.write = function(output) {
 };
 
 Shard = function(args) {
+  this.table = null;
   this.shard = null;
   if (args) {
+    if (args.table !== undefined) {
+      this.table = args.table;
+    }
     if (args.shard !== undefined) {
       this.shard = args.shard;
     }
@@ -3924,14 +3928,18 @@ Shard.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.STRING) {
+        this.table = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
         this.shard = input.readString().value;
       } else {
         input.skip(ftype);
       }
       break;
-      case 0:
-        input.skip(ftype);
-        break;
       default:
         input.skip(ftype);
     }
@@ -3943,8 +3951,13 @@ Shard.prototype.read = function(input) {
 
 Shard.prototype.write = function(output) {
   output.writeStructBegin('Shard');
+  if (this.table !== null && this.table !== undefined) {
+    output.writeFieldBegin('table', Thrift.Type.STRING, 1);
+    output.writeString(this.table);
+    output.writeFieldEnd();
+  }
   if (this.shard !== null && this.shard !== undefined) {
-    output.writeFieldBegin('shard', Thrift.Type.STRING, 1);
+    output.writeFieldBegin('shard', Thrift.Type.STRING, 2);
     output.writeString(this.shard);
     output.writeFieldEnd();
   }

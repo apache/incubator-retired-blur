@@ -47,15 +47,18 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
+import org.apache.blur.command.CommandUtil;
+import org.apache.blur.command.ControllerCommandManager;
+import org.apache.blur.command.ExecutionId;
+import org.apache.blur.command.Response;
+import org.apache.blur.command.Server;
+import org.apache.blur.command.Shard;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurPartitioner;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.IndexManager;
-import org.apache.blur.manager.command.CommandUtil;
-import org.apache.blur.manager.command.ControllerCommandManager;
-import org.apache.blur.manager.command.Response;
 import org.apache.blur.manager.indexserver.DistributedLayout;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
@@ -66,7 +69,9 @@ import org.apache.blur.manager.results.MergerBlurResultIterable;
 import org.apache.blur.manager.stats.MergerTableStats;
 import org.apache.blur.manager.status.MergerQueryStatusSingle;
 import org.apache.blur.server.ControllerServerContext;
+import org.apache.blur.server.LayoutFactory;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.TableContextFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
@@ -1505,24 +1510,111 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public org.apache.blur.thrift.generated.Response execute(String table, String commandName, Arguments arguments)
+  public org.apache.blur.thrift.generated.Response execute(String commandName, Arguments arguments)
       throws BlurException, TException {
     try {
-      TableContext tableContext = getTableContext(table);
-      Map<String, String> tableLayout = getTableLayout(table);
-      Response response = _commandManager.execute(tableContext, commandName, CommandUtil.toArgs(arguments),
-          tableLayout);
+      // TableContext tableContext = getTableContext(table);
+      // Map<String, String> tableLayout = getTableLayout(table);
+      Response response = _commandManager.execute(getTableContextFactory(), getLayoutFactory(), commandName,
+          CommandUtil.toArgs(arguments));
+      // Response response = _commandManager
+      // .execute(tableContext, commandName, CommandUtil.toArgs(arguments),
+      // tableLayout);
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
-      if (e instanceof org.apache.blur.manager.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.manager.command.TimeoutException) e).getExecutionId());
+      if (e instanceof org.apache.blur.command.TimeoutException) {
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
       }
-      LOG.error("Unknown error while trying to execute command [{0}] for table [{1}]", e, commandName, table);
+      LOG.error("Unknown error while trying to execute command [{0}]", e, commandName);
       if (e instanceof BlurException) {
         throw (BlurException) e;
       }
       throw new BException(e.getMessage(), e);
     }
+  }
+
+  private TableContextFactory getTableContextFactory() {
+    return new TableContextFactory() {
+      @Override
+      public TableContext getTableContext(String table) throws IOException {
+        return TableContext.create(_clusterStatus.getTableDescriptor(true, _clusterStatus.getCluster(true, table),
+            table));
+      }
+    };
+  }
+
+  private LayoutFactory getLayoutFactory() {
+    return new LayoutFactory() {
+
+      @Override
+      public Set<Shard> getServerLayout(Server server) throws IOException {
+        makeSureLayoutIsUpToDate();
+        Set<Shard> shardSet = new TreeSet<Shard>();
+        Map<String, Map<String, String>> map = _shardServerLayout.get();
+        for (Entry<String, Map<String, String>> e1 : map.entrySet()) {
+          String table = e1.getKey();
+          Map<String, String> layout = e1.getValue();
+          for (Entry<String, String> e2 : layout.entrySet()) {
+            String shardId = e2.getKey();
+            String serverId = e2.getValue();
+            if (serverId.equals(server.getServer())) {
+              shardSet.add(new Shard(table, shardId));
+            }
+          }
+        }
+        return shardSet;
+      }
+
+      private void makeSureLayoutIsUpToDate() throws IOException {
+        List<String> tableList = _clusterStatus.getTableList(true);
+        for (String table : tableList) {
+          try {
+            getTableLayout(table);
+          } catch (BlurException e) {
+            throw new IOException(e);
+          } catch (TException e) {
+            throw new IOException(e);
+          }
+        }
+      }
+
+      @Override
+      public Set<Connection> getServerConnections() {
+        List<String> clusterList = _clusterStatus.getClusterList(true);
+        Set<Connection> connections = new HashSet<Connection>();
+        for (String cluster : clusterList) {
+          List<String> onlineShardServers = _clusterStatus.getOnlineShardServers(true, cluster);
+          for (String server : onlineShardServers) {
+            connections.add(new Connection(server));
+          }
+        }
+        return connections;
+      }
+
+      @Override
+      public boolean isValidServer(Server server, Set<String> tables, Map<String, Set<Shard>> shards) {
+        for (String table : tables) {
+          String cluster = _clusterStatus.getCluster(true, table);
+          List<String> onlineShardServers = _clusterStatus.getOnlineShardServers(true, cluster);
+          if (!onlineShardServers.contains(server.getServer())) {
+            return false;
+          }
+          Set<Shard> shardSet = shards.get(table);
+          if (shardSet.isEmpty()) {
+            return true;
+          }
+          Map<String, Map<String, String>> layout = _shardServerLayout.get();
+          Map<String, String> shardIdToServerMap = layout.get(table);
+          for (Shard shard : shardSet) {
+            String serverId = shardIdToServerMap.get(shard.getShard());
+            if (serverId.equals(server.getServer())) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+    };
   }
 
   public void setCommandManager(ControllerCommandManager commandManager) {
@@ -1533,11 +1625,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public org.apache.blur.thrift.generated.Response reconnect(String executionId) throws BlurException,
       TimeoutException, TException {
     try {
-      Response response = _commandManager.reconnect(executionId);
+      Response response = _commandManager.reconnect(new ExecutionId(executionId));
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
-      if (e instanceof org.apache.blur.manager.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.manager.command.TimeoutException) e).getExecutionId());
+      if (e instanceof org.apache.blur.command.TimeoutException) {
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
       }
       LOG.error("Unknown error while trying to reconnect to executing command [{0}]", e, executionId);
       if (e instanceof BlurException) {
@@ -1551,7 +1643,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public void refresh() throws TException {
     // This is a NO-OP at this point for the controller.
   }
-  
+
   @Override
   public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state) throws BlurException,
       TException {

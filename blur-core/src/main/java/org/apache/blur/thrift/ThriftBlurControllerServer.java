@@ -46,6 +46,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.command.ControllerCommandManager;
 import org.apache.blur.concurrent.SimpleUncaughtExceptionHandler;
 import org.apache.blur.concurrent.ThreadWatcher;
 import org.apache.blur.gui.HttpJettyServer;
@@ -54,7 +55,6 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
-import org.apache.blur.manager.command.ControllerCommandManager;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.metrics.ReporterSetup;

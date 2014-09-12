@@ -40,8 +40,16 @@ public class BlurServerContext implements ServerContext, ThriftTrace {
   public BlurServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
     _localSocketAddress = localSocketAddress;
     _remoteSocketAddress = remoteSocketAddress;
-    _localConnectionString = _localSocketAddress.toString();
-    _remoteConnectionString = _remoteSocketAddress.toString();
+    if (_localSocketAddress != null) {
+      _localConnectionString = _localSocketAddress.toString();
+    } else {
+      _localConnectionString = null;
+    }
+    if (_remoteSocketAddress != null) {
+      _remoteConnectionString = _remoteSocketAddress.toString();
+    } else {
+      _remoteConnectionString = null;
+    }
   }
 
   public void setUser(User user) {

@@ -250,8 +250,8 @@ public class FilteredBlurServer implements Iface {
   }
 
   @Override
-  public Response execute(String table, String commandName, Arguments arguments) throws BlurException, TException {
-    return _iface.execute(table, commandName, arguments);
+  public Response execute(String commandName, Arguments arguments) throws BlurException, TException {
+    return _iface.execute(commandName, arguments);
   }
 
   @Override

@@ -75,8 +75,12 @@ blurconsole.utils = (function(){
     }
 
     var families = [];
+    var family;
     $.each(matches, function(idx, match) {
-      families.push(match.split('.')[0]);
+      family = match.split('.')[0];
+      if(families.indexOf(family) < 0) {
+        families.push(family);
+      }
     });
     return families;
   }

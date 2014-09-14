@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.MiniCluster;
+import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -62,7 +63,7 @@ public class SafeModeTest {
 
   @Before
   public void setup() throws IOException {
-    zk = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
+    zk = new ZooKeeperClient(miniCluster.getZkConnectionString(), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 

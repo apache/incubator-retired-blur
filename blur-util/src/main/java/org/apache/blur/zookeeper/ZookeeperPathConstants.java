@@ -35,10 +35,6 @@ public class ZookeeperPathConstants {
     return getBasePath() + "/online-controller-nodes";
   }
 
-  public static String getControllersPath() {
-    return getBasePath() + "/controller-nodes";
-  }
-
   public static String getOnlineShardsPath(String cluster) {
     return getClusterPath(cluster) + "/online-nodes";
   }
@@ -57,10 +53,6 @@ public class ZookeeperPathConstants {
   
   public static String getShutdownPath(String cluster) {
     return getClusterPath(cluster) + "/shutdown";
-  }
-
-  public static String getRegisteredShardsPath(String cluster) {
-    return getClusterPath(cluster) + "/registered-nodes";
   }
 
   public static String getShardLayoutPath(String cluster) {

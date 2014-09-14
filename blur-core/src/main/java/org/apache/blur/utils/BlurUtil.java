@@ -434,7 +434,6 @@ public class BlurUtil {
     if (cluster != null) {
       BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getClusterPath(cluster));
       BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getSafemodePath(cluster));
-      BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getRegisteredShardsPath(cluster));
       BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster));
       BlurUtil.createIfMissing(zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
     }

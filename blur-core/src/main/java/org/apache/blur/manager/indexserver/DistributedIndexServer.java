@@ -160,7 +160,6 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     _timerCacheFlush = setupFlushCacheTimer();
     _timerCacheFlush.start();
 
-    registerMyselfAsMemberOfCluster();
     String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(_cluster);
     String safemodePath = ZookeeperPathConstants.getSafemodePath(_cluster);
 
@@ -408,20 +407,6 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     for (BlurIndex index : indexes.values()) {
       indexMemoryUsage.addAndGet(index.getIndexMemoryUsage());
       segmentCount.addAndGet(index.getSegmentCount());
-    }
-  }
-
-  private void registerMyselfAsMemberOfCluster() {
-    String nodeName = getNodeName();
-    String registeredShardsPath = ZookeeperPathConstants.getRegisteredShardsPath(_cluster) + "/" + nodeName;
-    try {
-      if (_zookeeper.exists(registeredShardsPath, false) == null) {
-        _zookeeper.create(registeredShardsPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-      }
-    } catch (KeeperException e) {
-      throw new RuntimeException(e);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
     }
   }
 

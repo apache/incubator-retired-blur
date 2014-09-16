@@ -765,9 +765,14 @@ public class BlurClusterTest {
 
     // This should block until shards have failed over
     client.shardServerLayout(tableName);
-
+    
+    assertEquals("We should have lost a node.", 2, client.shardServerList(BlurConstants.DEFAULT).size());
     assertEquals(numberOfDocs, client.query(tableName, blurQuery).getTotalResults());
 
+    miniCluster.startShards(1, true);
+    Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+    
+    assertEquals("We should have the cluster back where we started.", 3, client.shardServerList(BlurConstants.DEFAULT).size());
   }
 
   @Test

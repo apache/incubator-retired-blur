@@ -13,6 +13,5 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-org.apache.blur.lucene.codec.Blur021Codec
-org.apache.blur.lucene.codec.Blur022Codec
-org.apache.blur.lucene.codec.Blur024Codec
+org.apache.blur.lucene.codec.DiskDocValuesFormat
+

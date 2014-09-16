@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.TreeSet;
 
-import org.apache.blur.lucene.codec.Blur022Codec;
+import org.apache.blur.lucene.codec.Blur024Codec;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -112,7 +112,7 @@ public class FilterCacheTest {
 
   private void writeDocs(FilterCache filterCache, RAMDirectory directory) throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
-    conf.setCodec(new Blur022Codec());
+    conf.setCodec(new Blur024Codec());
     IndexWriter indexWriter = new IndexWriter(directory, conf);
     int count = 10000;
     addDocs(indexWriter, count);

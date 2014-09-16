@@ -40,7 +40,7 @@ import org.apache.blur.index.ExitableReader;
 import org.apache.blur.index.IndexDeletionPolicyReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.lucene.codec.Blur022Codec;
+import org.apache.blur.lucene.codec.Blur024Codec;
 import org.apache.blur.lucene.warmup.TraceableDirectory;
 import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
@@ -101,7 +101,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     Analyzer analyzer = _fieldManager.getAnalyzerForIndex();
     _conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
     _conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
-    _conf.setCodec(new Blur022Codec(_tableContext.getBlurConfiguration()));
+    _conf.setCodec(new Blur024Codec(_tableContext.getBlurConfiguration()));
     _conf.setSimilarity(_tableContext.getSimilarity());
     _conf.setMergedSegmentWarmer(new BlurIndexReaderWarmer(shardContext, _isClosed, indexWarmup));
     TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();

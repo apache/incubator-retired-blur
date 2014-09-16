@@ -39,6 +39,7 @@ import org.apache.lucene.codecs.lucene42.Lucene42TermVectorsFormat;
 import org.apache.lucene.codecs.perfield.PerFieldDocValuesFormat;
 import org.apache.lucene.codecs.perfield.PerFieldPostingsFormat;
 
+@Deprecated
 public class Blur022Codec extends Codec {
 
   private final StoredFieldsFormat fieldsFormat;

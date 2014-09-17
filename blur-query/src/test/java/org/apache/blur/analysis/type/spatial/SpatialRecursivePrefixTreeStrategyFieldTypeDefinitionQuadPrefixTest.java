@@ -17,20 +17,26 @@
 package org.apache.blur.analysis.type.spatial;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
 
-public class SpatialPointVectorStrategyFieldTypeDefinitionTest extends BaseSpatialFieldTypeDefinitionTest {
+public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinitionQuadPrefixTest extends
+    BaseSpatialFieldTypeDefinitionTest {
 
   @Test
-  public void testPointVector() throws IOException, ParseException {
+  public void testRecursivePrefixTreeWithQuadPrefix() throws IOException, ParseException {
     runGisTypeTest();
   }
 
   protected void setupGisField(BaseFieldManager fieldManager) throws IOException {
-    fieldManager.addColumnDefinitionGisPointVector("fam", "geo");
+    Map<String, String> props = new HashMap<String, String>();
+    props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.QUAD_PREFIX_TREE);
+    fieldManager.addColumnDefinition("fam", "geo", null, false,
+        SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME, false, props);
   }
 
 }

@@ -18,8 +18,10 @@ package org.apache.blur.analysis.type.spatial;
  */
 import java.util.Map;
 
+import org.apache.blur.analysis.type.spatial.lucene.TermQueryPrefixTreeStrategy;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.lucene.spatial.prefix.TermQueryPrefixTreeStrategy;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.spatial.query.SpatialOperation;
 
@@ -28,7 +30,9 @@ import com.spatial4j.core.shape.Point;
 
 public class SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition extends BaseSpatialFieldTypeDefinition {
 
+  private static final String DOC_VALUE = "docValue";
   public static final String NAME = "geo-termprefix";
+  private static final Analyzer _keyword = new KeywordAnalyzer();
 
   @Override
   public String getName() {
@@ -36,10 +40,19 @@ public class SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition extends BaseS
   }
 
   @Override
+  public Analyzer getAnalyzerForIndex(String fieldName) {
+    return _keyword;
+  }
+
+  @Override
   public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
     _ctx = SpatialContext.GEO;
+    boolean docValue = false;
+    if (properties.get(DOC_VALUE) != null) {
+      docValue = true;
+    }
     SpatialPrefixTree grid = getSpatialPrefixTree(properties);
-    _strategy = new TermQueryPrefixTreeStrategy(grid, fieldNameForThisInstance);
+    _strategy = new TermQueryPrefixTreeStrategy(grid, fieldNameForThisInstance, docValue);
     _shapeReadWriter = new ShapeReadWriter<SpatialContext>(_ctx);
     addSupportedIndexedShapes(Point.class);
     addSupportedOperations(SpatialOperation.Intersects);

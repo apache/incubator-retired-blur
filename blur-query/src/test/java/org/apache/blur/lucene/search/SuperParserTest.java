@@ -33,6 +33,7 @@ import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.analysis.type.spatial.ShapeReadWriter;
 import org.apache.blur.analysis.type.spatial.SpatialArgsParser;
+import org.apache.blur.analysis.type.spatial.lucene.RecursivePrefixTreeStrategy;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.conf.Configuration;
@@ -48,7 +49,6 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
-import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
 import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.spatial.query.SpatialArgs;
@@ -356,7 +356,7 @@ public class SuperParserTest {
     ShapeReadWriter<SpatialContext> shapeReadWriter = new ShapeReadWriter<SpatialContext>(ctx);
     int maxLevels = 11;
     SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
-    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis");
+    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis", false);
     Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_KM));
     SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
 
@@ -375,7 +375,7 @@ public class SuperParserTest {
     SpatialContext ctx = SpatialContext.GEO;
     int maxLevels = 11;
     SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
-    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis");
+    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis", false);
     Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_KM));
     SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
 
@@ -390,7 +390,7 @@ public class SuperParserTest {
     SpatialContext ctx = SpatialContext.GEO;
     int maxLevels = 11;
     SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
-    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis");
+    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis", false);
     Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_MI));
     SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
 
@@ -471,7 +471,7 @@ public class SuperParserTest {
     BooleanQuery bq = bq(bc_n(q1), bc_n(q2), bc(q3));
     assertQuery(bq, q);
   }
-  
+
   @Test
   public void test39() throws ParseException {
     Query q = parseSq("<-f.c:a> <-f.c:b>");
@@ -480,7 +480,7 @@ public class SuperParserTest {
     BooleanQuery bq = bq(bc(q1), bc(q2));
     assertQuery(bq, q);
   }
-  
+
   @Test
   public void test40() throws ParseException {
     Query q = parseSq("-<-f.c:a> -<-f.c:b>");

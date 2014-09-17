@@ -18,8 +18,10 @@ package org.apache.blur.analysis.type.spatial;
  */
 import java.util.Map;
 
+import org.apache.blur.analysis.type.spatial.lucene.RecursivePrefixTreeStrategy;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.spatial.query.SpatialOperation;
 
@@ -29,6 +31,8 @@ import com.spatial4j.core.shape.Shape;
 public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinition extends BaseSpatialFieldTypeDefinition {
 
   public static final String NAME = "geo-recursiveprefix";
+  public static final String DOC_VALUE = "docValue";
+  private static final Analyzer _keyword = new KeywordAnalyzer();
 
   @Override
   public String getName() {
@@ -36,10 +40,19 @@ public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinition extends BaseS
   }
 
   @Override
+  public Analyzer getAnalyzerForIndex(String fieldName) {
+    return _keyword;
+  }
+
+  @Override
   public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
     _ctx = SpatialContext.GEO;
     SpatialPrefixTree grid = getSpatialPrefixTree(properties);
-    _strategy = new RecursivePrefixTreeStrategy(grid, fieldNameForThisInstance);
+    boolean docValue = false;
+    if (properties.get(DOC_VALUE) != null) {
+      docValue = true;
+    }
+    _strategy = new RecursivePrefixTreeStrategy(grid, fieldNameForThisInstance, docValue);
     _shapeReadWriter = new ShapeReadWriter<SpatialContext>(_ctx);
     addSupportedIndexedShapes(Shape.class);
     addSupportedOperations(SpatialOperation.IsDisjointTo);

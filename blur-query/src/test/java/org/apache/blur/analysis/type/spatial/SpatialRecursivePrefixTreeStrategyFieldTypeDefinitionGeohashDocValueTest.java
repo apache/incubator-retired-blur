@@ -17,20 +17,28 @@
 package org.apache.blur.analysis.type.spatial;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
 
-public class SpatialPointVectorStrategyFieldTypeDefinitionTest extends BaseSpatialFieldTypeDefinitionTest {
+public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinitionGeohashDocValueTest extends
+    BaseSpatialFieldTypeDefinitionTest {
 
   @Test
-  public void testPointVector() throws IOException, ParseException {
+  public void testRecursivePrefixTreeWithGeohashAndDocValue() throws IOException, ParseException {
     runGisTypeTest();
+    runGisDocValueTest("uvgb26kqsm0");
   }
 
   protected void setupGisField(BaseFieldManager fieldManager) throws IOException {
-    fieldManager.addColumnDefinitionGisPointVector("fam", "geo");
+    Map<String, String> props = new HashMap<String, String>();
+    props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.GEOHASH_PREFIX_TREE);
+    props.put(SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.DOC_VALUE, "true");
+    fieldManager.addColumnDefinition("fam", "geo", null, false,
+        SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME, false, props);
   }
 
 }

@@ -27,6 +27,7 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.util.BytesRef;
 
 public class FieldLessFieldTypeDefinition extends FieldTypeDefinition {
 
@@ -111,5 +112,10 @@ public class FieldLessFieldTypeDefinition extends FieldTypeDefinition {
   @Override
   public SortField getSortField(boolean reverse) {
     throw new RuntimeException("Sort not supported.");
+  }
+  
+  @Override
+  public String readTerm(BytesRef byteRef) {
+	return byteRef.utf8ToString();
   }
 }

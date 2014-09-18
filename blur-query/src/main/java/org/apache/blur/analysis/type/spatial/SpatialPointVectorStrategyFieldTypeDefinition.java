@@ -25,6 +25,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.spatial.query.SpatialOperation;
 import org.apache.lucene.spatial.vector.PointVectorStrategy;
+import org.apache.lucene.util.BytesRef;
 
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Point;
@@ -63,4 +64,10 @@ public class SpatialPointVectorStrategyFieldTypeDefinition extends BaseSpatialFi
   public Analyzer getAnalyzerForIndex(String fieldName) {
     return _keywordAnalyzer;
   }
+  
+  @Override
+  public String readTerm(BytesRef byteRef) {
+	return byteRef.utf8ToString();
+  }
+
 }

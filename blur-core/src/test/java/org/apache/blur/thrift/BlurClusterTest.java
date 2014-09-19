@@ -466,37 +466,7 @@ public class BlurClusterTest {
 
   }
 
-  @Test
-  public void testQueryWithFacetsWithMins() throws BlurException, TException, IOException, InterruptedException {
-    final String tableName = "testQueryWithFacetsWithMins";
-    createTable(tableName);
-    int pass = 1;
-    loadTable(tableName, pass);
-    Iface client = getClient();
-    BlurQuery blurQueryRow = new BlurQuery();
-    Query queryRow = new Query();
-    // queryRow.setQuery("test.test:value");
-    queryRow.setQuery("*");
-    blurQueryRow.setQuery(queryRow);
-    blurQueryRow.setUseCacheIfPresent(false);
-    blurQueryRow.setCacheResult(false);
-    blurQueryRow.setSelector(new Selector());
-    blurQueryRow.addToFacets(new Facet("test.facetFixed:test", 50));
-
-    BlurResults resultsRow = client.query(tableName, blurQueryRow);
-    // assertRowResults(resultsRow);
-    System.out.println("Pass [" + pass + "]");
-    assertEquals(numberOfDocs * pass, resultsRow.getTotalResults());
-
-    List<Long> facetCounts = resultsRow.getFacetCounts();
-    for (Long l : facetCounts) {
-      System.out.println("Count [" + l + "]");
-      assertTrue(l >= 50);
-    }
-    pass++;
-
-  }
-
+ 
   @Test
   public void testBatchFetch() throws BlurException, TException, InterruptedException, IOException {
     String tableName = "testBatchFetch";
@@ -773,18 +743,6 @@ public class BlurClusterTest {
     Thread.sleep(TimeUnit.SECONDS.toMillis(1));
     
     assertEquals("We should have the cluster back where we started.", 3, client.shardServerList(BlurConstants.DEFAULT).size());
-  }
-
-  @Test
-  public void testTermsList() throws BlurException, TException, IOException, InterruptedException {
-    final String tableName = "testTermsList";
-    createTable(tableName);
-    loadTable(tableName);
-    Iface client = getClient();
-    List<String> terms = client.terms(tableName, "test", "test", null, (short) 10);
-    List<String> list = new ArrayList<String>();
-    list.add("value");
-    assertEquals(list, terms);
   }
 
   @Test

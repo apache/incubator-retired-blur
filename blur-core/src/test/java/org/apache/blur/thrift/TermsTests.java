@@ -16,6 +16,7 @@ package org.apache.blur.thrift;
  * limitations under the License.
  */
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,7 +28,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 public class TermsTests extends BaseClusterTest {
-
+  
   @Test
   public void testTermsList() throws BlurException, TException, IOException, InterruptedException {
     final String tableName = "testTermsList";
@@ -39,6 +40,57 @@ public class TermsTests extends BaseClusterTest {
     
     assertEquals(list, terms);
   }
+  
+  @Test
+  public void shouldBeAbleToSkipToTerms() throws Exception {
+    final String tableName = "shouldBeAbleToNavigateTerms";
+    TableGen.define(tableName)
+      .cols("test", "col1")
+      .addRecord("1","1", "aaa")
+      .addRecord("2","2", "bbb")
+      .addRecord("3","3", "ccc")
+      .addRecord("4","4", "ddd")
+      .build(getClient());
+    
+    List<String> terms = getClient().terms(tableName, "test", "col1", "c", (short)10);
+    List<String> expected = Lists.newArrayList("ccc", "ddd");
+    
+    assertEquals(expected, terms);
+  }
+  
+  @Test
+  public void shouldOnlyReturnNumberOfTermsRequested() throws Exception {
+    final String tableName = "shouldOnlyReturnNumberOfTermsRequested";
+    TableGen.define(tableName)
+      .cols("test", "col1")
+      .addRecord("1","1", "aaa")
+      .addRecord("2","2", "bbb")
+      .addRecord("3","3", "ccc")
+      .addRecord("4","4", "ddd")
+      .build(getClient());
+    
+    List<String> terms = getClient().terms(tableName, "test", "col1", "c", (short)1);
+    List<String> expected = Lists.newArrayList("ccc");
+    
+    assertEquals(expected, terms);
+  }
+  
+  @Test
+  public void shouldGetEmptyListForNonExistentTerms() throws Exception {
+    final String tableName = "shouldGetEmptyListForNonExistantTerms";
+    TableGen.define(tableName)
+      .cols("test", "col1")
+      .addRecord("1","1", "aaa")
+      .addRecord("2","2", "bbb")
+      .addRecord("3","3", "ccc")
+      .addRecord("4","4", "ddd")
+      .build(getClient());
+    
+    List<String> terms = getClient().terms(tableName, "test", "col1", "z", (short)1);
+    assertNotNull(terms);
+    assertEquals(0, terms.size());
+  }
+  
   @Test(expected=BlurException.class)
   public void termsShouldFailOnUnknownTable() throws BlurException, TException {
     getClient().terms("termsShouldFailOnUnknownTable", "test","col1", null, (short)10);

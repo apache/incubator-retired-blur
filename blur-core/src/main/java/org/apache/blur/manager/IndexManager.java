@@ -111,6 +111,7 @@ import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.index.TermsEnum.SeekStatus;
 import org.apache.lucene.queries.BooleanFilter;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -1013,15 +1014,18 @@ public class IndexManager {
     List<String> terms = new ArrayList<String>(size);
     AtomicReader areader = BlurUtil.getAtomicReader(reader);
     Terms termsAll = areader.terms(term.field());
-
+    
     if (termsAll == null) {
       return terms;
     }
 
     TermsEnum termEnum = termsAll.iterator(null);
-
-    termEnum.seekCeil(term.bytes());
-
+    SeekStatus status = termEnum.seekCeil(term.bytes());
+    
+    if (status == SeekStatus.END) {
+      return terms;
+    }
+    
     BytesRef currentTermText = termEnum.term();
     do {
       terms.add(currentTermText.utf8ToString());

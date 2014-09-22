@@ -34,15 +34,10 @@ public class BlurArrayTest {
     assertEquals("v", array.getObject(0));
   }
 
-  @Test
+  @Test(expected=IndexOutOfBoundsException.class)
   public void testArrayOutOfBounds() {
     BlurArray array = new BlurArray();
-    try {
-      array.getObject(123);
-      fail();
-    } catch (IndexOutOfBoundsException e) {
-      // Pass
-    }
+    array.getObject(123);
   }
 
   @Test

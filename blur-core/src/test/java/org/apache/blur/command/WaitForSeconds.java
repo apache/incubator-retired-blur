@@ -22,8 +22,18 @@ import java.util.concurrent.TimeUnit;
 import org.apache.blur.command.Command;
 import org.apache.blur.command.IndexContext;
 import org.apache.blur.command.IndexReadCommand;
+import org.apache.blur.command.annotation.Argument;
+import org.apache.blur.command.annotation.RequiredArguments;
+import org.apache.blur.command.annotation.OptionalArguments;
 
 @SuppressWarnings("serial")
+@RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the wait for N number of seconds command.") })
+@OptionalArguments({
+
+@Argument(name = "shard", value = "The shard id to execute the wait for N number of seconds command."),
+    @Argument(name = "seconds", value = "The number of seconds to sleep, the default is 30 seconds.")
+
+})
 public class WaitForSeconds extends Command implements IndexReadCommand<Boolean> {
 
   @Override

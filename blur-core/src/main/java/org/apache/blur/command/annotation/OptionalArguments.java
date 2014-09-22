@@ -21,6 +21,6 @@ import java.lang.annotation.RetentionPolicy;
  */
 
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Arguments {
+public @interface OptionalArguments {
   Argument[] value();
 }

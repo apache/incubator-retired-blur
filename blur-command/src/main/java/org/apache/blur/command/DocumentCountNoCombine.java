@@ -26,8 +26,13 @@ import org.apache.blur.command.ClusterContext;
 import org.apache.blur.command.IndexContext;
 import org.apache.blur.command.IndexReadCommand;
 import org.apache.blur.command.Shard;
+import org.apache.blur.command.annotation.Argument;
+import org.apache.blur.command.annotation.RequiredArguments;
+import org.apache.blur.command.annotation.OptionalArguments;
 
 @SuppressWarnings("serial")
+@RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the document count command.") })
+@OptionalArguments({ @Argument(name = "shard", value = "The shard id to execute the document count command.") })
 public class DocumentCountNoCombine extends Command implements IndexReadCommand<Integer>, ClusterCommand<Long> {
 
   private static final String DOC_COUNT_NO_COMBINE = "docCountNoCombine";

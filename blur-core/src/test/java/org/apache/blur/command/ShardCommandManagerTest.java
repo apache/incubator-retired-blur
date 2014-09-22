@@ -16,12 +16,14 @@
  */
 package org.apache.blur.command;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +82,26 @@ public class ShardCommandManagerTest {
   @After
   public void teardown() throws IOException {
     _manager.close();
+  }
+
+  @Test
+  public void testGetCommands() {
+    Map<String, BigInteger> commands = _manager.getCommands();
+    assertEquals(1, commands.size());
+    assertTrue(commands.containsKey("wait"));
+    assertEquals(BigInteger.ZERO, commands.get("wait"));
+  }
+
+  @Test
+  public void testDocumentation() {
+    Map<String, String> requiredArgs = _manager.getRequiredArguments("wait");
+    assertTrue(requiredArgs.containsKey("table"));
+    assertEquals(1, requiredArgs.size());
+
+    Map<String, String> optionalArgs = _manager.getOptionalArguments("wait");
+    assertTrue(optionalArgs.containsKey("seconds"));
+    assertTrue(optionalArgs.containsKey("shard"));
+    assertEquals(2, optionalArgs.size());
   }
 
   @Test

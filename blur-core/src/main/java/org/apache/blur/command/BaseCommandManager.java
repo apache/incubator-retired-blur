@@ -11,6 +11,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -29,6 +30,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.command.annotation.Argument;
+import org.apache.blur.command.annotation.OptionalArguments;
+import org.apache.blur.command.annotation.RequiredArguments;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -66,6 +70,7 @@ public class BaseCommandManager implements Closeable {
   private final ExecutorService _executorService;
   private final ExecutorService _executorServiceDriver;
 
+  protected final Map<String, BigInteger> _commandLoadTime = new ConcurrentHashMap<String, BigInteger>();
   protected final Map<String, Command> _command = new ConcurrentHashMap<String, Command>();
   protected final Map<Class<? extends Command>, String> _commandNameLookup = new ConcurrentHashMap<Class<? extends Command>, String>();
   protected final ConcurrentMap<ExecutionId, Future<Response>> _runningMap;
@@ -74,7 +79,7 @@ public class BaseCommandManager implements Closeable {
   protected final String _commandPath;
   protected final Timer _timer;
   protected final long _pollingPeriod = TimeUnit.SECONDS.toMillis(15);
-  protected final Map<Path, BigInteger> _commandLastChange = new ConcurrentHashMap<Path, BigInteger>();
+  protected final Map<Path, BigInteger> _commandPathLastChange = new ConcurrentHashMap<Path, BigInteger>();
   protected final Configuration _configuration;
 
   public BaseCommandManager(String tmpPath, String commandPath, int workerThreadCount, int driverThreadCount,
@@ -95,6 +100,42 @@ public class BaseCommandManager implements Closeable {
       loadNewCommandsFromCommandPath();
       _timer = new Timer("Command-Loader", true);
       _timer.schedule(getNewCommandTimerTask(), _pollingPeriod, _pollingPeriod);
+    }
+  }
+
+  public Map<String, BigInteger> getCommands() {
+    return new HashMap<String, BigInteger>(_commandLoadTime);
+  }
+
+  public Map<String, String> getRequiredArguments(String commandName) {
+    return getArguments(commandName, false);
+  }
+
+  public Map<String, String> getOptionalArguments(String commandName) {
+    return getArguments(commandName, true);
+  }
+
+  private Map<String, String> getArguments(String commandName, boolean optional) {
+    Command command = _command.get(commandName);
+    if (command == null) {
+      return null;
+    }
+    Class<? extends Command> clazz = command.getClass();
+    Map<String, String> arguments = new TreeMap<String, String>();
+    Argument[] args = getArgumentArray(clazz, optional);
+    for (Argument argument : args) {
+      arguments.put(argument.name(), argument.value());
+    }
+    return arguments;
+  }
+
+  private Argument[] getArgumentArray(Class<? extends Command> clazz, boolean optional) {
+    if (optional) {
+      OptionalArguments requiredArguments = clazz.getAnnotation(OptionalArguments.class);
+      return requiredArguments.value();
+    } else {
+      RequiredArguments requiredArguments = clazz.getAnnotation(RequiredArguments.class);
+      return requiredArguments.value();
     }
   }
 
@@ -122,10 +163,10 @@ public class BaseCommandManager implements Closeable {
     for (FileStatus fileStatus : listStatus) {
       BigInteger contentsCheck = checkContents(fileStatus, fileSystem);
       Path entryPath = fileStatus.getPath();
-      BigInteger currentValue = _commandLastChange.get(entryPath);
+      BigInteger currentValue = _commandPathLastChange.get(entryPath);
       if (!contentsCheck.equals(currentValue)) {
         loadNewCommand(fileSystem, fileStatus, contentsCheck);
-        _commandLastChange.put(entryPath, contentsCheck);
+        _commandPathLastChange.put(entryPath, contentsCheck);
       }
     }
   }
@@ -143,7 +184,7 @@ public class BaseCommandManager implements Closeable {
     copyLocal(fileSystem, fileStatus.getPath(), file);
     URLClassLoader loader = new URLClassLoader(getUrls(file).toArray(new URL[] {}));
     Enumeration<URL> resources = loader.getResources(META_INF_SERVICES_ORG_APACHE_BLUR_COMMAND_COMMANDS);
-    loadCommandClasses(resources, loader);
+    loadCommandClasses(resources, loader, hashOfContents);
   }
 
   protected List<URL> getUrls(File file) throws MalformedURLException {
@@ -197,11 +238,12 @@ public class BaseCommandManager implements Closeable {
   protected void lookForCommandsToRegisterInClassPath() throws IOException {
     Enumeration<URL> systemResources = ClassLoader
         .getSystemResources(META_INF_SERVICES_ORG_APACHE_BLUR_COMMAND_COMMANDS);
-    loadCommandClasses(systemResources, getClass().getClassLoader());
+    loadCommandClasses(systemResources, getClass().getClassLoader(), BigInteger.ZERO);
   }
 
   @SuppressWarnings("unchecked")
-  protected void loadCommandClasses(Enumeration<URL> enumeration, ClassLoader loader) throws IOException {
+  protected void loadCommandClasses(Enumeration<URL> enumeration, ClassLoader loader, BigInteger version)
+      throws IOException {
     Properties properties = new Properties();
     while (enumeration.hasMoreElements()) {
       URL url = enumeration.nextElement();
@@ -214,7 +256,7 @@ public class BaseCommandManager implements Closeable {
       String classNameToRegister = o.toString();
       LOG.info("Loading class [{0}]", classNameToRegister);
       try {
-        register((Class<? extends Command>) loader.loadClass(classNameToRegister));
+        register((Class<? extends Command>) loader.loadClass(classNameToRegister), version);
       } catch (ClassNotFoundException e) {
         throw new IOException(e);
       }
@@ -277,10 +319,11 @@ public class BaseCommandManager implements Closeable {
     }
   }
 
-  public void register(Class<? extends Command> commandClass) throws IOException {
+  public void register(Class<? extends Command> commandClass, BigInteger version) throws IOException {
     try {
       Command command = commandClass.newInstance();
       _command.put(command.getName(), command);
+      _commandLoadTime.put(command.getName(), version);
       _commandNameLookup.put(commandClass, command.getName());
       LOG.info("Command [{0}] from class [{1}] registered.", command.getName(), commandClass.getName());
     } catch (InstantiationException e) {

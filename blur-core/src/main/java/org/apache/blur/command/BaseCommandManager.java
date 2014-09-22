@@ -181,7 +181,7 @@ public class BaseCommandManager implements Closeable {
   }
 
   protected BigInteger checkContents(FileStatus fileStatus, FileSystem fileSystem) throws IOException {
-    if (fileStatus.isDirectory()) {
+    if (fileStatus.isDir()) {
       BigInteger count = BigInteger.ZERO;
       Path path = fileStatus.getPath();
       FileStatus[] listStatus = fileSystem.listStatus(path);

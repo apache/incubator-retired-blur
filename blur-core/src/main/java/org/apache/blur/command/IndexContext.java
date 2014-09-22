@@ -37,6 +37,4 @@ public abstract class IndexContext {
 
   public abstract BlurConfiguration getBlurConfiguration();
 
-  public abstract Configuration getConfiguration();
-
 }

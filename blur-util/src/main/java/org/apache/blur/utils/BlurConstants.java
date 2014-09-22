@@ -146,7 +146,7 @@ public class BlurConstants {
 
   public static final String BLUR_THRIFT_MAX_FRAME_SIZE = "blur.thrift.max.frame.size";
   public static final int BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE = 16384000;
-  
+
   public static final String BLUR_SHARD_FILTERED_SERVER_CLASS = "blur.shard.filtered.server.class";
   public static final String BLUR_CONTROLLER_FILTERED_SERVER_CLASS = "blur.controller.filtered.server.class";
 
@@ -157,6 +157,15 @@ public class BlurConstants {
   public static final String BLUR_CLUSTER_NAME = "blur.cluster.name";
   public static final String BLUR_CLUSTER;
   public static final String BLUR_HTTP_STATUS_RUNNING_PORT = "blur.http.status.running.port";
+
+  public static final String BLUR_SHARD_COMMAND_DRIVER_THREADS = "blur.shard.command.driver.threads";
+  public static final String BLUR_SHARD_COMMAND_WORKER_THREADS = "blur.shard.command.worker.threads";
+  public static final String BLUR_CONTROLLER_COMMAND_DRIVER_THREADS = "blur.controller.command.driver.threads";
+  public static final String BLUR_CONTROLLER_COMMAND_WORKER_THREADS = "blur.controller.command.worker.threads";
+  public static final String BLUR_COMMAND_LIB_PATH = "blur.command.lib.path";
+  public static final String BLUR_TMP_PATH = "blur.tmp.path";
+
+  public static final String BLUR_HOME = "BLUR_HOME";
 
   public static final long ZK_WAIT_TIME = TimeUnit.SECONDS.toMillis(5);
   public static final String DELETE_MARKER_VALUE = "delete";

@@ -16,8 +16,11 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.utils.BlurConstants.BLUR_COMMAND_LIB_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_ADDRESS;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_COMMAND_DRIVER_THREADS;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_COMMAND_WORKER_THREADS;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_HOSTNAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_REMOTE_FETCH_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_RETRY_DEFAULT_DELAY;
@@ -38,8 +41,9 @@ import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_SELECTO
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_HTTP_STATUS_RUNNING_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
-import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
@@ -69,6 +73,7 @@ import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.zookeeper.ZooKeeper;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.webapp.WebAppContext;
@@ -128,8 +133,15 @@ public class ThriftBlurControllerServer extends ThriftServer {
     int timeout = configuration.getInt(BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT, 60000);
     BlurControllerServer.BlurClient client = new BlurControllerServer.BlurClientRemote(timeout);
 
-    final ControllerCommandManager controllerCommandManager = new ControllerCommandManager(16,
-        Connection.DEFAULT_TIMEOUT);
+    String tmpPath = configuration.get(BLUR_TMP_PATH, getDefaultTmpPath(BLUR_TMP_PATH));
+    int numberOfControllerWorkerCommandThreads = configuration.getInt(BLUR_CONTROLLER_COMMAND_WORKER_THREADS, 16);
+    int numberOfControllerDriverCommandThreads = configuration.getInt(BLUR_CONTROLLER_COMMAND_DRIVER_THREADS, 16);
+    String commandPath = configuration.get(BLUR_COMMAND_LIB_PATH, getCommandLibPath());
+
+    Configuration config = new Configuration();
+    final ControllerCommandManager controllerCommandManager = new ControllerCommandManager(tmpPath, commandPath,
+        numberOfControllerWorkerCommandThreads, numberOfControllerDriverCommandThreads, Connection.DEFAULT_TIMEOUT,
+        config);
 
     final BlurControllerServer controllerServer = new BlurControllerServer();
     controllerServer.setClient(client);

@@ -23,9 +23,11 @@ import static org.apache.blur.metrics.MetricsConstants.LOAD_AVERAGE;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.metrics.MetricsConstants.SYSTEM;
 import static org.apache.blur.utils.BlurConstants.BLUR_HDFS_TRACE_PATH;
+import static org.apache.blur.utils.BlurConstants.BLUR_HOME;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TRACE_PATH;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -97,6 +99,43 @@ public class ThriftServer {
 
   public void setServerTransport(TNonblockingServerSocket serverTransport) {
     _serverTransport = serverTransport;
+  }
+
+  public static String getCommandLibPath() {
+    String blurHomeDir = getBlurHomeDir();
+    if (blurHomeDir == null) {
+      return null;
+    }
+    return new File(blurHomeDir, "commands").toURI().toString();
+  }
+
+  public static String getBlurHomeDir() {
+    return System.getenv(BLUR_HOME);
+  }
+
+  public static String getDefaultTmpPath(String propName) throws IOException {
+    String blurHomeDir = getBlurHomeDir();
+    File tmp;
+    if (blurHomeDir == null) {
+      tmp = getTmpDir();
+      LOG.info("Attempting to use default tmp directory [{0}]", tmp);
+    } else {
+      tmp = new File(blurHomeDir, "tmp");
+      LOG.info("Attempting to use configured tmp directory [{0}]", tmp);
+      if (!tmp.mkdirs()) {
+        tmp = getTmpDir();
+        LOG.info("Attempting to use default tmp directory [{0}]", tmp);
+      }
+    }
+    if (!tmp.mkdirs()) {
+      throw new IOException("Cannot create tmp directory [" + tmp.toURI()
+          + "], please create directory or configure property [" + propName + "].");
+    }
+    return tmp.toURI().toString();
+  }
+
+  private static File getTmpDir() {
+    return new File(System.getProperty("java.io.tmpdir"));
   }
 
   public static TraceStorage setupTraceStorage(BlurConfiguration configuration) throws IOException {

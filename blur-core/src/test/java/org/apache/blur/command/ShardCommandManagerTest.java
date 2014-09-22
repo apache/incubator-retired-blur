@@ -16,7 +16,12 @@
  */
 package org.apache.blur.command;
 
+import static org.junit.Assert.*;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +39,8 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -59,17 +66,83 @@ public class ShardCommandManagerTest {
       throw new RuntimeException(e);
     }
   }
-
+  private String _tmpPath = "./target/tmp/ShardCommandManagerTest/tmp";
+  private String _commandPath = "./target/tmp/ShardCommandManagerTest/command";
   private ShardCommandManager _manager;
+  private Configuration _config;
 
   @Before
   public void setup() throws IOException {
-    _manager = new ShardCommandManager(getIndexServer(), 10, 1000);
+    _config = new Configuration();
+    _manager = new ShardCommandManager(getIndexServer(), null, null, 10, 10, 1000, _config);
   }
 
   @After
   public void teardown() throws IOException {
     _manager.close();
+  }
+
+  @Test
+  public void testNewCommandLoading() throws IOException, TimeoutException, InterruptedException {
+    _manager.close();
+    new File(_tmpPath).mkdirs();
+    File commandPath = new File(_commandPath);
+    rmr(commandPath);
+    commandPath.mkdirs();
+    {
+      InputStream inputStream = getClass().getResourceAsStream("/org/apache/blur/command/test1/test1.jar");
+      File dest = new File(commandPath, "test.jar");
+      FileOutputStream output = new FileOutputStream(dest);
+      IOUtils.copy(inputStream, output);
+      inputStream.close();
+      output.close();
+    }
+    ShardCommandManager manager = new ShardCommandManager(getIndexServer(), _tmpPath, _commandPath, 10, 10, 1000,
+        _config);
+    {
+      Args args = new Args();
+      args.set("table", "test");
+      Response response = manager.execute(getTableContextFactory(), "test", args);
+      Map<Shard, Object> shardResults = response.getShardResults();
+      for (Object o : shardResults.values()) {
+        assertEquals("test1", o);
+      }
+    }
+
+    {
+      InputStream inputStream = getClass().getResourceAsStream("/org/apache/blur/command/test2/test2.jar");
+      File dest = new File(commandPath, "test.jar");
+      FileOutputStream output = new FileOutputStream(dest);
+      IOUtils.copy(inputStream, output);
+      inputStream.close();
+      output.close();
+    }
+    manager.commandRefresh();
+
+    {
+      Args args = new Args();
+      args.set("table", "test");
+      Response response = manager.execute(getTableContextFactory(), "test", args);
+      Map<Shard, Object> shardResults = response.getShardResults();
+      for (Object o : shardResults.values()) {
+        assertEquals("test2", o);
+      }
+    }
+
+    // For closing.
+    _manager = manager;
+  }
+
+  private void rmr(File file) {
+    if (!file.exists()) {
+      return;
+    }
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        rmr(f);
+      }
+    }
+    file.delete();
   }
 
   @Test

@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 
 import org.apache.blur.server.LayoutFactory;
 import org.apache.blur.server.TableContextFactory;
+import org.apache.hadoop.conf.Configuration;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -26,8 +27,9 @@ import org.apache.blur.server.TableContextFactory;
 @SuppressWarnings("unchecked")
 public class ControllerCommandManager extends BaseCommandManager {
 
-  public ControllerCommandManager(int threadCount, long connectionTimeout) throws IOException {
-    super(threadCount, connectionTimeout);
+  public ControllerCommandManager(String tmpPath, String commandPath, int workerThreadCount, int driverThreadCount,
+      long connectionTimeout, Configuration configuration) throws IOException {
+    super(tmpPath, commandPath, workerThreadCount, driverThreadCount, connectionTimeout, configuration);
   }
 
   public Response execute(TableContextFactory tableContextFactory, LayoutFactory layoutFactory, String commandName,

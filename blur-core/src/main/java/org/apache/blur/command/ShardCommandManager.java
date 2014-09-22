@@ -40,8 +40,9 @@ public class ShardCommandManager extends BaseCommandManager {
 
   private final IndexServer _indexServer;
 
-  public ShardCommandManager(IndexServer indexServer, int threadCount, long connectionTimeout) throws IOException {
-    super(threadCount, connectionTimeout);
+  public ShardCommandManager(IndexServer indexServer, String tmpPath, String commandPath, int workerThreadCount,
+      int driverThreadCount, long connectionTimeout, Configuration configuration) throws IOException {
+    super(tmpPath, commandPath, workerThreadCount, driverThreadCount, connectionTimeout, configuration);
     _indexServer = indexServer;
   }
 
@@ -94,7 +95,7 @@ public class ShardCommandManager extends BaseCommandManager {
     for (String table : tables) {
       Set<Shard> shardSet = shardMap.get(table);
       boolean checkShards = !shardSet.isEmpty();
-      
+
       TableContext tableContext = tableContextFactory.getTableContext(table);
       Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
       for (Entry<String, BlurIndex> e : indexes.entrySet()) {
@@ -137,8 +138,6 @@ public class ShardCommandManager extends BaseCommandManager {
     }
     return resultMap;
   }
-
-
 
   private Callable<Object> getCallable(final ShardServerContext shardServerContext, final TableContext tableContext,
       final Args args, final Shard shard, final BlurIndex blurIndex,
@@ -230,5 +229,6 @@ public class ShardCommandManager extends BaseCommandManager {
     // TODO
     System.out.println("IMPLEMENT ME!!!!");
   }
+
 
 }

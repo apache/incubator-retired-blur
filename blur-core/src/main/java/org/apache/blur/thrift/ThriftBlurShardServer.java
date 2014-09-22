@@ -18,6 +18,7 @@ package org.apache.blur.thrift;
  */
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER;
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
+import static org.apache.blur.utils.BlurConstants.BLUR_COMMAND_LIB_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_REMOTE_FETCH_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_HTTP_STATUS_RUNNING_PORT;
@@ -31,6 +32,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_TOTAL_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_VERSION;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_COMMAND_DRIVER_THREADS;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_COMMAND_WORKER_THREADS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DEEP_PAGING_CACHE_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FETCHCOUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
@@ -47,6 +50,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_WARMUP_DISABLED;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_WARMUP_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
@@ -229,7 +233,13 @@ public class ThriftBlurShardServer extends ThriftServer {
         fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay, facetThreadCount,
         deepPagingCache);
 
-    final ShardCommandManager commandManager = new ShardCommandManager(indexServer, 16, Connection.DEFAULT_TIMEOUT);
+    String tmpPath = configuration.get(BLUR_TMP_PATH, getDefaultTmpPath(BLUR_TMP_PATH));
+    int numberOfShardWorkerCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_WORKER_THREADS, 16);
+    int numberOfShardDriverCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_DRIVER_THREADS, 16);
+    String commandPath = configuration.get(BLUR_COMMAND_LIB_PATH, getCommandLibPath());
+
+    final ShardCommandManager commandManager = new ShardCommandManager(indexServer, tmpPath, commandPath,
+        numberOfShardWorkerCommandThreads, numberOfShardDriverCommandThreads, Connection.DEFAULT_TIMEOUT, config);
 
     final BlurShardServer shardServer = new BlurShardServer();
     shardServer.setCommandManager(commandManager);

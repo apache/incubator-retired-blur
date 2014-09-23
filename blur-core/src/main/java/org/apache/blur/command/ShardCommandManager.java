@@ -111,7 +111,7 @@ public class ShardCommandManager extends BaseCommandManager {
     if (tables.isEmpty()) {
       throw new IOException("At least one table needs to specified.");
     }
-    Map<String, Set<Shard>> shardMap = getShards(command, args, tables);
+    Map<String, Set<Shard>> shardMap = getShards(tableContextFactory, command, args, tables);
 
     Map<Shard, Future<?>> futureMap = new HashMap<Shard, Future<?>>();
     for (String table : tables) {

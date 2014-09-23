@@ -38,6 +38,7 @@ import org.apache.blur.command.annotation.RequiredArguments;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.server.TableContextFactory;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -354,12 +355,12 @@ public class BaseCommandManager implements Closeable {
     return _commandNameLookup.get(clazz);
   }
 
-  protected Map<String, Set<Shard>> getShards(Command command, final Args args, Set<String> tables) throws IOException {
+  protected Map<String, Set<Shard>> getShards(TableContextFactory tableContextFactory, Command command, final Args args, Set<String> tables) throws IOException {
     Map<String, Set<Shard>> shardMap = new TreeMap<String, Set<Shard>>();
     if (command instanceof ShardRoute) {
       ShardRoute shardRoute = (ShardRoute) command;
       for (String table : tables) {
-        shardMap.put(table, shardRoute.resolveShards(table, args));
+        shardMap.put(table, shardRoute.resolveShards(tableContextFactory.getTableContext(table), args));
       }
     } else {
       if (tables.size() > 1) {

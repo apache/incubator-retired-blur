@@ -2,6 +2,8 @@ package org.apache.blur.command;
 
 import java.util.Set;
 
+import org.apache.blur.server.TableContext;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
@@ -21,6 +23,6 @@ import java.util.Set;
 
 public interface ShardRoute {
 
-  Set<Shard> resolveShards(String table, Args args);
+  Set<Shard> resolveShards(TableContext tableContext, Args args);
 
 }

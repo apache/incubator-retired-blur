@@ -119,7 +119,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     Command command = _manager.getCommandObject(commandName);
     Map<Shard, Future<T>> futureMap = new HashMap<Shard, Future<T>>();
     Set<String> tables = _manager.getTables(command, args);
-    Map<String, Set<Shard>> shards = _manager.getShards(command, args, tables);
+    Map<String, Set<Shard>> shards = _manager.getShards(_tableContextFactory, command, args, tables);
     Map<Server, Client> clientMap = getClientMap(command, args, tables, shards);
 
     for (Entry<Server, Client> e : clientMap.entrySet()) {
@@ -209,7 +209,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     Command command = _manager.getCommandObject(commandName);
     Map<Server, Future<T>> futureMap = new HashMap<Server, Future<T>>();
     Set<String> tables = _manager.getTables(command, args);
-    Map<String, Set<Shard>> shards = _manager.getShards(command, args, tables);
+    Map<String, Set<Shard>> shards = _manager.getShards(_tableContextFactory, command, args, tables);
     Map<Server, Client> clientMap = getClientMap(command, args, tables, shards);
     for (Entry<Server, Client> e : clientMap.entrySet()) {
       Server server = e.getKey();

@@ -18,19 +18,23 @@ package org.apache.blur.thrift;
  */
 import java.io.File;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.xml.parsers.FactoryConfigurationError;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.analysis.FieldTypeDefinition;
+import org.apache.blur.command.BaseCommandManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
@@ -39,6 +43,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.thrift.generated.CommandDescriptor;
 import org.apache.blur.thrift.generated.Level;
 import org.apache.blur.thrift.generated.Metric;
 import org.apache.blur.thrift.generated.Schema;
@@ -614,6 +619,23 @@ public abstract class TableAdmin implements Iface {
     } catch (FactoryConfigurationError e) {
       throw new BException("Unknown error while trying to reload log4j config.");
     }
+  }
+
+  protected List<CommandDescriptor> listInstalledCommands(BaseCommandManager commandManager) {
+    List<CommandDescriptor> result = new ArrayList<CommandDescriptor>();
+    Map<String, BigInteger> commands = new TreeMap<String, BigInteger>(commandManager.getCommands());
+    for (Entry<String, BigInteger> e : commands.entrySet()) {
+      CommandDescriptor commandDescriptor = new CommandDescriptor();
+      String commandName = e.getKey();
+      commandDescriptor.setCommandName(commandName);
+      commandDescriptor.setVersion(e.getValue().toString(Character.MAX_RADIX));
+      commandDescriptor.setDescription(commandManager.getDescription(commandName));
+      commandDescriptor.setOptionalArguments(commandManager.getOptionalArguments(commandName));
+      commandDescriptor.setRequiredArguments(commandManager.getRequiredArguments(commandName));
+      commandDescriptor.setReturnType(commandManager.getReturnType(commandName));
+      result.add(commandDescriptor);
+    }
+    return result;
   }
 
   private void reloadConfig() throws MalformedURLException, FactoryConfigurationError, BException {

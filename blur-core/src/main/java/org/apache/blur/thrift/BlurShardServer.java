@@ -53,6 +53,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResults;
+import org.apache.blur.thrift.generated.CommandDescriptor;
 import org.apache.blur.thrift.generated.CommandStatus;
 import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.FetchResult;
@@ -645,6 +646,19 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public void refresh() throws TException {
     ShardServerContext.resetSearchers();
+  }
+  
+  @Override
+  public List<CommandDescriptor> listInstalledCommands() throws BlurException, TException {
+    try {
+      return listInstalledCommands(_commandManager);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get a list of installed commands [{0}]", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
   }
 
   @Override

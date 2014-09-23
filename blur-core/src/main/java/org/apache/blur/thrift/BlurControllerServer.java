@@ -87,6 +87,7 @@ import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.thrift.generated.CommandDescriptor;
 import org.apache.blur.thrift.generated.CommandStatus;
 import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.ErrorType;
@@ -1640,6 +1641,19 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
+  public List<CommandDescriptor> listInstalledCommands() throws BlurException, TException {
+    try {
+      return listInstalledCommands(_commandManager);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get a list of installed commands [{0}]", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
   public void refresh() throws TException {
     // This is a NO-OP at this point for the controller.
   }
@@ -1659,4 +1673,5 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public void commandCancel(String executionId) throws BlurException, TException {
     throw new BException("Not Implemented");
   }
+
 }

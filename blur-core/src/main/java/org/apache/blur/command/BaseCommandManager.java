@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -31,6 +32,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.command.annotation.Argument;
+import org.apache.blur.command.annotation.Description;
 import org.apache.blur.command.annotation.OptionalArguments;
 import org.apache.blur.command.annotation.RequiredArguments;
 import org.apache.blur.concurrent.Executors;
@@ -115,7 +117,7 @@ public class BaseCommandManager implements Closeable {
     return getArguments(commandName, true);
   }
 
-  private Map<String, String> getArguments(String commandName, boolean optional) {
+  protected Map<String, String> getArguments(String commandName, boolean optional) {
     Command command = _command.get(commandName);
     if (command == null) {
       return null;
@@ -123,19 +125,28 @@ public class BaseCommandManager implements Closeable {
     Class<? extends Command> clazz = command.getClass();
     Map<String, String> arguments = new TreeMap<String, String>();
     Argument[] args = getArgumentArray(clazz, optional);
+    if (args == null) {
+      return arguments;
+    }
     for (Argument argument : args) {
       arguments.put(argument.name(), argument.value());
     }
     return arguments;
   }
 
-  private Argument[] getArgumentArray(Class<? extends Command> clazz, boolean optional) {
+  protected Argument[] getArgumentArray(Class<? extends Command> clazz, boolean optional) {
     if (optional) {
-      OptionalArguments requiredArguments = clazz.getAnnotation(OptionalArguments.class);
-      return requiredArguments.value();
+      OptionalArguments arguments = clazz.getAnnotation(OptionalArguments.class);
+      if (arguments == null) {
+        return null;
+      }
+      return arguments.value();
     } else {
-      RequiredArguments requiredArguments = clazz.getAnnotation(RequiredArguments.class);
-      return requiredArguments.value();
+      RequiredArguments arguments = clazz.getAnnotation(RequiredArguments.class);
+      if (arguments == null) {
+        return null;
+      }
+      return arguments.value();
     }
   }
 
@@ -181,7 +192,7 @@ public class BaseCommandManager implements Closeable {
     }
     LOG.info("Copying new command with hash [{2}] set from [{0}] into [{1}].", fileStatus.getPath(),
         file.getAbsolutePath(), hashOfContents.toString(Character.MAX_RADIX));
-    copyLocal(fileSystem, fileStatus.getPath(), file);
+    copyLocal(fileSystem, fileStatus, file);
     URLClassLoader loader = new URLClassLoader(getUrls(file).toArray(new URL[] {}));
     Enumeration<URL> resources = loader.getResources(META_INF_SERVICES_ORG_APACHE_BLUR_COMMAND_COMMANDS);
     loadCommandClasses(resources, loader, hashOfContents);
@@ -201,16 +212,17 @@ public class BaseCommandManager implements Closeable {
     return urls;
   }
 
-  protected void copyLocal(FileSystem fileSystem, Path path, File destDir) throws IOException {
+  protected void copyLocal(FileSystem fileSystem, FileStatus fileStatus, File destDir) throws IOException {
+    Path path = fileStatus.getPath();
     File file = new File(destDir, path.getName());
-    if (fileSystem.isDirectory(path)) {
+    if (fileStatus.isDir()) {
       if (!file.mkdirs()) {
         LOG.error("Error while trying to create a sub directory [{0}].", file.getAbsolutePath());
         throw new IOException("Error while trying to create a sub directory [" + file.getAbsolutePath() + "].");
       }
       FileStatus[] listStatus = fileSystem.listStatus(path);
-      for (FileStatus fileStatus : listStatus) {
-        copyLocal(fileSystem, fileStatus.getPath(), file);
+      for (FileStatus fs : listStatus) {
+        copyLocal(fileSystem, fs, file);
       }
     } else {
       FileOutputStream output = new FileOutputStream(file);
@@ -222,7 +234,7 @@ public class BaseCommandManager implements Closeable {
   }
 
   protected BigInteger checkContents(FileStatus fileStatus, FileSystem fileSystem) throws IOException {
-    if (fileStatus.isDirectory()) {
+    if (fileStatus.isDir()) {
       BigInteger count = BigInteger.ZERO;
       Path path = fileStatus.getPath();
       FileStatus[] listStatus = fileSystem.listStatus(path);
@@ -395,4 +407,56 @@ public class BaseCommandManager implements Closeable {
     }
     return tables;
   }
+
+  public String getDescription(String commandName) {
+    Command command = _command.get(commandName);
+    if (command == null) {
+      return null;
+    }
+    Class<? extends Command> clazz = command.getClass();
+    Description description = clazz.getAnnotation(Description.class);
+    if (description == null) {
+      return null;
+    }
+    return description.value();
+  }
+
+  public String getReturnType(String commandName) {
+    Command command = _command.get(commandName);
+    if (command == null) {
+      return null;
+    }
+
+    String shardServerReturn;
+    try {
+      if (command instanceof IndexReadCommand) {
+        IndexReadCommand<?> indexReadCommand = (IndexReadCommand<?>) command;
+        Method method = indexReadCommand.getClass().getMethod("execute", new Class[] { IndexContext.class });
+        Class<?> returnType = method.getReturnType();
+        shardServerReturn = "shard->" + returnType.getSimpleName();
+      } else if (command instanceof IndexReadCombiningCommand) {
+        IndexReadCombiningCommand<?, ?> indexReadCombiningCommand = (IndexReadCombiningCommand<?, ?>) command;
+        Method method = indexReadCombiningCommand.getClass().getMethod("combine", new Class[] { Map.class });
+        Class<?> returnType = method.getReturnType();
+        shardServerReturn = "server->" + returnType.getSimpleName();
+      } else {
+        shardServerReturn = null;
+      }
+      if (command instanceof ClusterCommand) {
+        ClusterCommand<?> clusterCommand = (ClusterCommand<?>) command;
+        Method method = clusterCommand.getClass().getMethod("clusterExecute", new Class[] { Map.class });
+        Class<?> returnType = method.getReturnType();
+        String clusterReturn = "cluster->" + returnType.getSimpleName();
+        if (shardServerReturn == null) {
+          return clusterReturn;
+        } else {
+          return clusterReturn + "," + shardServerReturn;
+        }
+      }
+      return shardServerReturn;
+    } catch (Exception e) {
+      throw new RuntimeException("Unknown error while trying to get return type.", e);
+    }
+  }
+
 }

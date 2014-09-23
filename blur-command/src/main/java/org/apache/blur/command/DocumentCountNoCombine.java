@@ -27,10 +27,12 @@ import org.apache.blur.command.IndexContext;
 import org.apache.blur.command.IndexReadCommand;
 import org.apache.blur.command.Shard;
 import org.apache.blur.command.annotation.Argument;
+import org.apache.blur.command.annotation.Description;
 import org.apache.blur.command.annotation.RequiredArguments;
 import org.apache.blur.command.annotation.OptionalArguments;
 
 @SuppressWarnings("serial")
+@Description("Gets the number of visible documents in the index.")
 @RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the document count command.") })
 @OptionalArguments({ @Argument(name = "shard", value = "The shard id to execute the document count command.") })
 public class DocumentCountNoCombine extends Command implements IndexReadCommand<Integer>, ClusterCommand<Long> {

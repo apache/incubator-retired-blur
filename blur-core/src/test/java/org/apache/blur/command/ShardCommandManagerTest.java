@@ -89,7 +89,7 @@ public class ShardCommandManagerTest {
     Map<String, BigInteger> commands = _manager.getCommands();
     assertEquals(1, commands.size());
     assertTrue(commands.containsKey("wait"));
-    assertEquals(BigInteger.ZERO, commands.get("wait"));
+    assertEquals(BigInteger.ZERO,  commands.get("wait"));
   }
 
   @Test

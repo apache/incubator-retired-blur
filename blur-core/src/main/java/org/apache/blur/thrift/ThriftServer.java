@@ -40,6 +40,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.BlurConfiguration;
@@ -127,15 +128,20 @@ public class ThriftServer {
         LOG.info("Attempting to use default tmp directory [{0}]", tmp);
       }
     }
-    if (!tmp.mkdirs()) {
+    if (!tmp.exists() && !tmp.mkdirs()) {
       throw new IOException("Cannot create tmp directory [" + tmp.toURI()
           + "], please create directory or configure property [" + propName + "].");
     }
+    File file = new File(tmp, UUID.randomUUID().toString());
+    if (!file.createNewFile()) {
+      throw new IOException("Cannot create tmp file in [" + tmp.toURI() + "].");
+    }
+    file.delete();
     return tmp.toURI().toString();
   }
 
   private static File getTmpDir() {
-    return new File(System.getProperty("java.io.tmpdir"));
+    return new File(System.getProperty("java.io.tmpdir"), "blur_tmp");
   }
 
   public static TraceStorage setupTraceStorage(BlurConfiguration configuration) throws IOException {

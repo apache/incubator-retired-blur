@@ -33,7 +33,7 @@ public class ControllerCommandManager extends BaseCommandManager {
   }
 
   public Response execute(TableContextFactory tableContextFactory, LayoutFactory layoutFactory, String commandName,
-      final Args args) throws IOException, TimeoutException {
+      final Args args) throws IOException, TimeoutException, ExceptionCollector {
     final ClusterContext context = createCommandContext(tableContextFactory, layoutFactory, args);
     final Command command = getCommandObject(commandName);
     if (command == null) {

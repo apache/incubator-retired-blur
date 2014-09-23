@@ -18,6 +18,7 @@ package org.apache.blur.command;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -87,9 +88,10 @@ public class ShardCommandManagerTest {
   @Test
   public void testGetCommands() {
     Map<String, BigInteger> commands = _manager.getCommands();
-    assertEquals(1, commands.size());
+    assertEquals(2, commands.size());
     assertTrue(commands.containsKey("wait"));
-    assertEquals(BigInteger.ZERO,  commands.get("wait"));
+    assertTrue(commands.containsKey("error"));
+    assertEquals(BigInteger.ZERO, commands.get("wait"));
   }
 
   @Test
@@ -105,15 +107,18 @@ public class ShardCommandManagerTest {
   }
 
   @Test
-  public void testNewCommandLoading() throws IOException, TimeoutException, InterruptedException {
+  public void testNewCommandLoading() throws IOException, TimeoutException, InterruptedException, ExceptionCollector {
     _manager.close();
     new File(_tmpPath).mkdirs();
     File commandPath = new File(_commandPath);
     rmr(commandPath);
+    if (commandPath.exists()) {
+      fail("Command path [" + commandPath + "] still exists.");
+    }
     commandPath.mkdirs();
     {
       InputStream inputStream = getClass().getResourceAsStream("/org/apache/blur/command/test1/test1.jar");
-      File dest = new File(commandPath, "test.jar");
+      File dest = new File(commandPath, "test1.jar");
       FileOutputStream output = new FileOutputStream(dest);
       IOUtils.copy(inputStream, output);
       inputStream.close();
@@ -133,13 +138,14 @@ public class ShardCommandManagerTest {
 
     {
       InputStream inputStream = getClass().getResourceAsStream("/org/apache/blur/command/test2/test2.jar");
-      File dest = new File(commandPath, "test.jar");
+      File dest = new File(commandPath, "test2.jar");
       FileOutputStream output = new FileOutputStream(dest);
       IOUtils.copy(inputStream, output);
       inputStream.close();
       output.close();
     }
-    manager.commandRefresh();
+
+    assertEquals(1, manager.commandRefresh());
 
     {
       Args args = new Args();
@@ -168,7 +174,7 @@ public class ShardCommandManagerTest {
   }
 
   @Test
-  public void testShardCommandManagerNormalWait() throws IOException, TimeoutException {
+  public void testShardCommandManagerNormalWait() throws IOException, TimeoutException, ExceptionCollector {
     Response response;
     ExecutionId executionId = null;
 
@@ -193,7 +199,23 @@ public class ShardCommandManagerTest {
   }
 
   @Test
-  public void testShardCommandManagerNormalWithCancel() throws IOException, TimeoutException {
+  public void testShardCommandManagerErrorWait() throws IOException, TimeoutException, ExceptionCollector {
+    Args args = new Args();
+    args.set("seconds", 1);
+    args.set("table", "test");
+    TableContextFactory tableContextFactory = getTableContextFactory();
+    try {
+      _manager.execute(tableContextFactory, "error", args);
+      fail();
+    } catch (ExceptionCollector e) {
+      Throwable t = e.getCause();
+      assertTrue(t instanceof RuntimeException);
+      assertEquals("error-test", t.getMessage());
+    }
+  }
+
+  @Test
+  public void testShardCommandManagerNormalWithCancel() throws IOException, TimeoutException, ExceptionCollector {
     Response response;
     ExecutionId executionId = null;
 

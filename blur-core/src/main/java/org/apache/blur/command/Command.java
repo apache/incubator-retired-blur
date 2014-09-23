@@ -18,7 +18,13 @@ package org.apache.blur.command;
 
 import java.io.Serializable;
 
+import org.apache.blur.command.annotation.Argument;
+import org.apache.blur.command.annotation.OptionalArguments;
+import org.apache.blur.command.annotation.RequiredArguments;
+
 @SuppressWarnings("serial")
+@RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the document count command.", type = String.class) })
+@OptionalArguments({ @Argument(name = "shard", value = "The shard id to execute the document count command.", type = String.class) })
 public abstract class Command implements Serializable, Cloneable {
 
   public abstract String getName();

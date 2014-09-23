@@ -126,14 +126,28 @@ public class BaseCommandManager implements Closeable {
     Class<? extends Command> clazz = command.getClass();
     Map<String, String> arguments = new TreeMap<String, String>();
     Argument[] args = getArgumentArray(clazz, optional);
-    if (args == null) {
-      return arguments;
-    }
-    for (Argument argument : args) {
-      Class<?> type = argument.type();
-      arguments.put(argument.name(), ("(" + type.getSimpleName() + ") " + argument.value()).trim());
+    addArguments(arguments, args);
+    if (optional) {
+      if (!(command instanceof ShardRoute)) {
+        Argument[] argumentArray = getArgumentArray(Command.class, optional);
+        addArguments(arguments, argumentArray);
+      }
+    } else {
+      if (!(command instanceof TableRoute)) {
+        Argument[] argumentArray = getArgumentArray(Command.class, optional);
+        addArguments(arguments, argumentArray);
+      }
     }
     return arguments;
+  }
+
+  private void addArguments(Map<String, String> arguments, Argument[] args) {
+    if (args != null) {
+      for (Argument argument : args) {
+        Class<?> type = argument.type();
+        arguments.put(argument.name(), ("(" + type.getSimpleName() + ") " + argument.value()).trim());
+      }
+    }
   }
 
   protected Argument[] getArgumentArray(Class<? extends Command> clazz, boolean optional) {
@@ -165,23 +179,26 @@ public class BaseCommandManager implements Closeable {
     };
   }
 
-  public void commandRefresh() throws IOException {
-    loadNewCommandsFromCommandPath();
+  public int commandRefresh() throws IOException {
+    return loadNewCommandsFromCommandPath();
   }
 
-  protected synchronized void loadNewCommandsFromCommandPath() throws IOException {
+  protected synchronized int loadNewCommandsFromCommandPath() throws IOException {
     Path path = new Path(_commandPath);
     FileSystem fileSystem = path.getFileSystem(_configuration);
     FileStatus[] listStatus = fileSystem.listStatus(path);
+    int changeCount = 0;
     for (FileStatus fileStatus : listStatus) {
       BigInteger contentsCheck = checkContents(fileStatus, fileSystem);
       Path entryPath = fileStatus.getPath();
       BigInteger currentValue = _commandPathLastChange.get(entryPath);
       if (!contentsCheck.equals(currentValue)) {
+        changeCount++;
         loadNewCommand(fileSystem, fileStatus, contentsCheck);
         _commandPathLastChange.put(entryPath, contentsCheck);
       }
     }
+    return changeCount;
   }
 
   protected void loadNewCommand(FileSystem fileSystem, FileStatus fileStatus, BigInteger hashOfContents)
@@ -237,6 +254,7 @@ public class BaseCommandManager implements Closeable {
 
   protected BigInteger checkContents(FileStatus fileStatus, FileSystem fileSystem) throws IOException {
     if (fileStatus.isDir()) {
+      LOG.info("Scanning directory [{0}].", fileStatus.getPath());
       BigInteger count = BigInteger.ZERO;
       Path path = fileStatus.getPath();
       FileStatus[] listStatus = fileSystem.listStatus(path);
@@ -245,7 +263,15 @@ public class BaseCommandManager implements Closeable {
       }
       return count;
     } else {
-      return BigInteger.valueOf(fileStatus.getModificationTime());
+      int hashCode = fileStatus.getPath().toString().hashCode();
+      long modificationTime = fileStatus.getModificationTime();
+      long len = fileStatus.getLen();
+      BigInteger bi = BigInteger.valueOf(hashCode).add(
+          BigInteger.valueOf(modificationTime).add(BigInteger.valueOf(len)));
+      LOG.info("File path hashcode [{0}], mod time [{1}], len [{2}] equals file code [{3}].",
+          Integer.toString(hashCode), Long.toString(modificationTime), Long.toString(len),
+          bi.toString(Character.MAX_RADIX));
+      return bi;
     }
   }
 
@@ -296,7 +322,8 @@ public class BaseCommandManager implements Closeable {
     }
   }
 
-  protected Response submitDriverCallable(Callable<Response> callable) throws IOException, TimeoutException {
+  protected Response submitDriverCallable(Callable<Response> callable) throws IOException, TimeoutException,
+      ExceptionCollector {
     ExecutionContext executionContext = ExecutionContext.create();
     Future<Response> future = _executorServiceDriver.submit(executionContext.wrapCallable(callable));
     executionContext.registerDriverFuture(future);
@@ -309,7 +336,11 @@ public class BaseCommandManager implements Closeable {
     } catch (InterruptedException e) {
       throw new IOException(e);
     } catch (ExecutionException e) {
-      throw new IOException(e.getCause());
+      Throwable cause = e.getCause();
+      if (cause instanceof ExceptionCollector) {
+        throw (ExceptionCollector) cause;
+      }
+      throw new IOException(cause);
     } catch (java.util.concurrent.TimeoutException e) {
       LOG.info("Timeout of command [{0}]", executionId);
       throw new TimeoutException(executionId);
@@ -355,7 +386,8 @@ public class BaseCommandManager implements Closeable {
     return _commandNameLookup.get(clazz);
   }
 
-  protected Map<String, Set<Shard>> getShards(TableContextFactory tableContextFactory, Command command, final Args args, Set<String> tables) throws IOException {
+  protected Map<String, Set<Shard>> getShards(TableContextFactory tableContextFactory, Command command,
+      final Args args, Set<String> tables) throws IOException {
     Map<String, Set<Shard>> shardMap = new TreeMap<String, Set<Shard>>();
     if (command instanceof ShardRoute) {
       ShardRoute shardRoute = (ShardRoute) command;

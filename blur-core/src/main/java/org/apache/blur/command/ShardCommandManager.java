@@ -47,7 +47,7 @@ public class ShardCommandManager extends BaseCommandManager {
   }
 
   public Response execute(final TableContextFactory tableContextFactory, final String commandName, final Args args)
-      throws IOException, TimeoutException {
+      throws IOException, TimeoutException, ExceptionCollector {
     final ShardServerContext shardServerContext = getShardServerContext();
     Callable<Response> callable = new Callable<Response>() {
       @Override
@@ -106,7 +106,7 @@ public class ShardCommandManager extends BaseCommandManager {
   }
 
   private Map<Shard, Object> executeReadCommand(ShardServerContext shardServerContext, Command command,
-      final TableContextFactory tableContextFactory, final Args args) throws IOException {
+      final TableContextFactory tableContextFactory, final Args args) throws IOException, ExceptionCollector {
     Set<String> tables = getTables(command, args);
     if (tables.isEmpty()) {
       throw new IOException("At least one table needs to specified.");
@@ -145,6 +145,7 @@ public class ShardCommandManager extends BaseCommandManager {
       }
     }
     Map<Shard, Object> resultMap = new HashMap<Shard, Object>();
+    ExceptionCollector collector = null;
     for (Entry<Shard, Future<?>> e : futureMap.entrySet()) {
       Shard shard = e.getKey();
       Future<?> future = e.getValue();
@@ -154,9 +155,16 @@ public class ShardCommandManager extends BaseCommandManager {
       } catch (InterruptedException ex) {
         throw new IOException(ex);
       } catch (ExecutionException ex) {
-        throw new IOException(ex.getCause());
+        if (collector == null) {
+          collector = new ExceptionCollector();
+        }
+        collector.add(ex.getCause());
+        continue;
       }
       resultMap.put(shard, object);
+    }
+    if (collector != null) {
+      throw collector;
     }
     return resultMap;
   }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 
 import org.apache.blur.utils.BlurUtil;
 import org.apache.lucene.index.AtomicReader;
@@ -16,6 +17,9 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.BytesRef;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -55,7 +59,13 @@ public class TermsCommand extends Command implements ClusterCommand<List<String>
 
   @Override
   public List<String> combine(Map<Shard, List<String>> results) throws IOException {
-    return null;
+    TreeSet<String> terms = Sets.newTreeSet();
+    
+    for(List<String> t: results.values()) {
+      terms.addAll(t);
+    }
+    //TODO: Use default until we figure out the requested size from the context.
+    return Lists.newArrayList(terms).subList(0, Math.min(DEFAULT_SIZE, terms.size()));
   }
 
   @Override
@@ -104,7 +114,6 @@ public class TermsCommand extends Command implements ClusterCommand<List<String>
     }
 
     return new Term(fieldName, value);
-
   }
 
 }

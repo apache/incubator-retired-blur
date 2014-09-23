@@ -1,14 +1,16 @@
 package org.apache.blur.command;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -58,11 +60,37 @@ public class TermsCommandTest {
     assertEquals(expected, returned);
   }
 
+  @Test
+  public void combineShouldBeCorrect() throws IOException {
+    Map<Shard, List<String>> execResults = Maps.newHashMap();
+    execResults.put(new Shard("t1", "s1"), Lists.newArrayList("aa", "cc"));
+    execResults.put(new Shard("t1", "s2"), Lists.newArrayList("bb", "dd"));
+    
+    List<String> expected = Lists.newArrayList("aa", "bb", "cc", "dd");
+    
+    TermsCommand cmd = new TermsCommand();
+    List<String> returned = cmd.combine(execResults);
+    
+    assertEquals(expected, returned);
+  }
+  
+  @Test
+  public void combineEmptyShouldGiveNiceEmptyList() throws IOException {
+    Map<Shard, List<String>> execResults = Maps.newHashMap();
+    List<String> expected = Lists.newArrayList();
+    
+    TermsCommand cmd = new TermsCommand();
+    List<String> returned = cmd.combine(execResults);
+    
+    assertEquals(expected, returned);
+  }
+  
+  
   private List<String> getExecuteResult(IndexContext context) throws IOException {
     TermsCommand cmd = new TermsCommand();
     return cmd.execute(context);
   }
-
+  
   private IndexContext newContext(String field, Short size, String startsWith) {
 
     Args args = new Args();

@@ -261,11 +261,6 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public Configuration getConfiguration(String table) throws IOException {
-    return _tableContextFactory.getTableContext(table).getConfiguration();
-  }
-
-  @Override
   public <T> T readIndex(Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
     Future<T> future = readIndexAsync(args, clazz);
     try {

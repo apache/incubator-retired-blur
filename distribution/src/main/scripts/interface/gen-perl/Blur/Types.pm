@@ -4782,4 +4782,193 @@ sub write {
   return $xfer;
 }
 
+package Blur::CommandDescriptor;
+use base qw(Class::Accessor);
+Blur::CommandDescriptor->mk_accessors( qw( commandName description requiredArguments optionalArguments returnType version ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{commandName} = undef;
+  $self->{description} = undef;
+  $self->{requiredArguments} = undef;
+  $self->{optionalArguments} = undef;
+  $self->{returnType} = undef;
+  $self->{version} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{commandName}) {
+      $self->{commandName} = $vals->{commandName};
+    }
+    if (defined $vals->{description}) {
+      $self->{description} = $vals->{description};
+    }
+    if (defined $vals->{requiredArguments}) {
+      $self->{requiredArguments} = $vals->{requiredArguments};
+    }
+    if (defined $vals->{optionalArguments}) {
+      $self->{optionalArguments} = $vals->{optionalArguments};
+    }
+    if (defined $vals->{returnType}) {
+      $self->{returnType} = $vals->{returnType};
+    }
+    if (defined $vals->{version}) {
+      $self->{version} = $vals->{version};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'CommandDescriptor';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{commandName});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{description});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^3$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size240 = 0;
+          $self->{requiredArguments} = {};
+          my $_ktype241 = 0;
+          my $_vtype242 = 0;
+          $xfer += $input->readMapBegin(\$_ktype241, \$_vtype242, \$_size240);
+          for (my $_i244 = 0; $_i244 < $_size240; ++$_i244)
+          {
+            my $key245 = '';
+            my $val246 = '';
+            $xfer += $input->readString(\$key245);
+            $xfer += $input->readString(\$val246);
+            $self->{requiredArguments}->{$key245} = $val246;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^4$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size247 = 0;
+          $self->{optionalArguments} = {};
+          my $_ktype248 = 0;
+          my $_vtype249 = 0;
+          $xfer += $input->readMapBegin(\$_ktype248, \$_vtype249, \$_size247);
+          for (my $_i251 = 0; $_i251 < $_size247; ++$_i251)
+          {
+            my $key252 = '';
+            my $val253 = '';
+            $xfer += $input->readString(\$key252);
+            $xfer += $input->readString(\$val253);
+            $self->{optionalArguments}->{$key252} = $val253;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^5$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{returnType});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^6$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{version});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('CommandDescriptor');
+  if (defined $self->{commandName}) {
+    $xfer += $output->writeFieldBegin('commandName', TType::STRING, 1);
+    $xfer += $output->writeString($self->{commandName});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{description}) {
+    $xfer += $output->writeFieldBegin('description', TType::STRING, 2);
+    $xfer += $output->writeString($self->{description});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{requiredArguments}) {
+    $xfer += $output->writeFieldBegin('requiredArguments', TType::MAP, 3);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{requiredArguments}}));
+      {
+        while( my ($kiter254,$viter255) = each %{$self->{requiredArguments}}) 
+        {
+          $xfer += $output->writeString($kiter254);
+          $xfer += $output->writeString($viter255);
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{optionalArguments}) {
+    $xfer += $output->writeFieldBegin('optionalArguments', TType::MAP, 4);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{optionalArguments}}));
+      {
+        while( my ($kiter256,$viter257) = each %{$self->{optionalArguments}}) 
+        {
+          $xfer += $output->writeString($kiter256);
+          $xfer += $output->writeString($viter257);
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{returnType}) {
+    $xfer += $output->writeFieldBegin('returnType', TType::STRING, 5);
+    $xfer += $output->writeString($self->{returnType});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{version}) {
+    $xfer += $output->writeFieldBegin('version', TType::STRING, 6);
+    $xfer += $output->writeString($self->{version});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 1;

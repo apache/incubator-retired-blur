@@ -29,6 +29,7 @@
 <li><a href="Blur.html#Fn_Blur_fetchRow">fetchRow</a></li>
 <li><a href="Blur.html#Fn_Blur_fetchRowBatch">fetchRowBatch</a></li>
 <li><a href="Blur.html#Fn_Blur_isInSafeMode">isInSafeMode</a></li>
+<li><a href="Blur.html#Fn_Blur_listInstalledCommands">listInstalledCommands</a></li>
 <li><a href="Blur.html#Fn_Blur_listSnapshots">listSnapshots</a></li>
 <li><a href="Blur.html#Fn_Blur_logging">logging</a></li>
 <li><a href="Blur.html#Fn_Blur_metrics">metrics</a></li>
@@ -73,6 +74,7 @@
 <a href="Blur.html#Struct_BlurResults">BlurResults</a><br/>
 <a href="Blur.html#Struct_Column">Column</a><br/>
 <a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a><br/>
+<a href="Blur.html#Struct_CommandDescriptor">CommandDescriptor</a><br/>
 <a href="Blur.html#Struct_CommandStatus">CommandStatus</a><br/>
 <a href="Blur.html#Enum_CommandStatusState">CommandStatusState</a><br/>
 <a href="Blur.html#Struct_CpuTime">CpuTime</a><br/>
@@ -652,11 +654,23 @@ be family dot column, "family.column".
 <tr><td>3</td><td>commandName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>4</td><td>arguments</td><td><code><a href="Blur.html#Struct_Arguments">Arguments</a></code></td><td></td><td>default</td><td></td></tr>
 <tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_CommandStatusState">CommandStatusState</a></code></td><td></td><td>default</td><td></td></tr>
+</table><br/></div><div class="definition"><h3 id="Struct_CommandDescriptor">Struct: CommandDescriptor</h3>
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>commandName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>description</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>requiredArguments</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>4</td><td>optionalArguments</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>5</td><td>returnType</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>6</td><td>version</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 </table><br/></div><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
 The Blur service API.  This API is the same for both controller servers as well as
 shards servers.  Each of the methods are documented.
-<br/><div class="definition"><h4 id="Fn_Blur_execute">Function: Blur.execute</h4>
+<br/><div class="definition"><h4 id="Fn_Blur_listInstalledCommands">Function: Blur.listInstalledCommands</h4>
+<pre><code>list&lt;<code><a href="Blur.html#Struct_CommandDescriptor">CommandDescriptor</a></code>&gt;</code> listInstalledCommands()
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>List the currently installed commands in the server process.
+<br/></div><div class="definition"><h4 id="Fn_Blur_execute">Function: Blur.execute</h4>
 <pre><code><a href="Blur.html#Struct_Response">Response</a></code> execute(<code>string</code> commandName,
                  <code><a href="Blur.html#Struct_Arguments">Arguments</a></code> arguments)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_TimeoutException">TimeoutException</a></code>

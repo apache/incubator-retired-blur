@@ -12,6 +12,22 @@ module Blur
     class Client
       include ::Thrift::Client
 
+      def listInstalledCommands()
+        send_listInstalledCommands()
+        return recv_listInstalledCommands()
+      end
+
+      def send_listInstalledCommands()
+        send_message('listInstalledCommands', ListInstalledCommands_args)
+      end
+
+      def recv_listInstalledCommands()
+        result = receive_message(ListInstalledCommands_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'listInstalledCommands failed: unknown result')
+      end
+
       def execute(commandName, arguments)
         send_execute(commandName, arguments)
         return recv_execute()
@@ -774,6 +790,17 @@ module Blur
     class Processor
       include ::Thrift::Processor
 
+      def process_listInstalledCommands(seqid, iprot, oprot)
+        args = read_args(iprot, ListInstalledCommands_args)
+        result = ListInstalledCommands_result.new()
+        begin
+          result.success = @handler.listInstalledCommands()
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'listInstalledCommands', seqid)
+      end
+
       def process_execute(seqid, iprot, oprot)
         args = read_args(iprot, Execute_args)
         result = Execute_result.new()
@@ -1312,6 +1339,39 @@ module Blur
     end
 
     # HELPER FUNCTIONS AND STRUCTURES
+
+    class ListInstalledCommands_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ListInstalledCommands_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::CommandDescriptor}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
 
     class Execute_args
       include ::Thrift::Struct, ::Thrift::Struct_Union

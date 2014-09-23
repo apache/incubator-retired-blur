@@ -188,6 +188,13 @@ public boolean isInSafeMode(java.lang.String arg0) throws org.apache.blur.thrift
 }
 
 @Override
+public java.util.List listInstalledCommands() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    return super.listInstalledCommands();
+  } finally {_lock.unlock();}
+}
+
+@Override
 public java.util.Map listSnapshots(java.lang.String arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.listSnapshots(arg0);
@@ -401,6 +408,13 @@ public java.util.List recv_fetchRowBatch() throws org.apache.blur.thrift.generat
 public boolean recv_isInSafeMode() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.recv_isInSafeMode();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public java.util.List recv_listInstalledCommands() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    return super.recv_listInstalledCommands();
   } finally {_lock.unlock();}
 }
 
@@ -765,6 +779,13 @@ public void send_fetchRowBatch(java.lang.String arg0, java.util.List arg1) throw
 public void send_isInSafeMode(java.lang.String arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_isInSafeMode(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_listInstalledCommands() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_listInstalledCommands();
   } finally {_lock.unlock();}
 }
 

@@ -4544,3 +4544,197 @@ CommandStatus.prototype.write = function(output) {
   return;
 };
 
+CommandDescriptor = function(args) {
+  this.commandName = null;
+  this.description = null;
+  this.requiredArguments = null;
+  this.optionalArguments = null;
+  this.returnType = null;
+  this.version = null;
+  if (args) {
+    if (args.commandName !== undefined) {
+      this.commandName = args.commandName;
+    }
+    if (args.description !== undefined) {
+      this.description = args.description;
+    }
+    if (args.requiredArguments !== undefined) {
+      this.requiredArguments = args.requiredArguments;
+    }
+    if (args.optionalArguments !== undefined) {
+      this.optionalArguments = args.optionalArguments;
+    }
+    if (args.returnType !== undefined) {
+      this.returnType = args.returnType;
+    }
+    if (args.version !== undefined) {
+      this.version = args.version;
+    }
+  }
+};
+CommandDescriptor.prototype = {};
+CommandDescriptor.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.commandName = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.description = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.MAP) {
+        var _size270 = 0;
+        var _rtmp3274;
+        this.requiredArguments = {};
+        var _ktype271 = 0;
+        var _vtype272 = 0;
+        _rtmp3274 = input.readMapBegin();
+        _ktype271 = _rtmp3274.ktype;
+        _vtype272 = _rtmp3274.vtype;
+        _size270 = _rtmp3274.size;
+        for (var _i275 = 0; _i275 < _size270; ++_i275)
+        {
+          if (_i275 > 0 ) {
+            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+              input.rstack.pop();
+            }
+          }
+          var key276 = null;
+          var val277 = null;
+          key276 = input.readString().value;
+          val277 = input.readString().value;
+          this.requiredArguments[key276] = val277;
+        }
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 4:
+      if (ftype == Thrift.Type.MAP) {
+        var _size278 = 0;
+        var _rtmp3282;
+        this.optionalArguments = {};
+        var _ktype279 = 0;
+        var _vtype280 = 0;
+        _rtmp3282 = input.readMapBegin();
+        _ktype279 = _rtmp3282.ktype;
+        _vtype280 = _rtmp3282.vtype;
+        _size278 = _rtmp3282.size;
+        for (var _i283 = 0; _i283 < _size278; ++_i283)
+        {
+          if (_i283 > 0 ) {
+            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+              input.rstack.pop();
+            }
+          }
+          var key284 = null;
+          var val285 = null;
+          key284 = input.readString().value;
+          val285 = input.readString().value;
+          this.optionalArguments[key284] = val285;
+        }
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 5:
+      if (ftype == Thrift.Type.STRING) {
+        this.returnType = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 6:
+      if (ftype == Thrift.Type.STRING) {
+        this.version = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+CommandDescriptor.prototype.write = function(output) {
+  output.writeStructBegin('CommandDescriptor');
+  if (this.commandName !== null && this.commandName !== undefined) {
+    output.writeFieldBegin('commandName', Thrift.Type.STRING, 1);
+    output.writeString(this.commandName);
+    output.writeFieldEnd();
+  }
+  if (this.description !== null && this.description !== undefined) {
+    output.writeFieldBegin('description', Thrift.Type.STRING, 2);
+    output.writeString(this.description);
+    output.writeFieldEnd();
+  }
+  if (this.requiredArguments !== null && this.requiredArguments !== undefined) {
+    output.writeFieldBegin('requiredArguments', Thrift.Type.MAP, 3);
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.requiredArguments));
+    for (var kiter286 in this.requiredArguments)
+    {
+      if (this.requiredArguments.hasOwnProperty(kiter286))
+      {
+        var viter287 = this.requiredArguments[kiter286];
+        output.writeString(kiter286);
+        output.writeString(viter287);
+      }
+    }
+    output.writeMapEnd();
+    output.writeFieldEnd();
+  }
+  if (this.optionalArguments !== null && this.optionalArguments !== undefined) {
+    output.writeFieldBegin('optionalArguments', Thrift.Type.MAP, 4);
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.optionalArguments));
+    for (var kiter288 in this.optionalArguments)
+    {
+      if (this.optionalArguments.hasOwnProperty(kiter288))
+      {
+        var viter289 = this.optionalArguments[kiter288];
+        output.writeString(kiter288);
+        output.writeString(viter289);
+      }
+    }
+    output.writeMapEnd();
+    output.writeFieldEnd();
+  }
+  if (this.returnType !== null && this.returnType !== undefined) {
+    output.writeFieldBegin('returnType', Thrift.Type.STRING, 5);
+    output.writeString(this.returnType);
+    output.writeFieldEnd();
+  }
+  if (this.version !== null && this.version !== undefined) {
+    output.writeFieldBegin('version', Thrift.Type.STRING, 6);
+    output.writeString(this.version);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+

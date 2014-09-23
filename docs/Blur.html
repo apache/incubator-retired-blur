@@ -105,11 +105,13 @@ limitations under the License.
 <li><a href="#Struct_Response">Response</a></li>
 <li><a href="#Struct_Arguments">Arguments</a></li>
 <li><a href="#Struct_CommandStatus">CommandStatus</a></li>
+<li><a href="#Struct_CommandDescriptor">CommandDescriptor</a></li>
 </ul>
 </li>
 <li><a href="#Svc_Blur">Service</a>
 <ul class="nav">
-<li><a href="#Fn_Blur_execute">Table Methods</a><ul class="nav">
+<li><a href="#Fn_Blur_listInstalledCommands">Table Methods</a><ul class="nav">
+<li><a href="#Fn_Blur_listInstalledCommands">&nbsp;&nbsp;listInstalledCommands</a></li>
 <li><a href="#Fn_Blur_execute">&nbsp;&nbsp;execute</a></li>
 <li><a href="#Fn_Blur_reconnect">&nbsp;&nbsp;reconnect</a></li>
 <li><a href="#Fn_Blur_commandStatusList">&nbsp;&nbsp;commandStatusList</a></li>
@@ -712,11 +714,23 @@ be family dot column, "family.column".
 <tr><td>3</td><td>commandName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>4</td><td>arguments</td><td><code><a href="Blur.html#Struct_Arguments">Arguments</a></code></td><td></td><td>default</td><td></td></tr>
 <tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_CommandStatusState">CommandStatusState</a></code></td><td></td><td>default</td><td></td></tr>
+</table><br/></p></section><section><div class="page-header"><h3 id="Struct_CommandDescriptor">Struct: CommandDescriptor</h3></div><p class="lead">
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>commandName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>description</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>requiredArguments</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>4</td><td>optionalArguments</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>5</td><td>returnType</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>6</td><td>version</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 </table><br/></p></section><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
 The Blur service API.  This API is the same for both controller servers as well as
 shards servers.  Each of the methods are documented.
-<br/><section><div class="page-header"><h4 id="Fn_Blur_execute">Function: Blur.execute</h4></div><p class="lead">
+<br/><section><div class="page-header"><h4 id="Fn_Blur_listInstalledCommands">Function: Blur.listInstalledCommands</h4></div><p class="lead">
+<pre><code>list&lt;<code><a href="Blur.html#Struct_CommandDescriptor">CommandDescriptor</a></code>&gt;</code> listInstalledCommands()
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>List the currently installed commands in the server process.
+<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_execute">Function: Blur.execute</h4></div><p class="lead">
 <pre><code><a href="Blur.html#Struct_Response">Response</a></code> execute(<code>string</code> commandName,
 <code><a href="Blur.html#Struct_Arguments">Arguments</a></code> arguments)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_TimeoutException">TimeoutException</a></code>

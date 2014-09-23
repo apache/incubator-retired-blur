@@ -899,6 +899,15 @@ struct CommandStatus {
   5:CommandStatusState state
 }
 
+struct CommandDescriptor {
+  1:string commandName,
+  2:string description,
+  3:map<string, string> requiredArguments,
+  4:map<string, string> optionalArguments,
+  5:string returnType,
+  6:string version
+}
+
 /**
  * The Blur service API.  This API is the same for both controller servers as well as 
  * shards servers.  Each of the methods are documented.
@@ -906,6 +915,11 @@ struct CommandStatus {
 service Blur {
 
   // Platform Commands
+
+  /**
+   * List the currently installed commands in the server process.
+   */
+  list<CommandDescriptor> listInstalledCommands() throws (1:BlurException ex)
 
   /**
    * Executes the given command by name on the table with the provided arguments.

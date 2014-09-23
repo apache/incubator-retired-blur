@@ -29,7 +29,7 @@ public class DocumentCountTest  {
   
   @BeforeClass
   public static void init() {
-    ctx = TestContext.newSimpleAlpaNumContext();
+    ctx = CoreTestContext.newSimpleAlpaNumContext();
   }
 
   @Test

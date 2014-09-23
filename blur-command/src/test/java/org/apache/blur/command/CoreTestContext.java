@@ -33,44 +33,48 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
-public class TestContext extends IndexContext {
+public class CoreTestContext extends IndexContext {
   private RAMDirectory directory = new RAMDirectory();
+  private Args args = null;
 
-  private TestContext() {
+  private CoreTestContext() {
   }
-  
+
   /**
-   * Index will contain 26 documents with the following column/values:
-   * alpha = a-z (lowercase characters);
-   * num   = 0-25 
-   * val   = val (constant across all docs)
+   * Index will contain 26 documents with the following column/values: 
+   * alpha = double-letter a-z (lowercase characters); 
+   * num = 0-25 val = val (constant across all docs)
    * 
    * New columns may be added so don't rely on the column count in tests.
+   * 
    * @return
    */
   public static IndexContext newSimpleAlpaNumContext() {
-    TestContext ctx = new TestContext();
-    
+    CoreTestContext ctx = new CoreTestContext();
+
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new StandardAnalyzer(Version.LUCENE_43));
     try {
       IndexWriter writer = new IndexWriter(ctx.directory, conf);
-      
+
       for (int i = 0; i < 26; i++) {
-        String alpha = new Character((char) (97+i)).toString();
+        String alpha = new Character((char) (97 + i)).toString();
         Document doc = new Document();
-        
-        doc.add(new Field("alpha", alpha,TextField.TYPE_STORED));
+
+        doc.add(new Field("id", Integer.toString(i), TextField.TYPE_STORED));
+        doc.add(new Field("alpha", alpha + alpha, TextField.TYPE_STORED));
         doc.add(new Field("num", Integer.toString(i), TextField.TYPE_STORED));
         doc.add(new Field("val", "val", TextField.TYPE_STORED));
         
         writer.addDocument(doc);
+        
+        writer.commit();
       }
       writer.commit();
       writer.close();
     } catch (IOException e) {
       throw new RuntimeException("Unable to create test context.", e);
     }
-    
+
     return ctx;
   }
 
@@ -86,7 +90,7 @@ public class TestContext extends IndexContext {
 
   @Override
   public IndexSearcher getIndexSearcher() {
-    return null;
+    return new IndexSearcher(getIndexReader());
   }
 
   @Override
@@ -107,7 +111,7 @@ public class TestContext extends IndexContext {
 
   @Override
   public Args getArgs() {
-    return null;
+    return args;
   }
 
 }

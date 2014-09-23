@@ -6,7 +6,6 @@ import java.util.concurrent.Future;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.server.TableContext;
-import org.apache.hadoop.conf.Configuration;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more

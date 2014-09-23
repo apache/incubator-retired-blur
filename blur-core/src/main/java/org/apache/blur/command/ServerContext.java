@@ -1,7 +1,9 @@
 package org.apache.blur.command;
 
 import java.io.IOException;
-import java.io.Serializable;
+
+import org.apache.blur.BlurConfiguration;
+import org.apache.blur.server.TableContext;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -20,8 +22,12 @@ import java.io.Serializable;
  * the License.
  */
 
-public interface ClusterCommand<T> extends Serializable, Cloneable {
+public abstract class ServerContext {
 
-  T clusterExecute(ClusterContext context) throws IOException, InterruptedException;
+  public abstract Args getArgs();
+
+  public abstract TableContext getTableContext(String table) throws IOException;
+
+  public abstract BlurConfiguration getBlurConfiguration(String table) throws IOException;
 
 }

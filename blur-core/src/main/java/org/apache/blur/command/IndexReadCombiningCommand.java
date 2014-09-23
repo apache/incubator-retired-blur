@@ -21,8 +21,8 @@ import java.util.Map;
 
 public interface IndexReadCombiningCommand<T1, T2> {
 
-  T1 execute(IndexContext context) throws IOException;
+  T1 execute(IndexContext context) throws IOException, InterruptedException;
 
-  T2 combine(Map<Shard, T1> results) throws IOException;
+  T2 combine(ServerContext context, Map<Shard, T1> results) throws IOException, InterruptedException;
 
 }

@@ -20,15 +20,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.blur.command.Command;
-import org.apache.blur.command.BlurObject;
-import org.apache.blur.command.ClusterCommand;
-import org.apache.blur.command.ClusterContext;
-import org.apache.blur.command.IndexContext;
-import org.apache.blur.command.IndexReadCombiningCommand;
-import org.apache.blur.command.Server;
-import org.apache.blur.command.Shard;
-
 @SuppressWarnings("serial")
 public class TestBlurObjectCommand extends Command implements IndexReadCombiningCommand<BlurObject, BlurObject>,
     ClusterCommand<BlurObject> {
@@ -41,7 +32,7 @@ public class TestBlurObjectCommand extends Command implements IndexReadCombining
   }
 
   @Override
-  public BlurObject combine(Map<Shard, BlurObject> results) throws IOException {
+  public BlurObject combine(ServerContext context, Map<Shard, BlurObject> results) throws IOException {
     BlurObject blurObject = new BlurObject();
     long total = 0;
     for (Entry<Shard, BlurObject> e : results.entrySet()) {

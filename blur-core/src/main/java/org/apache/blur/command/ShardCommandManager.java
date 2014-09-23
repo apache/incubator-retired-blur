@@ -57,9 +57,30 @@ public class ShardCommandManager extends BaseCommandManager {
           throw new IOException("Command with name [" + commandName + "] not found.");
         }
         if (command instanceof IndexReadCommand || command instanceof IndexReadCombiningCommand) {
-          return toResponse(executeReadCommand(shardServerContext, command, tableContextFactory, args), command);
+          return toResponse(executeReadCommand(shardServerContext, command, tableContextFactory, args), command,
+              getServerContext(args, tableContextFactory));
         }
         throw new IOException("Command type of [" + command.getClass() + "] not supported.");
+      }
+
+      private ServerContext getServerContext(final Args args, final TableContextFactory tableContextFactory) {
+        return new ServerContext() {
+
+          @Override
+          public TableContext getTableContext(String table) throws IOException {
+            return tableContextFactory.getTableContext(table);
+          }
+
+          @Override
+          public Args getArgs() {
+            return args;
+          }
+
+          @Override
+          public BlurConfiguration getBlurConfiguration(String table) throws IOException {
+            return getTableContext(table).getBlurConfiguration();
+          }
+        };
       }
     };
     return submitDriverCallable(callable);
@@ -74,10 +95,11 @@ public class ShardCommandManager extends BaseCommandManager {
   }
 
   @SuppressWarnings("unchecked")
-  private Response toResponse(Map<Shard, Object> results, Command command) throws IOException {
+  private Response toResponse(Map<Shard, Object> results, Command command, ServerContext serverContext)
+      throws IOException, InterruptedException {
     if (command instanceof IndexReadCombiningCommand) {
       IndexReadCombiningCommand<Object, Object> primitiveCommandAggregator = (IndexReadCombiningCommand<Object, Object>) command;
-      Object object = primitiveCommandAggregator.combine(results);
+      Object object = primitiveCommandAggregator.combine(serverContext, results);
       return Response.createNewAggregateResponse(object);
     }
     return Response.createNewShardResponse(results);

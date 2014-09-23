@@ -13,9 +13,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.index.TermsEnum.SeekStatus;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.BytesRef;
 
 import com.google.common.collect.Lists;
@@ -37,6 +34,7 @@ import com.google.common.collect.Sets;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+@SuppressWarnings("serial")
 public class TermsCommand extends Command implements ClusterCommand<List<String>>,
     IndexReadCombiningCommand<List<String>, List<String>> {
   private static final String NAME = "terms";
@@ -44,7 +42,7 @@ public class TermsCommand extends Command implements ClusterCommand<List<String>
   private static final String P_SIZE = "size";
   private static final String P_FIELD = "fieldName";
   private static final String P_START = "startWith";
-      
+
   private static final short DEFAULT_SIZE = 10;
 
   @Override
@@ -58,13 +56,14 @@ public class TermsCommand extends Command implements ClusterCommand<List<String>
   }
 
   @Override
-  public List<String> combine(Map<Shard, List<String>> results) throws IOException {
+  public List<String> combine(ServerContext context, Map<Shard, List<String>> results) throws IOException {
     TreeSet<String> terms = Sets.newTreeSet();
-    
-    for(List<String> t: results.values()) {
+
+    for (List<String> t : results.values()) {
       terms.addAll(t);
     }
-    //TODO: Use default until we figure out the requested size from the context.
+    // TODO: Use default until we figure out the requested size from the
+    // context.
     return Lists.newArrayList(terms).subList(0, Math.min(DEFAULT_SIZE, terms.size()));
   }
 
@@ -80,7 +79,7 @@ public class TermsCommand extends Command implements ClusterCommand<List<String>
 
   private static List<String> terms(IndexReader reader, String fieldName, String startWith, short size)
       throws IOException {
-    
+
     Term term = getTerm(fieldName, startWith);
     List<String> terms = new ArrayList<String>(size);
     AtomicReader areader = BlurUtil.getAtomicReader(reader);
@@ -91,9 +90,9 @@ public class TermsCommand extends Command implements ClusterCommand<List<String>
     }
 
     TermsEnum termEnum = termsAll.iterator(null);
-    
+
     SeekStatus status = termEnum.seekCeil(term.bytes());
-    
+
     if (status == SeekStatus.END) {
       return terms;
     }

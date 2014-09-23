@@ -52,7 +52,7 @@ public class DocumentCountCombiner extends Command implements ClusterCommand<Lon
   }
 
   @Override
-  public Long combine(Map<Shard, Integer> results) throws IOException {
+  public Long combine(ServerContext context, Map<Shard, Integer> results) throws IOException {
     long total = 0;
     for (Integer i : results.values()) {
       total += i;

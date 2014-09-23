@@ -2,7 +2,6 @@ package org.apache.blur.command;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.server.TableContext;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 

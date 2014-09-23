@@ -58,7 +58,7 @@ public class ControllerCommandManager extends BaseCommandManager {
     });
   }
 
-  private Response executeClusterCommand(ClusterContext context, Command command) throws IOException {
+  private Response executeClusterCommand(ClusterContext context, Command command) throws IOException, InterruptedException {
     ClusterCommand<Object> clusterCommand = (ClusterCommand<Object>) command;
     Object object = clusterCommand.clusterExecute(context);
     return Response.createNewAggregateResponse(object);

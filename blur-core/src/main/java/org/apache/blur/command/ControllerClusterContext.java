@@ -130,7 +130,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
         public Map<Shard, T> call() throws Exception {
           Arguments arguments = CommandUtil.toArguments(args);
           Response response = waitForResponse(client, commandName, arguments);
-          Map<Shard, Object> shardToValue = CommandUtil.fromThriftToObject(response.getShardToValue());
+          Map<Shard, Object> shardToValue = CommandUtil.fromThriftToObjectShard(response.getShardToValue());
           return (Map<Shard, T>) shardToValue;
         }
       });

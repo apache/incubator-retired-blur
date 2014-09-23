@@ -41,11 +41,9 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
-
-
 public class BlurClient {
 
-  static class BlurClientInvocationHandler implements InvocationHandler {
+  public static class BlurClientInvocationHandler implements InvocationHandler {
 
     private final List<Connection> _connections;
     private final int _maxRetries;
@@ -63,6 +61,10 @@ public class BlurClient {
     public BlurClientInvocationHandler(List<Connection> connections) {
       this(connections, BlurClientManager.MAX_RETRIES, BlurClientManager.BACK_OFF_TIME,
           BlurClientManager.MAX_BACK_OFF_TIME);
+    }
+
+    public List<Connection> getConnections() {
+      return _connections;
     }
 
     @Override
@@ -89,21 +91,19 @@ public class BlurClient {
         }
       }, _maxRetries, _backOffTime, _maxBackOffTime);
     }
+  }
 
-  }
-  
   public static Iface getClient() {
-	try {
-	  return getClient(new BlurConfiguration());
-	} catch (IOException e) {
-		throw new RuntimeException("Unable to load configurations.", e);
-	}
+    try {
+      return getClient(new BlurConfiguration());
+    } catch (IOException e) {
+      throw new RuntimeException("Unable to load configurations.", e);
+    }
   }
-  
+
   public static Iface getClient(BlurConfiguration conf) {
-	List<String> onlineControllers = getOnlineControllers(conf);
-	  
-	return getClient(StringUtils.join(onlineControllers, ","));
+    List<String> onlineControllers = getOnlineControllers(conf);
+    return getClient(StringUtils.join(onlineControllers, ","));
   }
 
   /**
@@ -151,22 +151,21 @@ public class BlurClient {
     return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
         new BlurClientInvocationHandler(connections, maxRetries, backOffTime, maxBackOffTime));
   }
-  
+
   private static List<String> getOnlineControllers(BlurConfiguration conf) {
-	  String zkConn = conf.getExpected(BLUR_ZOOKEEPER_CONNECTION);
-	  int zkSessionTimeout = conf.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
-	  
-	  ZooKeeper zkClient = null;
-	  try {
-		  zkClient = ZkUtils.newZooKeeper(zkConn, zkSessionTimeout);
-		  return zkClient.getChildren(ZookeeperPathConstants.getOnlineControllersPath(), false);
-	  } catch (KeeperException e) {
-		  throw new RuntimeException("Error communicating with Zookeeper", e);
-	  } catch (InterruptedException e) {
-		  throw new RuntimeException("Error communicating with Zookeeper", e);
-	  } catch (IOException e) {
-		  throw new RuntimeException("Unable to initialize Zookeeper", e);
-	  }
+    String zkConn = conf.getExpected(BLUR_ZOOKEEPER_CONNECTION);
+    int zkSessionTimeout = conf.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
+    ZooKeeper zkClient = null;
+    try {
+      zkClient = ZkUtils.newZooKeeper(zkConn, zkSessionTimeout);
+      return zkClient.getChildren(ZookeeperPathConstants.getOnlineControllersPath(), false);
+    } catch (KeeperException e) {
+      throw new RuntimeException("Error communicating with Zookeeper", e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException("Error communicating with Zookeeper", e);
+    } catch (IOException e) {
+      throw new RuntimeException("Unable to initialize Zookeeper", e);
+    }
   }
 
 }

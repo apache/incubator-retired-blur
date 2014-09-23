@@ -145,12 +145,23 @@ public class CommandUtil {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> Map<Shard, T> fromThriftToObject(
+  public static <T> Map<Shard, T> fromThriftToObjectShard(
       Map<org.apache.blur.thrift.generated.Shard, ValueObject> shardToValue) {
     Map<Shard, T> result = new HashMap<Shard, T>();
     for (Entry<org.apache.blur.thrift.generated.Shard, ValueObject> e : shardToValue.entrySet()) {
       org.apache.blur.thrift.generated.Shard shard = e.getKey();
       result.put(new Shard(shard.getTable(), shard.getShard()), (T) CommandUtil.toObject(e.getValue()));
+    }
+    return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> Map<Server, T> fromThriftToObjectServer(
+      Map<org.apache.blur.thrift.generated.Server, ValueObject> serverToValue) {
+    Map<Server, T> result = new HashMap<Server, T>();
+    for (Entry<org.apache.blur.thrift.generated.Server, ValueObject> e : serverToValue.entrySet()) {
+      org.apache.blur.thrift.generated.Server server = e.getKey();
+      result.put(new Server(server.getServer()), (T) CommandUtil.toObject(e.getValue()));
     }
     return result;
   }
@@ -165,6 +176,22 @@ public class CommandUtil {
       return (T) ObjectArrayPacking.unpack(valueObject.getBlurObject());
     default:
       throw new RuntimeException("Type unknown.");
+    }
+  }
+
+  public static Object fromThriftResponseToObject(org.apache.blur.thrift.generated.Response response) {
+    org.apache.blur.thrift.generated.Response._Fields setField = response.getSetField();
+    switch (setField) {
+    case SERVER_TO_VALUE:
+      Map<org.apache.blur.thrift.generated.Server, ValueObject> serverToValue = response.getServerToValue();
+      return fromThriftToObjectServer(serverToValue);
+    case SHARD_TO_VALUE:
+      Map<org.apache.blur.thrift.generated.Shard, ValueObject> shardToValue = response.getShardToValue();
+      return fromThriftToObjectShard(shardToValue);
+    case VALUE:
+      return toObject(response.getValue());
+    default:
+      throw new RuntimeException("Not supported.");
     }
   }
 }

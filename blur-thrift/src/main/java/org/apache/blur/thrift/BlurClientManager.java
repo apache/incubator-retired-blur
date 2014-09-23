@@ -270,7 +270,7 @@ public class BlurClientManager {
     _badConnections.put(connection, NULL);
   }
 
-  private static boolean isBadConnection(Connection connection) {
+  public static boolean isBadConnection(Connection connection) {
     return _badConnections.containsKey(connection);
   }
 

@@ -1,4 +1,4 @@
-package org.apache.blur.thrift.util;
+package org.apache.blur.command.example;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,26 +18,27 @@ package org.apache.blur.thrift.util;
  */
 import java.io.IOException;
 
+import org.apache.blur.command.Args;
+import org.apache.blur.command.Command;
+import org.apache.blur.command.DocumentCountDefaultClusterCombine;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClientManager;
-import org.apache.blur.thrift.Connection;
-import org.apache.blur.thrift.generated.Arguments;
-import org.apache.blur.thrift.generated.Blur.Client;
+import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.Value;
-import org.apache.blur.thrift.generated.ValueObject;
 
-public class CommandExample {
+public class UsingDocumentCountDefaultClusterCombine {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    Client client = BlurClientManager.getClientPool().getClient(new Connection("localhost:40020"));
 
-    Arguments arguments = new Arguments();
-    arguments.putToValues("table", new ValueObject(ValueObject._Fields.VALUE, new Value(Value._Fields.STRING_VALUE,
-        "test")));
-//    arguments.putToValues("shard", new ValueObject(ValueObject._Fields.VALUE, new Value(Value._Fields.STRING_VALUE,
-//        "shard-00000000")));
+    Iface client = BlurClient.getClient("localhost:40020");
 
-    System.out.println(client.execute("docCountClusterCombine", arguments));
+    DocumentCountDefaultClusterCombine command = new DocumentCountDefaultClusterCombine();
+
+    Args arguments = new Args();
+    arguments.set("table", "test");
+
+    Long count = Command.run(command, arguments, client);
+
+    System.out.println(count);
   }
 }

@@ -56,7 +56,8 @@ public class TermsCommand extends Command implements ClusterCommand<List<String>
   }
 
   @Override
-  public List<String> combine(ServerContext context, Map<Shard, List<String>> results) throws IOException {
+  public List<String> combine(CombiningContext context, Map<? extends Location<?>, List<String>> results)
+      throws IOException, InterruptedException {
     TreeSet<String> terms = Sets.newTreeSet();
 
     for (List<String> t : results.values()) {

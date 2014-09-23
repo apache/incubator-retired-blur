@@ -22,7 +22,7 @@ import org.apache.blur.server.TableContext;
  * the License.
  */
 
-public abstract class ServerContext {
+public abstract class CombiningContext {
 
   public abstract Args getArgs();
 

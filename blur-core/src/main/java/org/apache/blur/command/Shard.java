@@ -17,7 +17,7 @@ package org.apache.blur.command;
  * the License.
  */
 
-public class Shard implements Comparable<Shard> {
+public class Shard extends Location<Shard> implements Comparable<Shard> {
 
   private final String _shard;
   private final String _table;

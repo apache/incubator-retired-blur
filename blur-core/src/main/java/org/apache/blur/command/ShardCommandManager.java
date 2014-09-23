@@ -63,8 +63,8 @@ public class ShardCommandManager extends BaseCommandManager {
         throw new IOException("Command type of [" + command.getClass() + "] not supported.");
       }
 
-      private ServerContext getServerContext(final Args args, final TableContextFactory tableContextFactory) {
-        return new ServerContext() {
+      private CombiningContext getServerContext(final Args args, final TableContextFactory tableContextFactory) {
+        return new CombiningContext() {
 
           @Override
           public TableContext getTableContext(String table) throws IOException {
@@ -95,7 +95,7 @@ public class ShardCommandManager extends BaseCommandManager {
   }
 
   @SuppressWarnings("unchecked")
-  private Response toResponse(Map<Shard, Object> results, Command command, ServerContext serverContext)
+  private Response toResponse(Map<Shard, Object> results, Command command, CombiningContext serverContext)
       throws IOException, InterruptedException {
     if (command instanceof IndexReadCombiningCommand) {
       IndexReadCombiningCommand<Object, Object> primitiveCommandAggregator = (IndexReadCombiningCommand<Object, Object>) command;

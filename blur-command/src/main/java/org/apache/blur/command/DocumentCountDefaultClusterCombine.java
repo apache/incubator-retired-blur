@@ -19,10 +19,32 @@ package org.apache.blur.command;
 import java.io.IOException;
 import java.util.Map;
 
-public interface IndexReadCombiningCommand<T1, T2> {
+import org.apache.blur.command.annotation.Description;
 
-  T1 execute(IndexContext context) throws IOException, InterruptedException;
+@SuppressWarnings("serial")
+@Description("Gets the number of visible documents in the index.")
+public class DocumentCountDefaultClusterCombine extends Command implements ClusterReadCombiningCommand<Integer, Long> {
 
-  T2 combine(CombiningContext context, Map<? extends Location<?>, T1> results) throws IOException, InterruptedException;
+  private static final String DOC_COUNT_CLUSTER_COMBINE = "docCountClusterCombine";
+
+  @Override
+  public String getName() {
+    return DOC_COUNT_CLUSTER_COMBINE;
+  }
+
+  @Override
+  public Integer execute(IndexContext context) throws IOException {
+    return context.getIndexReader().numDocs();
+  }
+
+  @Override
+  public Long combine(CombiningContext context, Map<? extends Location<?>, Integer> results) throws IOException,
+      InterruptedException {
+    long total = 0;
+    for (Integer i : results.values()) {
+      total += i;
+    }
+    return total;
+  }
 
 }

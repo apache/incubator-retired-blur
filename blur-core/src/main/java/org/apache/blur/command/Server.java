@@ -17,7 +17,7 @@ package org.apache.blur.command;
  * the License.
  */
 
-public class Server implements Comparable<Server> {
+public class Server extends Location<Server> implements Comparable<Server> {
 
   private final String _server;
 

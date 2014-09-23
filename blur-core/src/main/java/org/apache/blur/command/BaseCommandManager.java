@@ -470,7 +470,8 @@ public class BaseCommandManager implements Closeable {
         shardServerReturn = "shard->(" + returnType.getSimpleName() + ")";
       } else if (command instanceof IndexReadCombiningCommand) {
         IndexReadCombiningCommand<?, ?> indexReadCombiningCommand = (IndexReadCombiningCommand<?, ?>) command;
-        Method method = indexReadCombiningCommand.getClass().getMethod("combine", new Class[] { Map.class });
+        Method method = indexReadCombiningCommand.getClass().getMethod("combine",
+            new Class[] { CombiningContext.class, Map.class });
         Class<?> returnType = method.getReturnType();
         shardServerReturn = "server->(" + returnType.getSimpleName() + ")";
       } else {

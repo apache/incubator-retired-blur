@@ -32,11 +32,12 @@ public class TestBlurObjectCommand extends Command implements IndexReadCombining
   }
 
   @Override
-  public BlurObject combine(ServerContext context, Map<Shard, BlurObject> results) throws IOException {
+  public BlurObject combine(CombiningContext context, Map<? extends Location<?>, BlurObject> results)
+      throws IOException, InterruptedException {
     BlurObject blurObject = new BlurObject();
     long total = 0;
-    for (Entry<Shard, BlurObject> e : results.entrySet()) {
-      total += e.getValue().getInteger("docCount");
+    for (BlurObject bo : results.values()) {
+      total += bo.getInteger("docCount");
     }
     blurObject.put("docCount", total);
     return blurObject;

@@ -16,13 +16,6 @@
  */
 package org.apache.blur.command;
 
-import java.io.IOException;
-import java.util.Map;
-
-public interface IndexReadCombiningCommand<T1, T2> {
-
-  T1 execute(IndexContext context) throws IOException, InterruptedException;
-
-  T2 combine(CombiningContext context, Map<? extends Location<?>, T1> results) throws IOException, InterruptedException;
+public interface ClusterReadCombiningCommand<T1, T2> extends IndexReadCombiningCommand<T1, T2> {
 
 }

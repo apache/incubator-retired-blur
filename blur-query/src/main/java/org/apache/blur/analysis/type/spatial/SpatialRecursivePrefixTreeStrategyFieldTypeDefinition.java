@@ -22,7 +22,6 @@ import org.apache.blur.analysis.type.spatial.lucene.RecursivePrefixTreeStrategy;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
-import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.spatial.query.SpatialOperation;
 
 import com.spatial4j.core.context.SpatialContext;
@@ -47,12 +46,12 @@ public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinition extends BaseS
   @Override
   public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
     _ctx = SpatialContext.GEO;
-    SpatialPrefixTree grid = getSpatialPrefixTree(properties);
+    _grid = getSpatialPrefixTree(properties);
     boolean docValue = false;
     if (properties.get(DOC_VALUE) != null) {
       docValue = true;
     }
-    _strategy = new RecursivePrefixTreeStrategy(grid, fieldNameForThisInstance, docValue);
+    _strategy = new RecursivePrefixTreeStrategy(_grid, fieldNameForThisInstance, docValue);
     _shapeReadWriter = new ShapeReadWriter<SpatialContext>(_ctx);
     addSupportedIndexedShapes(Shape.class);
     addSupportedOperations(SpatialOperation.IsDisjointTo);

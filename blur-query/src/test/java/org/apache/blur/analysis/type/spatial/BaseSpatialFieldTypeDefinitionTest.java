@@ -92,6 +92,7 @@ public abstract class BaseSpatialFieldTypeDefinitionTest {
     BytesRef result = new BytesRef();
     sortedDocValues.get(0, result);
     assertEquals(s, result.utf8ToString());
+    System.out.println(result.utf8ToString());
     reader.close();
   }
 

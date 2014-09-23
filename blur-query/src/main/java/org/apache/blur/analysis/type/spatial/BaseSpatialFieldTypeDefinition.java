@@ -44,6 +44,7 @@ public abstract class BaseSpatialFieldTypeDefinition extends CustomFieldTypeDefi
 
   protected SpatialStrategy _strategy;
   protected SpatialContext _ctx;
+  protected SpatialPrefixTree _grid;
   protected ShapeReadWriter<SpatialContext> _shapeReadWriter;
   protected List<SpatialOperation> _supportedOperations;
   protected List<Class<? extends Shape>> _supportedIndexedShapes;

@@ -27,11 +27,11 @@ import org.apache.blur.command.annotation.RequiredArguments;
 import org.apache.blur.command.annotation.OptionalArguments;
 
 @SuppressWarnings("serial")
-@RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the wait for N number of seconds command.") })
+@RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the wait for N number of seconds command.", type = String.class) })
 @OptionalArguments({
 
-@Argument(name = "shard", value = "The shard id to execute the wait for N number of seconds command."),
-    @Argument(name = "seconds", value = "The number of seconds to sleep, the default is 30 seconds.")
+    @Argument(name = "shard", value = "The shard id to execute the wait for N number of seconds command.", type = String.class),
+    @Argument(name = "seconds", value = "The number of seconds to sleep, the default is 30 seconds.", type = Integer.class)
 
 })
 public class WaitForSeconds extends Command implements IndexReadCommand<Boolean> {

@@ -25,4 +25,6 @@ public @interface Argument {
   String name();
 
   String value();
+  
+  Class<?> type();
 }

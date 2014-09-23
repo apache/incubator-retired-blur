@@ -61,4 +61,11 @@ public abstract class Command {
     this.consoleReader = consoleReader;
   }
 
+  protected String addWhiteSpace(String s, int width) {
+    while (s.length() < width) {
+      s = s + " ";
+    }
+    return s;
+  }
+
 }

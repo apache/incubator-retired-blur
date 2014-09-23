@@ -17,6 +17,6 @@
  */
 package org.apache.blur.shell;
 
-public interface TableFirstArgCommand extends FirstArgCommand {
+public interface FirstArgCommand {
 
 }

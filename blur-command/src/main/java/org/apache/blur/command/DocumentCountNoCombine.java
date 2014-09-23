@@ -33,8 +33,8 @@ import org.apache.blur.command.annotation.OptionalArguments;
 
 @SuppressWarnings("serial")
 @Description("Gets the number of visible documents in the index.")
-@RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the document count command.") })
-@OptionalArguments({ @Argument(name = "shard", value = "The shard id to execute the document count command.") })
+@RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the document count command.", type = String.class) })
+@OptionalArguments({ @Argument(name = "shard", value = "The shard id to execute the document count command.", type = String.class) })
 public class DocumentCountNoCombine extends Command implements IndexReadCommand<Integer>, ClusterCommand<Long> {
 
   private static final String DOC_COUNT_NO_COMBINE = "docCountNoCombine";

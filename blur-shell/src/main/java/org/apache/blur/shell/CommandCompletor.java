@@ -32,6 +32,7 @@ import jline.console.completer.Completer;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.CommandDescriptor;
 
 public class CommandCompletor implements Completer {
 
@@ -80,19 +81,19 @@ public class CommandCompletor implements Completer {
     if (cmd == null) {
       return null;
     }
-    if (cmd instanceof TableFirstArgCommand) {
-      String tablePartial = "";
+    if (cmd instanceof FirstArgCommand) {
+      String partial = "";
       if (args.length == 2) {
-        tablePartial = args[1];
+        partial = args[1];
       }
       if (Main.cluster != null) {
         try {
-          List<String> list = new ArrayList<String>(_client.tableListByCluster(Main.cluster));
+          List<String> list = getOptions(cmd);
           Collections.sort(list);
           List<String> results = new ArrayList<String>();
-          for (String table : list) {
-            if (table.startsWith(tablePartial)) {
-              results.add(args[0] + " " + table);
+          for (String option : list) {
+            if (option.startsWith(partial)) {
+              results.add(args[0] + " " + option);
             }
           }
           return results;
@@ -112,30 +113,19 @@ public class CommandCompletor implements Completer {
     return null;
   }
 
-  public int complete(Iface client, String potentialTable, List<CharSequence> candidates, String commandName)
-      throws BlurException, TException {
-    SortedSet<String> tableList = new TreeSet<String>(client.tableList());
-    // buffer could be null
-    checkNotNull(candidates);
-
-    if (potentialTable == null) {
-      for (String table : tableList) {
-        candidates.add(commandName + " " + table);
+  private List<String> getOptions(Command cmd) throws BlurException, TException {
+    if (cmd instanceof TableFirstArgCommand) {
+      return new ArrayList<String>(_client.tableListByCluster(Main.cluster));
+    } else if (cmd instanceof CommandFirstArgCommand) {
+      List<CommandDescriptor> listInstalledCommands = _client.listInstalledCommands();
+      List<String> list = new ArrayList<String>();
+      for (CommandDescriptor commandDescriptor : listInstalledCommands) {
+        list.add(commandDescriptor.getCommandName());
       }
+      return list;
     } else {
-      for (String match : tableList.tailSet(potentialTable)) {
-        if (!match.startsWith(potentialTable)) {
-          break;
-        }
-        candidates.add(commandName + " " + match);
-      }
+      return new ArrayList<String>();
     }
-
-    if (candidates.size() == 1) {
-      candidates.set(0, candidates.get(0) + " ");
-    }
-
-    return candidates.isEmpty() ? -1 : 0;
   }
 
   private SortedSet<String> sort(Set<String> set) {

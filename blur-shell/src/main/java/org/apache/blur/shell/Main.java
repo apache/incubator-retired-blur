@@ -18,10 +18,7 @@
 
 package org.apache.blur.shell;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -42,11 +39,8 @@ import org.apache.blur.shell.Main.QuitCommand.QuitCommandException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BadConnectionException;
 import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.Connection;
-import org.apache.blur.thrift.commands.BlurCommand;
 import org.apache.blur.thrift.generated.Blur;
-import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Selector;
@@ -698,6 +692,8 @@ public class Main {
     register(builder, new RemoveShardServerCommand());
     register(builder, new OptimizeTableCommand());
     register(builder, new QueryCommand());
+    register(builder, new ListPlatformCommandsCommand());
+    register(builder, new DescribePlatformCommandCommand());
     commands = builder.build();
   }
 

@@ -129,7 +129,8 @@ public class BaseCommandManager implements Closeable {
       return arguments;
     }
     for (Argument argument : args) {
-      arguments.put(argument.name(), argument.value());
+      Class<?> type = argument.type();
+      arguments.put(argument.name(), ("(" + type.getSimpleName() + ") " + argument.value()).trim());
     }
     return arguments;
   }
@@ -433,12 +434,12 @@ public class BaseCommandManager implements Closeable {
         IndexReadCommand<?> indexReadCommand = (IndexReadCommand<?>) command;
         Method method = indexReadCommand.getClass().getMethod("execute", new Class[] { IndexContext.class });
         Class<?> returnType = method.getReturnType();
-        shardServerReturn = "shard->" + returnType.getSimpleName();
+        shardServerReturn = "shard->(" + returnType.getSimpleName() + ")";
       } else if (command instanceof IndexReadCombiningCommand) {
         IndexReadCombiningCommand<?, ?> indexReadCombiningCommand = (IndexReadCombiningCommand<?, ?>) command;
         Method method = indexReadCombiningCommand.getClass().getMethod("combine", new Class[] { Map.class });
         Class<?> returnType = method.getReturnType();
-        shardServerReturn = "server->" + returnType.getSimpleName();
+        shardServerReturn = "server->(" + returnType.getSimpleName() + ")";
       } else {
         shardServerReturn = null;
       }
@@ -446,7 +447,7 @@ public class BaseCommandManager implements Closeable {
         ClusterCommand<?> clusterCommand = (ClusterCommand<?>) command;
         Method method = clusterCommand.getClass().getMethod("clusterExecute", new Class[] { Map.class });
         Class<?> returnType = method.getReturnType();
-        String clusterReturn = "cluster->" + returnType.getSimpleName();
+        String clusterReturn = "cluster->(" + returnType.getSimpleName() + ")";
         if (shardServerReturn == null) {
           return clusterReturn;
         } else {

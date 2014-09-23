@@ -47,6 +47,13 @@ public class BlurObject {
     return (String) _valueMap.get(name);
   }
 
+  public String getString(String name, String defaultVal) {
+    if (!_valueMap.containsKey(name)) {
+      return defaultVal;
+    }
+    return getString(name);
+  }
+
   public void accumulate(String name, Integer value) {
     accumulate(name, (Object) value);
   }
@@ -57,6 +64,13 @@ public class BlurObject {
 
   public Integer getInteger(String name) {
     return (Integer) _valueMap.get(name);
+  }
+
+  public Integer getInteger(String name, Integer defaultVal) {
+    if (!_valueMap.containsKey(name)) {
+      return defaultVal;
+    }
+    return getInteger(name);
   }
 
   public void accumulate(String name, Short value) {
@@ -71,6 +85,13 @@ public class BlurObject {
     return (Short) _valueMap.get(name);
   }
 
+  public Short getShort(String name, Short defaultVal) {
+    if (!_valueMap.containsKey(name)) {
+      return defaultVal;
+    }
+    return getShort(name);
+  }
+
   public void accumulate(String name, Long value) {
     accumulate(name, (Object) value);
   }
@@ -81,6 +102,13 @@ public class BlurObject {
 
   public Long getLong(String name) {
     return (Long) _valueMap.get(name);
+  }
+
+  public Long getLong(String name, Long defaultVal) {
+    if (!_valueMap.containsKey(name)) {
+      return defaultVal;
+    }
+    return getLong(name);
   }
 
   public void accumulate(String name, Double value) {
@@ -95,6 +123,13 @@ public class BlurObject {
     return (Double) _valueMap.get(name);
   }
 
+  public Double getDouble(String name, Double defaultVal) {
+    if (!_valueMap.containsKey(name)) {
+      return defaultVal;
+    }
+    return getDouble(name);
+  }
+
   public void accumulate(String name, Float value) {
     accumulate(name, (Object) value);
   }
@@ -105,6 +140,13 @@ public class BlurObject {
 
   public Float getFloat(String name) {
     return (Float) _valueMap.get(name);
+  }
+
+  public Float getFloat(String name, Float defaultVal) {
+    if (!_valueMap.containsKey(name)) {
+      return defaultVal;
+    }
+    return getFloat(name);
   }
 
   public void accumulate(String name, byte[] value) {
@@ -119,6 +161,13 @@ public class BlurObject {
     return (byte[]) _valueMap.get(name);
   }
 
+  public byte[] getBinary(String name, byte[] defaultVal) {
+    if (!_valueMap.containsKey(name)) {
+      return defaultVal;
+    }
+    return getBinary(name);
+  }
+
   public void accumulate(String name, Boolean value) {
     accumulate(name, (Object) value);
   }
@@ -129,6 +178,13 @@ public class BlurObject {
 
   public Boolean getBoolean(String name) {
     return (Boolean) _valueMap.get(name);
+  }
+
+  public Boolean getBoolean(String name, Boolean defaultVal) {
+    if (!_valueMap.containsKey(name)) {
+      return defaultVal;
+    }
+    return getBoolean(name);
   }
 
   public void accumulate(String name, BlurObject value) {

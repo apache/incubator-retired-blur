@@ -33,8 +33,6 @@ public abstract class ClusterContext {
 
   public abstract BlurConfiguration getBlurConfiguration(String table) throws IOException;
 
-  public abstract Configuration getConfiguration(String table) throws IOException;
-
   public abstract <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexReadCommand<T>> clazz)
       throws IOException;
 

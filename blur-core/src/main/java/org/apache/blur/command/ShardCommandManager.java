@@ -218,11 +218,6 @@ public class ShardCommandManager extends BaseCommandManager {
       return _tableContext.getBlurConfiguration();
     }
 
-    @Override
-    public Configuration getConfiguration() {
-      return _tableContext.getConfiguration();
-    }
-
   }
 
   public void cancel(ExecutionId executionId) {

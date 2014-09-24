@@ -61,7 +61,7 @@ public class TermsCommand extends Command implements ClusterReadCombiningCommand
     TreeSet<String> terms = Sets.newTreeSet();
 
     for (BlurArray t : results.values()) {
-      terms.addAll((List<String>)t.getList());
+      terms.addAll((List<String>)t.asList());
     }
     // TODO: Use default until we figure out the requested size from the
     // context.

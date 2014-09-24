@@ -35,7 +35,7 @@ public class BlurArray {
     _values .addAll(vals);
   }
   
-  public List<? extends Object> getList() {
+  public List<? extends Object> asList() {
     return _values;
   }
 

@@ -35,7 +35,7 @@ public class BlurObject {
     _valueMap.putAll(object._valueMap);
   }
 
-  public Map<String, Object> getMap() {
+  public Map<String, Object> asMap() {
     return _valueMap;
   }
 

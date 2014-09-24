@@ -31,6 +31,10 @@ public class BlurArray {
     _values.addAll(array._values);
   }
 
+  public List<Object> getList() {
+    return _values;
+  }
+
   public void clear() {
     _values.clear();
   }

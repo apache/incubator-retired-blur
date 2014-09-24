@@ -1,10 +1,3 @@
-package org.apache.blur.command;
-
-import java.io.IOException;
-
-import org.apache.blur.BlurConfiguration;
-import org.apache.blur.server.TableContext;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
@@ -21,6 +14,12 @@ import org.apache.blur.server.TableContext;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.blur.command;
+
+import java.io.IOException;
+
+import org.apache.blur.BlurConfiguration;
+import org.apache.blur.server.TableContext;
 
 public abstract class CombiningContext {
 

@@ -35,6 +35,10 @@ public class BlurObject {
     _valueMap.putAll(object._valueMap);
   }
 
+  public Map<String, Object> getMap() {
+    return _valueMap;
+  }
+
   public void accumulate(String name, String value) {
     accumulate(name, (Object) value);
   }

@@ -31,7 +31,11 @@ public class BlurArray {
     _values.addAll(array._values);
   }
 
-  public List<Object> getList() {
+  public BlurArray(List<? extends Object> vals) {
+    _values .addAll(vals);
+  }
+  
+  public List<? extends Object> getList() {
     return _values;
   }
 

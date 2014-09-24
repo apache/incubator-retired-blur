@@ -38,55 +38,55 @@ public class TermsCommandTest {
 
   @Test
   public void basicTermsShouldReturn() throws IOException {
-    List<String> returned = getExecuteResult(newContext("val", null, null));
-    List<String> expected = Lists.newArrayList("val");
+    BlurArray returned = getExecuteResult(newContext("val", null, null));
+    BlurArray expected = new BlurArray(Lists.newArrayList("val"));
 
     assertEquals(expected, returned);
   }
 
   @Test
   public void sizeOfTermsRequestShouldBeRespected() throws IOException {
-    List<String> returned = getExecuteResult(newContext("alpha", (short) 7, null));
-    List<String> expected = Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg");
+    BlurArray returned = getExecuteResult(newContext("alpha", (short) 7, null));
+    BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg"));
 
     assertEquals(expected, returned);
   }
 
   @Test
   public void sizeShouldDefaultToTen() throws IOException {
-    List<String> returned = getExecuteResult(newContext("alpha", null, null));
-    List<String> expected = Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj");
+    BlurArray returned = getExecuteResult(newContext("alpha", null, null));
+    BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj"));
 
     assertEquals(expected, returned);
   }
 
   @Test
   public void combineShouldBeCorrect() throws IOException, InterruptedException {
-    Map<Shard, List<String>> execResults = Maps.newHashMap();
-    execResults.put(new Shard("t1", "s1"), Lists.newArrayList("aa", "cc"));
-    execResults.put(new Shard("t1", "s2"), Lists.newArrayList("bb", "dd"));
+    Map<Shard, BlurArray> execResults = Maps.newHashMap();
+    execResults.put(new Shard("t1", "s1"), new BlurArray(Lists.newArrayList("aa", "cc")));
+    execResults.put(new Shard("t1", "s2"), new BlurArray(Lists.newArrayList("bb", "dd")));
     
-    List<String> expected = Lists.newArrayList("aa", "bb", "cc", "dd");
+    BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd"));
     
     TermsCommand cmd = new TermsCommand();
-    List<String> returned = cmd.combine(new TestCombiningContext(), execResults);
+    BlurArray returned = cmd.combine(new TestCombiningContext(), execResults);
     
     assertEquals(expected, returned);
   }
   
   @Test
   public void combineEmptyShouldGiveNiceEmptyList() throws IOException, InterruptedException {
-    Map<Shard, List<String>> execResults = Maps.newHashMap();
-    List<String> expected = Lists.newArrayList();
+    Map<Shard, BlurArray> execResults = Maps.newHashMap();
+    BlurArray expected = new BlurArray(Lists.newArrayList());
     
     TermsCommand cmd = new TermsCommand();
-    List<String> returned = cmd.combine(new TestCombiningContext(), execResults);
+    BlurArray returned = cmd.combine(new TestCombiningContext(), execResults);
     
     assertEquals(expected, returned);
   }
   
   
-  private List<String> getExecuteResult(IndexContext context) throws IOException {
+  private BlurArray getExecuteResult(IndexContext context) throws IOException {
     TermsCommand cmd = new TermsCommand();
     return cmd.execute(context);
   }

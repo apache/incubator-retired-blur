@@ -22,23 +22,26 @@ import org.apache.blur.server.TableContext;
  * limitations under the License.
  */
 public class TestCombiningContext extends CombiningContext {
-
+  private Args args = new Args();
+  
+  public TestCombiningContext() {}
+  
+  public TestCombiningContext(Args a) {
+    this.args = a;
+  }
   
   @Override
   public Args getArgs() {
-    // TODO Auto-generated method stub
-    return null;
+    return args;
   }
 
   @Override
   public TableContext getTableContext(String table) throws IOException {
-    // TODO Auto-generated method stub
     return null;
   }
 
   @Override
   public BlurConfiguration getBlurConfiguration(String table) throws IOException {
-    // TODO Auto-generated method stub
     return null;
   }
 

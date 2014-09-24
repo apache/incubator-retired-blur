@@ -35,8 +35,8 @@ import com.google.common.collect.Sets;
  * the License.
  */
 @SuppressWarnings("serial")
-public class TermsCommand extends Command implements ClusterCommand<List<String>>,
-    IndexReadCombiningCommand<List<String>, List<String>> {
+public class TermsCommand extends Command implements ClusterReadCombiningCommand<BlurArray>,
+    IndexReadCombiningCommand<BlurArray, BlurArray> {
   private static final String NAME = "terms";
   private static final String PARAMS = "params";
   private static final String P_SIZE = "size";
@@ -46,31 +46,26 @@ public class TermsCommand extends Command implements ClusterCommand<List<String>
   private static final short DEFAULT_SIZE = 10;
 
   @Override
-  public List<String> execute(IndexContext context) throws IOException {
+  public BlurArray execute(IndexContext context) throws IOException {
     BlurObject params = context.getArgs().get(PARAMS);
     short size = params.getShort(P_SIZE, DEFAULT_SIZE);
     String fieldName = params.get(P_FIELD);
     String startWith = params.getString(P_START, "");
 
-    return terms(context.getIndexReader(), fieldName, startWith, size);
+    return new BlurArray(terms(context.getIndexReader(), fieldName, startWith, size));
   }
 
   @Override
-  public List<String> combine(CombiningContext context, Map<? extends Location<?>, List<String>> results)
+  public BlurArray combine(CombiningContext context, Map<? extends Location<?>, BlurArray> results)
       throws IOException, InterruptedException {
     TreeSet<String> terms = Sets.newTreeSet();
 
-    for (List<String> t : results.values()) {
-      terms.addAll(t);
+    for (BlurArray t : results.values()) {
+      terms.addAll((List<String>)t.getList());
     }
     // TODO: Use default until we figure out the requested size from the
     // context.
-    return Lists.newArrayList(terms).subList(0, Math.min(DEFAULT_SIZE, terms.size()));
-  }
-
-  @Override
-  public List<String> clusterExecute(ClusterContext context) throws IOException {
-    return null;
+    return new BlurArray(Lists.newArrayList(terms).subList(0, Math.min(DEFAULT_SIZE, terms.size())));
   }
 
   @Override

@@ -56,16 +56,27 @@ public class TermsCommand extends Command implements ClusterReadCombiningCommand
   }
 
   @Override
-  public BlurArray combine(CombiningContext context, Map<? extends Location<?>, BlurArray> results)
-      throws IOException, InterruptedException {
+  public BlurArray combine(CombiningContext context, Map<? extends Location<?>, BlurArray> results) throws IOException,
+      InterruptedException {
     TreeSet<String> terms = Sets.newTreeSet();
+    
 
     for (BlurArray t : results.values()) {
-      terms.addAll((List<String>)t.asList());
+      terms.addAll((List<String>) t.asList());
     }
-    // TODO: Use default until we figure out the requested size from the
-    // context.
-    return new BlurArray(Lists.newArrayList(terms).subList(0, Math.min(DEFAULT_SIZE, terms.size())));
+
+    short size = getSize(context);
+
+    return new BlurArray(Lists.newArrayList(terms).subList(0, Math.min((int) size, terms.size())));
+  }
+
+  private short getSize(CombiningContext context) {
+    short size = DEFAULT_SIZE;
+    if ((context.getArgs() != null) && (context.getArgs().containsArg(PARAMS))) {
+      BlurObject params = context.getArgs().get(PARAMS);
+      size = params.getShort(P_SIZE, DEFAULT_SIZE);
+    }
+    return size;
   }
 
   @Override

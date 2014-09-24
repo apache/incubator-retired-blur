@@ -43,5 +43,9 @@ public class Args {
   public Map<String, Object> getValues() {
     return _values;
   }
+  
+  public boolean containsArg(String name) {
+    return _values.containsKey(name);
+  }
 
 }

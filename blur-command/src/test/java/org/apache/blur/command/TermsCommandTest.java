@@ -59,17 +59,39 @@ public class TermsCommandTest {
 
     assertEquals(expected, returned);
   }
+  
+  @Test
+  public void combineSizeShouldDefaultToTen() throws IOException, InterruptedException {
+    Map<Shard, BlurArray> execResults = Maps.newHashMap();
+    execResults.put(new Shard("t1", "s1"), new BlurArray(Lists.newArrayList("aa", "cc", "ee", "gg", "ii")));
+    execResults.put(new Shard("t1", "s2"), new BlurArray(Lists.newArrayList("bb", "dd", "ff", "hh", "jj")));
+    
+    BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj"));
+    
+    TermsCommand cmd = new TermsCommand();
+    Args args = new Args();
+    BlurObject params = new BlurObject();
+    args.set("params", params);
+    BlurArray returned = cmd.combine(new TestCombiningContext(args), execResults);
+    
+    assertEquals(expected, returned);
+  }
 
   @Test
-  public void combineShouldBeCorrect() throws IOException, InterruptedException {
+  public void combineShouldRespectSize() throws IOException, InterruptedException {
     Map<Shard, BlurArray> execResults = Maps.newHashMap();
     execResults.put(new Shard("t1", "s1"), new BlurArray(Lists.newArrayList("aa", "cc")));
     execResults.put(new Shard("t1", "s2"), new BlurArray(Lists.newArrayList("bb", "dd")));
     
-    BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd"));
+    BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb"));
     
     TermsCommand cmd = new TermsCommand();
-    BlurArray returned = cmd.combine(new TestCombiningContext(), execResults);
+    Args args = new Args();
+    BlurObject params = new BlurObject();
+    params.put("size", (short)2);
+    args.set("params", params);
+    
+    BlurArray returned = cmd.combine(new TestCombiningContext(args), execResults);
     
     assertEquals(expected, returned);
   }

@@ -51,7 +51,7 @@ public class DocumentCountCombinerTest  {
     Map<Shard, Integer>  shardTotals = Maps
         .newHashMap(ImmutableMap
             .of(new Shard("t1","s1"), 10, new Shard("t1","s2"), 20, new Shard("t1","s3"), 30));
-    long total = dc.combine(shardTotals);
+    long total = dc.combine(new TestCombiningContext(), shardTotals);
     
     assertEquals(60l, total);
   }

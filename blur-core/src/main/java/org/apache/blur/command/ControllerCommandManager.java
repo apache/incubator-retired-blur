@@ -98,10 +98,10 @@ public class ControllerCommandManager extends BaseCommandManager {
 
   private Response executeClusterReadCombiningCommand(Args args, ClusterContext context, Command command,
       CombiningContext combiningContext) throws IOException, InterruptedException {
-    Class<? extends ClusterReadCombiningCommand<Object, Object>> clazz = (Class<? extends ClusterReadCombiningCommand<Object, Object>>) command
+    Class<? extends ClusterReadCombiningCommand<Object>> clazz = (Class<? extends ClusterReadCombiningCommand<Object>>) command
         .getClass();
     Map<Server, Object> results = context.readServers(args, clazz);
-    ClusterReadCombiningCommand<Object, Object> clusterReadCombiningCommand = (ClusterReadCombiningCommand<Object, Object>) command;
+    ClusterReadCombiningCommand<Object> clusterReadCombiningCommand = (ClusterReadCombiningCommand<Object>) command;
     Object result = clusterReadCombiningCommand.combine(combiningContext, (Map<? extends Location<?>, Object>) results);
     return Response.createNewAggregateResponse(result);
   }

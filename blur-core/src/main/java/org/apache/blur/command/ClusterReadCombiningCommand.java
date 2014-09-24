@@ -16,6 +16,6 @@
  */
 package org.apache.blur.command;
 
-public interface ClusterReadCombiningCommand<T1, T2> extends IndexReadCombiningCommand<T1, T2> {
+public interface ClusterReadCombiningCommand<T> extends IndexReadCombiningCommand<T, T> {
 
 }

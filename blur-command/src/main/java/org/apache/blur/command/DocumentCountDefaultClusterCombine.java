@@ -23,7 +23,7 @@ import org.apache.blur.command.annotation.Description;
 
 @SuppressWarnings("serial")
 @Description("Gets the number of visible documents in the index.")
-public class DocumentCountDefaultClusterCombine extends Command implements ClusterReadCombiningCommand<Integer, Long> {
+public class DocumentCountDefaultClusterCombine extends Command implements ClusterReadCombiningCommand<Long> {
 
   private static final String DOC_COUNT_CLUSTER_COMBINE = "docCountClusterCombine";
 
@@ -33,16 +33,16 @@ public class DocumentCountDefaultClusterCombine extends Command implements Clust
   }
 
   @Override
-  public Integer execute(IndexContext context) throws IOException {
-    return context.getIndexReader().numDocs();
+  public Long execute(IndexContext context) throws IOException {
+    return (long) context.getIndexReader().numDocs();
   }
 
   @Override
-  public Long combine(CombiningContext context, Map<? extends Location<?>, Integer> results) throws IOException,
+  public Long combine(CombiningContext context, Map<? extends Location<?>, Long> results) throws IOException,
       InterruptedException {
     long total = 0;
-    for (Integer i : results.values()) {
-      total += i;
+    for (Long l : results.values()) {
+      total += l;
     }
     return total;
   }

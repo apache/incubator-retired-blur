@@ -86,13 +86,13 @@ public abstract class Command implements Serializable, Cloneable {
     return (Map<Server, T>) runInternal((Command) command, arguments, connection);
   }
 
-  public static <T> T run(ClusterReadCombiningCommand<?, T> command, Args arguments, Blur.Iface client)
+  public static <T> T run(ClusterReadCombiningCommand<T> command, Args arguments, Blur.Iface client)
       throws IOException, BlurException, TException {
     return run(command, arguments, getConnection(client));
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T run(ClusterReadCombiningCommand<?, T> command, Args arguments, Connection... connection)
+  public static <T> T run(ClusterReadCombiningCommand<T> command, Args arguments, Connection... connection)
       throws IOException, BlurException, TException {
     return (T) runInternal((Command) command, arguments, connection);
   }

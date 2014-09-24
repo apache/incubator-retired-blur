@@ -61,7 +61,7 @@ public class TermsCommandTest {
   }
 
   @Test
-  public void combineShouldBeCorrect() throws IOException {
+  public void combineShouldBeCorrect() throws IOException, InterruptedException {
     Map<Shard, List<String>> execResults = Maps.newHashMap();
     execResults.put(new Shard("t1", "s1"), Lists.newArrayList("aa", "cc"));
     execResults.put(new Shard("t1", "s2"), Lists.newArrayList("bb", "dd"));
@@ -69,18 +69,18 @@ public class TermsCommandTest {
     List<String> expected = Lists.newArrayList("aa", "bb", "cc", "dd");
     
     TermsCommand cmd = new TermsCommand();
-    List<String> returned = cmd.combine(execResults);
+    List<String> returned = cmd.combine(new TestCombiningContext(), execResults);
     
     assertEquals(expected, returned);
   }
   
   @Test
-  public void combineEmptyShouldGiveNiceEmptyList() throws IOException {
+  public void combineEmptyShouldGiveNiceEmptyList() throws IOException, InterruptedException {
     Map<Shard, List<String>> execResults = Maps.newHashMap();
     List<String> expected = Lists.newArrayList();
     
     TermsCommand cmd = new TermsCommand();
-    List<String> returned = cmd.combine(execResults);
+    List<String> returned = cmd.combine(new TestCombiningContext(), execResults);
     
     assertEquals(expected, returned);
   }

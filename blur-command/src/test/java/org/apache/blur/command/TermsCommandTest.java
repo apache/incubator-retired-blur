@@ -3,7 +3,6 @@ package org.apache.blur.command;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.BeforeClass;
@@ -59,21 +58,21 @@ public class TermsCommandTest {
 
     assertEquals(expected, returned);
   }
-  
+
   @Test
   public void combineSizeShouldDefaultToTen() throws IOException, InterruptedException {
     Map<Shard, BlurArray> execResults = Maps.newHashMap();
     execResults.put(new Shard("t1", "s1"), new BlurArray(Lists.newArrayList("aa", "cc", "ee", "gg", "ii")));
     execResults.put(new Shard("t1", "s2"), new BlurArray(Lists.newArrayList("bb", "dd", "ff", "hh", "jj")));
-    
+
     BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj"));
-    
+
     TermsCommand cmd = new TermsCommand();
     Args args = new Args();
     BlurObject params = new BlurObject();
     args.set("params", params);
     BlurArray returned = cmd.combine(new TestCombiningContext(args), execResults);
-    
+
     assertEquals(expected, returned);
   }
 
@@ -82,37 +81,36 @@ public class TermsCommandTest {
     Map<Shard, BlurArray> execResults = Maps.newHashMap();
     execResults.put(new Shard("t1", "s1"), new BlurArray(Lists.newArrayList("aa", "cc")));
     execResults.put(new Shard("t1", "s2"), new BlurArray(Lists.newArrayList("bb", "dd")));
-    
+
     BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb"));
-    
+
     TermsCommand cmd = new TermsCommand();
     Args args = new Args();
     BlurObject params = new BlurObject();
-    params.put("size", (short)2);
+    params.put("size", (short) 2);
     args.set("params", params);
-    
+
     BlurArray returned = cmd.combine(new TestCombiningContext(args), execResults);
-    
+
     assertEquals(expected, returned);
   }
-  
+
   @Test
   public void combineEmptyShouldGiveNiceEmptyList() throws IOException, InterruptedException {
     Map<Shard, BlurArray> execResults = Maps.newHashMap();
     BlurArray expected = new BlurArray(Lists.newArrayList());
-    
+
     TermsCommand cmd = new TermsCommand();
     BlurArray returned = cmd.combine(new TestCombiningContext(), execResults);
-    
+
     assertEquals(expected, returned);
   }
-  
-  
+
   private BlurArray getExecuteResult(IndexContext context) throws IOException {
     TermsCommand cmd = new TermsCommand();
     return cmd.execute(context);
   }
-  
+
   private IndexContext newContext(String field, Short size, String startsWith) {
 
     Args args = new Args();

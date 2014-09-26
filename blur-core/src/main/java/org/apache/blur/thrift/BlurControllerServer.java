@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
@@ -980,7 +981,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }, new Merger<List<String>>() {
         @Override
         public List<String> merge(BlurExecutorCompletionService<List<String>> service) throws BlurException {
-          TreeSet<String> terms = new TreeSet<String>();
+          SortedSet<String> terms = new TreeSet<String>();
           while (service.getRemainingCount() > 0) {
             Future<List<String>> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true, table,
                 columnFamily, columnName, startWith, size);

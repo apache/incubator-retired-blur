@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.apache.blur.utils.BlurUtil;
@@ -58,7 +59,7 @@ public class TermsCommand extends Command implements ClusterReadCombiningCommand
   @Override
   public BlurArray combine(CombiningContext context, Map<? extends Location<?>, BlurArray> results) throws IOException,
       InterruptedException {
-    TreeSet<String> terms = Sets.newTreeSet();
+    SortedSet<String> terms = Sets.newTreeSet();
     
 
     for (BlurArray t : results.values()) {

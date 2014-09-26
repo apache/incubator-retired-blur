@@ -18,28 +18,24 @@ package org.apache.blur.console.util;
  */
 
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.Properties;
+
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.console.providers.AuthenticationDenied;
 import org.apache.blur.console.providers.EmptyAuthorization;
 import org.apache.blur.console.providers.IAuthenticationProvider;
 import org.apache.blur.console.providers.IAuthorizationProvider;
-import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 
 public class Config {
 
@@ -50,8 +46,6 @@ public class Config {
 
   private static int port;
   private static BlurConfiguration blurConfig;
-  private static ZookeeperClusterStatus zk;
-  private static String blurConnection;
   private static Object cluster;
   private static IAuthenticationProvider authenticationProvider;
   private static IAuthorizationProvider authorizationProvider;
@@ -73,8 +67,6 @@ public class Config {
       setDevelopmentZookeeperConnection();
       setDevelopmentProperties();
     }
-    zk = new ZookeeperClusterStatus(blurConfig.get("blur.zookeeper.connection"), blurConfig);
-    blurConnection = buildConnectionString();
     port = blurConfig.getInt("blur.console.port", DEFAULT_PORT);
     cachingBlurClient = new CachingBlurClient(blurConfig.getInt("blur.console.refreshtime", DEFAULT_REFRESH_TIME));
     setupProviders();
@@ -101,10 +93,10 @@ public class Config {
     }
   }
 
+  @SuppressWarnings("rawtypes")
   private static void setupProviders() throws Exception {
     String authenticationProviderClassName = blurConfig.get("blur.console.authentication.provider", "org.apache.blur.console.providers.AllAuthenticated");
     String authorizationProviderClassName = blurConfig.get("blur.console.authorization.provider");
-
 
     Class authenticationProviderClass = Class.forName(authenticationProviderClassName, false, Config.class.getClassLoader());
 
@@ -138,20 +130,6 @@ public class Config {
     }
   }
 
-  public static String getConnectionString() {
-    return blurConnection;
-  }
-
-  public static ZookeeperClusterStatus getZookeeper() {
-    return zk;
-  }
-
-  private static String buildConnectionString() {
-    List<String> allControllers = new ArrayList<String>();
-    allControllers = zk.getControllerServerList();
-    return StringUtils.join(allControllers, ",");
-  }
-
   public static void shutdownMiniCluster() throws IOException {
     if (cluster != null) {
       try {
@@ -164,6 +142,7 @@ public class Config {
       if (file.exists()) {
         FileUtils.deleteDirectory(file);
       }
+      cluster = null;
     }
   }
 
@@ -193,7 +172,7 @@ public class Config {
   }
 
   public static Iface getClient(org.apache.blur.console.model.User user, String securityUser) throws IOException {
-    Iface client = BlurClient.getClient(getConnectionString());
+    Iface client = BlurClient.getClient(blurConfig);
     Map<String, String> securityAttributes = user.getSecurityAttributes(securityUser);
     if (securityAttributes != null) {
       UserContext.setUser(new User(user.getName(), securityAttributes));
@@ -206,7 +185,7 @@ public class Config {
   }
 
   public static Iface getClient() {
-    return BlurClient.getClient(getConnectionString());
+    return BlurClient.getClient(blurConfig);
   }
 
   public static CachingBlurClient getCachingBlurClient() {

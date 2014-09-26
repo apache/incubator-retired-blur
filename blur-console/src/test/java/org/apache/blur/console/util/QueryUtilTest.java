@@ -17,13 +17,7 @@
 
 package org.apache.blur.console.util;
 
-import org.apache.blur.console.ConsoleTestBase;
-import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.*;
-import org.apache.blur.thrift.generated.Blur.Iface;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -31,7 +25,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.blur.console.ConsoleTestBase;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.Query;
+import org.apache.blur.thrift.generated.Record;
+import org.apache.blur.thrift.generated.RecordMutation;
+import org.apache.blur.thrift.generated.RecordMutationType;
+import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.thrift.generated.RowMutationType;
+import org.apache.blur.thrift.generated.ScoreType;
+import org.apache.blur.thrift.generated.TableDescriptor;
+import org.junit.Before;
+import org.junit.Test;
 
 public class QueryUtilTest extends ConsoleTestBase {
   @Before

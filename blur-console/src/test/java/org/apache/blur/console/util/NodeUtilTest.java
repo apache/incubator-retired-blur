@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 
@@ -40,8 +41,8 @@ public class NodeUtilTest extends ConsoleTestBase {
   public void testGetControllerStatus() throws BlurException, IOException, TException {
     Map<String, Object> nodeStatus = NodeUtil.getControllerStatus();
 
-    assertEquals(2, ((List<String>) nodeStatus.get("online")).size());
-    assertEquals(0, ((List<String>) nodeStatus.get("offline")).size());
+    assertEquals(2, ((Collection<String>) nodeStatus.get("online")).size());
+    assertEquals(0, ((Collection<String>) nodeStatus.get("offline")).size());
   }
 
   @SuppressWarnings("unchecked")
@@ -58,7 +59,7 @@ public class NodeUtilTest extends ConsoleTestBase {
   public void testGetClusterStatus() throws BlurException, IOException, TException {
     List<Map<String, Object>> nodeStatus = NodeUtil.getClusterStatus();
 
-    assertEquals(3, ((List<String>) nodeStatus.get(0).get("online")).size());
-    assertEquals(0, ((List<String>) nodeStatus.get(0).get("offline")).size());
+    assertEquals(3, ((Collection<String>) nodeStatus.get(0).get("online")).size());
+    assertEquals(0, ((Collection<String>) nodeStatus.get(0).get("offline")).size());
   }
 }

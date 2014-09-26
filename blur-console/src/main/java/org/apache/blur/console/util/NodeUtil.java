@@ -17,10 +17,6 @@
 
 package org.apache.blur.console.util;
 
-import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.blur.thrift.generated.Blur.Iface;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,47 +24,62 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.commons.collections.CollectionUtils;
 
 public class NodeUtil {
+  private static Set<String> onlineControllers = new HashSet<String>();
+  private static Map<String, Set<String>> onlineShards = new HashMap<String, Set<String>>();
 
   @SuppressWarnings("unchecked")
-  public static Map<String, Object> getControllerStatus() throws IOException {
-    Iface client = Config.getClient();
-    ZookeeperClusterStatus zk = Config.getZookeeper();
-
-    List<String> allControllers = new ArrayList<String>();
-    List<String> oControllers = new ArrayList<String>();
-    allControllers = zk.getOnlineControllerList();
-    oControllers = zk.getControllerServerList();
-
-    Collection<String> onlineControllers = CollectionUtils.intersection(allControllers, oControllers);
-    Collection<String> offlineControllers = CollectionUtils.subtract(allControllers, oControllers);
+  public static Map<String, Object> getControllerStatus() throws IOException, TException {
+    CachingBlurClient client = Config.getCachingBlurClient();
+    
+    List<String> currentControllers = client.controllerList();
+    
+    Collection<String> newControllers = CollectionUtils.subtract(currentControllers, onlineControllers);
+    Collection<String> missingControllers = CollectionUtils.subtract(onlineControllers, currentControllers);
+    
+    onlineControllers.addAll(newControllers);
 
     Map<String, Object> data = new HashMap<String, Object>();
 
     data.put("online", onlineControllers);
-    data.put("offline", offlineControllers);
+    data.put("offline", missingControllers);
 
     return data;
   }
 
-  public static List<Map<String, Object>> getClusterStatus() throws IOException {
-    ZookeeperClusterStatus zk = Config.getZookeeper();
-
+  @SuppressWarnings("unchecked")
+  public static List<Map<String, Object>> getClusterStatus() throws IOException, TException {
     List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
-    List<String> clusters = zk.getClusterList(false);
-
-    for (String cluster : clusters) {
+    CachingBlurClient client = Config.getCachingBlurClient();
+    
+    for (String cluster : client.shardClusterList()) {
+      if (!onlineShards.containsKey(cluster)) {
+        onlineShards.put(cluster, new HashSet<String>());
+      }
+      
+      Set<String> onlineShardsForCluster = onlineShards.get(cluster);
+      List<String> currentShards = client.shardList(cluster);
+      
+      Collection<String> newShards = CollectionUtils.subtract(currentShards, onlineShardsForCluster);
+      Collection<String> missingShards = CollectionUtils.subtract(onlineShardsForCluster, currentShards);
+      
+      onlineShardsForCluster.addAll(newShards);
+      
       Map<String, Object> clusterObj = new HashMap<String, Object>();
       clusterObj.put("name", cluster);
-
-      List<String> offlineShardServers = zk.getOfflineShardServers(false, cluster);
-      List<String> onlineShardServers = zk.getOnlineShardServers(false, cluster);
-
-      clusterObj.put("online", onlineShardServers);
-      clusterObj.put("offline", offlineShardServers);
-
+      clusterObj.put("online", onlineShardsForCluster);
+      clusterObj.put("offline", missingShards);
       data.add(clusterObj);
     }
 

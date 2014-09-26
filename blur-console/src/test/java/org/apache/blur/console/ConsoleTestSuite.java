@@ -1,6 +1,8 @@
 package org.apache.blur.console;
 
 import org.apache.blur.console.util.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.*;
 import org.junit.rules.ExternalResource;
 import org.junit.runner.RunWith;
@@ -28,7 +30,8 @@ import java.io.IOException;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({ConfigTest.class, NodeUtilTest.class, QueryUtilTest.class, TableUtilTest.class})
 public class ConsoleTestSuite {
-
+  private static Log log = LogFactory.getLog(ConsoleTestSuite.class);
+  
   @ClassRule
   public static ExternalResource testCluster = new ExternalResource() {
 
@@ -38,6 +41,7 @@ public class ConsoleTestSuite {
     protected void after() {
       if (_managing) {
         try {
+          log.warn("SHUTTING DOWN MINI CLUSTER");
           Config.shutdownMiniCluster();
         } catch (IOException e) {
           throw new RuntimeException(e);

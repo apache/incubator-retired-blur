@@ -43,6 +43,8 @@ public class CachingBlurClient {
   private Map<String, Item> tableDescriptionCache = new HashMap<String, Item>();
   private Map<String, Item> tableStatsCache = new HashMap<String, Item>();
   private Map<String, Item> schemaCache = new HashMap<String, Item>();
+  private Map<String, Item> controllerListCache = new HashMap<String, Item>();
+  private Map<String, Item> shardListCache = new HashMap<String, Item>();
 
   private long cacheHits;
   private long cacheMisses;
@@ -76,6 +78,8 @@ public class CachingBlurClient {
             cleanup(tableDescriptionCache);
             cleanup(tableStatsCache);
             cleanup(schemaCache);
+            cleanup(controllerListCache);
+            cleanup(shardListCache);
             log.info("Cache: " + cacheHits + " hits, " + cacheMisses + " misses");
             try {
               Thread.sleep(timeout * 2);
@@ -105,9 +109,10 @@ public class CachingBlurClient {
   }
 
   private Iface getClient() {
-    return BlurClient.getClient(Config.getConnectionString());
+    return BlurClient.getClient(Config.getBlurConfig());
   }
 
+  @SuppressWarnings("unchecked")
   private <T extends Object> T getFromCache(String key, Map<String, Item> cache, Retriever<T> retriever) throws TException {
     synchronized (cache) {
       if(this.timeout <= 0) {
@@ -139,6 +144,7 @@ public class CachingBlurClient {
 	  getClient().addColumnDefinition(table, def);
   }
 
+  @SuppressWarnings("unchecked")
   private void invalidateQuery(String table, String uuid) {
     synchronized (queryListCache) {
       Item item = queryListCache.get(null);
@@ -151,6 +157,7 @@ public class CachingBlurClient {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private void invalidateTable(String table) {
     synchronized (tableListCache) {
       for(Item item: tableListCache.values()) {
@@ -186,6 +193,24 @@ public class CachingBlurClient {
       @Override
       public List<String> retrieve() throws TException {
         return getClient().tableList();
+      }
+    });
+  }
+  
+  public List<String> controllerList() throws TException {
+	  return getFromCache(null, controllerListCache, new Retriever<List<String>>() {
+  		@Override
+  		public List<String> retrieve() throws TException {
+  			return getClient().controllerServerList();
+  		}
+	  });
+  }
+  
+  public List<String> shardList(final String cluster) throws TException {
+    return getFromCache(cluster, shardListCache, new Retriever<List<String>>() {
+      @Override
+      public List<String> retrieve() throws TException {
+        return getClient().shardServerList(cluster);
       }
     });
   }

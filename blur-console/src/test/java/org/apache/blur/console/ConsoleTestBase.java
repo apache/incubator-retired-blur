@@ -18,6 +18,8 @@
 package org.apache.blur.console;
 
 import org.apache.blur.console.util.Config;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -27,6 +29,7 @@ import java.io.IOException;
 public class ConsoleTestBase {
   protected static String TABLE_PATH = new File("./target/tmp/test-data/test-tables").getAbsolutePath();
   private static boolean _managing;
+  private static Log log = LogFactory.getLog(ConsoleTestBase.class);
 
   @BeforeClass
   public static void startup() throws IOException {
@@ -55,6 +58,7 @@ public class ConsoleTestBase {
   @AfterClass
   public static void shutdown() throws IOException {
     if (_managing) {
+      log.warn("SHUTTING DOWN MINI CLUSTER");
       Config.shutdownMiniCluster();
     }
   }

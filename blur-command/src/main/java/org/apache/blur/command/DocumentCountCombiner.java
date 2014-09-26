@@ -22,10 +22,8 @@ import java.util.Map.Entry;
 
 import org.apache.blur.command.annotation.Description;
 
-@SuppressWarnings("serial")
 @Description("Gets the number of visible documents in the index.")
-public class DocumentCountCombiner extends Command implements ClusterCommand<Long>,
-    IndexReadCombiningCommand<Integer, Long> {
+public class DocumentCountCombiner extends ClusterExecuteReadCombiningCommand<Long> {
 
   private static final String DOC_COUNT_AGGREGATE = "docCountAggregate";
 
@@ -35,14 +33,14 @@ public class DocumentCountCombiner extends Command implements ClusterCommand<Lon
   }
 
   @Override
-  public Integer execute(IndexContext context) throws IOException {
-    return context.getIndexReader().numDocs();
+  public Long execute(IndexContext context) throws IOException {
+    return (long) context.getIndexReader().numDocs();
   }
 
   @Override
-  public Long combine(CombiningContext context, Map<? extends Location<?>, Integer> results) throws IOException {
+  public Long combine(CombiningContext context, Map<? extends Location<?>, Long> results) throws IOException {
     long total = 0;
-    for (Integer i : results.values()) {
+    for (Long i : results.values()) {
       total += i;
     }
     return total;

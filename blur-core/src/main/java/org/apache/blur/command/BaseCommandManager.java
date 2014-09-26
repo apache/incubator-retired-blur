@@ -74,8 +74,8 @@ public class BaseCommandManager implements Closeable {
   private final ExecutorService _executorServiceDriver;
 
   protected final Map<String, BigInteger> _commandLoadTime = new ConcurrentHashMap<String, BigInteger>();
-  protected final Map<String, Command> _command = new ConcurrentHashMap<String, Command>();
-  protected final Map<Class<? extends Command>, String> _commandNameLookup = new ConcurrentHashMap<Class<? extends Command>, String>();
+  protected final Map<String, Command<?>> _command = new ConcurrentHashMap<String, Command<?>>();
+  protected final Map<Class<? extends Command<?>>, String> _commandNameLookup = new ConcurrentHashMap<Class<? extends Command<?>>, String>();
   protected final ConcurrentMap<ExecutionId, Future<Response>> _runningMap;
   protected final long _connectionTimeout;
   protected final String _tmpPath;
@@ -118,23 +118,24 @@ public class BaseCommandManager implements Closeable {
     return getArguments(commandName, true);
   }
 
+  @SuppressWarnings("unchecked")
   protected Map<String, String> getArguments(String commandName, boolean optional) {
-    Command command = _command.get(commandName);
+    Command<?> command = _command.get(commandName);
     if (command == null) {
       return null;
     }
-    Class<? extends Command> clazz = command.getClass();
+    Class<? extends Command<?>> clazz = (Class<? extends Command<?>>) command.getClass();
     Map<String, String> arguments = new TreeMap<String, String>();
     Argument[] args = getArgumentArray(clazz, optional);
     addArguments(arguments, args);
     if (optional) {
       if (!(command instanceof ShardRoute)) {
-        Argument[] argumentArray = getArgumentArray(Command.class, optional);
+        Argument[] argumentArray = getArgumentArray((Class<? extends Command<?>>) Command.class, optional);
         addArguments(arguments, argumentArray);
       }
     } else {
       if (!(command instanceof TableRoute)) {
-        Argument[] argumentArray = getArgumentArray(Command.class, optional);
+        Argument[] argumentArray = getArgumentArray((Class<? extends Command<?>>) Command.class, optional);
         addArguments(arguments, argumentArray);
       }
     }
@@ -150,7 +151,7 @@ public class BaseCommandManager implements Closeable {
     }
   }
 
-  protected Argument[] getArgumentArray(Class<? extends Command> clazz, boolean optional) {
+  protected Argument[] getArgumentArray(Class<? extends Command<?>> clazz, boolean optional) {
     if (optional) {
       OptionalArguments arguments = clazz.getAnnotation(OptionalArguments.class);
       if (arguments == null) {
@@ -296,7 +297,7 @@ public class BaseCommandManager implements Closeable {
       String classNameToRegister = o.toString();
       LOG.info("Loading class [{0}]", classNameToRegister);
       try {
-        register((Class<? extends Command>) loader.loadClass(classNameToRegister), version);
+        register((Class<? extends Command<?>>) loader.loadClass(classNameToRegister), version);
       } catch (ClassNotFoundException e) {
         throw new IOException(e);
       }
@@ -364,9 +365,9 @@ public class BaseCommandManager implements Closeable {
     }
   }
 
-  public void register(Class<? extends Command> commandClass, BigInteger version) throws IOException {
+  public void register(Class<? extends Command<?>> commandClass, BigInteger version) throws IOException {
     try {
-      Command command = commandClass.newInstance();
+      Command<?> command = commandClass.newInstance();
       _command.put(command.getName(), command);
       _commandLoadTime.put(command.getName(), version);
       _commandNameLookup.put(commandClass, command.getName());
@@ -378,15 +379,15 @@ public class BaseCommandManager implements Closeable {
     }
   }
 
-  protected Command getCommandObject(String commandName) {
+  protected Command<?> getCommandObject(String commandName) {
     return _command.get(commandName);
   }
 
-  protected String getCommandName(Class<? extends Command> clazz) {
+  protected String getCommandName(Class<? extends Command<?>> clazz) {
     return _commandNameLookup.get(clazz);
   }
 
-  protected Map<String, Set<Shard>> getShards(TableContextFactory tableContextFactory, Command command,
+  protected Map<String, Set<Shard>> getShards(TableContextFactory tableContextFactory, Command<?> command,
       final Args args, Set<String> tables) throws IOException {
     Map<String, Set<Shard>> shardMap = new TreeMap<String, Set<Shard>>();
     if (command instanceof ShardRoute) {
@@ -417,7 +418,7 @@ public class BaseCommandManager implements Closeable {
     return shardMap;
   }
 
-  protected Set<String> getTables(Command command, final Args args) throws IOException {
+  protected Set<String> getTables(Command<?> command, final Args args) throws IOException {
     Set<String> tables = new TreeSet<String>();
     if (command instanceof TableRoute) {
       TableRoute tableRoute = (TableRoute) command;
@@ -442,12 +443,13 @@ public class BaseCommandManager implements Closeable {
     return tables;
   }
 
+  @SuppressWarnings("unchecked")
   public String getDescription(String commandName) {
-    Command command = _command.get(commandName);
+    Command<?> command = _command.get(commandName);
     if (command == null) {
       return null;
     }
-    Class<? extends Command> clazz = command.getClass();
+    Class<? extends Command<?>> clazz = (Class<? extends Command<?>>) command.getClass();
     Description description = clazz.getAnnotation(Description.class);
     if (description == null) {
       return null;
@@ -456,7 +458,7 @@ public class BaseCommandManager implements Closeable {
   }
 
   public String getReturnType(String commandName) {
-    Command command = _command.get(commandName);
+    Command<?> command = _command.get(commandName);
     if (command == null) {
       return null;
     }
@@ -477,8 +479,8 @@ public class BaseCommandManager implements Closeable {
       } else {
         shardServerReturn = null;
       }
-      if (command instanceof ClusterCommand) {
-        ClusterCommand<?> clusterCommand = (ClusterCommand<?>) command;
+      if (command instanceof ClusterExecuteReadCombiningCommand) {
+        ClusterExecuteReadCombiningCommand<?> clusterCommand = (ClusterExecuteReadCombiningCommand<?>) command;
         Method method = clusterCommand.getClass().getMethod("clusterExecute", new Class[] { Map.class });
         Class<?> returnType = method.getReturnType();
         String clusterReturn = "cluster->(" + returnType.getSimpleName() + ")";

@@ -1,7 +1,9 @@
 package org.apache.blur.command;
 
 import java.io.IOException;
-import java.io.Serializable;
+
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.BlurException;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -20,8 +22,29 @@ import java.io.Serializable;
  * the License.
  */
 
-public interface ClusterCommand<T> extends Serializable, Cloneable {
+public abstract class ClusterExecuteCommand<T> extends Command<T> {
 
-  T clusterExecute(ClusterContext context) throws IOException, InterruptedException;
+  public abstract T clusterExecute(ClusterContext context) throws IOException, InterruptedException;
 
+  @Override
+  public T run(Args arguments) throws IOException {
+    try {
+      return CommandRunner.run(this, arguments);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public T run(Args arguments, String connectionStr) throws IOException {
+    try {
+      return CommandRunner.run(this, arguments, connectionStr);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  }
 }

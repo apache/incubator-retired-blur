@@ -1,3 +1,5 @@
+package org.apache.blur.command.example;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -14,30 +16,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.command;
-
 import java.io.IOException;
 
-import org.apache.blur.command.annotation.Argument;
-import org.apache.blur.command.annotation.OptionalArguments;
-import org.apache.blur.command.annotation.RequiredArguments;
+import org.apache.blur.command.Args;
+import org.apache.blur.command.BlurArray;
+import org.apache.blur.command.BlurObject;
+import org.apache.blur.command.TermsCommand;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.BlurException;
 
-@RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the wait for N number of seconds command.", type = String.class) })
-@OptionalArguments({
+public class UsingTermCommand {
 
-@Argument(name = "shard", value = "The shard id to execute the wait for N number of seconds command.", type = String.class),
+  public static void main(String[] args) throws BlurException, TException, IOException {
 
-})
-public class ThrowException extends IndexReadCommand<Boolean> {
+    TermsCommand command = new TermsCommand();
 
-  @Override
-  public Boolean execute(IndexContext context) throws IOException, InterruptedException {
-    throw new RuntimeException("error-test");
+    Args arguments = new Args();
+    arguments.set("table", "test");
+    BlurObject params = new BlurObject();
+    params.put("fieldName", "fam0.col0");
+    arguments.set("params", params);
+
+    BlurArray blurArray = command.run(arguments, "localhost:40020");
+
+    System.out.println(blurArray);
   }
-
-  @Override
-  public String getName() {
-    return "error";
-  }
-
 }

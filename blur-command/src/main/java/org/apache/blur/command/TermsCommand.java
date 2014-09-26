@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.apache.blur.utils.BlurUtil;
 import org.apache.lucene.index.AtomicReader;
@@ -35,9 +34,7 @@ import com.google.common.collect.Sets;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-@SuppressWarnings("serial")
-public class TermsCommand extends Command implements ClusterReadCombiningCommand<BlurArray>,
-    IndexReadCombiningCommand<BlurArray, BlurArray> {
+public class TermsCommand extends ClusterReadCombiningCommand<BlurArray> {
   private static final String NAME = "terms";
   private static final String PARAMS = "params";
   private static final String P_SIZE = "size";
@@ -56,11 +53,11 @@ public class TermsCommand extends Command implements ClusterReadCombiningCommand
     return new BlurArray(terms(context.getIndexReader(), fieldName, startWith, size));
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public BlurArray combine(CombiningContext context, Map<? extends Location<?>, BlurArray> results) throws IOException,
       InterruptedException {
     SortedSet<String> terms = Sets.newTreeSet();
-    
 
     for (BlurArray t : results.values()) {
       terms.addAll((List<String>) t.asList());

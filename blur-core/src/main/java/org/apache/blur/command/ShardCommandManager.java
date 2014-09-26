@@ -52,11 +52,11 @@ public class ShardCommandManager extends BaseCommandManager {
     Callable<Response> callable = new Callable<Response>() {
       @Override
       public Response call() throws Exception {
-        Command command = getCommandObject(commandName);
+        Command<?> command = getCommandObject(commandName);
         if (command == null) {
           throw new IOException("Command with name [" + commandName + "] not found.");
         }
-        if (command instanceof IndexReadCommand || command instanceof IndexReadCombiningCommand) {
+        if (command instanceof IndexRead || command instanceof IndexReadCombining) {
           return toResponse(executeReadCommand(shardServerContext, command, tableContextFactory, args), command,
               getServerContext(args, tableContextFactory));
         }
@@ -95,17 +95,17 @@ public class ShardCommandManager extends BaseCommandManager {
   }
 
   @SuppressWarnings("unchecked")
-  private Response toResponse(Map<Shard, Object> results, Command command, CombiningContext serverContext)
+  private Response toResponse(Map<Shard, Object> results, Command<?> command, CombiningContext serverContext)
       throws IOException, InterruptedException {
-    if (command instanceof IndexReadCombiningCommand) {
-      IndexReadCombiningCommand<Object, Object> primitiveCommandAggregator = (IndexReadCombiningCommand<Object, Object>) command;
+    if (command instanceof IndexReadCombining) {
+      IndexReadCombining<Object, Object> primitiveCommandAggregator = (IndexReadCombining<Object, Object>) command;
       Object object = primitiveCommandAggregator.combine(serverContext, results);
       return Response.createNewAggregateResponse(object);
     }
     return Response.createNewShardResponse(results);
   }
 
-  private Map<Shard, Object> executeReadCommand(ShardServerContext shardServerContext, Command command,
+  private Map<Shard, Object> executeReadCommand(ShardServerContext shardServerContext, Command<?> command,
       final TableContextFactory tableContextFactory, final Args args) throws IOException, ExceptionCollector {
     Set<String> tables = getTables(command, args);
     if (tables.isEmpty()) {
@@ -130,11 +130,11 @@ public class ShardCommandManager extends BaseCommandManager {
         }
         final BlurIndex blurIndex = e.getValue();
         Callable<Object> callable;
-        if (command instanceof IndexReadCommand) {
-          final IndexReadCommand<?> readCommand = (IndexReadCommand<?>) command.clone();
+        if (command instanceof IndexRead) {
+          final IndexRead<?> readCommand = (IndexRead<?>) command.clone();
           callable = getCallable(shardServerContext, tableContext, args, shard, blurIndex, readCommand);
-        } else if (command instanceof IndexReadCombiningCommand) {
-          final IndexReadCombiningCommand<?, ?> readCombiningCommand = (IndexReadCombiningCommand<?, ?>) command
+        } else if (command instanceof IndexReadCombining) {
+          final IndexReadCombining<?, ?> readCombiningCommand = (IndexReadCombining<?, ?>) command
               .clone();
           callable = getCallable(shardServerContext, tableContext, args, shard, blurIndex, readCombiningCommand);
         } else {
@@ -171,7 +171,7 @@ public class ShardCommandManager extends BaseCommandManager {
 
   private Callable<Object> getCallable(final ShardServerContext shardServerContext, final TableContext tableContext,
       final Args args, final Shard shard, final BlurIndex blurIndex,
-      final IndexReadCombiningCommand<?, ?> readCombiningCommand) {
+      final IndexReadCombining<?, ?> readCombiningCommand) {
     return new Callable<Object>() {
       @Override
       public Object call() throws Exception {
@@ -188,7 +188,7 @@ public class ShardCommandManager extends BaseCommandManager {
   }
 
   private Callable<Object> getCallable(final ShardServerContext shardServerContext, final TableContext tableContext,
-      final Args args, final Shard shard, final BlurIndex blurIndex, final IndexReadCommand<?> readCommand) {
+      final Args args, final Shard shard, final BlurIndex blurIndex, final IndexRead<?> readCommand) {
     return new Callable<Object>() {
       @Override
       public Object call() throws Exception {

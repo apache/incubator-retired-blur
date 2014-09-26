@@ -15,3 +15,4 @@
 
 org.apache.blur.command.DocumentCount
 org.apache.blur.command.DocumentCountDefaultClusterCombine
+org.apache.blur.command.TermsCommand

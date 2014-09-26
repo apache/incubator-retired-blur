@@ -22,9 +22,8 @@ import java.util.concurrent.TimeUnit;
 import org.apache.blur.command.annotation.Argument;
 import org.apache.blur.command.annotation.OptionalArguments;
 
-@SuppressWarnings("serial")
 @OptionalArguments({ @Argument(name = "seconds", value = "The number of seconds to sleep, the default is 30 seconds.", type = Integer.class) })
-public class WaitForSeconds extends Command implements IndexReadCommand<Boolean> {
+public class WaitForSeconds extends IndexReadCommand<Boolean> {
 
   @Override
   public Boolean execute(IndexContext context) throws IOException, InterruptedException {

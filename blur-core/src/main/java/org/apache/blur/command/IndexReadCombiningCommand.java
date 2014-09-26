@@ -19,10 +19,36 @@ package org.apache.blur.command;
 import java.io.IOException;
 import java.util.Map;
 
-public interface IndexReadCombiningCommand<T1, T2> {
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.BlurException;
 
-  T1 execute(IndexContext context) throws IOException, InterruptedException;
+public abstract class IndexReadCombiningCommand<T1, T2> extends Command<Map<Server, T2>> implements
+    IndexReadCombining<T1, T2> {
 
-  T2 combine(CombiningContext context, Map<? extends Location<?>, T1> results) throws IOException, InterruptedException;
+  public abstract T1 execute(IndexContext context) throws IOException, InterruptedException;
 
+  public abstract T2 combine(CombiningContext context, Map<? extends Location<?>, T1> results) throws IOException,
+      InterruptedException;
+
+  @Override
+  public Map<Server, T2> run(Args arguments) throws IOException {
+    try {
+      return CommandRunner.run(this, arguments);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public Map<Server, T2> run(Args arguments, String connectionStr) throws IOException {
+    try {
+      return CommandRunner.run(this, arguments, connectionStr);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  }
 }

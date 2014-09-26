@@ -44,39 +44,39 @@ public class CoreTestClusterContext extends ClusterContext {
   }
 
   @Override
-  public <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
+  public <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexRead<T>> clazz) throws IOException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public <T> Map<Shard, Future<T>> readIndexesAsync(Args args, Class<? extends IndexReadCommand<T>> clazz)
+  public <T> Map<Shard, Future<T>> readIndexesAsync(Args args, Class<? extends IndexRead<T>> clazz)
       throws IOException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public <T> T readIndex(Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
+  public <T> T readIndex(Args args, Class<? extends IndexRead<T>> clazz) throws IOException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public <T> Future<T> readIndexAsync(Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
+  public <T> Future<T> readIndexAsync(Args args, Class<? extends IndexRead<T>> clazz) throws IOException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombiningCommand<?, T>> clazz)
+  public <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombining<?, T>> clazz)
       throws IOException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public <T> Map<Server, Future<T>> readServersAsync(Args args, Class<? extends IndexReadCombiningCommand<?, T>> clazz)
+  public <T> Map<Server, Future<T>> readServersAsync(Args args, Class<? extends IndexReadCombining<?, T>> clazz)
       throws IOException {
     // TODO Auto-generated method stub
     return null;

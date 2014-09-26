@@ -21,9 +21,8 @@ import java.util.Map;
 
 import org.apache.blur.command.annotation.Description;
 
-@SuppressWarnings("serial")
 @Description("Gets the number of visible documents in the index.")
-public class DocumentCountDefaultClusterCombine extends Command implements ClusterReadCombiningCommand<Long> {
+public class DocumentCountDefaultClusterCombine extends ClusterReadCombiningCommand<Long> {
 
   private static final String DOC_COUNT_CLUSTER_COMBINE = "docCountClusterCombine";
 

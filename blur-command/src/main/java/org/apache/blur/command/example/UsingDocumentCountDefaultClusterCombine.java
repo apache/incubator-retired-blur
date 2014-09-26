@@ -19,25 +19,20 @@ package org.apache.blur.command.example;
 import java.io.IOException;
 
 import org.apache.blur.command.Args;
-import org.apache.blur.command.Command;
 import org.apache.blur.command.DocumentCountDefaultClusterCombine;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 
 public class UsingDocumentCountDefaultClusterCombine {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
 
-    Iface client = BlurClient.getClient("localhost:40020");
-
     DocumentCountDefaultClusterCombine command = new DocumentCountDefaultClusterCombine();
 
     Args arguments = new Args();
     arguments.set("table", "test");
 
-    Long count = Command.run(command, arguments, client);
+    Long count = command.run(arguments, "localhost:40020");
 
     System.out.println(count);
   }

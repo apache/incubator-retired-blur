@@ -28,9 +28,9 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-public class DocumentCountCombinerTest  {
+public class DocumentCountCombinerTest {
   private static IndexContext ctx;
-  
+
   @BeforeClass
   public static void init() {
     ctx = CoreTestContext.newSimpleAlpaNumContext();
@@ -39,21 +39,20 @@ public class DocumentCountCombinerTest  {
   @Test
   public void documentCountShouldBeAccurate() throws IOException {
     DocumentCountCombiner dc = new DocumentCountCombiner();
-    
-    int docCount = dc.execute(ctx);
-   
+
+    long docCount = dc.execute(ctx);
+
     assertEquals(26, docCount);
   }
-  
-  @Test 
+
+  @Test
   public void combineShouldProperlySum() throws IOException {
     DocumentCountCombiner dc = new DocumentCountCombiner();
-    Map<Shard, Integer>  shardTotals = Maps
-        .newHashMap(ImmutableMap
-            .of(new Shard("t1","s1"), 10, new Shard("t1","s2"), 20, new Shard("t1","s3"), 30));
+    Map<Shard, Long> shardTotals = Maps.newHashMap(ImmutableMap.of(new Shard("t1", "s1"), 10L, new Shard("t1", "s2"),
+        20L, new Shard("t1", "s3"), 30L));
     long total = dc.combine(new TestCombiningContext(), shardTotals);
-    
+
     assertEquals(60l, total);
   }
-  
+
 }

@@ -20,9 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-@SuppressWarnings("serial")
-public class TestBlurObjectCommand extends Command implements IndexReadCombiningCommand<BlurObject, BlurObject>,
-    ClusterCommand<BlurObject> {
+public class TestBlurObjectCommand extends ClusterExecuteReadCombiningCommand<BlurObject> {
 
   @Override
   public BlurObject execute(IndexContext context) throws IOException {

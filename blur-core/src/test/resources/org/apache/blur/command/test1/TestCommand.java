@@ -22,7 +22,7 @@ import org.apache.blur.command.IndexContext;
 import org.apache.blur.command.IndexReadCommand;
 
 @SuppressWarnings("serial")
-public class TestCommand extends Command implements IndexReadCommand<String> {
+public class TestCommand extends IndexReadCommand<String> {
 
   @Override
   public String getName() {

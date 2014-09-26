@@ -20,9 +20,8 @@ import java.io.IOException;
 
 import org.apache.blur.command.annotation.Description;
 
-@SuppressWarnings("serial")
 @Description("Gets the number of visible documents in the index.")
-public class DocumentCount extends Command implements IndexReadCommand<Integer> {
+public class DocumentCount extends IndexReadCommand<Integer> {
 
   private static final String DOC_COUNT = "docCount";
 

@@ -89,15 +89,14 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
+  public <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexRead<T>> clazz) throws IOException {
     Map<Shard, Future<T>> futures = readIndexesAsync(args, clazz);
     Map<Shard, T> result = new HashMap<Shard, T>();
     return processFutures(clazz, futures, result);
   }
 
   @Override
-  public <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombiningCommand<?, T>> clazz)
-      throws IOException {
+  public <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombining<?, T>> clazz) throws IOException {
     Map<Server, Future<T>> futures = readServersAsync(args, clazz);
     Map<Server, T> result = new HashMap<Server, T>();
     return processFutures(clazz, futures, result);
@@ -113,10 +112,10 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
 
   @SuppressWarnings("unchecked")
   @Override
-  public <T> Map<Shard, Future<T>> readIndexesAsync(final Args args, Class<? extends IndexReadCommand<T>> clazz)
+  public <T> Map<Shard, Future<T>> readIndexesAsync(final Args args, Class<? extends IndexRead<T>> clazz)
       throws IOException {
-    final String commandName = _manager.getCommandName((Class<? extends Command>) clazz);
-    Command command = _manager.getCommandObject(commandName);
+    final String commandName = _manager.getCommandName((Class<? extends Command<?>>) clazz);
+    Command<?> command = _manager.getCommandObject(commandName);
     Map<Shard, Future<T>> futureMap = new HashMap<Shard, Future<T>>();
     Set<String> tables = _manager.getTables(command, args);
     Map<String, Set<Shard>> shards = _manager.getShards(_tableContextFactory, command, args, tables);
@@ -141,7 +140,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     return futureMap;
   }
 
-  private Map<Server, Client> getClientMap(Command command, Args args, Set<String> tables,
+  private Map<Server, Client> getClientMap(Command<?> command, Args args, Set<String> tables,
       Map<String, Set<Shard>> shards) throws IOException {
     Map<Server, Client> result = new HashMap<Server, Client>();
 
@@ -203,10 +202,10 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
 
   @SuppressWarnings("unchecked")
   @Override
-  public <T> Map<Server, Future<T>> readServersAsync(final Args args,
-      Class<? extends IndexReadCombiningCommand<?, T>> clazz) throws IOException {
-    final String commandName = _manager.getCommandName((Class<? extends Command>) clazz);
-    Command command = _manager.getCommandObject(commandName);
+  public <T> Map<Server, Future<T>> readServersAsync(final Args args, Class<? extends IndexReadCombining<?, T>> clazz)
+      throws IOException {
+    final String commandName = _manager.getCommandName((Class<? extends Command<?>>) clazz);
+    Command<?> command = _manager.getCommandObject(commandName);
     Map<Server, Future<T>> futureMap = new HashMap<Server, Future<T>>();
     Set<String> tables = _manager.getTables(command, args);
     Map<String, Set<Shard>> shards = _manager.getShards(_tableContextFactory, command, args, tables);
@@ -260,7 +259,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public <T> T readIndex(Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
+  public <T> T readIndex(Args args, Class<? extends IndexRead<T>> clazz) throws IOException {
     Future<T> future = readIndexAsync(args, clazz);
     try {
       return future.get();
@@ -272,7 +271,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public <T> Future<T> readIndexAsync(Args args, Class<? extends IndexReadCommand<T>> clazz) throws IOException {
+  public <T> Future<T> readIndexAsync(Args args, Class<? extends IndexRead<T>> clazz) throws IOException {
     throw new RuntimeException("Not Implemented.");
   }
 }

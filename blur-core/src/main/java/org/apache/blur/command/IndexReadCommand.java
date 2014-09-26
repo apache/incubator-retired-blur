@@ -17,9 +17,35 @@
 package org.apache.blur.command;
 
 import java.io.IOException;
+import java.util.Map;
 
-public interface IndexReadCommand<T> {
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.BlurException;
 
-  T execute(IndexContext context) throws IOException, InterruptedException;
+public abstract class IndexReadCommand<T> extends Command<Map<Shard, T>> implements IndexRead<T> {
+
+  public abstract T execute(IndexContext context) throws IOException, InterruptedException;
+
+  @Override
+  public Map<Shard, T> run(Args arguments) throws IOException {
+    try {
+      return CommandRunner.run(this, arguments);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public Map<Shard, T> run(Args arguments, String connectionStr) throws IOException {
+    try {
+      return CommandRunner.run(this, arguments, connectionStr);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  }
 
 }

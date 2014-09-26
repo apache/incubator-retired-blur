@@ -19,6 +19,7 @@ package org.apache.blur.command;
 import java.io.IOException;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 
 public abstract class ClusterReadCommand<T1, T2> extends Command<T2> implements IndexRead<T1> {
@@ -48,4 +49,15 @@ public abstract class ClusterReadCommand<T1, T2> extends Command<T2> implements 
       throw new IOException(e);
     }
   }
+  
+  @Override
+  public T2 run(Args arguments, Iface client) throws IOException {
+    try {
+      return CommandRunner.run(this, arguments, client);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  }  
 }

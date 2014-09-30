@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 
 public abstract class IndexReadCommand<T> extends Command<Map<Shard, T>> implements IndexRead<T> {
@@ -48,4 +49,14 @@ public abstract class IndexReadCommand<T> extends Command<Map<Shard, T>> impleme
     }
   }
 
+  @Override
+  public Map<Shard, T> run(Args arguments, Iface client) throws IOException {
+    try {
+      return CommandRunner.run(this, arguments, client);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  }
 }

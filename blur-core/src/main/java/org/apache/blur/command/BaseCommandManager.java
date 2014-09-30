@@ -124,18 +124,18 @@ public class BaseCommandManager implements Closeable {
     if (command == null) {
       return null;
     }
-    Class<? extends Command<?>> clazz = (Class<? extends Command<?>>) command.getClass();
+    Class<Command<?>> clazz = (Class<Command<?>>) command.getClass();
     Map<String, String> arguments = new TreeMap<String, String>();
     Argument[] args = getArgumentArray(clazz, optional);
     addArguments(arguments, args);
     if (optional) {
       if (!(command instanceof ShardRoute)) {
-        Argument[] argumentArray = getArgumentArray((Class<? extends Command<?>>) Command.class, optional);
+        Argument[] argumentArray = getArgumentArray(Command.class, optional);
         addArguments(arguments, argumentArray);
       }
     } else {
       if (!(command instanceof TableRoute)) {
-        Argument[] argumentArray = getArgumentArray((Class<? extends Command<?>>) Command.class, optional);
+        Argument[] argumentArray = getArgumentArray(Command.class, optional);
         addArguments(arguments, argumentArray);
       }
     }
@@ -151,7 +151,7 @@ public class BaseCommandManager implements Closeable {
     }
   }
 
-  protected Argument[] getArgumentArray(Class<? extends Command<?>> clazz, boolean optional) {
+  protected Argument[] getArgumentArray(Class<?> clazz, boolean optional) {
     if (optional) {
       OptionalArguments arguments = clazz.getAnnotation(OptionalArguments.class);
       if (arguments == null) {

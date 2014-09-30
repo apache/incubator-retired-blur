@@ -73,6 +73,13 @@ under the License.
 			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
+    <dependency>
+      <groupId>org.apache.blur</groupId>
+      <artifactId>blur-core</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>

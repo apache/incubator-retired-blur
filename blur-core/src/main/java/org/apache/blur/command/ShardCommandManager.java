@@ -118,7 +118,6 @@ public class ShardCommandManager extends BaseCommandManager {
       Set<Shard> shardSet = shardMap.get(table);
       boolean checkShards = !shardSet.isEmpty();
 
-      TableContext tableContext = tableContextFactory.getTableContext(table);
       Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
       for (Entry<String, BlurIndex> e : indexes.entrySet()) {
         String shardId = e.getKey();
@@ -132,11 +131,11 @@ public class ShardCommandManager extends BaseCommandManager {
         Callable<Object> callable;
         if (command instanceof IndexRead) {
           final IndexRead<?> readCommand = (IndexRead<?>) command.clone();
-          callable = getCallable(shardServerContext, tableContext, args, shard, blurIndex, readCommand);
+          callable = getCallable(shardServerContext, tableContextFactory, table, args, shard, blurIndex, readCommand);
         } else if (command instanceof IndexReadCombining) {
-          final IndexReadCombining<?, ?> readCombiningCommand = (IndexReadCombining<?, ?>) command
-              .clone();
-          callable = getCallable(shardServerContext, tableContext, args, shard, blurIndex, readCombiningCommand);
+          final IndexReadCombining<?, ?> readCombiningCommand = (IndexReadCombining<?, ?>) command.clone();
+          callable = getCallable(shardServerContext, tableContextFactory, table, args, shard, blurIndex,
+              readCombiningCommand);
         } else {
           throw new IOException("Command type of [" + command.getClass() + "] not supported.");
         }
@@ -169,50 +168,53 @@ public class ShardCommandManager extends BaseCommandManager {
     return resultMap;
   }
 
-  private Callable<Object> getCallable(final ShardServerContext shardServerContext, final TableContext tableContext,
-      final Args args, final Shard shard, final BlurIndex blurIndex,
-      final IndexReadCombining<?, ?> readCombiningCommand) {
+  private Callable<Object> getCallable(final ShardServerContext shardServerContext,
+      final TableContextFactory tableContextFactory, final String table, final Args args, final Shard shard,
+      final BlurIndex blurIndex, final IndexReadCombining<?, ?> readCombiningCommand) {
     return new Callable<Object>() {
       @Override
       public Object call() throws Exception {
-        String table = tableContext.getTable();
         String shardId = shard.getShard();
         IndexSearcherClosable searcher = shardServerContext.getIndexSearcherClosable(table, shardId);
         if (searcher == null) {
           searcher = blurIndex.getIndexSearcher();
           shardServerContext.setIndexSearcherClosable(table, shardId, searcher);
         }
-        return readCombiningCommand.execute(new ShardIndexContext(tableContext, shard, searcher, args));
+        return readCombiningCommand.execute(new ShardIndexContext(tableContextFactory, table, shard, searcher, args));
       }
     };
   }
 
-  private Callable<Object> getCallable(final ShardServerContext shardServerContext, final TableContext tableContext,
-      final Args args, final Shard shard, final BlurIndex blurIndex, final IndexRead<?> readCommand) {
+  private Callable<Object> getCallable(final ShardServerContext shardServerContext,
+      final TableContextFactory tableContextFactory, final String table, final Args args, final Shard shard,
+      final BlurIndex blurIndex, final IndexRead<?> readCommand) {
     return new Callable<Object>() {
       @Override
       public Object call() throws Exception {
-        String table = tableContext.getTable();
+
         String shardId = shard.getShard();
         IndexSearcherClosable searcher = shardServerContext.getIndexSearcherClosable(table, shardId);
         if (searcher == null) {
           searcher = blurIndex.getIndexSearcher();
           shardServerContext.setIndexSearcherClosable(table, shardId, searcher);
         }
-        return readCommand.execute(new ShardIndexContext(tableContext, shard, searcher, args));
+        return readCommand.execute(new ShardIndexContext(tableContextFactory, table, shard, searcher, args));
       }
     };
   }
 
   static class ShardIndexContext extends IndexContext {
 
-    private final TableContext _tableContext;
     private final Shard _shard;
     private final IndexSearcher _searcher;
     private final Args _args;
+    private final TableContextFactory _tableContextFactory;
+    private final String _table;
 
-    public ShardIndexContext(TableContext tableContext, Shard shard, IndexSearcher searcher, Args args) {
-      _tableContext = tableContext;
+    public ShardIndexContext(TableContextFactory tableContextFactory, String table, Shard shard,
+        IndexSearcher searcher, Args args) {
+      _tableContextFactory = tableContextFactory;
+      _table = table;
       _shard = shard;
       _searcher = searcher;
       _args = args;
@@ -234,8 +236,8 @@ public class ShardCommandManager extends BaseCommandManager {
     }
 
     @Override
-    public TableContext getTableContext() {
-      return _tableContext;
+    public TableContext getTableContext() throws IOException {
+      return _tableContextFactory.getTableContext(_table);
     }
 
     @Override
@@ -244,8 +246,18 @@ public class ShardCommandManager extends BaseCommandManager {
     }
 
     @Override
-    public BlurConfiguration getBlurConfiguration() {
-      return _tableContext.getBlurConfiguration();
+    public BlurConfiguration getBlurConfiguration() throws IOException {
+      return getTableContext().getBlurConfiguration();
+    }
+
+    @Override
+    public BlurConfiguration getBlurConfiguration(String table) throws IOException {
+      return getTableContext(table).getBlurConfiguration();
+    }
+
+    @Override
+    public TableContext getTableContext(String table) throws IOException {
+      return _tableContextFactory.getTableContext(table);
     }
 
   }

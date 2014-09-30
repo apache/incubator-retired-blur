@@ -14,9 +14,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.blur.command;
 
+import java.io.IOException;
 
-public abstract class CombiningContext extends BaseContext {
+import org.apache.blur.BlurConfiguration;
+import org.apache.blur.server.TableContext;
 
+public abstract class BaseContext {
+  
+  public abstract Args getArgs();
+
+  public abstract TableContext getTableContext(String table) throws IOException;
+
+  public abstract BlurConfiguration getBlurConfiguration(String table) throws IOException;
 }

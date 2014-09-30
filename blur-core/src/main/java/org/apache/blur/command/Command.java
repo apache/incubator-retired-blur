@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.blur.command.annotation.Argument;
 import org.apache.blur.command.annotation.OptionalArguments;
 import org.apache.blur.command.annotation.RequiredArguments;
+import org.apache.blur.thrift.generated.Blur.Iface;
 
 @RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the document count command.", type = String.class) })
 @OptionalArguments({ @Argument(name = "shard", value = "The shard id to execute the document count command.", type = String.class) })
@@ -32,6 +33,8 @@ public abstract class Command<R> implements Cloneable {
   public abstract R run(Args arguments) throws IOException;
 
   public abstract R run(Args arguments, String connectionStr) throws IOException;
+  
+  public abstract R run(Args arguments, Iface client) throws IOException;
 
   public Set<Shard> resolveShards(BaseContext context) {
     return null;

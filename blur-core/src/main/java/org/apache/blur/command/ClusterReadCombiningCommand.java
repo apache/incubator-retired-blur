@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Blur.Iface;
 
 public abstract class ClusterReadCombiningCommand<T> extends Command<T> implements IndexReadCombining<T, T> {
 
@@ -50,4 +51,14 @@ public abstract class ClusterReadCombiningCommand<T> extends Command<T> implemen
       throw new IOException(e);
     }
   }
+  @Override
+  public T run(Args arguments, Iface client) throws IOException {
+    try {
+      return CommandRunner.run(this, arguments, client);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  } 
 }

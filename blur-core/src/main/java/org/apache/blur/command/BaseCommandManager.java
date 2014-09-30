@@ -120,7 +120,7 @@ public class BaseCommandManager implements Closeable {
 
   @SuppressWarnings("unchecked")
   protected Map<String, String> getArguments(String commandName, boolean optional) {
-    Command<?> command = _command.get(commandName);
+    Command<?> command = getCommandObject(commandName);
     if (command == null) {
       return null;
     }
@@ -380,7 +380,11 @@ public class BaseCommandManager implements Closeable {
   }
 
   protected Command<?> getCommandObject(String commandName) {
-    return _command.get(commandName);
+    Command<?> command = _command.get(commandName);
+    if (command == null) {
+      return null;
+    }
+    return command.clone();
   }
 
   protected String getCommandName(Class<? extends Command<?>> clazz) {
@@ -445,7 +449,7 @@ public class BaseCommandManager implements Closeable {
 
   @SuppressWarnings("unchecked")
   public String getDescription(String commandName) {
-    Command<?> command = _command.get(commandName);
+    Command<?> command = getCommandObject(commandName);
     if (command == null) {
       return null;
     }
@@ -458,7 +462,7 @@ public class BaseCommandManager implements Closeable {
   }
 
   public String getReturnType(String commandName) {
-    Command<?> command = _command.get(commandName);
+    Command<?> command = getCommandObject(commandName);
     if (command == null) {
       return null;
     }

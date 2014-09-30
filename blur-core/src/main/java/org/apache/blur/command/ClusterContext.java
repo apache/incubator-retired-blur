@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import org.apache.blur.BlurConfiguration;
-import org.apache.blur.server.TableContext;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
@@ -24,29 +21,21 @@ import org.apache.blur.server.TableContext;
  * the License.
  */
 
-public abstract class ClusterContext {
+public abstract class ClusterContext extends BaseContext {
 
-  public abstract Args getArgs();
-
-  public abstract TableContext getTableContext(String table) throws IOException;
-
-  public abstract BlurConfiguration getBlurConfiguration(String table) throws IOException;
-
-  public abstract <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexRead<T>> clazz)
-      throws IOException;
+  public abstract <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexRead<T>> clazz) throws IOException;
 
   public abstract <T> Map<Shard, Future<T>> readIndexesAsync(Args args, Class<? extends IndexRead<T>> clazz)
       throws IOException;
 
   public abstract <T> T readIndex(Args args, Class<? extends IndexRead<T>> clazz) throws IOException;
 
-  public abstract <T> Future<T> readIndexAsync(Args args, Class<? extends IndexRead<T>> clazz)
-      throws IOException;
+  public abstract <T> Future<T> readIndexAsync(Args args, Class<? extends IndexRead<T>> clazz) throws IOException;
 
   public abstract <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombining<?, T>> clazz)
       throws IOException;
 
-  public abstract <T> Map<Server, Future<T>> readServersAsync(Args args,
-      Class<? extends IndexReadCombining<?, T>> clazz) throws IOException;
+  public abstract <T> Map<Server, Future<T>> readServersAsync(Args args, Class<? extends IndexReadCombining<?, T>> clazz)
+      throws IOException;
 
 }

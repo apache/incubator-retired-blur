@@ -1,5 +1,7 @@
 package org.apache.blur.command;
 
+import java.io.IOException;
+
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.server.TableContext;
 import org.apache.lucene.index.IndexReader;
@@ -22,11 +24,9 @@ import org.apache.lucene.search.IndexSearcher;
  * the License.
  */
 
-public abstract class IndexContext {
+public abstract class IndexContext extends BaseContext {
 
-  public abstract Args getArgs();
-
-  public abstract TableContext getTableContext();
+  public abstract TableContext getTableContext() throws IOException;
 
   public abstract Shard getShard();
 
@@ -34,6 +34,6 @@ public abstract class IndexContext {
 
   public abstract IndexSearcher getIndexSearcher();
 
-  public abstract BlurConfiguration getBlurConfiguration();
+  public abstract BlurConfiguration getBlurConfiguration() throws IOException;
 
 }

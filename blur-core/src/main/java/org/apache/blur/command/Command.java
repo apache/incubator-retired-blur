@@ -17,6 +17,7 @@
 package org.apache.blur.command;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.apache.blur.command.annotation.Argument;
 import org.apache.blur.command.annotation.OptionalArguments;
@@ -34,6 +35,14 @@ public abstract class Command<R> implements Cloneable {
   public abstract R run(Args arguments, String connectionStr) throws IOException;
   
   public abstract R run(Args arguments, Iface client) throws IOException;
+
+  public Set<Shard> resolveShards(BaseContext context) {
+    return null;
+  }
+
+  public Set<String> resolveTables(BaseContext context) {
+    return null;
+  }
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override

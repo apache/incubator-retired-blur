@@ -17,17 +17,18 @@
 package org.apache.blur.command.commandtype;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.apache.blur.command.CombiningContext;
 import org.apache.blur.command.Command;
 import org.apache.blur.command.CommandRunner;
 import org.apache.blur.command.IndexContext;
-import org.apache.blur.command.ServerRead;
 import org.apache.blur.command.Location;
+import org.apache.blur.command.ServerRead;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
 
 public abstract class ClusterServerReadCommand<T> extends Command<T> implements ServerRead<T, T> {
 
@@ -35,6 +36,17 @@ public abstract class ClusterServerReadCommand<T> extends Command<T> implements 
 
   public abstract T combine(CombiningContext context, Map<? extends Location<?>, T> results) throws IOException,
       InterruptedException;
+
+  @Override
+  public String getReturnType() {
+    try {
+      Method method = getClass().getMethod("combine", new Class[] { CombiningContext.class, Map.class });
+      Class<?> returnType = method.getReturnType();
+      return returnType.getSimpleName();
+    } catch (Exception e) {
+      throw new RuntimeException("Unknown error while trying to get return type.", e);
+    }
+  }
 
   @Override
   public T run() throws IOException {

@@ -17,6 +17,7 @@
 package org.apache.blur.command.commandtype;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import org.apache.blur.command.ClusterContext;
 import org.apache.blur.command.Command;
@@ -32,6 +33,17 @@ public abstract class ClusterIndexReadCommand<T1, T2> extends Command<T2> implem
   public abstract T1 execute(IndexContext context) throws IOException, InterruptedException;
 
   public abstract T2 clusterExecute(ClusterContext context) throws IOException, InterruptedException;
+
+  @Override
+  public String getReturnType() {
+    try {
+      Method method = getClass().getMethod("clusterExecute", new Class[] { ClusterContext.class });
+      Class<?> returnType = method.getReturnType();
+      return returnType.getSimpleName();
+    } catch (Exception e) {
+      throw new RuntimeException("Unknown error while trying to get return type.", e);
+    }
+  }
 
   @Override
   public T2 run() throws IOException {

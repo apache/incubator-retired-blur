@@ -263,7 +263,7 @@ public class GenericBlurRecordWriter {
     _localTmpPath = null;
   }
 
-  private Record getRecord(BlurRecord value) {
+  public static Record getRecord(BlurRecord value) {
     Record record = new Record();
     record.setRecordId(value.getRecordId());
     record.setFamily(value.getFamily());

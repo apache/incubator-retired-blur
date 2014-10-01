@@ -17,6 +17,7 @@
 package org.apache.blur.command.commandtype;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Map;
 
 import org.apache.blur.command.Command;
@@ -31,6 +32,17 @@ import org.apache.blur.thrift.generated.BlurException;
 public abstract class IndexReadCommand<T> extends Command<Map<Shard, T>> implements IndexRead<T> {
 
   public abstract T execute(IndexContext context) throws IOException, InterruptedException;
+
+  @Override
+  public String getReturnType() {
+    try {
+      Method method = getClass().getMethod("execute", new Class[] { IndexContext.class });
+      Class<?> returnType = method.getReturnType();
+      return "map(Shard," + returnType.getSimpleName() + ")";
+    } catch (Exception e) {
+      throw new RuntimeException("Unknown error while trying to get return type.", e);
+    }
+  }
 
   @Override
   public Map<Shard, T> run() throws IOException {

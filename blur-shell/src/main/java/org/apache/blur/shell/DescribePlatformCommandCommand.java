@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.ArgumentDescriptor;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.CommandDescriptor;
@@ -64,23 +65,33 @@ public class DescribePlatformCommandCommand extends Command implements CommandFi
       out.println(addWhiteSpace("Version:", width) + version);
     }
 
-    Map<String, String> requiredArguments = commandDescriptor.getRequiredArguments();
+    Map<String, ArgumentDescriptor> requiredArguments = commandDescriptor.getRequiredArguments();
     if (requiredArguments != null && !requiredArguments.isEmpty()) {
       out.println();
       out.println("Required Arguments:");
-      for (Entry<String, String> e : requiredArguments.entrySet()) {
-        out.println(addWhiteSpace("-" + e.getKey(), width) + e.getValue());
+      for (Entry<String, ArgumentDescriptor> e : requiredArguments.entrySet()) {
+        out.println(addWhiteSpace("-" + e.getKey(), width) + toString(e.getValue()));
       }
     }
-    Map<String, String> optionalArguments = commandDescriptor.getOptionalArguments();
+    Map<String, ArgumentDescriptor> optionalArguments = commandDescriptor.getOptionalArguments();
     if (optionalArguments != null && !optionalArguments.isEmpty()) {
       out.println();
       out.println("Optional Arguments");
-      for (Entry<String, String> e : optionalArguments.entrySet()) {
-        out.println(addWhiteSpace("-" + e.getKey(), width) + e.getValue());
+      for (Entry<String, ArgumentDescriptor> e : optionalArguments.entrySet()) {
+        out.println(addWhiteSpace("-" + e.getKey(), width) + toString(e.getValue()));
       }
     }
     out.println();
+  }
+
+  private String toString(ArgumentDescriptor argumentDescriptor) {
+    String type = argumentDescriptor.getType();
+    String description = argumentDescriptor.getDescription();
+    if (description == null) {
+      return "Type: [" + type + "]";
+    } else {
+      return "Type: [" + type + "] Description: " + description;
+    }
   }
 
   @Override

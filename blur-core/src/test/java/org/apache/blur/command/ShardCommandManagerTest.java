@@ -28,6 +28,7 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -97,14 +98,17 @@ public class ShardCommandManagerTest {
 
   @Test
   public void testDocumentation() {
-    Map<String, String> requiredArgs = _manager.getRequiredArguments("wait");
-    assertTrue(requiredArgs.containsKey("table"));
+    Set<Argument> requiredArgs = _manager.getRequiredArguments("wait");
     assertEquals(1, requiredArgs.size());
+    assertTrue(requiredArgs.contains(new Argument("table", "String", "The name of the table.")));
 
-    Map<String, String> optionalArgs = _manager.getOptionalArguments("wait");
-    assertTrue(optionalArgs.containsKey("seconds"));
-    assertTrue(optionalArgs.containsKey("shard"));
+    Set<Argument> optionalArgs = _manager.getOptionalArguments("wait");
+    System.out.println(optionalArgs);
     assertEquals(2, optionalArgs.size());
+    assertTrue(optionalArgs.contains(new Argument("seconds", "int",
+        "The number of seconds to sleep, the default is 30 seconds.")));
+    assertTrue(optionalArgs.contains(new Argument("shards", "Set<String>", "The shard ids (e.g. shard-0000000).")));
+
   }
 
   @Test

@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -30,9 +29,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.command.annotation.Description;
-import org.apache.blur.command.commandtype.ClusterExecuteServerReadCommand;
-import org.apache.blur.command.commandtype.ServerReadCommand;
-import org.apache.blur.command.commandtype.IndexReadCommand;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -108,12 +104,14 @@ public abstract class BaseCommandManager implements Closeable {
     return new HashMap<String, BigInteger>(_commandLoadTime);
   }
 
-  public Map<String, String> getRequiredArguments(String commandName) {
-    return getArguments(commandName, false);
+  public Set<Argument> getRequiredArguments(String commandName) {
+    Command<?> command = getCommandObject(commandName, null);
+    return command.getRequiredArguments();
   }
 
-  public Map<String, String> getOptionalArguments(String commandName) {
-    return getArguments(commandName, true);
+  public Set<Argument> getOptionalArguments(String commandName) {
+    Command<?> command = getCommandObject(commandName, null);
+    return command.getOptionalArguments();
   }
 
   protected Map<String, String> getArguments(String commandName, boolean optional) {
@@ -481,38 +479,7 @@ public abstract class BaseCommandManager implements Closeable {
     if (command == null) {
       return null;
     }
-
-    String shardServerReturn;
-    try {
-      if (command instanceof IndexReadCommand) {
-        IndexReadCommand<?> indexReadCommand = (IndexReadCommand<?>) command;
-        Method method = indexReadCommand.getClass().getMethod("execute", new Class[] { IndexContext.class });
-        Class<?> returnType = method.getReturnType();
-        shardServerReturn = "shard->(" + returnType.getSimpleName() + ")";
-      } else if (command instanceof ServerReadCommand) {
-        ServerReadCommand<?, ?> indexReadCombiningCommand = (ServerReadCommand<?, ?>) command;
-        Method method = indexReadCombiningCommand.getClass().getMethod("combine",
-            new Class[] { CombiningContext.class, Map.class });
-        Class<?> returnType = method.getReturnType();
-        shardServerReturn = "server->(" + returnType.getSimpleName() + ")";
-      } else {
-        shardServerReturn = null;
-      }
-      if (command instanceof ClusterExecuteServerReadCommand) {
-        ClusterExecuteServerReadCommand<?> clusterCommand = (ClusterExecuteServerReadCommand<?>) command;
-        Method method = clusterCommand.getClass().getMethod("clusterExecute", new Class[] { Map.class });
-        Class<?> returnType = method.getReturnType();
-        String clusterReturn = "cluster->(" + returnType.getSimpleName() + ")";
-        if (shardServerReturn == null) {
-          return clusterReturn;
-        } else {
-          return clusterReturn + "," + shardServerReturn;
-        }
-      }
-      return shardServerReturn;
-    } catch (Exception e) {
-      throw new RuntimeException("Unknown error while trying to get return type.", e);
-    }
+    return command.getReturnType();
   }
 
   protected Arguments toArguments(Command<?> command) {

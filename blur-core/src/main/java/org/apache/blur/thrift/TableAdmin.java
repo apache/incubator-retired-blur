@@ -34,12 +34,14 @@ import javax.xml.parsers.FactoryConfigurationError;
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.analysis.FieldTypeDefinition;
+import org.apache.blur.command.Argument;
 import org.apache.blur.command.BaseCommandManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.generated.ArgumentDescriptor;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ColumnDefinition;
@@ -630,10 +632,19 @@ public abstract class TableAdmin implements Iface {
       commandDescriptor.setCommandName(commandName);
       commandDescriptor.setVersion(e.getValue().toString(Character.MAX_RADIX));
       commandDescriptor.setDescription(commandManager.getDescription(commandName));
-      commandDescriptor.setOptionalArguments(commandManager.getOptionalArguments(commandName));
-      commandDescriptor.setRequiredArguments(commandManager.getRequiredArguments(commandName));
+      commandDescriptor.setOptionalArguments(toThrift(commandManager.getOptionalArguments(commandName)));
+      commandDescriptor.setRequiredArguments(toThrift(commandManager.getRequiredArguments(commandName)));
       commandDescriptor.setReturnType(commandManager.getReturnType(commandName));
       result.add(commandDescriptor);
+    }
+    return result;
+  }
+
+  private Map<String, ArgumentDescriptor> toThrift(Set<Argument> arguments) {
+    Map<String, ArgumentDescriptor> result = new HashMap<String, ArgumentDescriptor>();
+    for (Argument argument : arguments) {
+      String name = argument.getName();
+      result.put(name, new ArgumentDescriptor(name, argument.getType(), argument.getDescription()));
     }
     return result;
   }

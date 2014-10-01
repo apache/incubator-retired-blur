@@ -1,13 +1,14 @@
 package org.apache.blur.command.commandtype;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 import org.apache.blur.command.ClusterContext;
 import org.apache.blur.command.Command;
 import org.apache.blur.command.CommandRunner;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -62,4 +63,16 @@ public abstract class ClusterExecuteCommand<T> extends Command<T> {
       throw new IOException(e);
     }
   }
+
+  @Override
+  public String getReturnType() {
+    try {
+      Method method = getClass().getMethod("clusterExecute", new Class[] { ClusterContext.class });
+      Class<?> returnType = method.getReturnType();
+      return returnType.getSimpleName();
+    } catch (Exception e) {
+      throw new RuntimeException("Unknown error while trying to get return type.", e);
+    }
+  }
+
 }

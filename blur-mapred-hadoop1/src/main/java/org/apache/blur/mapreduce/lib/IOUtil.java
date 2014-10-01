@@ -20,6 +20,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.thrift.generated.Record;
+
 public class IOUtil {
 
   public static final String UTF_8 = "UTF-8";

@@ -105,6 +105,7 @@ limitations under the License.
 <li><a href="#Struct_Response">Response</a></li>
 <li><a href="#Struct_Arguments">Arguments</a></li>
 <li><a href="#Struct_CommandStatus">CommandStatus</a></li>
+<li><a href="#Struct_ArgumentDescriptor">ArgumentDescriptor</a></li>
 <li><a href="#Struct_CommandDescriptor">CommandDescriptor</a></li>
 </ul>
 </li>
@@ -714,12 +715,17 @@ be family dot column, "family.column".
 <tr><td>3</td><td>commandName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>4</td><td>arguments</td><td><code><a href="Blur.html#Struct_Arguments">Arguments</a></code></td><td></td><td>default</td><td></td></tr>
 <tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_CommandStatusState">CommandStatusState</a></code></td><td></td><td>default</td><td></td></tr>
+</table><br/></p></section><section><div class="page-header"><h3 id="Struct_ArgumentDescriptor">Struct: ArgumentDescriptor</h3></div><p class="lead">
+<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
+<tr><td>1</td><td>name</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>type</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>description</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 </table><br/></p></section><section><div class="page-header"><h3 id="Struct_CommandDescriptor">Struct: CommandDescriptor</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>commandName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>2</td><td>description</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>requiredArguments</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>optionalArguments</td><td><code>map&lt;<code>string</code>, <code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>requiredArguments</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ArgumentDescriptor">ArgumentDescriptor</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>4</td><td>optionalArguments</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ArgumentDescriptor">ArgumentDescriptor</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>5</td><td>returnType</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>6</td><td>version</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 </table><br/></p></section><hr/><h2 id="Services">Services</h2>

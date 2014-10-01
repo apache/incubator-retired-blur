@@ -4544,6 +4544,88 @@ CommandStatus.prototype.write = function(output) {
   return;
 };
 
+ArgumentDescriptor = function(args) {
+  this.name = null;
+  this.type = null;
+  this.description = null;
+  if (args) {
+    if (args.name !== undefined) {
+      this.name = args.name;
+    }
+    if (args.type !== undefined) {
+      this.type = args.type;
+    }
+    if (args.description !== undefined) {
+      this.description = args.description;
+    }
+  }
+};
+ArgumentDescriptor.prototype = {};
+ArgumentDescriptor.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.name = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.type = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.STRING) {
+        this.description = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+ArgumentDescriptor.prototype.write = function(output) {
+  output.writeStructBegin('ArgumentDescriptor');
+  if (this.name !== null && this.name !== undefined) {
+    output.writeFieldBegin('name', Thrift.Type.STRING, 1);
+    output.writeString(this.name);
+    output.writeFieldEnd();
+  }
+  if (this.type !== null && this.type !== undefined) {
+    output.writeFieldBegin('type', Thrift.Type.STRING, 2);
+    output.writeString(this.type);
+    output.writeFieldEnd();
+  }
+  if (this.description !== null && this.description !== undefined) {
+    output.writeFieldBegin('description', Thrift.Type.STRING, 3);
+    output.writeString(this.description);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 CommandDescriptor = function(args) {
   this.commandName = null;
   this.description = null;
@@ -4621,7 +4703,8 @@ CommandDescriptor.prototype.read = function(input) {
           var key276 = null;
           var val277 = null;
           key276 = input.readString().value;
-          val277 = input.readString().value;
+          val277 = new ArgumentDescriptor();
+          val277.read(input);
           this.requiredArguments[key276] = val277;
         }
         input.readMapEnd();
@@ -4650,7 +4733,8 @@ CommandDescriptor.prototype.read = function(input) {
           var key284 = null;
           var val285 = null;
           key284 = input.readString().value;
-          val285 = input.readString().value;
+          val285 = new ArgumentDescriptor();
+          val285.read(input);
           this.optionalArguments[key284] = val285;
         }
         input.readMapEnd();
@@ -4695,14 +4779,14 @@ CommandDescriptor.prototype.write = function(output) {
   }
   if (this.requiredArguments !== null && this.requiredArguments !== undefined) {
     output.writeFieldBegin('requiredArguments', Thrift.Type.MAP, 3);
-    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.requiredArguments));
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.requiredArguments));
     for (var kiter286 in this.requiredArguments)
     {
       if (this.requiredArguments.hasOwnProperty(kiter286))
       {
         var viter287 = this.requiredArguments[kiter286];
         output.writeString(kiter286);
-        output.writeString(viter287);
+        viter287.write(output);
       }
     }
     output.writeMapEnd();
@@ -4710,14 +4794,14 @@ CommandDescriptor.prototype.write = function(output) {
   }
   if (this.optionalArguments !== null && this.optionalArguments !== undefined) {
     output.writeFieldBegin('optionalArguments', Thrift.Type.MAP, 4);
-    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRING, Thrift.objectLength(this.optionalArguments));
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.optionalArguments));
     for (var kiter288 in this.optionalArguments)
     {
       if (this.optionalArguments.hasOwnProperty(kiter288))
       {
         var viter289 = this.optionalArguments[kiter288];
         output.writeString(kiter288);
-        output.writeString(viter289);
+        viter289.write(output);
       }
     }
     output.writeMapEnd();

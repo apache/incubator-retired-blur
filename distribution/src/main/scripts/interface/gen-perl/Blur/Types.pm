@@ -4782,6 +4782,100 @@ sub write {
   return $xfer;
 }
 
+package Blur::ArgumentDescriptor;
+use base qw(Class::Accessor);
+Blur::ArgumentDescriptor->mk_accessors( qw( name type description ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{name} = undef;
+  $self->{type} = undef;
+  $self->{description} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{name}) {
+      $self->{name} = $vals->{name};
+    }
+    if (defined $vals->{type}) {
+      $self->{type} = $vals->{type};
+    }
+    if (defined $vals->{description}) {
+      $self->{description} = $vals->{description};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'ArgumentDescriptor';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{name});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{type});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^3$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{description});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('ArgumentDescriptor');
+  if (defined $self->{name}) {
+    $xfer += $output->writeFieldBegin('name', TType::STRING, 1);
+    $xfer += $output->writeString($self->{name});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{type}) {
+    $xfer += $output->writeFieldBegin('type', TType::STRING, 2);
+    $xfer += $output->writeString($self->{type});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{description}) {
+    $xfer += $output->writeFieldBegin('description', TType::STRING, 3);
+    $xfer += $output->writeString($self->{description});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::CommandDescriptor;
 use base qw(Class::Accessor);
 Blur::CommandDescriptor->mk_accessors( qw( commandName description requiredArguments optionalArguments returnType version ) );
@@ -4860,9 +4954,10 @@ sub read {
           for (my $_i244 = 0; $_i244 < $_size240; ++$_i244)
           {
             my $key245 = '';
-            my $val246 = '';
+            my $val246 = new Blur::ArgumentDescriptor();
             $xfer += $input->readString(\$key245);
-            $xfer += $input->readString(\$val246);
+            $val246 = new Blur::ArgumentDescriptor();
+            $xfer += $val246->read($input);
             $self->{requiredArguments}->{$key245} = $val246;
           }
           $xfer += $input->readMapEnd();
@@ -4881,9 +4976,10 @@ sub read {
           for (my $_i251 = 0; $_i251 < $_size247; ++$_i251)
           {
             my $key252 = '';
-            my $val253 = '';
+            my $val253 = new Blur::ArgumentDescriptor();
             $xfer += $input->readString(\$key252);
-            $xfer += $input->readString(\$val253);
+            $val253 = new Blur::ArgumentDescriptor();
+            $xfer += $val253->read($input);
             $self->{optionalArguments}->{$key252} = $val253;
           }
           $xfer += $input->readMapEnd();
@@ -4929,12 +5025,12 @@ sub write {
   if (defined $self->{requiredArguments}) {
     $xfer += $output->writeFieldBegin('requiredArguments', TType::MAP, 3);
     {
-      $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{requiredArguments}}));
+      $xfer += $output->writeMapBegin(TType::STRING, TType::STRUCT, scalar(keys %{$self->{requiredArguments}}));
       {
         while( my ($kiter254,$viter255) = each %{$self->{requiredArguments}}) 
         {
           $xfer += $output->writeString($kiter254);
-          $xfer += $output->writeString($viter255);
+          $xfer += ${viter255}->write($output);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -4944,12 +5040,12 @@ sub write {
   if (defined $self->{optionalArguments}) {
     $xfer += $output->writeFieldBegin('optionalArguments', TType::MAP, 4);
     {
-      $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{optionalArguments}}));
+      $xfer += $output->writeMapBegin(TType::STRING, TType::STRUCT, scalar(keys %{$self->{optionalArguments}}));
       {
         while( my ($kiter256,$viter257) = each %{$self->{optionalArguments}}) 
         {
           $xfer += $output->writeString($kiter256);
-          $xfer += $output->writeString($viter257);
+          $xfer += ${viter257}->write($output);
         }
       }
       $xfer += $output->writeMapEnd();

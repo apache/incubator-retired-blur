@@ -67,8 +67,8 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
 
   public String commandName; // required
   public String description; // required
-  public Map<String,String> requiredArguments; // required
-  public Map<String,String> optionalArguments; // required
+  public Map<String,ArgumentDescriptor> requiredArguments; // required
+  public Map<String,ArgumentDescriptor> optionalArguments; // required
   public String returnType; // required
   public String version; // required
 
@@ -156,11 +156,11 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
     tmpMap.put(_Fields.REQUIRED_ARGUMENTS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("requiredArguments", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
-            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ArgumentDescriptor.class))));
     tmpMap.put(_Fields.OPTIONAL_ARGUMENTS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("optionalArguments", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
-            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
+            new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, ArgumentDescriptor.class))));
     tmpMap.put(_Fields.RETURN_TYPE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("returnType", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     tmpMap.put(_Fields.VERSION, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("version", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -175,8 +175,8 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
   public CommandDescriptor(
     String commandName,
     String description,
-    Map<String,String> requiredArguments,
-    Map<String,String> optionalArguments,
+    Map<String,ArgumentDescriptor> requiredArguments,
+    Map<String,ArgumentDescriptor> optionalArguments,
     String returnType,
     String version)
   {
@@ -200,30 +200,30 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
       this.description = other.description;
     }
     if (other.isSetRequiredArguments()) {
-      Map<String,String> __this__requiredArguments = new HashMap<String,String>();
-      for (Map.Entry<String, String> other_element : other.requiredArguments.entrySet()) {
+      Map<String,ArgumentDescriptor> __this__requiredArguments = new HashMap<String,ArgumentDescriptor>();
+      for (Map.Entry<String, ArgumentDescriptor> other_element : other.requiredArguments.entrySet()) {
 
         String other_element_key = other_element.getKey();
-        String other_element_value = other_element.getValue();
+        ArgumentDescriptor other_element_value = other_element.getValue();
 
         String __this__requiredArguments_copy_key = other_element_key;
 
-        String __this__requiredArguments_copy_value = other_element_value;
+        ArgumentDescriptor __this__requiredArguments_copy_value = new ArgumentDescriptor(other_element_value);
 
         __this__requiredArguments.put(__this__requiredArguments_copy_key, __this__requiredArguments_copy_value);
       }
       this.requiredArguments = __this__requiredArguments;
     }
     if (other.isSetOptionalArguments()) {
-      Map<String,String> __this__optionalArguments = new HashMap<String,String>();
-      for (Map.Entry<String, String> other_element : other.optionalArguments.entrySet()) {
+      Map<String,ArgumentDescriptor> __this__optionalArguments = new HashMap<String,ArgumentDescriptor>();
+      for (Map.Entry<String, ArgumentDescriptor> other_element : other.optionalArguments.entrySet()) {
 
         String other_element_key = other_element.getKey();
-        String other_element_value = other_element.getValue();
+        ArgumentDescriptor other_element_value = other_element.getValue();
 
         String __this__optionalArguments_copy_key = other_element_key;
 
-        String __this__optionalArguments_copy_value = other_element_value;
+        ArgumentDescriptor __this__optionalArguments_copy_value = new ArgumentDescriptor(other_element_value);
 
         __this__optionalArguments.put(__this__optionalArguments_copy_key, __this__optionalArguments_copy_value);
       }
@@ -303,18 +303,18 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
     return (this.requiredArguments == null) ? 0 : this.requiredArguments.size();
   }
 
-  public void putToRequiredArguments(String key, String val) {
+  public void putToRequiredArguments(String key, ArgumentDescriptor val) {
     if (this.requiredArguments == null) {
-      this.requiredArguments = new HashMap<String,String>();
+      this.requiredArguments = new HashMap<String,ArgumentDescriptor>();
     }
     this.requiredArguments.put(key, val);
   }
 
-  public Map<String,String> getRequiredArguments() {
+  public Map<String,ArgumentDescriptor> getRequiredArguments() {
     return this.requiredArguments;
   }
 
-  public CommandDescriptor setRequiredArguments(Map<String,String> requiredArguments) {
+  public CommandDescriptor setRequiredArguments(Map<String,ArgumentDescriptor> requiredArguments) {
     this.requiredArguments = requiredArguments;
     return this;
   }
@@ -338,18 +338,18 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
     return (this.optionalArguments == null) ? 0 : this.optionalArguments.size();
   }
 
-  public void putToOptionalArguments(String key, String val) {
+  public void putToOptionalArguments(String key, ArgumentDescriptor val) {
     if (this.optionalArguments == null) {
-      this.optionalArguments = new HashMap<String,String>();
+      this.optionalArguments = new HashMap<String,ArgumentDescriptor>();
     }
     this.optionalArguments.put(key, val);
   }
 
-  public Map<String,String> getOptionalArguments() {
+  public Map<String,ArgumentDescriptor> getOptionalArguments() {
     return this.optionalArguments;
   }
 
-  public CommandDescriptor setOptionalArguments(Map<String,String> optionalArguments) {
+  public CommandDescriptor setOptionalArguments(Map<String,ArgumentDescriptor> optionalArguments) {
     this.optionalArguments = optionalArguments;
     return this;
   }
@@ -439,7 +439,7 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
       if (value == null) {
         unsetRequiredArguments();
       } else {
-        setRequiredArguments((Map<String,String>)value);
+        setRequiredArguments((Map<String,ArgumentDescriptor>)value);
       }
       break;
 
@@ -447,7 +447,7 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
       if (value == null) {
         unsetOptionalArguments();
       } else {
-        setOptionalArguments((Map<String,String>)value);
+        setOptionalArguments((Map<String,ArgumentDescriptor>)value);
       }
       break;
 
@@ -790,13 +790,14 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map270 = iprot.readMapBegin();
-                struct.requiredArguments = new HashMap<String,String>(2*_map270.size);
+                struct.requiredArguments = new HashMap<String,ArgumentDescriptor>(2*_map270.size);
                 for (int _i271 = 0; _i271 < _map270.size; ++_i271)
                 {
                   String _key272; // optional
-                  String _val273; // required
+                  ArgumentDescriptor _val273; // required
                   _key272 = iprot.readString();
-                  _val273 = iprot.readString();
+                  _val273 = new ArgumentDescriptor();
+                  _val273.read(iprot);
                   struct.requiredArguments.put(_key272, _val273);
                 }
                 iprot.readMapEnd();
@@ -810,13 +811,14 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map274 = iprot.readMapBegin();
-                struct.optionalArguments = new HashMap<String,String>(2*_map274.size);
+                struct.optionalArguments = new HashMap<String,ArgumentDescriptor>(2*_map274.size);
                 for (int _i275 = 0; _i275 < _map274.size; ++_i275)
                 {
                   String _key276; // optional
-                  String _val277; // required
+                  ArgumentDescriptor _val277; // required
                   _key276 = iprot.readString();
-                  _val277 = iprot.readString();
+                  _val277 = new ArgumentDescriptor();
+                  _val277.read(iprot);
                   struct.optionalArguments.put(_key276, _val277);
                 }
                 iprot.readMapEnd();
@@ -870,11 +872,11 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
       if (struct.requiredArguments != null) {
         oprot.writeFieldBegin(REQUIRED_ARGUMENTS_FIELD_DESC);
         {
-          oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.requiredArguments.size()));
-          for (Map.Entry<String, String> _iter278 : struct.requiredArguments.entrySet())
+          oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.requiredArguments.size()));
+          for (Map.Entry<String, ArgumentDescriptor> _iter278 : struct.requiredArguments.entrySet())
           {
             oprot.writeString(_iter278.getKey());
-            oprot.writeString(_iter278.getValue());
+            _iter278.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -883,11 +885,11 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
       if (struct.optionalArguments != null) {
         oprot.writeFieldBegin(OPTIONAL_ARGUMENTS_FIELD_DESC);
         {
-          oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, struct.optionalArguments.size()));
-          for (Map.Entry<String, String> _iter279 : struct.optionalArguments.entrySet())
+          oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, struct.optionalArguments.size()));
+          for (Map.Entry<String, ArgumentDescriptor> _iter279 : struct.optionalArguments.entrySet())
           {
             oprot.writeString(_iter279.getKey());
-            oprot.writeString(_iter279.getValue());
+            _iter279.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -949,20 +951,20 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
       if (struct.isSetRequiredArguments()) {
         {
           oprot.writeI32(struct.requiredArguments.size());
-          for (Map.Entry<String, String> _iter280 : struct.requiredArguments.entrySet())
+          for (Map.Entry<String, ArgumentDescriptor> _iter280 : struct.requiredArguments.entrySet())
           {
             oprot.writeString(_iter280.getKey());
-            oprot.writeString(_iter280.getValue());
+            _iter280.getValue().write(oprot);
           }
         }
       }
       if (struct.isSetOptionalArguments()) {
         {
           oprot.writeI32(struct.optionalArguments.size());
-          for (Map.Entry<String, String> _iter281 : struct.optionalArguments.entrySet())
+          for (Map.Entry<String, ArgumentDescriptor> _iter281 : struct.optionalArguments.entrySet())
           {
             oprot.writeString(_iter281.getKey());
-            oprot.writeString(_iter281.getValue());
+            _iter281.getValue().write(oprot);
           }
         }
       }
@@ -988,14 +990,15 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
       }
       if (incoming.get(2)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map282 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.requiredArguments = new HashMap<String,String>(2*_map282.size);
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map282 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.requiredArguments = new HashMap<String,ArgumentDescriptor>(2*_map282.size);
           for (int _i283 = 0; _i283 < _map282.size; ++_i283)
           {
             String _key284; // optional
-            String _val285; // required
+            ArgumentDescriptor _val285; // required
             _key284 = iprot.readString();
-            _val285 = iprot.readString();
+            _val285 = new ArgumentDescriptor();
+            _val285.read(iprot);
             struct.requiredArguments.put(_key284, _val285);
           }
         }
@@ -1003,14 +1006,15 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
       }
       if (incoming.get(3)) {
         {
-          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map286 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, iprot.readI32());
-          struct.optionalArguments = new HashMap<String,String>(2*_map286.size);
+          org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map286 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
+          struct.optionalArguments = new HashMap<String,ArgumentDescriptor>(2*_map286.size);
           for (int _i287 = 0; _i287 < _map286.size; ++_i287)
           {
             String _key288; // optional
-            String _val289; // required
+            ArgumentDescriptor _val289; // required
             _key288 = iprot.readString();
-            _val289 = iprot.readString();
+            _val289 = new ArgumentDescriptor();
+            _val289.read(iprot);
             struct.optionalArguments.put(_key288, _val289);
           }
         }

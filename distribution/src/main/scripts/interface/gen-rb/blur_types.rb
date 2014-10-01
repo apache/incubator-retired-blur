@@ -1213,6 +1213,26 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  class ArgumentDescriptor
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    NAME = 1
+    TYPE = 2
+    DESCRIPTION = 3
+
+    FIELDS = {
+      NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+      TYPE => {:type => ::Thrift::Types::STRING, :name => 'type'},
+      DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class CommandDescriptor
     include ::Thrift::Struct, ::Thrift::Struct_Union
     COMMANDNAME = 1
@@ -1225,8 +1245,8 @@ module Blur
     FIELDS = {
       COMMANDNAME => {:type => ::Thrift::Types::STRING, :name => 'commandName'},
       DESCRIPTION => {:type => ::Thrift::Types::STRING, :name => 'description'},
-      REQUIREDARGUMENTS => {:type => ::Thrift::Types::MAP, :name => 'requiredArguments', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
-      OPTIONALARGUMENTS => {:type => ::Thrift::Types::MAP, :name => 'optionalArguments', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+      REQUIREDARGUMENTS => {:type => ::Thrift::Types::MAP, :name => 'requiredArguments', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::ArgumentDescriptor}},
+      OPTIONALARGUMENTS => {:type => ::Thrift::Types::MAP, :name => 'optionalArguments', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::ArgumentDescriptor}},
       RETURNTYPE => {:type => ::Thrift::Types::STRING, :name => 'returnType'},
       VERSION => {:type => ::Thrift::Types::STRING, :name => 'version'}
     }

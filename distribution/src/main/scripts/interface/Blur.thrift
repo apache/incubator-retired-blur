@@ -899,11 +899,17 @@ struct CommandStatus {
   5:CommandStatusState state
 }
 
+struct ArgumentDescriptor {
+  1:string name,
+  2:string type,
+  3:string description
+}
+
 struct CommandDescriptor {
   1:string commandName,
   2:string description,
-  3:map<string, string> requiredArguments,
-  4:map<string, string> optionalArguments,
+  3:map<string, ArgumentDescriptor> requiredArguments,
+  4:map<string, ArgumentDescriptor> optionalArguments,
   5:string returnType,
   6:string version
 }

@@ -14,24 +14,29 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.blur.command;
+package org.apache.blur.command.commandtype;
 
 import java.io.IOException;
 
+import org.apache.blur.command.ClusterContext;
+import org.apache.blur.command.Command;
+import org.apache.blur.command.CommandRunner;
+import org.apache.blur.command.IndexContext;
+import org.apache.blur.command.IndexRead;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 
-public abstract class ClusterReadCommand<T1, T2> extends Command<T2> implements IndexRead<T1> {
+public abstract class ClusterIndexReadCommand<T1, T2> extends Command<T2> implements IndexRead<T1> {
 
   public abstract T1 execute(IndexContext context) throws IOException, InterruptedException;
 
   public abstract T2 clusterExecute(ClusterContext context) throws IOException, InterruptedException;
 
   @Override
-  public T2 run(Args arguments) throws IOException {
+  public T2 run() throws IOException {
     try {
-      return CommandRunner.run(this, arguments);
+      return CommandRunner.run(this);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {
@@ -40,24 +45,24 @@ public abstract class ClusterReadCommand<T1, T2> extends Command<T2> implements 
   }
 
   @Override
-  public T2 run(Args arguments, String connectionStr) throws IOException {
+  public T2 run(String connectionStr) throws IOException {
     try {
-      return CommandRunner.run(this, arguments, connectionStr);
+      return CommandRunner.run(this, connectionStr);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {
       throw new IOException(e);
     }
   }
-  
+
   @Override
-  public T2 run(Args arguments, Iface client) throws IOException {
+  public T2 run(Iface client) throws IOException {
     try {
-      return CommandRunner.run(this, arguments, client);
+      return CommandRunner.run(this, client);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {
       throw new IOException(e);
     }
-  }  
+  }
 }

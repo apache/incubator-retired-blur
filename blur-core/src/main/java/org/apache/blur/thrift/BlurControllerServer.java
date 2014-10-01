@@ -48,6 +48,8 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
+import org.apache.blur.command.ArgumentOverlay;
+import org.apache.blur.command.BlurObject;
 import org.apache.blur.command.CommandUtil;
 import org.apache.blur.command.ControllerCommandManager;
 import org.apache.blur.command.ExecutionId;
@@ -1515,13 +1517,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public org.apache.blur.thrift.generated.Response execute(String commandName, Arguments arguments)
       throws BlurException, TException {
     try {
-      // TableContext tableContext = getTableContext(table);
-      // Map<String, String> tableLayout = getTableLayout(table);
-      Response response = _commandManager.execute(getTableContextFactory(), getLayoutFactory(), commandName,
-          CommandUtil.toArgs(arguments));
-      // Response response = _commandManager
-      // .execute(tableContext, commandName, CommandUtil.toArgs(arguments),
-      // tableLayout);
+      BlurObject args = CommandUtil.toBlurObject(arguments);
+      Response response = _commandManager.execute(getTableContextFactory(), getLayoutFactory(), commandName, new ArgumentOverlay(args));
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
@@ -1594,20 +1591,19 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }
 
       @Override
-      public boolean isValidServer(Server server, Set<String> tables, Map<String, Set<Shard>> shards) {
+      public boolean isValidServer(Server server, Set<String> tables, Set<Shard> shards) {
         for (String table : tables) {
           String cluster = _clusterStatus.getCluster(true, table);
           List<String> onlineShardServers = _clusterStatus.getOnlineShardServers(true, cluster);
           if (!onlineShardServers.contains(server.getServer())) {
             return false;
           }
-          Set<Shard> shardSet = shards.get(table);
-          if (shardSet.isEmpty()) {
+          if (shards == null || shards.isEmpty()) {
             return true;
           }
           Map<String, Map<String, String>> layout = _shardServerLayout.get();
           Map<String, String> shardIdToServerMap = layout.get(table);
-          for (Shard shard : shardSet) {
+          for (Shard shard : shards) {
             String serverId = shardIdToServerMap.get(shard.getShard());
             if (serverId.equals(server.getServer())) {
               return true;

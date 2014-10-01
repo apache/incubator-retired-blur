@@ -21,9 +21,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.blur.command.annotation.Description;
+import org.apache.blur.command.commandtype.ClusterExecuteServerReadCommandSingleTable;
 
 @Description("Gets the number of visible documents in the index.")
-public class DocumentCountCombiner extends ClusterExecuteReadCombiningCommand<Long> {
+public class DocumentCountCombiner extends ClusterExecuteServerReadCommandSingleTable<Long> {
 
   private static final String DOC_COUNT_AGGREGATE = "docCountAggregate";
 
@@ -48,7 +49,7 @@ public class DocumentCountCombiner extends ClusterExecuteReadCombiningCommand<Lo
 
   @Override
   public Long clusterExecute(ClusterContext context) throws IOException {
-    Map<Server, Long> results = context.readServers(null, DocumentCountCombiner.class);
+    Map<Server, Long> results = context.readServers(this);
     long total = 0;
     for (Entry<Server, Long> e : results.entrySet()) {
       total += e.getValue();

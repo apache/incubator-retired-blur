@@ -31,6 +31,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.blur.command.ArgumentOverlay;
+import org.apache.blur.command.BlurObject;
 import org.apache.blur.command.CommandUtil;
 import org.apache.blur.command.ExecutionId;
 import org.apache.blur.command.Response;
@@ -607,7 +609,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
               table));
         }
       };
-      Response response = _commandManager.execute(tableContextFactory, commandName, CommandUtil.toArgs(arguments));
+      BlurObject args = CommandUtil.toBlurObject(arguments);
+      Response response = _commandManager.execute(tableContextFactory, commandName, new ArgumentOverlay(args));
       return CommandUtil.fromObjectToThrift(response);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {

@@ -19,9 +19,10 @@ package org.apache.blur.command;
 import java.io.IOException;
 
 import org.apache.blur.command.annotation.Description;
+import org.apache.blur.command.commandtype.IndexReadCommandSingleTable;
 
 @Description("Gets the number of visible documents in the index.")
-public class DocumentCount extends IndexReadCommand<Integer> {
+public class DocumentCount extends IndexReadCommandSingleTable<Integer> {
 
   private static final String DOC_COUNT = "docCount";
 

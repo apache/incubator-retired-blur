@@ -18,17 +18,9 @@ package org.apache.blur.command;
 
 import java.io.IOException;
 
-import org.apache.blur.command.annotation.Argument;
-import org.apache.blur.command.annotation.OptionalArguments;
-import org.apache.blur.command.annotation.RequiredArguments;
+import org.apache.blur.command.commandtype.IndexReadCommandSingleTable;
 
-@RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the wait for N number of seconds command.", type = String.class) })
-@OptionalArguments({
-
-@Argument(name = "shard", value = "The shard id to execute the wait for N number of seconds command.", type = String.class),
-
-})
-public class ThrowException extends IndexReadCommand<Boolean> {
+public class ThrowException extends IndexReadCommandSingleTable<Boolean> {
 
   @Override
   public Boolean execute(IndexContext context) throws IOException, InterruptedException {

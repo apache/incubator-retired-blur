@@ -23,19 +23,13 @@ import java.util.concurrent.Future;
 
 public abstract class ClusterContext extends BaseContext {
 
-  public abstract <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexRead<T>> clazz) throws IOException;
+  public abstract <T> Map<Shard, T> readIndexes(IndexRead<T> command) throws IOException;
+  public abstract <T> Map<Shard, Future<T>> readIndexesAsync(IndexRead<T> command) throws IOException;
 
-  public abstract <T> Map<Shard, Future<T>> readIndexesAsync(Args args, Class<? extends IndexRead<T>> clazz)
-      throws IOException;
+  public abstract <T> T readIndex(IndexRead<T> command) throws IOException;
+  public abstract <T> Future<T> readIndexAsync(IndexRead<T> command) throws IOException;
 
-  public abstract <T> T readIndex(Args args, Class<? extends IndexRead<T>> clazz) throws IOException;
-
-  public abstract <T> Future<T> readIndexAsync(Args args, Class<? extends IndexRead<T>> clazz) throws IOException;
-
-  public abstract <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombining<?, T>> clazz)
-      throws IOException;
-
-  public abstract <T> Map<Server, Future<T>> readServersAsync(Args args, Class<? extends IndexReadCombining<?, T>> clazz)
-      throws IOException;
+  public abstract <T> Map<Server, T> readServers(ServerRead<?, T> command) throws IOException;
+  public abstract <T> Map<Server, Future<T>> readServersAsync(ServerRead<?, T> command) throws IOException;
 
 }

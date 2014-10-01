@@ -19,10 +19,10 @@ import java.io.IOException;
 
 import org.apache.blur.command.Command;
 import org.apache.blur.command.IndexContext;
-import org.apache.blur.command.IndexReadCommand;
+import org.apache.blur.command.commandtype.IndexReadCommandSingleTable;
 
 @SuppressWarnings("serial")
-public class TestCommand extends IndexReadCommand<String> {
+public class TestCommand extends IndexReadCommandSingleTable<String> {
 
   @Override
   public String getName() {

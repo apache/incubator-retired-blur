@@ -20,7 +20,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class TestBlurObjectCommand extends ClusterExecuteReadCombiningCommand<BlurObject> {
+import org.apache.blur.command.commandtype.ClusterExecuteServerReadCommandSingleTable;
+
+public class TestBlurObjectCommand extends ClusterExecuteServerReadCommandSingleTable<BlurObject> {
 
   @Override
   public BlurObject execute(IndexContext context) throws IOException {
@@ -44,7 +46,7 @@ public class TestBlurObjectCommand extends ClusterExecuteReadCombiningCommand<Bl
   @Override
   public BlurObject clusterExecute(ClusterContext context) throws IOException {
     BlurObject blurObject = new BlurObject();
-    Map<Server, BlurObject> results = context.readServers(null, TestBlurObjectCommand.class);
+    Map<Server, BlurObject> results = context.readServers(this);
     long total = 0;
     for (Entry<Server, BlurObject> e : results.entrySet()) {
       BlurObject value = e.getValue();

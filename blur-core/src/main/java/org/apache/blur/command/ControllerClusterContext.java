@@ -49,16 +49,14 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
 
   private final static Log LOG = LogFactory.getLog(ControllerClusterContext.class);
 
-  private final Args _args;
   private final TableContextFactory _tableContextFactory;
   private final Map<Server, Client> _clientMap;
   private final ControllerCommandManager _manager;
   private final LayoutFactory _layoutFactory;
 
-  public ControllerClusterContext(TableContextFactory tableContextFactory, LayoutFactory layoutFactory, Args args,
+  public ControllerClusterContext(TableContextFactory tableContextFactory, LayoutFactory layoutFactory,
       ControllerCommandManager manager) throws IOException {
     _tableContextFactory = tableContextFactory;
-    _args = args;
     _clientMap = getBlurClientsForCluster(layoutFactory.getServerConnections());
     _manager = manager;
     _layoutFactory = layoutFactory;
@@ -79,27 +77,22 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public Args getArgs() {
-    return _args;
-  }
-
-  @Override
   public TableContext getTableContext(String table) throws IOException {
     return _tableContextFactory.getTableContext(table);
   }
 
   @Override
-  public <T> Map<Shard, T> readIndexes(Args args, Class<? extends IndexRead<T>> clazz) throws IOException {
-    Map<Shard, Future<T>> futures = readIndexesAsync(args, clazz);
+  public <T> Map<Shard, T> readIndexes(IndexRead<T> command) throws IOException {
+    Map<Shard, Future<T>> futures = readIndexesAsync(command);
     Map<Shard, T> result = new HashMap<Shard, T>();
-    return processFutures(clazz, futures, result);
+    return processFutures((Command<?>) command, futures, result);
   }
 
   @Override
-  public <T> Map<Server, T> readServers(Args args, Class<? extends IndexReadCombining<?, T>> clazz) throws IOException {
-    Map<Server, Future<T>> futures = readServersAsync(args, clazz);
+  public <T> Map<Server, T> readServers(ServerRead<?, T> command) throws IOException {
+    Map<Server, Future<T>> futures = readServersAsync(command);
     Map<Server, T> result = new HashMap<Server, T>();
-    return processFutures(clazz, futures, result);
+    return processFutures((Command<?>) command, futures, result);
   }
 
   @Override
@@ -112,23 +105,22 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
 
   @SuppressWarnings("unchecked")
   @Override
-  public <T> Map<Shard, Future<T>> readIndexesAsync(final Args args, Class<? extends IndexRead<T>> clazz)
-      throws IOException {
-    final String commandName = _manager.getCommandName((Class<? extends Command<?>>) clazz);
-    Command<?> command = _manager.getCommandObject(commandName);
+  public <T> Map<Shard, Future<T>> readIndexesAsync(IndexRead<T> cmd) throws IOException {
+    final Command<?> command = (Command<?>) cmd;
+    _manager.validate(command);
     Map<Shard, Future<T>> futureMap = new HashMap<Shard, Future<T>>();
-    Set<String> tables = _manager.getTables(command, args);
-    Map<String, Set<Shard>> shards = _manager.getShards(_tableContextFactory, command, args, tables);
-    Map<Server, Client> clientMap = getClientMap(command, args, tables, shards);
+    Set<String> tables = command.routeTables(this);
+    Set<Shard> shards = command.routeShards(this, tables);
+    Map<Server, Client> clientMap = getClientMap(command, tables, shards);
 
+    final Arguments arguments = _manager.toArguments(command);
     for (Entry<Server, Client> e : clientMap.entrySet()) {
       Server server = e.getKey();
       final Client client = e.getValue();
       Future<Map<Shard, T>> future = _manager.submitToExecutorService(new Callable<Map<Shard, T>>() {
         @Override
         public Map<Shard, T> call() throws Exception {
-          Arguments arguments = CommandUtil.toArguments(args);
-          Response response = waitForResponse(client, commandName, arguments);
+          Response response = waitForResponse(client, command, arguments);
           Map<Shard, Object> shardToValue = CommandUtil.fromThriftToObjectShard(response.getShardToValue());
           return (Map<Shard, T>) shardToValue;
         }
@@ -140,10 +132,9 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     return futureMap;
   }
 
-  private Map<Server, Client> getClientMap(Command<?> command, Args args, Set<String> tables,
-      Map<String, Set<Shard>> shards) throws IOException {
+  private Map<Server, Client> getClientMap(Command<?> command, Set<String> tables, Set<Shard> shards)
+      throws IOException {
     Map<Server, Client> result = new HashMap<Server, Client>();
-
     for (Entry<Server, Client> e : _clientMap.entrySet()) {
       Server server = e.getKey();
       if (_layoutFactory.isValidServer(server, tables, shards)) {
@@ -153,14 +144,14 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     return result;
   }
 
-  protected static Response waitForResponse(Client client, String commandName, Arguments arguments) throws TException {
+  protected static Response waitForResponse(Client client, Command<?> command, Arguments arguments) throws TException {
     // TODO This should likely be changed to run of a AtomicBoolean used for
     // the status of commands.
     String executionId = null;
     while (true) {
       try {
         if (executionId == null) {
-          return client.execute(commandName, arguments);
+          return client.execute(command.getName(), arguments);
         } else {
           return client.reconnect(executionId);
         }
@@ -175,8 +166,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     }
   }
 
-  private Set<Shard> getShardsOnServer(Server server, Set<String> tables, Map<String, Set<Shard>> shards)
-      throws IOException {
+  private Set<Shard> getShardsOnServer(Server server, Set<String> tables, Set<Shard> shards) throws IOException {
     Set<Shard> serverLayout = _layoutFactory.getServerLayout(server);
     Set<Shard> result = new HashSet<Shard>();
     for (Shard shard : serverLayout) {
@@ -187,37 +177,35 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     return result;
   }
 
-  private boolean isValid(Shard shard, Set<String> tables, Map<String, Set<Shard>> shards) {
+  private boolean isValid(Shard shard, Set<String> tables, Set<Shard> shards) {
     String table = shard.getTable();
     if (!tables.contains(table)) {
       return false;
     }
-    Set<Shard> shardSet = shards.get(table);
-    if (shardSet.isEmpty()) {
+    if (shards.isEmpty()) {
       return true;
     } else {
-      return shardSet.contains(shard);
+      return shards.contains(shard);
     }
   }
 
   @SuppressWarnings("unchecked")
   @Override
-  public <T> Map<Server, Future<T>> readServersAsync(final Args args, Class<? extends IndexReadCombining<?, T>> clazz)
-      throws IOException {
-    final String commandName = _manager.getCommandName((Class<? extends Command<?>>) clazz);
-    Command<?> command = _manager.getCommandObject(commandName);
+  public <T> Map<Server, Future<T>> readServersAsync(ServerRead<?, T> cmd) throws IOException {
+    final Command<?> command = (Command<?>) cmd;
+    _manager.validate(command);
     Map<Server, Future<T>> futureMap = new HashMap<Server, Future<T>>();
-    Set<String> tables = _manager.getTables(command, args);
-    Map<String, Set<Shard>> shards = _manager.getShards(_tableContextFactory, command, args, tables);
-    Map<Server, Client> clientMap = getClientMap(command, args, tables, shards);
+    Set<String> tables = command.routeTables(this);
+    Set<Shard> shards = command.routeShards(this, tables);
+    Map<Server, Client> clientMap = getClientMap(command, tables, shards);
+    final Arguments arguments = _manager.toArguments(command);
     for (Entry<Server, Client> e : clientMap.entrySet()) {
       Server server = e.getKey();
       final Client client = e.getValue();
       Future<T> future = _manager.submitToExecutorService(new Callable<T>() {
         @Override
         public T call() throws Exception {
-          Arguments arguments = CommandUtil.toArguments(args);
-          Response response = waitForResponse(client, commandName, arguments);
+          Response response = waitForResponse(client, command, arguments);
           ValueObject valueObject = response.getValue();
           return (T) CommandUtil.toObject(valueObject);
         }
@@ -227,7 +215,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     return futureMap;
   }
 
-  private <K, T> Map<K, T> processFutures(Class<?> clazz, Map<K, Future<T>> futures, Map<K, T> result)
+  private <K, T> Map<K, T> processFutures(Command<?> command, Map<K, Future<T>> futures, Map<K, T> result)
       throws IOException {
     Throwable firstError = null;
     for (Entry<K, Future<T>> e : futures.entrySet()) {
@@ -244,7 +232,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
         if (firstError == null) {
           firstError = cause;
         }
-        LOG.error("Unknown call while executing command [{0}] on server or shard [{1}]", clazz, key);
+        LOG.error("Unknown call while executing command [{0}] on server or shard [{1}]", command, key);
       }
     }
     if (firstError != null) {
@@ -259,8 +247,8 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public <T> T readIndex(Args args, Class<? extends IndexRead<T>> clazz) throws IOException {
-    Future<T> future = readIndexAsync(args, clazz);
+  public <T> T readIndex(IndexRead<T> command) throws IOException {
+    Future<T> future = readIndexAsync(command);
     try {
       return future.get();
     } catch (InterruptedException e) {
@@ -271,7 +259,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   }
 
   @Override
-  public <T> Future<T> readIndexAsync(Args args, Class<? extends IndexRead<T>> clazz) throws IOException {
+  public <T> Future<T> readIndexAsync(IndexRead<T> command) throws IOException {
     throw new RuntimeException("Not Implemented.");
   }
 }

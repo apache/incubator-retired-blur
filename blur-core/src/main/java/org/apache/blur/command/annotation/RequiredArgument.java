@@ -14,38 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.command;
+package org.apache.blur.command.annotation;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-public class Args {
-
-  private final Map<String, Object> _values = new HashMap<String, Object>();
-
-  @SuppressWarnings("unchecked")
-  public <T> T get(String name) {
-    return (T) _values.get(name);
-  }
-
-  public <T> T get(String name, T defaultValue) {
-    T t = get(name);
-    if (t == null) {
-      return defaultValue;
-    }
-    return t;
-  }
-
-  public <T> void set(String name, T value) {
-    _values.put(name, value);
-  }
-
-  public Map<String, Object> getValues() {
-    return _values;
-  }
-  
-  public boolean containsArg(String name) {
-    return _values.containsKey(name);
-  }
-
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RequiredArgument {
+  String value() default "";
 }

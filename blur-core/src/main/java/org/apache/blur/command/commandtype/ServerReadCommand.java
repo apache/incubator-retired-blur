@@ -14,16 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.command;
+package org.apache.blur.command.commandtype;
 
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.blur.command.CombiningContext;
+import org.apache.blur.command.Command;
+import org.apache.blur.command.CommandRunner;
+import org.apache.blur.command.IndexContext;
+import org.apache.blur.command.ServerRead;
+import org.apache.blur.command.Location;
+import org.apache.blur.command.Server;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Blur.Iface;
 
-public abstract class IndexReadCombiningCommand<T1, T2> extends Command<Map<Server, T2>> implements
-    IndexReadCombining<T1, T2> {
+public abstract class ServerReadCommand<T1, T2> extends Command<Map<Server, T2>> implements
+    ServerRead<T1, T2> {
 
   public abstract T1 execute(IndexContext context) throws IOException, InterruptedException;
 
@@ -31,9 +39,9 @@ public abstract class IndexReadCombiningCommand<T1, T2> extends Command<Map<Serv
       InterruptedException;
 
   @Override
-  public Map<Server, T2> run(Args arguments) throws IOException {
+  public Map<Server, T2> run() throws IOException {
     try {
-      return CommandRunner.run(this, arguments);
+      return CommandRunner.run(this);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {
@@ -42,9 +50,20 @@ public abstract class IndexReadCombiningCommand<T1, T2> extends Command<Map<Serv
   }
 
   @Override
-  public Map<Server, T2> run(Args arguments, String connectionStr) throws IOException {
+  public Map<Server, T2> run(String connectionStr) throws IOException {
     try {
-      return CommandRunner.run(this, arguments, connectionStr);
+      return CommandRunner.run(this, connectionStr);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public Map<Server, T2> run(Iface client) throws IOException {
+    try {
+      return CommandRunner.run(this, client);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {

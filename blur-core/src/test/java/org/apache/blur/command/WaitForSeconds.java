@@ -19,16 +19,16 @@ package org.apache.blur.command;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.blur.command.annotation.Argument;
-import org.apache.blur.command.annotation.OptionalArguments;
+import org.apache.blur.command.annotation.OptionalArgument;
+import org.apache.blur.command.commandtype.IndexReadCommandSingleTable;
 
-@OptionalArguments({ @Argument(name = "seconds", value = "The number of seconds to sleep, the default is 30 seconds.", type = Integer.class) })
-public class WaitForSeconds extends IndexReadCommand<Boolean> {
+public class WaitForSeconds extends IndexReadCommandSingleTable<Boolean> {
+
+  @OptionalArgument("The number of seconds to sleep, the default is 30 seconds.")
+  private int seconds = 30;
 
   @Override
   public Boolean execute(IndexContext context) throws IOException, InterruptedException {
-    Args args = context.getArgs();
-    int seconds = args.get("seconds", 30);
     Thread.sleep(TimeUnit.SECONDS.toMillis(seconds));
     return true;
   }
@@ -36,6 +36,14 @@ public class WaitForSeconds extends IndexReadCommand<Boolean> {
   @Override
   public String getName() {
     return "wait";
+  }
+
+  public int getSeconds() {
+    return seconds;
+  }
+
+  public void setSeconds(int seconds) {
+    this.seconds = seconds;
   }
 
 }

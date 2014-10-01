@@ -37,7 +37,7 @@ public class TermsCommandTest {
 
   @Test
   public void basicTermsShouldReturn() throws IOException {
-    BlurArray returned = getExecuteResult(newContext("val", null, null));
+    BlurArray returned = getExecuteResult(ctx, "val", null, null);
     BlurArray expected = new BlurArray(Lists.newArrayList("val"));
 
     assertEquals(expected, returned);
@@ -45,7 +45,7 @@ public class TermsCommandTest {
 
   @Test
   public void sizeOfTermsRequestShouldBeRespected() throws IOException {
-    BlurArray returned = getExecuteResult(newContext("alpha", (short) 7, null));
+    BlurArray returned = getExecuteResult(ctx, "alpha", (short) 7, null);
     BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg"));
 
     assertEquals(expected, returned);
@@ -53,7 +53,7 @@ public class TermsCommandTest {
 
   @Test
   public void sizeShouldDefaultToTen() throws IOException {
-    BlurArray returned = getExecuteResult(newContext("alpha", null, null));
+    BlurArray returned = getExecuteResult(ctx, "alpha", null, null);
     BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj"));
 
     assertEquals(expected, returned);
@@ -68,10 +68,7 @@ public class TermsCommandTest {
     BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj"));
 
     TermsCommand cmd = new TermsCommand();
-    Args args = new Args();
-    BlurObject params = new BlurObject();
-    args.set("params", params);
-    BlurArray returned = cmd.combine(new TestCombiningContext(args), execResults);
+    BlurArray returned = cmd.combine(new TestCombiningContext(), execResults);
 
     assertEquals(expected, returned);
   }
@@ -85,12 +82,8 @@ public class TermsCommandTest {
     BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb"));
 
     TermsCommand cmd = new TermsCommand();
-    Args args = new Args();
-    BlurObject params = new BlurObject();
-    params.put("size", (short) 2);
-    args.set("params", params);
-
-    BlurArray returned = cmd.combine(new TestCombiningContext(args), execResults);
+    cmd.setSize((short) 2);
+    BlurArray returned = cmd.combine(new TestCombiningContext(), execResults);
 
     assertEquals(expected, returned);
   }
@@ -106,25 +99,16 @@ public class TermsCommandTest {
     assertEquals(expected, returned);
   }
 
-  private BlurArray getExecuteResult(IndexContext context) throws IOException {
+  private BlurArray getExecuteResult(IndexContext context, String field, Short size, String startsWith)
+      throws IOException {
     TermsCommand cmd = new TermsCommand();
-    return cmd.execute(context);
-  }
-
-  private IndexContext newContext(String field, Short size, String startsWith) {
-
-    Args args = new Args();
-    BlurObject params = new BlurObject();
-    params.put("fieldName", field);
-
-    if (size != null) {
-      params.put("size", size);
-    }
+    cmd.setFieldName(field);
     if (startsWith != null) {
-      params.put("startWith", startsWith);
+      cmd.setStartWith(startsWith);
     }
-    args.set("params", params);
-
-    return new TestContextArgDecorator(ctx, args);
+    if (size != null) {
+      cmd.setSize(size);
+    }
+    return cmd.execute(context);
   }
 }

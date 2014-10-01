@@ -35,15 +35,14 @@ import org.apache.lucene.util.Version;
 
 public class CoreTestContext extends IndexContext {
   private RAMDirectory directory = new RAMDirectory();
-  private Args args = null;
 
   private CoreTestContext() {
   }
 
   /**
-   * Index will contain 26 documents with the following column/values: 
-   * alpha = double-letter a-z (lowercase characters); 
-   * num = 0-25 val = val (constant across all docs)
+   * Index will contain 26 documents with the following column/values: alpha =
+   * double-letter a-z (lowercase characters); num = 0-25 val = val (constant
+   * across all docs)
    * 
    * New columns may be added so don't rely on the column count in tests.
    * 
@@ -64,9 +63,9 @@ public class CoreTestContext extends IndexContext {
         doc.add(new Field("alpha", alpha + alpha, TextField.TYPE_STORED));
         doc.add(new Field("num", Integer.toString(i), TextField.TYPE_STORED));
         doc.add(new Field("val", "val", TextField.TYPE_STORED));
-        
+
         writer.addDocument(doc);
-        
+
         writer.commit();
       }
       writer.commit();
@@ -110,8 +109,13 @@ public class CoreTestContext extends IndexContext {
   }
 
   @Override
-  public Args getArgs() {
-    return args;
+  public TableContext getTableContext(String table) throws IOException {
+    throw new RuntimeException("Not implemented.");
+  }
+
+  @Override
+  public BlurConfiguration getBlurConfiguration(String table) throws IOException {
+    throw new RuntimeException("Not implemented.");
   }
 
 }

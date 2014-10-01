@@ -14,23 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.command;
+package org.apache.blur.command.commandtype;
 
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.blur.command.CombiningContext;
+import org.apache.blur.command.Command;
+import org.apache.blur.command.CommandRunner;
+import org.apache.blur.command.IndexContext;
+import org.apache.blur.command.ServerRead;
+import org.apache.blur.command.Location;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Blur.Iface;
 
-public abstract class IndexReadCommand<T> extends Command<Map<Shard, T>> implements IndexRead<T> {
+public abstract class ClusterServerReadCommand<T> extends Command<T> implements ServerRead<T, T> {
 
   public abstract T execute(IndexContext context) throws IOException, InterruptedException;
 
+  public abstract T combine(CombiningContext context, Map<? extends Location<?>, T> results) throws IOException,
+      InterruptedException;
+
   @Override
-  public Map<Shard, T> run(Args arguments) throws IOException {
+  public T run() throws IOException {
     try {
-      return CommandRunner.run(this, arguments);
+      return CommandRunner.run(this);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {
@@ -39,9 +48,9 @@ public abstract class IndexReadCommand<T> extends Command<Map<Shard, T>> impleme
   }
 
   @Override
-  public Map<Shard, T> run(Args arguments, String connectionStr) throws IOException {
+  public T run(String connectionStr) throws IOException {
     try {
-      return CommandRunner.run(this, arguments, connectionStr);
+      return CommandRunner.run(this, connectionStr);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {
@@ -50,9 +59,9 @@ public abstract class IndexReadCommand<T> extends Command<Map<Shard, T>> impleme
   }
 
   @Override
-  public Map<Shard, T> run(Args arguments, Iface client) throws IOException {
+  public T run(Iface client) throws IOException {
     try {
-      return CommandRunner.run(this, arguments, client);
+      return CommandRunner.run(this, client);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {

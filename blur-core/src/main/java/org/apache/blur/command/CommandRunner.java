@@ -25,6 +25,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.blur.command.commandtype.ClusterExecuteCommand;
+import org.apache.blur.command.commandtype.ClusterExecuteServerReadCommand;
+import org.apache.blur.command.commandtype.ClusterServerReadCommand;
+import org.apache.blur.command.commandtype.ClusterIndexReadCommand;
+import org.apache.blur.command.commandtype.ServerReadCommand;
+import org.apache.blur.command.commandtype.IndexReadCommand;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.BlurClient;
@@ -55,142 +61,137 @@ public class CommandRunner {
     throw new RuntimeException("Unknown client class [" + client.getClass() + "]");
   }
 
-  public static <T> Map<Shard, T> run(IndexReadCommand<T> command, Args arguments) throws IOException, BlurException,
+  public static <T> Map<Shard, T> run(IndexReadCommand<T> command) throws IOException, BlurException, TException {
+    Iface client = BlurClient.getClient();
+    return run(command, getConnection(client));
+  }
+
+  public static <T> Map<Shard, T> run(IndexReadCommand<T> command, String connectionStr) throws IOException,
+      BlurException, TException {
+    Iface client = BlurClient.getClient(connectionStr);
+    return run(command, getConnection(client));
+  }
+
+  public static <T> Map<Shard, T> run(IndexReadCommand<T> command, Blur.Iface client) throws IOException,
+      BlurException, TException {
+    return run(command, getConnection(client));
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> Map<Shard, T> run(IndexReadCommand<T> command, Connection... connection) throws IOException,
+      BlurException, TException {
+    return (Map<Shard, T>) runInternal((Command<?>) command, connection);
+  }
+
+  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command) throws IOException, BlurException,
       TException {
     Iface client = BlurClient.getClient();
-    return run(command, arguments, getConnection(client));
+    return run(command, getConnection(client));
   }
 
-  public static <T> Map<Shard, T> run(IndexReadCommand<T> command, Args arguments, String connectionStr)
+  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, String connectionStr)
       throws IOException, BlurException, TException {
     Iface client = BlurClient.getClient(connectionStr);
-    return run(command, arguments, getConnection(client));
+    return run(command, getConnection(client));
   }
 
-  public static <T> Map<Shard, T> run(IndexReadCommand<T> command, Args arguments, Blur.Iface client)
-      throws IOException, BlurException, TException {
-    return run(command, arguments, getConnection(client));
-  }
-
-  @SuppressWarnings("unchecked")
-  public static <T> Map<Shard, T> run(IndexReadCommand<T> command, Args arguments, Connection... connection)
-      throws IOException, BlurException, TException {
-    return (Map<Shard, T>) runInternal((Command<?>) command, arguments, connection);
-  }
-
-  public static <T> Map<Server, T> run(IndexReadCombiningCommand<?, T> command, Args arguments) throws IOException,
+  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, Blur.Iface client) throws IOException,
       BlurException, TException {
-    Iface client = BlurClient.getClient();
-    return run(command, arguments, getConnection(client));
-  }
-
-  public static <T> Map<Server, T> run(IndexReadCombiningCommand<?, T> command, Args arguments, String connectionStr)
-      throws IOException, BlurException, TException {
-    Iface client = BlurClient.getClient(connectionStr);
-    return run(command, arguments, getConnection(client));
-  }
-
-  public static <T> Map<Server, T> run(IndexReadCombiningCommand<?, T> command, Args arguments, Blur.Iface client)
-      throws IOException, BlurException, TException {
-    return run(command, arguments, getConnection(client));
+    return run(command, getConnection(client));
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> Map<Server, T> run(IndexReadCombiningCommand<?, T> command, Args arguments,
-      Connection... connection) throws IOException, BlurException, TException {
-    return (Map<Server, T>) runInternal((Command<?>) command, arguments, connection);
+  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, Connection... connection)
+      throws IOException, BlurException, TException {
+    return (Map<Server, T>) runInternal((Command<?>) command, connection);
   }
 
-  public static <T1, T2> T2 run(ClusterReadCommand<T1, T2> command, Args arguments) throws IOException, BlurException,
+  public static <T1, T2> T2 run(ClusterIndexReadCommand<T1, T2> command) throws IOException, BlurException, TException {
+    return run(command, getConnection(BlurClient.getClient()));
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T1, T2> T2 run(ClusterIndexReadCommand<T1, T2> command, String connectioStr) throws IOException,
+      BlurException, TException {
+    return (T2) runInternal((Command<?>) command, getConnection(BlurClient.getClient(connectioStr)));
+  }
+
+  public static <T1, T2> T2 run(ClusterIndexReadCommand<T1, T2> command, Blur.Iface client) throws IOException,
+      BlurException, TException {
+    return run(command, getConnection(client));
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T1, T2> T2 run(ClusterIndexReadCommand<T1, T2> command, Connection... connection) throws IOException,
+      BlurException, TException {
+    return (T2) runInternal((Command<?>) command, connection);
+  }
+
+  public static <T> T run(ClusterServerReadCommand<T> command) throws IOException, BlurException, TException {
+    return run(command, getConnection(BlurClient.getClient()));
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> T run(ClusterServerReadCommand<T> command, String connectioStr) throws IOException,
+      BlurException, TException {
+    return (T) runInternal((Command<?>) command, getConnection(BlurClient.getClient(connectioStr)));
+  }
+
+  public static <T> T run(ClusterServerReadCommand<T> command, Blur.Iface client) throws IOException, BlurException,
       TException {
-    return run(command, arguments, getConnection(BlurClient.getClient()));
+    return run(command, getConnection(client));
   }
 
   @SuppressWarnings("unchecked")
-  public static <T1, T2> T2 run(ClusterReadCommand<T1, T2> command, Args arguments, String connectioStr)
-      throws IOException, BlurException, TException {
-    return (T2) runInternal((Command<?>) command, arguments, getConnection(BlurClient.getClient(connectioStr)));
+  public static <T> T run(ClusterServerReadCommand<T> command, Connection... connection) throws IOException,
+      BlurException, TException {
+    return (T) runInternal((Command<?>) command, connection);
   }
 
-  public static <T1, T2> T2 run(ClusterReadCommand<T1, T2> command, Args arguments, Blur.Iface client)
-      throws IOException, BlurException, TException {
-    return run(command, arguments, getConnection(client));
+  public static <T> T run(ClusterExecuteCommand<T> command) throws IOException, BlurException, TException {
+    return run(command, getConnection(BlurClient.getClient()));
   }
 
   @SuppressWarnings("unchecked")
-  public static <T1, T2> T2 run(ClusterReadCommand<T1, T2> command, Args arguments, Connection... connection)
-      throws IOException, BlurException, TException {
-    return (T2) runInternal((Command<?>) command, arguments, connection);
-  }
-
-  public static <T> T run(ClusterReadCombiningCommand<T> command, Args arguments) throws IOException, BlurException,
+  public static <T> T run(ClusterExecuteCommand<T> command, String connectioStr) throws IOException, BlurException,
       TException {
-    return run(command, arguments, getConnection(BlurClient.getClient()));
+    return (T) runInternal((Command<?>) command, getConnection(BlurClient.getClient(connectioStr)));
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T> T run(ClusterReadCombiningCommand<T> command, Args arguments, String connectioStr)
-      throws IOException, BlurException, TException {
-    return (T) runInternal((Command<?>) command, arguments, getConnection(BlurClient.getClient(connectioStr)));
-  }
-
-  public static <T> T run(ClusterReadCombiningCommand<T> command, Args arguments, Blur.Iface client)
-      throws IOException, BlurException, TException {
-    return run(command, arguments, getConnection(client));
-  }
-
-  @SuppressWarnings("unchecked")
-  public static <T> T run(ClusterReadCombiningCommand<T> command, Args arguments, Connection... connection)
-      throws IOException, BlurException, TException {
-    return (T) runInternal((Command<?>) command, arguments, connection);
-  }
-
-  public static <T> T run(ClusterExecuteCommand<T> command, Args arguments) throws IOException, BlurException,
+  public static <T> T run(ClusterExecuteCommand<T> command, Blur.Iface client) throws IOException, BlurException,
       TException {
-    return run(command, arguments, getConnection(BlurClient.getClient()));
+    return run(command, getConnection(client));
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T run(ClusterExecuteCommand<T> command, Args arguments, String connectioStr) throws IOException,
+  public static <T> T run(ClusterExecuteCommand<T> command, Connection... connection) throws IOException,
       BlurException, TException {
-    return (T) runInternal((Command<?>) command, arguments, getConnection(BlurClient.getClient(connectioStr)));
+    return (T) runInternal((Command<?>) command, connection);
   }
 
-  public static <T> T run(ClusterExecuteCommand<T> command, Args arguments, Blur.Iface client) throws IOException,
+  public static <T> T run(ClusterExecuteServerReadCommand<T> command) throws IOException, BlurException, TException {
+    return run(command, getConnection(BlurClient.getClient()));
+  }
+
+  @SuppressWarnings("unchecked")
+  public static <T> T run(ClusterExecuteServerReadCommand<T> command, String connectioStr) throws IOException,
       BlurException, TException {
-    return run(command, arguments, getConnection(client));
+    return (T) runInternal((Command<?>) command, getConnection(BlurClient.getClient(connectioStr)));
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T> T run(ClusterExecuteCommand<T> command, Args arguments, Connection... connection)
-      throws IOException, BlurException, TException {
-    return (T) runInternal((Command<?>) command, arguments, connection);
-  }
-
-  public static <T> T run(ClusterExecuteReadCombiningCommand<T> command, Args arguments) throws IOException,
+  public static <T> T run(ClusterExecuteServerReadCommand<T> command, Blur.Iface client) throws IOException,
       BlurException, TException {
-    return run(command, arguments, getConnection(BlurClient.getClient()));
+    return run(command, getConnection(client));
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T run(ClusterExecuteReadCombiningCommand<T> command, Args arguments, String connectioStr)
-      throws IOException, BlurException, TException {
-    return (T) runInternal((Command<?>) command, arguments, getConnection(BlurClient.getClient(connectioStr)));
+  public static <T> T run(ClusterExecuteServerReadCommand<T> command, Connection... connection) throws IOException,
+      BlurException, TException {
+    return (T) runInternal((Command<?>) command, connection);
   }
 
-  public static <T> T run(ClusterExecuteReadCombiningCommand<T> command, Args arguments, Blur.Iface client)
-      throws IOException, BlurException, TException {
-    return run(command, arguments, getConnection(client));
-  }
-
-  @SuppressWarnings("unchecked")
-  public static <T> T run(ClusterExecuteReadCombiningCommand<T> command, Args arguments, Connection... connection)
-      throws IOException, BlurException, TException {
-    return (T) runInternal((Command<?>) command, arguments, connection);
-  }
-
-  private static Object runInternal(Command<?> command, Args arguments, Connection... connectionsArray)
-      throws TTransportException, IOException, BlurException, TimeoutException, TException {
+  private static Object runInternal(Command<?> command, Connection... connectionsArray) throws TTransportException,
+      IOException, BlurException, TimeoutException, TException {
     List<Connection> connections = new ArrayList<Connection>(Arrays.asList(connectionsArray));
     Collections.shuffle(connections);
     for (Connection connection : connections) {
@@ -200,7 +201,7 @@ public class CommandRunner {
       ClientPool clientPool = BlurClientManager.getClientPool();
       Client client = clientPool.getClient(connection);
       try {
-        Response response = client.execute(command.getName(), CommandUtil.toArguments(arguments));
+        Response response = client.execute(command.getName(), CommandUtil.toArguments(command));
         return CommandUtil.fromThriftResponseToObject(response);
       } finally {
         clientPool.returnClient(connection, client);

@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.manager.IndexServer;
@@ -127,9 +128,10 @@ public class ShardCommandManagerTest {
     ShardCommandManager manager = new ShardCommandManager(getIndexServer(), _tmpPath, _commandPath, 10, 10, 1000,
         _config);
     {
-      Args args = new Args();
-      args.set("table", "test");
-      Response response = manager.execute(getTableContextFactory(), "test", args);
+      BlurObject args = new BlurObject();
+      args.put("table", "test");
+      ArgumentOverlay argumentOverlay = new ArgumentOverlay(args);
+      Response response = manager.execute(getTableContextFactory(), "test", argumentOverlay);
       Map<Shard, Object> shardResults = response.getShardResults();
       for (Object o : shardResults.values()) {
         assertEquals("test1", o);
@@ -148,9 +150,10 @@ public class ShardCommandManagerTest {
     assertEquals(1, manager.commandRefresh());
 
     {
-      Args args = new Args();
-      args.set("table", "test");
-      Response response = manager.execute(getTableContextFactory(), "test", args);
+      BlurObject args = new BlurObject();
+      args.put("table", "test");
+      ArgumentOverlay argumentOverlay = new ArgumentOverlay(args);
+      Response response = manager.execute(getTableContextFactory(), "test", argumentOverlay);
       Map<Shard, Object> shardResults = response.getShardResults();
       for (Object o : shardResults.values()) {
         assertEquals("test2", o);
@@ -178,15 +181,21 @@ public class ShardCommandManagerTest {
     Response response;
     ExecutionId executionId = null;
 
-    Args args = new Args();
-    args.set("seconds", 5);
-    args.set("table", "test");
+    BlurObject args = new BlurObject();
+    args.put("table", "test");
+    args.put("seconds", 5);
 
+    ArgumentOverlay argumentOverlay = new ArgumentOverlay(args);
+
+    long start = System.nanoTime();
     while (true) {
+      if (System.nanoTime() - start >= TimeUnit.SECONDS.toNanos(7)) {
+        fail();
+      }
       try {
         if (executionId == null) {
           TableContextFactory tableContextFactory = getTableContextFactory();
-          response = _manager.execute(tableContextFactory, "wait", args);
+          response = _manager.execute(tableContextFactory, "wait", argumentOverlay);
         } else {
           response = _manager.reconnect(executionId);
         }
@@ -200,12 +209,13 @@ public class ShardCommandManagerTest {
 
   @Test
   public void testShardCommandManagerErrorWait() throws IOException, TimeoutException, ExceptionCollector {
-    Args args = new Args();
-    args.set("seconds", 1);
-    args.set("table", "test");
+    BlurObject args = new BlurObject();
+    args.put("table", "test");
+    args.put("seconds", 1);
+    ArgumentOverlay argumentOverlay = new ArgumentOverlay(args);
     TableContextFactory tableContextFactory = getTableContextFactory();
     try {
-      _manager.execute(tableContextFactory, "error", args);
+      _manager.execute(tableContextFactory, "error", argumentOverlay);
       fail();
     } catch (ExceptionCollector e) {
       Throwable t = e.getCause();
@@ -219,13 +229,15 @@ public class ShardCommandManagerTest {
     Response response;
     ExecutionId executionId = null;
 
-    Args args = new Args();
-    args.set("seconds", 5);
-    args.set("table", "test");
+    BlurObject args = new BlurObject();
+    args.put("table", "test");
+    args.put("seconds", 5);
+
+    ArgumentOverlay argumentOverlay = new ArgumentOverlay(args);
 
     try {
       TableContextFactory tableContextFactory = getTableContextFactory();
-      response = _manager.execute(tableContextFactory, "wait", args);
+      response = _manager.execute(tableContextFactory, "wait", argumentOverlay);
     } catch (TimeoutException te) {
       _manager.cancel(te.getExecutionId());
       // some how validate the threads have cancelled.

@@ -14,14 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.command;
+package org.apache.blur.command.annotation;
 
-import java.io.IOException;
-import java.util.Map;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
-public interface IndexReadCombining<T1, T2> {
-  
-  T1 execute(IndexContext context) throws IOException, InterruptedException;
-
-  T2 combine(CombiningContext context, Map<? extends Location<?>, T1> results) throws IOException, InterruptedException;
+@Retention(RetentionPolicy.RUNTIME)
+public @interface OptionalArgument {
+  String value() default "";
 }

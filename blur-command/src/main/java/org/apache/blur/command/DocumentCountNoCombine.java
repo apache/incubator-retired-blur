@@ -21,9 +21,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.blur.command.annotation.Description;
+import org.apache.blur.command.commandtype.ClusterIndexReadCommandSingleTable;
 
 @Description("Gets the number of visible documents in the index.")
-public class DocumentCountNoCombine extends ClusterReadCommand<Integer,Long> {
+public class DocumentCountNoCombine extends ClusterIndexReadCommandSingleTable<Integer, Long> {
 
   private static final String DOC_COUNT_NO_COMBINE = "docCountNoCombine";
 
@@ -39,7 +40,7 @@ public class DocumentCountNoCombine extends ClusterReadCommand<Integer,Long> {
 
   @Override
   public Long clusterExecute(ClusterContext context) throws IOException {
-    Map<Shard, Integer> indexes = context.readIndexes(null, DocumentCountNoCombine.class);
+    Map<Shard, Integer> indexes = context.readIndexes(this);
     long total = 0;
     for (Entry<Shard, Integer> e : indexes.entrySet()) {
       total += e.getValue();

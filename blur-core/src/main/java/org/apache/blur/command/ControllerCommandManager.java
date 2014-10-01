@@ -5,6 +5,12 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.command.commandtype.ClusterExecuteCommand;
+import org.apache.blur.command.commandtype.ClusterExecuteServerReadCommand;
+import org.apache.blur.command.commandtype.ClusterServerReadCommand;
+import org.apache.blur.command.commandtype.ClusterIndexReadCommand;
+import org.apache.blur.command.commandtype.ServerReadCommand;
+import org.apache.blur.command.commandtype.IndexReadCommand;
 import org.apache.blur.server.LayoutFactory;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.TableContextFactory;
@@ -35,9 +41,9 @@ public class ControllerCommandManager extends BaseCommandManager {
   }
 
   public Response execute(final TableContextFactory tableContextFactory, LayoutFactory layoutFactory,
-      String commandName, final Args args) throws IOException, TimeoutException, ExceptionCollector {
-    final ClusterContext context = createCommandContext(tableContextFactory, layoutFactory, args);
-    final Command<?> command = getCommandObject(commandName);
+      String commandName, ArgumentOverlay argumentOverlay) throws IOException, TimeoutException, ExceptionCollector {
+    final ClusterContext context = createCommandContext(tableContextFactory, layoutFactory);
+    final Command<?> command = getCommandObject(commandName, argumentOverlay);
     if (command == null) {
       throw new IOException("Command with name [" + commandName + "] not found.");
     }
@@ -48,19 +54,19 @@ public class ControllerCommandManager extends BaseCommandManager {
         // a base impl.
 
         if (command instanceof IndexReadCommand) {
-          return executeIndexReadCommand(args, context, command);
+          return executeIndexReadCommand(context, command);
         }
-        if (command instanceof IndexReadCombiningCommand) {
-          return executeIndexReadCombiningCommand(args, context, command);
+        if (command instanceof ServerReadCommand) {
+          return executeIndexReadCombiningCommand(context, command);
         }
-        if (command instanceof ClusterReadCommand) {
+        if (command instanceof ClusterIndexReadCommand) {
           throw new RuntimeException("Not implemented");
         }
-        if (command instanceof ClusterReadCombiningCommand) {
-          CombiningContext combiningContext = getCombiningContext(tableContextFactory, args);
-          return executeClusterReadCombiningCommand(args, context, command, combiningContext);
+        if (command instanceof ClusterServerReadCommand) {
+          CombiningContext combiningContext = getCombiningContext(tableContextFactory);
+          return executeClusterReadCombiningCommand(context, command, combiningContext);
         }
-        if (command instanceof ClusterExecuteReadCombiningCommand) {
+        if (command instanceof ClusterExecuteServerReadCommand) {
           return executeClusterCommand(context, command);
         }
         if (command instanceof ClusterExecuteCommand) {
@@ -73,7 +79,7 @@ public class ControllerCommandManager extends BaseCommandManager {
     });
   }
 
-  private CombiningContext getCombiningContext(final TableContextFactory tableContextFactory, final Args args) {
+  private CombiningContext getCombiningContext(final TableContextFactory tableContextFactory) {
     return new CombiningContext() {
 
       @Override
@@ -85,48 +91,37 @@ public class ControllerCommandManager extends BaseCommandManager {
       public BlurConfiguration getBlurConfiguration(String table) throws IOException {
         return getTableContext(table).getBlurConfiguration();
       }
-
-      @Override
-      public Args getArgs() {
-        return args;
-      }
     };
   }
 
   private Response executeClusterCommand(ClusterContext context, Command<?> command) throws IOException,
       InterruptedException {
-    ClusterExecuteReadCombiningCommand<Object> clusterCommand = (ClusterExecuteReadCombiningCommand<Object>) command;
+    ClusterExecuteServerReadCommand<Object> clusterCommand = (ClusterExecuteServerReadCommand<Object>) command;
     Object object = clusterCommand.clusterExecute(context);
     return Response.createNewAggregateResponse(object);
   }
 
-  private Response executeIndexReadCommand(Args args, ClusterContext context, Command<?> command) throws IOException {
-    Class<? extends IndexReadCommand<Object>> clazz = (Class<? extends IndexReadCommand<Object>>) command.getClass();
-    Map<Shard, Object> result = context.readIndexes(args, clazz);
+  private Response executeIndexReadCommand(ClusterContext context, Command<?> command) throws IOException {
+    Map<Shard, Object> result = context.readIndexes((IndexReadCommand<Object>) command);
     return Response.createNewShardResponse(result);
   }
 
-  private Response executeClusterReadCombiningCommand(Args args, ClusterContext context, Command<?> command,
+  private Response executeClusterReadCombiningCommand(ClusterContext context, Command<?> command,
       CombiningContext combiningContext) throws IOException, InterruptedException {
-    Class<? extends ClusterReadCombiningCommand<Object>> clazz = (Class<? extends ClusterReadCombiningCommand<Object>>) command
-        .getClass();
-    Map<Server, Object> results = context.readServers(args, clazz);
-    ClusterReadCombiningCommand<Object> clusterReadCombiningCommand = (ClusterReadCombiningCommand<Object>) command;
+    Map<Server, Object> results = context.readServers((ClusterServerReadCommand<Object>) command);
+    ClusterServerReadCommand<Object> clusterReadCombiningCommand = (ClusterServerReadCommand<Object>) command;
     Object result = clusterReadCombiningCommand.combine(combiningContext, (Map<? extends Location<?>, Object>) results);
     return Response.createNewAggregateResponse(result);
   }
 
-  private Response executeIndexReadCombiningCommand(Args args, ClusterContext context, Command<?> command)
-      throws IOException {
-    Class<? extends IndexReadCombiningCommand<Object, Object>> clazz = (Class<? extends IndexReadCombiningCommand<Object, Object>>) command
-        .getClass();
-    Map<Server, Object> result = context.readServers(args, clazz);
+  private Response executeIndexReadCombiningCommand(ClusterContext context, Command<?> command) throws IOException {
+    Map<Server, Object> result = context.readServers((ServerReadCommand<Object, Object>) command);
     return Response.createNewServerResponse(result);
   }
 
-  private ClusterContext createCommandContext(TableContextFactory tableContextFactory, LayoutFactory layoutFactory,
-      Args args) throws IOException {
-    return new ControllerClusterContext(tableContextFactory, layoutFactory, args, this);
+  private ClusterContext createCommandContext(TableContextFactory tableContextFactory, LayoutFactory layoutFactory)
+      throws IOException {
+    return new ControllerClusterContext(tableContextFactory, layoutFactory, this);
   }
 
 }

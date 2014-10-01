@@ -1,10 +1,13 @@
 package org.apache.blur.command;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.blur.command.annotation.OptionalArgument;
+import org.apache.blur.command.annotation.RequiredArgument;
 import org.apache.blur.thrift.BException;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.BlurException;
@@ -106,23 +109,25 @@ public class CommandUtil {
       valueObject.setValue(toValue(o));
     } else if (o instanceof BlurObject || o instanceof BlurArray) {
       valueObject.setBlurObject(ObjectArrayPacking.pack(o));
+    } else if (o instanceof Set) {
+      throw new RuntimeException("Not implemented.");
     } else {
       valueObject.setValue(toValue(o));
     }
     return valueObject;
   }
 
-  public static Args toArgs(Arguments arguments) {
+  public static BlurObject toBlurObject(Arguments arguments) {
     if (arguments == null) {
       return null;
     }
-    Args args = new Args();
+    BlurObject blurObject = new BlurObject();
     Map<String, ValueObject> values = arguments.getValues();
     Set<Entry<String, ValueObject>> entrySet = values.entrySet();
     for (Entry<String, ValueObject> e : entrySet) {
-      args.set(e.getKey(), toObject(e.getValue()));
+      blurObject.put(e.getKey(), toObject(e.getValue()));
     }
-    return args;
+    return blurObject;
   }
 
   public static Object toObject(Value value) {
@@ -130,18 +135,6 @@ public class CommandUtil {
       return null;
     }
     return value.getFieldValue();
-  }
-
-  public static Arguments toArguments(Args args) throws BlurException {
-    if (args == null) {
-      return null;
-    }
-    Arguments arguments = new Arguments();
-    Set<Entry<String, Object>> entrySet = args.getValues().entrySet();
-    for (Entry<String, Object> e : entrySet) {
-      arguments.putToValues(e.getKey(), toValueObject(e.getValue()));
-    }
-    return arguments;
   }
 
   @SuppressWarnings("unchecked")
@@ -192,6 +185,59 @@ public class CommandUtil {
       return toObject(response.getValue());
     default:
       throw new RuntimeException("Not supported.");
+    }
+  }
+
+  public static Arguments toArguments(Command<?> command) {
+    Class<?> clazz = command.getClass();
+    Arguments arguments = new Arguments();
+    addArguments(clazz, arguments, command);
+    return arguments;
+  }
+
+  private static void addArguments(Class<?> clazz, Arguments arguments, Command<?> command) {
+    if (!(clazz.equals(Command.class))) {
+      addArguments(clazz.getSuperclass(), arguments, command);
+    }
+    Field[] fields = clazz.getDeclaredFields();
+    for (Field field : fields) {
+      RequiredArgument requiredArgument = field.getAnnotation(RequiredArgument.class);
+      if (requiredArgument != null) {
+        field.setAccessible(true);
+        String name = field.getName();
+        try {
+          Object o = field.get(command);
+          if (o != null) {
+            arguments.putToValues(name, CommandUtil.toValueObject(o));
+          } else {
+            throw new IllegalArgumentException("Field [" + name + "] is required.");
+          }
+        } catch (IllegalArgumentException e) {
+          throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        } catch (BlurException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      OptionalArgument optionalArgument = field.getAnnotation(OptionalArgument.class);
+      if (optionalArgument != null) {
+        field.setAccessible(true);
+        String name = field.getName();
+        try {
+          Object o = field.get(command);
+          if (o != null) {
+            arguments.putToValues(name, CommandUtil.toValueObject(o));
+          }
+        } catch (IllegalArgumentException e) {
+          throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+          throw new RuntimeException(e);
+        } catch (BlurException e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
   }
 }

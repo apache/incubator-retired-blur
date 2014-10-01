@@ -17,7 +17,6 @@
 package org.apache.blur.server;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.blur.command.Server;
@@ -30,6 +29,6 @@ public interface LayoutFactory {
 
   Set<Connection> getServerConnections() throws IOException;
 
-  boolean isValidServer(Server server, Set<String> tables, Map<String, Set<Shard>> shards);
+  boolean isValidServer(Server server, Set<String> tables, Set<Shard> shards);
 
 }

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.apache.blur.command.annotation.RequiredArgument;
+import org.apache.blur.command.commandtype.ClusterServerReadCommandSingleTable;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.IndexReader;
@@ -34,22 +36,20 @@ import com.google.common.collect.Sets;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-public class TermsCommand extends ClusterReadCombiningCommand<BlurArray> {
+public class TermsCommand extends ClusterServerReadCommandSingleTable<BlurArray> {
   private static final String NAME = "terms";
-  private static final String PARAMS = "params";
-  private static final String P_SIZE = "size";
-  private static final String P_FIELD = "fieldName";
-  private static final String P_START = "startWith";
 
-  private static final short DEFAULT_SIZE = 10;
+  @RequiredArgument
+  private short size = 10;
+
+  @RequiredArgument
+  private String fieldName;
+
+  @RequiredArgument
+  private String startWith = "";
 
   @Override
   public BlurArray execute(IndexContext context) throws IOException {
-    BlurObject params = context.getArgs().get(PARAMS);
-    short size = params.getShort(P_SIZE, DEFAULT_SIZE);
-    String fieldName = params.get(P_FIELD);
-    String startWith = params.getString(P_START, "");
-
     return new BlurArray(terms(context.getIndexReader(), fieldName, startWith, size));
   }
 
@@ -58,23 +58,10 @@ public class TermsCommand extends ClusterReadCombiningCommand<BlurArray> {
   public BlurArray combine(CombiningContext context, Map<? extends Location<?>, BlurArray> results) throws IOException,
       InterruptedException {
     SortedSet<String> terms = Sets.newTreeSet();
-
     for (BlurArray t : results.values()) {
       terms.addAll((List<String>) t.asList());
     }
-
-    short size = getSize(context);
-
     return new BlurArray(Lists.newArrayList(terms).subList(0, Math.min((int) size, terms.size())));
-  }
-
-  private short getSize(CombiningContext context) {
-    short size = DEFAULT_SIZE;
-    if ((context.getArgs() != null) && (context.getArgs().containsArg(PARAMS))) {
-      BlurObject params = context.getArgs().get(PARAMS);
-      size = params.getShort(P_SIZE, DEFAULT_SIZE);
-    }
-    return size;
   }
 
   @Override
@@ -116,8 +103,30 @@ public class TermsCommand extends ClusterReadCombiningCommand<BlurArray> {
     if (fieldName == null) {
       throw new NullPointerException("fieldName cannot be null.");
     }
-
     return new Term(fieldName, value);
   }
 
+  public short getSize() {
+    return size;
+  }
+
+  public void setSize(short size) {
+    this.size = size;
+  }
+
+  public String getFieldName() {
+    return fieldName;
+  }
+
+  public void setFieldName(String fieldName) {
+    this.fieldName = fieldName;
+  }
+
+  public String getStartWith() {
+    return startWith;
+  }
+
+  public void setStartWith(String startWith) {
+    this.startWith = startWith;
+  }
 }

@@ -35,21 +35,13 @@ public class TermsCommandIntTests extends BaseClusterTest {
   @Test
   public void testTermsList() throws BlurException, TException, IOException, InterruptedException {
     final String tableName = "testTermsList";
-    TableGen
-      .define(tableName)
-      .cols("test", "col1")
-      .addRows(100, 20, "r1", "rec-###", "value")
-      .build(getClient());
+    TableGen.define(tableName).cols("test", "col1").addRows(100, 20, "r1", "rec-###", "value").build(getClient());
 
     TermsCommand command = new TermsCommand();
+    command.setTable(tableName);
+    command.setFieldName("test.col1");
 
-    Args arguments = new Args();
-    arguments.set("table", tableName);
-    BlurObject params = new BlurObject();
-    params.put("fieldName", "test.col1");
-    arguments.set("params", params);
-
-    BlurArray blurArray = command.run(arguments, getClient());
+    BlurArray blurArray = command.run(getClient());
     List<String> list = Lists.newArrayList("value");
     assertEquals(list, blurArray.asList());
   }

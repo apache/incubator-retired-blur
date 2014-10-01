@@ -19,8 +19,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -31,14 +29,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.blur.command.annotation.Argument;
 import org.apache.blur.command.annotation.Description;
-import org.apache.blur.command.annotation.OptionalArguments;
-import org.apache.blur.command.annotation.RequiredArguments;
+import org.apache.blur.command.commandtype.ClusterExecuteServerReadCommand;
+import org.apache.blur.command.commandtype.ServerReadCommand;
+import org.apache.blur.command.commandtype.IndexReadCommand;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.server.TableContextFactory;
+import org.apache.blur.thrift.generated.Arguments;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -65,7 +63,7 @@ import com.google.common.collect.MapMaker;
  * the License.
  */
 
-public class BaseCommandManager implements Closeable {
+public abstract class BaseCommandManager implements Closeable {
 
   private static final String META_INF_SERVICES_ORG_APACHE_BLUR_COMMAND_COMMANDS = "META-INF/services/org.apache.blur.command.Commands";
   private static final Log LOG = LogFactory.getLog(BaseCommandManager.class);
@@ -118,54 +116,63 @@ public class BaseCommandManager implements Closeable {
     return getArguments(commandName, true);
   }
 
-  @SuppressWarnings("unchecked")
   protected Map<String, String> getArguments(String commandName, boolean optional) {
-    Command<?> command = getCommandObject(commandName);
-    if (command == null) {
-      return null;
-    }
-    Class<Command<?>> clazz = (Class<Command<?>>) command.getClass();
-    Map<String, String> arguments = new TreeMap<String, String>();
-    Argument[] args = getArgumentArray(clazz, optional);
-    addArguments(arguments, args);
-    if (optional) {
-      if (!(command instanceof ShardRoute)) {
-        Argument[] argumentArray = getArgumentArray(Command.class, optional);
-        addArguments(arguments, argumentArray);
-      }
-    } else {
-      if (!(command instanceof TableRoute)) {
-        Argument[] argumentArray = getArgumentArray(Command.class, optional);
-        addArguments(arguments, argumentArray);
-      }
-    }
-    return arguments;
+
+    // @RequiredArguments({ @Argument(name = "table", value =
+    // "The name of the table to execute the document count command.", type =
+    // String.class) })
+    // @OptionalArguments({ @Argument(name = "shard", value =
+    // "The shard id to execute the document count command.", type =
+    // String.class) })
+
+    throw new RuntimeException("not implemented");
+    // Command<?> command = getCommandObject(commandName);
+    // if (command == null) {
+    // return null;
+    // }
+    // Class<Command<?>> clazz = (Class<Command<?>>) command.getClass();
+    // Map<String, String> arguments = new TreeMap<String, String>();
+    // Argument[] args = getArgumentArray(clazz, optional);
+    // addArguments(arguments, args);
+    // if (optional) {
+    // if (!(command instanceof ShardRoute)) {
+    // Argument[] argumentArray = getArgumentArray(Command.class, optional);
+    // addArguments(arguments, argumentArray);
+    // }
+    // } else {
+    // if (!(command instanceof TableRoute)) {
+    // Argument[] argumentArray = getArgumentArray(Command.class, optional);
+    // addArguments(arguments, argumentArray);
+    // }
+    // }
+    // return arguments;
   }
 
-  private void addArguments(Map<String, String> arguments, Argument[] args) {
-    if (args != null) {
-      for (Argument argument : args) {
-        Class<?> type = argument.type();
-        arguments.put(argument.name(), ("(" + type.getSimpleName() + ") " + argument.value()).trim());
-      }
-    }
-  }
-
-  protected Argument[] getArgumentArray(Class<?> clazz, boolean optional) {
-    if (optional) {
-      OptionalArguments arguments = clazz.getAnnotation(OptionalArguments.class);
-      if (arguments == null) {
-        return null;
-      }
-      return arguments.value();
-    } else {
-      RequiredArguments arguments = clazz.getAnnotation(RequiredArguments.class);
-      if (arguments == null) {
-        return null;
-      }
-      return arguments.value();
-    }
-  }
+  // private void addArguments(Map<String, String> arguments, Argument[] args) {
+  // if (args != null) {
+  // for (Argument argument : args) {
+  // Class<?> type = argument.type();
+  // arguments.put(argument.name(), ("(" + type.getSimpleName() + ") " +
+  // argument.value()).trim());
+  // }
+  // }
+  // }
+  //
+  // protected Argument[] getArgumentArray(Class<?> clazz, boolean optional) {
+  // if (optional) {
+  // OptionalArguments arguments = clazz.getAnnotation(OptionalArguments.class);
+  // if (arguments == null) {
+  // return null;
+  // }
+  // return arguments.value();
+  // } else {
+  // RequiredArguments arguments = clazz.getAnnotation(RequiredArguments.class);
+  // if (arguments == null) {
+  // return null;
+  // }
+  // return arguments.value();
+  // }
+  // }
 
   protected TimerTask getNewCommandTimerTask() {
     return new TimerTask() {
@@ -379,77 +386,85 @@ public class BaseCommandManager implements Closeable {
     }
   }
 
-  protected Command<?> getCommandObject(String commandName) {
+  protected Command<?> getCommandObject(String commandName, ArgumentOverlay argumentOverlay) {
     Command<?> command = _command.get(commandName);
     if (command == null) {
       return null;
     }
-    return command.clone();
+    Command<?> clone = command.clone();
+    if (argumentOverlay == null) {
+      return clone;
+    }
+    return argumentOverlay.setup(clone);
   }
 
   protected String getCommandName(Class<? extends Command<?>> clazz) {
     return _commandNameLookup.get(clazz);
   }
 
-  protected Map<String, Set<Shard>> getShards(TableContextFactory tableContextFactory, Command<?> command,
-      final Args args, Set<String> tables) throws IOException {
-    Map<String, Set<Shard>> shardMap = new TreeMap<String, Set<Shard>>();
-    if (command instanceof ShardRoute) {
-      ShardRoute shardRoute = (ShardRoute) command;
-      for (String table : tables) {
-        shardMap.put(table, shardRoute.resolveShards(tableContextFactory.getTableContext(table), args));
-      }
-    } else {
-      if (tables.size() > 1) {
-        throw new IOException(
-            "Cannot route to single shard when multiple tables are specified.  Implement ShardRoute on your command.");
-      }
-      String singleTable = tables.iterator().next();
-      Set<Shard> shardSet = new TreeSet<Shard>();
-      String shard = args.get("shard");
-      if (shard == null) {
-        BlurArray shardArray = args.get("shards");
-        if (shardArray != null) {
-          for (int i = 0; i < shardArray.length(); i++) {
-            shardSet.add(new Shard(singleTable, shardArray.getString(i)));
-          }
-        }
-      } else {
-        shardSet.add(new Shard(singleTable, shard));
-      }
-      shardMap.put(singleTable, shardSet);
-    }
-    return shardMap;
-  }
+  // protected Map<String, Set<Shard>> getShards(TableContextFactory
+  // tableContextFactory, Command<?> command,
+  // final Args args, Set<String> tables) throws IOException {
+  // Map<String, Set<Shard>> shardMap = new TreeMap<String, Set<Shard>>();
+  // if (command instanceof ShardRoute) {
+  // ShardRoute shardRoute = (ShardRoute) command;
+  // for (String table : tables) {
+  // shardMap.put(table,
+  // shardRoute.resolveShards(tableContextFactory.getTableContext(table),
+  // args));
+  // }
+  // } else {
+  // if (tables.size() > 1) {
+  // throw new IOException(
+  // "Cannot route to single shard when multiple tables are specified.  Implement ShardRoute on your command.");
+  // }
+  // String singleTable = tables.iterator().next();
+  // Set<Shard> shardSet = new TreeSet<Shard>();
+  // String shard = args.get("shard");
+  // if (shard == null) {
+  // BlurArray shardArray = args.get("shards");
+  // if (shardArray != null) {
+  // for (int i = 0; i < shardArray.length(); i++) {
+  // shardSet.add(new Shard(singleTable, shardArray.getString(i)));
+  // }
+  // }
+  // } else {
+  // shardSet.add(new Shard(singleTable, shard));
+  // }
+  // shardMap.put(singleTable, shardSet);
+  // }
+  // return shardMap;
+  // }
 
-  protected Set<String> getTables(Command<?> command, final Args args) throws IOException {
-    Set<String> tables = new TreeSet<String>();
-    if (command instanceof TableRoute) {
-      TableRoute tableRoute = (TableRoute) command;
-      tables.addAll(tableRoute.resolveTables(args));
-    } else {
-      if (args == null) {
-        return tables;
-      }
-      String table = args.get("table");
-      if (table == null) {
-        BlurArray tableArray = args.get("tables");
-        if (tableArray == null) {
-          return tables;
-        }
-        for (int i = 0; i < tableArray.length(); i++) {
-          tables.add(tableArray.getString(i));
-        }
-      } else {
-        tables.add(table);
-      }
-    }
-    return tables;
-  }
+  // protected Set<String> getTables(Command<?> command, final Args args) throws
+  // IOException {
+  // Set<String> tables = new TreeSet<String>();
+  // if (command instanceof TableRoute) {
+  // TableRoute tableRoute = (TableRoute) command;
+  // tables.addAll(tableRoute.resolveTables(args));
+  // } else {
+  // if (args == null) {
+  // return tables;
+  // }
+  // String table = args.get("table");
+  // if (table == null) {
+  // BlurArray tableArray = args.get("tables");
+  // if (tableArray == null) {
+  // return tables;
+  // }
+  // for (int i = 0; i < tableArray.length(); i++) {
+  // tables.add(tableArray.getString(i));
+  // }
+  // } else {
+  // tables.add(table);
+  // }
+  // }
+  // return tables;
+  // }
 
   @SuppressWarnings("unchecked")
   public String getDescription(String commandName) {
-    Command<?> command = getCommandObject(commandName);
+    Command<?> command = getCommandObject(commandName, null);
     if (command == null) {
       return null;
     }
@@ -462,7 +477,7 @@ public class BaseCommandManager implements Closeable {
   }
 
   public String getReturnType(String commandName) {
-    Command<?> command = getCommandObject(commandName);
+    Command<?> command = getCommandObject(commandName, null);
     if (command == null) {
       return null;
     }
@@ -474,8 +489,8 @@ public class BaseCommandManager implements Closeable {
         Method method = indexReadCommand.getClass().getMethod("execute", new Class[] { IndexContext.class });
         Class<?> returnType = method.getReturnType();
         shardServerReturn = "shard->(" + returnType.getSimpleName() + ")";
-      } else if (command instanceof IndexReadCombiningCommand) {
-        IndexReadCombiningCommand<?, ?> indexReadCombiningCommand = (IndexReadCombiningCommand<?, ?>) command;
+      } else if (command instanceof ServerReadCommand) {
+        ServerReadCommand<?, ?> indexReadCombiningCommand = (ServerReadCommand<?, ?>) command;
         Method method = indexReadCombiningCommand.getClass().getMethod("combine",
             new Class[] { CombiningContext.class, Map.class });
         Class<?> returnType = method.getReturnType();
@@ -483,8 +498,8 @@ public class BaseCommandManager implements Closeable {
       } else {
         shardServerReturn = null;
       }
-      if (command instanceof ClusterExecuteReadCombiningCommand) {
-        ClusterExecuteReadCombiningCommand<?> clusterCommand = (ClusterExecuteReadCombiningCommand<?>) command;
+      if (command instanceof ClusterExecuteServerReadCommand) {
+        ClusterExecuteServerReadCommand<?> clusterCommand = (ClusterExecuteServerReadCommand<?>) command;
         Method method = clusterCommand.getClass().getMethod("clusterExecute", new Class[] { Map.class });
         Class<?> returnType = method.getReturnType();
         String clusterReturn = "cluster->(" + returnType.getSimpleName() + ")";
@@ -498,6 +513,22 @@ public class BaseCommandManager implements Closeable {
     } catch (Exception e) {
       throw new RuntimeException("Unknown error while trying to get return type.", e);
     }
+  }
+
+  protected Arguments toArguments(Command<?> command) {
+    return CommandUtil.toArguments(command);
+  }
+
+  protected void validate(Command<?> command) throws IOException {
+    String name = command.getName();
+    Command<?> cmd = getCommandObject(name, null);
+    if (cmd == null) {
+      throw new IOException("Command [" + name + "] not found.");
+    }
+    if (cmd.getClass().equals(command.getClass())) {
+      return;
+    }
+    throw new IOException("Command [" + name + "] class does not match class registered.");
   }
 
 }

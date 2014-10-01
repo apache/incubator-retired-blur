@@ -24,7 +24,7 @@ import org.apache.blur.server.TableContext;
 
 public abstract class BaseContext {
   
-  public abstract Args getArgs();
+//  public abstract Args getArgs();
 
   public abstract TableContext getTableContext(String table) throws IOException;
 

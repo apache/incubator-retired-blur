@@ -1,9 +1,13 @@
-package org.apache.blur.command;
+package org.apache.blur.command.commandtype;
 
 import java.io.IOException;
 
+import org.apache.blur.command.ClusterContext;
+import org.apache.blur.command.Command;
+import org.apache.blur.command.CommandRunner;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.Blur.Iface;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -27,9 +31,9 @@ public abstract class ClusterExecuteCommand<T> extends Command<T> {
   public abstract T clusterExecute(ClusterContext context) throws IOException, InterruptedException;
 
   @Override
-  public T run(Args arguments) throws IOException {
+  public T run() throws IOException {
     try {
-      return CommandRunner.run(this, arguments);
+      return CommandRunner.run(this);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {
@@ -38,9 +42,20 @@ public abstract class ClusterExecuteCommand<T> extends Command<T> {
   }
 
   @Override
-  public T run(Args arguments, String connectionStr) throws IOException {
+  public T run(String connectionStr) throws IOException {
     try {
-      return CommandRunner.run(this, arguments, connectionStr);
+      return CommandRunner.run(this, connectionStr);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+  }
+
+  @Override
+  public T run(Iface client) throws IOException {
+    try {
+      return CommandRunner.run(this, client);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {

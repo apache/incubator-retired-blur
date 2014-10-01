@@ -17,32 +17,24 @@
 package org.apache.blur.command;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.blur.command.annotation.Argument;
-import org.apache.blur.command.annotation.OptionalArguments;
-import org.apache.blur.command.annotation.RequiredArguments;
 import org.apache.blur.thrift.generated.Blur.Iface;
 
-@RequiredArguments({ @Argument(name = "table", value = "The name of the table to execute the document count command.", type = String.class) })
-@OptionalArguments({ @Argument(name = "shard", value = "The shard id to execute the document count command.", type = String.class) })
 public abstract class Command<R> implements Cloneable {
 
   public abstract String getName();
 
-  public abstract R run(Args arguments) throws IOException;
+  public abstract R run() throws IOException;
 
-  public abstract R run(Args arguments, String connectionStr) throws IOException;
-  
-  public abstract R run(Args arguments, Iface client) throws IOException;
+  public abstract R run(String connectionStr) throws IOException;
 
-  public Set<Shard> resolveShards(BaseContext context) {
-    return null;
-  }
+  public abstract R run(Iface client) throws IOException;
 
-  public Set<String> resolveTables(BaseContext context) {
-    return null;
-  }
+  public abstract Set<String> routeTables(BaseContext context);
+
+  public abstract Set<Shard> routeShards(BaseContext context, Set<String> tables);
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
@@ -53,4 +45,11 @@ public abstract class Command<R> implements Cloneable {
       throw new RuntimeException(e);
     }
   }
+  
+  public static <T> Set<T> asSet(T t) {
+    Set<T> set = new HashSet<T>();
+    set.add(t);
+    return set;
+  }
+
 }

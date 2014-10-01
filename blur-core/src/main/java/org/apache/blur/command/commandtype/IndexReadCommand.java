@@ -14,26 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.command;
+package org.apache.blur.command.commandtype;
 
 import java.io.IOException;
 import java.util.Map;
 
+import org.apache.blur.command.Command;
+import org.apache.blur.command.CommandRunner;
+import org.apache.blur.command.IndexContext;
+import org.apache.blur.command.IndexRead;
+import org.apache.blur.command.Shard;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
 
-public abstract class ClusterReadCombiningCommand<T> extends Command<T> implements IndexReadCombining<T, T> {
+public abstract class IndexReadCommand<T> extends Command<Map<Shard, T>> implements IndexRead<T> {
 
   public abstract T execute(IndexContext context) throws IOException, InterruptedException;
 
-  public abstract T combine(CombiningContext context, Map<? extends Location<?>, T> results) throws IOException,
-      InterruptedException;
-
   @Override
-  public T run(Args arguments) throws IOException {
+  public Map<Shard, T> run() throws IOException {
     try {
-      return CommandRunner.run(this, arguments);
+      return CommandRunner.run(this);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {
@@ -42,23 +44,25 @@ public abstract class ClusterReadCombiningCommand<T> extends Command<T> implemen
   }
 
   @Override
-  public T run(Args arguments, String connectionStr) throws IOException {
+  public Map<Shard, T> run(String connectionStr) throws IOException {
     try {
-      return CommandRunner.run(this, arguments, connectionStr);
+      return CommandRunner.run(this, connectionStr);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {
       throw new IOException(e);
     }
   }
+
   @Override
-  public T run(Args arguments, Iface client) throws IOException {
+  public Map<Shard, T> run(Iface client) throws IOException {
     try {
-      return CommandRunner.run(this, arguments, client);
+      return CommandRunner.run(this, client);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {
       throw new IOException(e);
     }
-  } 
+  }
+
 }

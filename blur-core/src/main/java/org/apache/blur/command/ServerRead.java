@@ -19,32 +19,9 @@ package org.apache.blur.command;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.blur.command.annotation.Description;
-import org.apache.blur.command.commandtype.ClusterServerReadCommandSingleTable;
+public interface ServerRead<T1, T2> {
+  
+  T1 execute(IndexContext context) throws IOException, InterruptedException;
 
-@Description("Gets the number of visible documents in the index.")
-public class DocumentCountDefaultClusterCombine extends ClusterServerReadCommandSingleTable<Long> {
-
-  private static final String DOC_COUNT_CLUSTER_COMBINE = "docCountClusterCombine";
-
-  @Override
-  public String getName() {
-    return DOC_COUNT_CLUSTER_COMBINE;
-  }
-
-  @Override
-  public Long execute(IndexContext context) throws IOException {
-    return (long) context.getIndexReader().numDocs();
-  }
-
-  @Override
-  public Long combine(CombiningContext context, Map<? extends Location<?>, Long> results) throws IOException,
-      InterruptedException {
-    long total = 0;
-    for (Long l : results.values()) {
-      total += l;
-    }
-    return total;
-  }
-
+  T2 combine(CombiningContext context, Map<? extends Location<?>, T1> results) throws IOException, InterruptedException;
 }

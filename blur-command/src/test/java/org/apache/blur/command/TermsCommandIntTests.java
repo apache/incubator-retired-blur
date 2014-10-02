@@ -41,9 +41,9 @@ public class TermsCommandIntTests extends BaseClusterTest {
     command.setTable(tableName);
     command.setFieldName("test.col1");
 
-    BlurArray blurArray = command.run(getClient());
+    List<String> terms = command.run(getClient());
     List<String> list = Lists.newArrayList("value");
-    assertEquals(list, blurArray.asList());
+    assertEquals(list, terms);
   }
 
 }

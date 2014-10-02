@@ -17,8 +17,8 @@ package org.apache.blur.command.example;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.util.List;
 
-import org.apache.blur.command.BlurArray;
 import org.apache.blur.command.TermsCommand;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.BlurException;
@@ -29,7 +29,7 @@ public class UsingTermCommand {
     TermsCommand command = new TermsCommand();
     command.setTable("test");
     command.setFieldName("fam0.col0");
-    BlurArray blurArray = command.run("localhost:40020");
-    System.out.println(blurArray);
+    List<String> terms = command.run("localhost:40010");
+    System.out.println(terms);
   }
 }

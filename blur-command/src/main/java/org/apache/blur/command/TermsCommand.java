@@ -36,7 +36,7 @@ import com.google.common.collect.Sets;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-public class TermsCommand extends ClusterServerReadCommandSingleTable<BlurArray> {
+public class TermsCommand extends ClusterServerReadCommandSingleTable<List<String>> {
   private static final String NAME = "terms";
 
   @RequiredArgument
@@ -49,19 +49,18 @@ public class TermsCommand extends ClusterServerReadCommandSingleTable<BlurArray>
   private String startWith = "";
 
   @Override
-  public BlurArray execute(IndexContext context) throws IOException {
-    return new BlurArray(terms(context.getIndexReader(), fieldName, startWith, size));
+  public List<String> execute(IndexContext context) throws IOException {
+    return terms(context.getIndexReader(), fieldName, startWith, size);
   }
 
-  @SuppressWarnings("unchecked")
   @Override
-  public BlurArray combine(CombiningContext context, Map<? extends Location<?>, BlurArray> results) throws IOException,
-      InterruptedException {
+  public List<String> combine(CombiningContext context, Map<? extends Location<?>, List<String>> results)
+      throws IOException, InterruptedException {
     SortedSet<String> terms = Sets.newTreeSet();
-    for (BlurArray t : results.values()) {
-      terms.addAll((List<String>) t.asList());
+    for (List<String> t : results.values()) {
+      terms.addAll(t);
     }
-    return new BlurArray(Lists.newArrayList(terms).subList(0, Math.min((int) size, terms.size())));
+    return Lists.newArrayList(terms).subList(0, Math.min((int) size, terms.size()));
   }
 
   @Override

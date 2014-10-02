@@ -320,4 +320,36 @@ public class BlurObject {
     return _valueMap.get(name);
   }
 
+  public static boolean supportedType(Object o) {
+    if (o instanceof String) {
+      return true;
+    } else if (o instanceof String) {
+      return true;
+    } else if (o instanceof Short) {
+      return true;
+    } else if (o instanceof Long) {
+      return true;
+    } else if (o instanceof Integer) {
+      return true;
+    } else if (o instanceof Float) {
+      return true;
+    } else if (o instanceof Double) {
+      return true;
+    } else if (o instanceof byte[]) {
+      return true;
+    } else if (o instanceof Boolean) {
+      return true;
+    } else if (o instanceof BlurObject) {
+      return true;
+    } else if (o instanceof BlurArray) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean hasKey(String key) {
+    return _valueMap.containsKey(key);
+  }
+
 }

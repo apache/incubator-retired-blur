@@ -83,14 +83,13 @@ public class CommandRunner {
     return (Map<Shard, T>) runInternal((Command<?>) command, connection);
   }
 
-  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command) throws IOException, BlurException,
-      TException {
+  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command) throws IOException, BlurException, TException {
     Iface client = BlurClient.getClient();
     return run(command, getConnection(client));
   }
 
-  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, String connectionStr)
-      throws IOException, BlurException, TException {
+  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, String connectionStr) throws IOException,
+      BlurException, TException {
     Iface client = BlurClient.getClient(connectionStr);
     return run(command, getConnection(client));
   }
@@ -101,8 +100,8 @@ public class CommandRunner {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, Connection... connection)
-      throws IOException, BlurException, TException {
+  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, Connection... connection) throws IOException,
+      BlurException, TException {
     return (Map<Server, T>) runInternal((Command<?>) command, connection);
   }
 
@@ -132,8 +131,8 @@ public class CommandRunner {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T run(ClusterServerReadCommand<T> command, String connectioStr) throws IOException,
-      BlurException, TException {
+  public static <T> T run(ClusterServerReadCommand<T> command, String connectioStr) throws IOException, BlurException,
+      TException {
     return (T) runInternal((Command<?>) command, getConnection(BlurClient.getClient(connectioStr)));
   }
 
@@ -201,8 +200,10 @@ public class CommandRunner {
       ClientPool clientPool = BlurClientManager.getClientPool();
       Client client = clientPool.getClient(connection);
       try {
-        Response response = client.execute(command.getName(), CommandUtil.toArguments(command));
-        return CommandUtil.fromThriftResponseToObject(response);
+        BlurObjectSerDe serde = new BlurObjectSerDe();
+        Response response = client.execute(command.getName(), CommandUtil.toArguments(command, serde));
+        Object thriftObject = CommandUtil.fromThriftResponseToObject(response);
+        return serde.fromSupportedThriftObject(thriftObject);
       } finally {
         clientPool.returnClient(connection, client);
       }

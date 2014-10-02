@@ -4,11 +4,9 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.FacetTests;
 import org.apache.blur.thrift.SuiteCluster;
-import org.apache.blur.thrift.TermsTests;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
 import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.rules.ExternalResource;

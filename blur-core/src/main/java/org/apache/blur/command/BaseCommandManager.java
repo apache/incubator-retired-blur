@@ -33,6 +33,7 @@ import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.Arguments;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -78,6 +79,7 @@ public abstract class BaseCommandManager implements Closeable {
   protected final long _pollingPeriod = TimeUnit.SECONDS.toMillis(15);
   protected final Map<Path, BigInteger> _commandPathLastChange = new ConcurrentHashMap<Path, BigInteger>();
   protected final Configuration _configuration;
+  protected final BlurObjectSerDe _serDe = new BlurObjectSerDe();
 
   public BaseCommandManager(String tmpPath, String commandPath, int workerThreadCount, int driverThreadCount,
       long connectionTimeout, Configuration configuration) throws IOException {
@@ -482,8 +484,12 @@ public abstract class BaseCommandManager implements Closeable {
     return command.getReturnType();
   }
 
-  protected Arguments toArguments(Command<?> command) {
-    return CommandUtil.toArguments(command);
+  protected Arguments toArguments(Command<?> command) throws IOException {
+    try {
+      return CommandUtil.toArguments(command, _serDe);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    }
   }
 
   protected void validate(Command<?> command) throws IOException {

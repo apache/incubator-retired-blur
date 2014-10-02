@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 
 import org.apache.blur.command.ArgumentOverlay;
 import org.apache.blur.command.BlurObject;
+import org.apache.blur.command.BlurObjectSerDe;
 import org.apache.blur.command.CommandUtil;
 import org.apache.blur.command.ControllerCommandManager;
 import org.apache.blur.command.ExecutionId;
@@ -208,6 +209,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private Timer _tableContextWarmupTimer;
   private long _tableLayoutTimeoutNanos = TimeUnit.SECONDS.toNanos(30);
   private ControllerCommandManager _commandManager;
+  private BlurObjectSerDe _serDe = new BlurObjectSerDe();
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -1518,8 +1520,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       throws BlurException, TException {
     try {
       BlurObject args = CommandUtil.toBlurObject(arguments);
-      Response response = _commandManager.execute(getTableContextFactory(), getLayoutFactory(), commandName, new ArgumentOverlay(args));
-      return CommandUtil.fromObjectToThrift(response);
+      Response response = _commandManager.execute(getTableContextFactory(), getLayoutFactory(), commandName,
+          new ArgumentOverlay(args, _serDe));
+      return CommandUtil.fromObjectToThrift(response, _serDe);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
         throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
@@ -1624,7 +1627,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       TimeoutException, TException {
     try {
       Response response = _commandManager.reconnect(new ExecutionId(executionId));
-      return CommandUtil.fromObjectToThrift(response);
+      return CommandUtil.fromObjectToThrift(response, _serDe);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
         throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());

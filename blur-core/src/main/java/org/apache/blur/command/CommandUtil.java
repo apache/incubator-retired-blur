@@ -2,6 +2,7 @@ package org.apache.blur.command;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -34,22 +35,46 @@ import org.apache.blur.thrift.generated.ValueObject._Fields;
 
 public class CommandUtil {
 
-  public static org.apache.blur.thrift.generated.Response fromObjectToThrift(Response response) throws BlurException {
+  public static org.apache.blur.thrift.generated.Response fromObjectToThrift(Response response, BlurObjectSerDe serDe)
+      throws BlurException {
     org.apache.blur.thrift.generated.Response converted = new org.apache.blur.thrift.generated.Response();
+
     if (response.isAggregatedResults()) {
-      converted.setValue(toValueObject(response.getServerResult()));
+      Object result = response.getServerResult();
+      Object supportedThriftObject = serDe.toSupportedThriftObject(result);
+      converted.setValue(toValueObject(supportedThriftObject));
     } else {
       Map<Server, Object> serverResults = response.getServerResults();
       if (serverResults == null) {
-        Map<org.apache.blur.thrift.generated.Shard, ValueObject> fromObjectToThrift = fromObjectToThrift(response
-            .getShardResults());
+        Map<Shard, Object> shardResults = response.getShardResults();
+        Map<Shard, Object> supportedThriftObjectShardResults = toThriftSupportedObjects(shardResults, serDe);
+        Map<org.apache.blur.thrift.generated.Shard, ValueObject> fromObjectToThrift = fromObjectToThrift(supportedThriftObjectShardResults);
         converted.setShardToValue(fromObjectToThrift);
       } else {
-        Map<org.apache.blur.thrift.generated.Server, ValueObject> fromObjectToThrift = fromObjectToThrift(serverResults);
+        Map<Server, Object> supportedThriftObjectServerResults = toThriftSupportedObjects(serverResults, serDe);
+        Map<org.apache.blur.thrift.generated.Server, ValueObject> fromObjectToThrift = fromObjectToThrift(supportedThriftObjectServerResults);
         converted.setServerToValue(fromObjectToThrift);
       }
     }
     return converted;
+  }
+
+  public static <T> Map<T, Object> toThriftSupportedObjects(Map<T, Object> map, BlurObjectSerDe serDe) {
+    Map<T, Object> results = new HashMap<T, Object>();
+    for (Entry<T, Object> e : map.entrySet()) {
+      Object supportedThriftObject = serDe.toSupportedThriftObject(e.getValue());
+      results.put(e.getKey(), supportedThriftObject);
+    }
+    return results;
+  }
+
+  public static <T> Map<T, Object> fromThriftSupportedObjects(Map<T, Object> map, BlurObjectSerDe serDe) {
+    Map<T, Object> results = new HashMap<T, Object>();
+    for (Entry<T, Object> e : map.entrySet()) {
+      Object fromSupportedThriftObject = serDe.fromSupportedThriftObject(e.getValue());
+      results.put(e.getKey(), fromSupportedThriftObject);
+    }
+    return results;
   }
 
   @SuppressWarnings("unchecked")
@@ -109,8 +134,6 @@ public class CommandUtil {
       valueObject.setValue(toValue(o));
     } else if (o instanceof BlurObject || o instanceof BlurArray) {
       valueObject.setBlurObject(ObjectArrayPacking.pack(o));
-    } else if (o instanceof Set) {
-      throw new RuntimeException("Not implemented.");
     } else {
       valueObject.setValue(toValue(o));
     }
@@ -188,14 +211,22 @@ public class CommandUtil {
     }
   }
 
-  public static Arguments toArguments(Command<?> command) {
+  public static Arguments toArguments(Command<?> command, BlurObjectSerDe serde) throws BlurException {
     Class<?> clazz = command.getClass();
+    Map<String, Object> args = new HashMap<String, Object>();
+    addArguments(clazz, args, command);
+    BlurObject blurObject = serde.serialize(args);
     Arguments arguments = new Arguments();
-    addArguments(clazz, arguments, command);
+    Iterator<String> keys = blurObject.keys();
+    while (keys.hasNext()) {
+      String key = keys.next();
+      Object object = blurObject.get(key);
+      arguments.putToValues(key, toValueObject(object));
+    }
     return arguments;
   }
 
-  private static void addArguments(Class<?> clazz, Arguments arguments, Command<?> command) {
+  private static void addArguments(Class<?> clazz, Map<String, Object> arguments, Command<?> command) {
     if (!(clazz.equals(Command.class))) {
       addArguments(clazz.getSuperclass(), arguments, command);
     }
@@ -208,15 +239,13 @@ public class CommandUtil {
         try {
           Object o = field.get(command);
           if (o != null) {
-            arguments.putToValues(name, CommandUtil.toValueObject(o));
+            arguments.put(name, o);
           } else {
             throw new IllegalArgumentException("Field [" + name + "] is required.");
           }
         } catch (IllegalArgumentException e) {
           throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (BlurException e) {
           throw new RuntimeException(e);
         }
       }
@@ -228,13 +257,11 @@ public class CommandUtil {
         try {
           Object o = field.get(command);
           if (o != null) {
-            arguments.putToValues(name, CommandUtil.toValueObject(o));
+            arguments.put(name, o);
           }
         } catch (IllegalArgumentException e) {
           throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
-          throw new RuntimeException(e);
-        } catch (BlurException e) {
           throw new RuntimeException(e);
         }
       }

@@ -3,6 +3,7 @@ package org.apache.blur.command;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.junit.BeforeClass;
@@ -37,69 +38,69 @@ public class TermsCommandTest {
 
   @Test
   public void basicTermsShouldReturn() throws IOException {
-    BlurArray returned = getExecuteResult(ctx, "val", null, null);
-    BlurArray expected = new BlurArray(Lists.newArrayList("val"));
+    List<String> returned = getExecuteResult(ctx, "val", null, null);
+    List<String> expected = Lists.newArrayList("val");
 
     assertEquals(expected, returned);
   }
 
   @Test
   public void sizeOfTermsRequestShouldBeRespected() throws IOException {
-    BlurArray returned = getExecuteResult(ctx, "alpha", (short) 7, null);
-    BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg"));
+    List<String> returned = getExecuteResult(ctx, "alpha", (short) 7, null);
+    List<String> expected = Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg");
 
     assertEquals(expected, returned);
   }
 
   @Test
   public void sizeShouldDefaultToTen() throws IOException {
-    BlurArray returned = getExecuteResult(ctx, "alpha", null, null);
-    BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj"));
+    List<String> returned = getExecuteResult(ctx, "alpha", null, null);
+    List<String> expected = Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj");
 
     assertEquals(expected, returned);
   }
 
   @Test
   public void combineSizeShouldDefaultToTen() throws IOException, InterruptedException {
-    Map<Shard, BlurArray> execResults = Maps.newHashMap();
-    execResults.put(new Shard("t1", "s1"), new BlurArray(Lists.newArrayList("aa", "cc", "ee", "gg", "ii")));
-    execResults.put(new Shard("t1", "s2"), new BlurArray(Lists.newArrayList("bb", "dd", "ff", "hh", "jj")));
+    Map<Shard, List<String>> execResults = Maps.newHashMap();
+    execResults.put(new Shard("t1", "s1"), Lists.newArrayList("aa", "cc", "ee", "gg", "ii"));
+    execResults.put(new Shard("t1", "s2"), Lists.newArrayList("bb", "dd", "ff", "hh", "jj"));
 
-    BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj"));
+    List<String> expected = Lists.newArrayList("aa", "bb", "cc", "dd", "ee", "ff", "gg", "hh", "ii", "jj");
 
     TermsCommand cmd = new TermsCommand();
-    BlurArray returned = cmd.combine(new TestCombiningContext(), execResults);
+    List<String> returned = cmd.combine(new TestCombiningContext(), execResults);
 
     assertEquals(expected, returned);
   }
 
   @Test
   public void combineShouldRespectSize() throws IOException, InterruptedException {
-    Map<Shard, BlurArray> execResults = Maps.newHashMap();
-    execResults.put(new Shard("t1", "s1"), new BlurArray(Lists.newArrayList("aa", "cc")));
-    execResults.put(new Shard("t1", "s2"), new BlurArray(Lists.newArrayList("bb", "dd")));
+    Map<Shard, List<String>> execResults = Maps.newHashMap();
+    execResults.put(new Shard("t1", "s1"), Lists.newArrayList("aa", "cc"));
+    execResults.put(new Shard("t1", "s2"), Lists.newArrayList("bb", "dd"));
 
-    BlurArray expected = new BlurArray(Lists.newArrayList("aa", "bb"));
+    List<String> expected = Lists.newArrayList("aa", "bb");
 
     TermsCommand cmd = new TermsCommand();
     cmd.setSize((short) 2);
-    BlurArray returned = cmd.combine(new TestCombiningContext(), execResults);
+    List<String> returned = cmd.combine(new TestCombiningContext(), execResults);
 
     assertEquals(expected, returned);
   }
 
   @Test
   public void combineEmptyShouldGiveNiceEmptyList() throws IOException, InterruptedException {
-    Map<Shard, BlurArray> execResults = Maps.newHashMap();
-    BlurArray expected = new BlurArray(Lists.newArrayList());
+    Map<Shard, List<String>> execResults = Maps.newHashMap();
+    List<String> expected = Lists.newArrayList();
 
     TermsCommand cmd = new TermsCommand();
-    BlurArray returned = cmd.combine(new TestCombiningContext(), execResults);
+    List<String> returned = cmd.combine(new TestCombiningContext(), execResults);
 
     assertEquals(expected, returned);
   }
 
-  private BlurArray getExecuteResult(IndexContext context, String field, Short size, String startsWith)
+  private List<String> getExecuteResult(IndexContext context, String field, Short size, String startsWith)
       throws IOException {
     TermsCommand cmd = new TermsCommand();
     cmd.setFieldName(field);

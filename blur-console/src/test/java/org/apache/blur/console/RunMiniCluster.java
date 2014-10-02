@@ -16,8 +16,10 @@
  */
 package org.apache.blur.console;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.blur.MiniCluster;
-import org.apache.blur.utils.GCWatcher;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
@@ -25,15 +27,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 
-import java.io.File;
-import java.io.IOException;
-
 public class RunMiniCluster {
 
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/mini-cluster"));
 
   public static void main(String[] args) throws IOException {
-    GCWatcher.init(0.60);
+    //GCWatcher.init(0.60);
     LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
     File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
     testDirectory.mkdirs();

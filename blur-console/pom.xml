@@ -43,11 +43,11 @@
       <artifactId>blur-thrift</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
+<!--     <dependency>
       <groupId>org.apache.blur</groupId>
       <artifactId>blur-core</artifactId>
       <version>${project.version}</version>
-    </dependency>
+    </dependency> -->
     <dependency>
       <groupId>org.apache.blur</groupId>
       <artifactId>blur-util</artifactId>
@@ -77,6 +77,11 @@
     </dependency>
 
     <!-- Test Dependancies -->
+    <dependency>
+        <groupId>org.apache.blur</groupId>
+        <artifactId>blur-core</artifactId>
+        <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.blur</groupId>
       <artifactId>blur-core</artifactId>

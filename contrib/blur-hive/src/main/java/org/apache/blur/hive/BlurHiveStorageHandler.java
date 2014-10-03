@@ -23,6 +23,7 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 
+@SuppressWarnings({ "rawtypes", "deprecation" })
 public class BlurHiveStorageHandler extends DefaultStorageHandler {
 
   @Override
@@ -45,6 +46,4 @@ public class BlurHiveStorageHandler extends DefaultStorageHandler {
     // Will set setup Table Descriptor and Output Committer.
   }
 
-  
-  
 }

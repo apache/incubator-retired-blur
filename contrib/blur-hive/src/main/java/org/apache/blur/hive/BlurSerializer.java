@@ -1,13 +1,3 @@
-package org.apache.blur.hive;
-
-import java.util.List;
-import java.util.Map;
-
-import org.apache.blur.thrift.generated.ColumnDefinition;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.io.Writable;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
@@ -24,6 +14,15 @@ import org.apache.hadoop.io.Writable;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.blur.hive;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.io.Writable;
 
 public class BlurSerializer {
 

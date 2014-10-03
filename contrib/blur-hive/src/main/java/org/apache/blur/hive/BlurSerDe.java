@@ -1,29 +1,3 @@
-package org.apache.blur.hive;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.apache.blur.BlurConfiguration;
-import org.apache.blur.mapreduce.lib.BlurRecord;
-import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.BlurClient;
-import org.apache.blur.thrift.generated.Blur.Iface;
-import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.ColumnDefinition;
-import org.apache.blur.thrift.generated.Schema;
-import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.utils.BlurConstants;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.io.Writable;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with this
@@ -40,6 +14,30 @@ import org.apache.hadoop.io.Writable;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.blur.hive;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import org.apache.blur.BlurConfiguration;
+import org.apache.blur.mapreduce.lib.BlurRecord;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.thrift.generated.Schema;
+import org.apache.blur.utils.BlurConstants;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.io.Writable;
 
 public class BlurSerDe extends AbstractSerDe {
 
@@ -94,7 +92,7 @@ public class BlurSerDe extends AbstractSerDe {
       }
     }
 
-    BlurObjectInspectorGenerator blurObjectInspectorGenerator = new BlurObjectInspectorGenerator(_schema);
+    BlurObjectInspectorGenerator blurObjectInspectorGenerator = new BlurObjectInspectorGenerator(_schema.values());
     _objectInspector = blurObjectInspectorGenerator.getObjectInspector();
     _columnNames = blurObjectInspectorGenerator.getColumnNames();
     _columnTypes = blurObjectInspectorGenerator.getColumnTypes();

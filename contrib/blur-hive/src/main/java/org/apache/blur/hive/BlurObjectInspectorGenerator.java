@@ -35,19 +35,21 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class BlurObjectInspectorGenerator {
 
-  private static final String STORED = "stored";
-  private static final String STRING = "string";
-  private static final String TEXT = "text";
-  private static final String LONG = "long";
-  private static final String FLOAT = "float";
-  private static final String INT = "int";
-  private static final String DOUBLE = "double";
-  private static final String DATE = "date";
-  private static final String GEO_TERMPREFIX = "geo-termprefix";
-  private static final String GEO_POINTVECTOR = "geo-pointvector";
-  private static final String GEO_RECURSIVEPREFIX = "geo-recursiveprefix";
-  private static final String LATITUDE = "latitude";
-  private static final String LONGITUDE = "longitude";
+  public static final String RECORDID = "recordid";
+  public static final String ROWID = "rowid";
+  public static final String STORED = "stored";
+  public static final String STRING = "string";
+  public static final String TEXT = "text";
+  public static final String LONG = "long";
+  public static final String FLOAT = "float";
+  public static final String INT = "int";
+  public static final String DOUBLE = "double";
+  public static final String DATE = "date";
+  public static final String GEO_TERMPREFIX = "geo-termprefix";
+  public static final String GEO_POINTVECTOR = "geo-pointvector";
+  public static final String GEO_RECURSIVEPREFIX = "geo-recursiveprefix";
+  public static final String LATITUDE = "latitude";
+  public static final String LONGITUDE = "longitude";
 
   private static final Comparator<ColumnDefinition> COMPARATOR = new Comparator<ColumnDefinition>() {
     @Override
@@ -63,6 +65,13 @@ public class BlurObjectInspectorGenerator {
   public BlurObjectInspectorGenerator(Collection<ColumnDefinition> colDefs) throws SerDeException {
     List<ColumnDefinition> colDefList = new ArrayList<ColumnDefinition>(colDefs);
     Collections.sort(colDefList, COMPARATOR);
+
+    _columnNames.add(ROWID);
+    _columnTypes.add(TypeInfoFactory.stringTypeInfo);
+
+    _columnNames.add(RECORDID);
+    _columnTypes.add(TypeInfoFactory.stringTypeInfo);
+
     for (ColumnDefinition columnDefinition : colDefList) {
       _columnNames.add(columnDefinition.getColumnName());
       _columnTypes.add(getTypeInfo(columnDefinition));

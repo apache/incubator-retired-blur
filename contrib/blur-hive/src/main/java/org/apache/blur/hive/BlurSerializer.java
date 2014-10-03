@@ -19,16 +19,58 @@ package org.apache.blur.hive;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructField;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Writable;
 
 public class BlurSerializer {
 
   public Writable serialize(Object o, ObjectInspector objectInspector, List<String> columnNames,
-      List<TypeInfo> columnTypes, Map<String, ColumnDefinition> schema, String family) {
-    throw new RuntimeException("Not Implemented");
+      List<TypeInfo> columnTypes, Map<String, ColumnDefinition> schema, String family) throws SerDeException {
+    BlurRecord blurRecord = new BlurRecord();
+    blurRecord.setFamily(family);
+
+    StructObjectInspector soi = (StructObjectInspector) objectInspector;
+
+    List<? extends StructField> outputFieldRefs = soi.getAllStructFieldRefs();
+    int size = columnNames.size();
+    if (outputFieldRefs.size() != size) {
+      throw new SerDeException("Number of input columns was different than output columns (in = " + size + " vs out = "
+          + outputFieldRefs.size());
+    }
+    List<Object> structFieldsDataAsList = soi.getStructFieldsDataAsList(o);
+    for (int i = 0; i < size; i++) {
+      // StructField structFieldRef = outputFieldRefs.get(i);
+      Object structFieldData = structFieldsDataAsList.get(i);
+      if (structFieldData == null) {
+        continue;
+      }
+      // ObjectInspector fieldOI = structFieldRef.getFieldObjectInspector();
+      String columnName = columnNames.get(i);
+      if (columnName.equals(BlurObjectInspectorGenerator.ROWID)) {
+        blurRecord.setRowId((String) structFieldData);
+      } else if (columnName.equals(BlurObjectInspectorGenerator.RECORDID)) {
+        blurRecord.setRecordId((String) structFieldData);
+      } else {
+        if (columnName.equals(BlurObjectInspectorGenerator.GEO_POINTVECTOR)
+            || columnName.equals(BlurObjectInspectorGenerator.GEO_RECURSIVEPREFIX)
+            || columnName.equals(BlurObjectInspectorGenerator.GEO_TERMPREFIX)) {
+          throw new SerDeException("Not supported yet.");
+        } else {
+          blurRecord.addColumn(columnName, toString(structFieldData));
+        }
+      }
+    }
+    return blurRecord;
+  }
+
+  private String toString(Object o) {
+    return o.toString();
   }
 
 }

@@ -17,3 +17,4 @@
 # Running this directory.
 javac -cp ../../../../../../../../target/blur-core-*.jar TestCommand.java 
 jar -cf test1.jar META-INF/ TestCommand.class
+rm TestCommand.class

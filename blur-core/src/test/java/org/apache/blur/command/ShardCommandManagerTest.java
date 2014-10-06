@@ -322,7 +322,7 @@ public class ShardCommandManagerTest {
 
   protected BlurIndex getNullBlurIndex(String shard) throws IOException {
     ShardContext shardContext = ShardContext.create(getTableContextFactory().getTableContext("test"), shard);
-    return new BlurIndex(shardContext, null, null, null, null, null) {
+    return new BlurIndex(shardContext, null, null, null, null) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {

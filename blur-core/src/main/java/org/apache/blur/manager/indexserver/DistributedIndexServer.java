@@ -46,7 +46,6 @@ import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexReadOnly;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
-import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
@@ -62,11 +61,8 @@ import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.Directory;
-import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
@@ -95,9 +91,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final BlockCacheDirectoryFactory _blockCacheDirectoryFactory;
   private final ZooKeeper _zookeeper;
   private final int _internalSearchThreads;
-  private final int _warmupThreads;
   private final long _safeModeDelay;
-  private final BlurIndexWarmup _warmup;
   private final BlurFilterCache _filterCache;
   private final DistributedLayoutFactory _distributedLayoutFactory;
 
@@ -112,33 +106,27 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final SharedMergeScheduler _mergeScheduler;
   private final ExecutorService _searchExecutor;
   private final BlurIndexCloser _indexCloser;
-  private final ExecutorService _warmupExecutor;
   private final ConcurrentMap<String, LayoutEntry> _layout = new ConcurrentHashMap<String, LayoutEntry>();
   private final ConcurrentMap<String, Map<String, BlurIndex>> _indexes = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
   private final ShardStateManager _shardStateManager = new ShardStateManager();
   private final Closer _closer;
-  private final boolean _warmupDisabled;
   private long _shortDelay = 250;
   private final int _minimumNumberOfNodes;
 
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
-      BlurIndexWarmup warmup, BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
+      BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
-      int shardOpenerThreadCount, int internalSearchThreads, int warmupThreads, int maxMergeThreads,
-      boolean warmupDisabled, int minimumNumberOfNodesBeforeExitingSafeMode) throws KeeperException,
-      InterruptedException {
+      int shardOpenerThreadCount, int maxMergeThreads, int internalSearchThreads,
+      int minimumNumberOfNodesBeforeExitingSafeMode) throws KeeperException, InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
     _minimumNumberOfNodes = minimumNumberOfNodesBeforeExitingSafeMode;
     _running.set(true);
-    _warmupDisabled = warmupDisabled;
     _closer = Closer.create();
     _shardOpenerThreadCount = shardOpenerThreadCount;
     _zookeeper = zookeeper;
     _filterCache = filterCache;
     _safeModeDelay = safeModeDelay;
-    _warmup = warmup == null ? new DefaultBlurIndexWarmup(1000000) : warmup;
     _internalSearchThreads = internalSearchThreads;
-    _warmupThreads = warmupThreads;
     _blockCacheDirectoryFactory = blockCacheDirectoryFactory;
     _distributedLayoutFactory = distributedLayoutFactory;
 
@@ -147,11 +135,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     BlurUtil.setupZookeeper(_zookeeper, _cluster);
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _searchExecutor = Executors.newThreadPool("internal-search", _internalSearchThreads);
-    _warmupExecutor = Executors.newThreadPool("warmup", _warmupThreads);
 
     _closer.register(CloseableExecutorService.close(_openerService));
     _closer.register(CloseableExecutorService.close(_searchExecutor));
-    _closer.register(CloseableExecutorService.close(_warmupExecutor));
 
     // @TODO allow for configuration of these
     _mergeScheduler = _closer.register(new SharedMergeScheduler(maxMergeThreads));
@@ -527,39 +513,13 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, directory, _mergeScheduler, _searchExecutor,
-        _indexCloser, _warmup);
+        _indexCloser);
 
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
       index = new BlurIndexReadOnly(index);
     }
     _filterCache.opening(table, shard, index);
-    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, _cluster, table);
-    warmUp(index, tableDescriptor, shard);
     return index;
-  }
-
-  private void warmUp(final BlurIndex index, final TableDescriptor table, final String shard) throws IOException {
-    if (_warmupDisabled) {
-      return;
-    }
-    _warmupExecutor.submit(new Runnable() {
-      @Override
-      public void run() {
-        try {
-          final IndexSearcherClosable searcher = index.getIndexSearcher();
-          IndexReader reader = searcher.getIndexReader();
-          _warmup.warmBlurIndex(table, shard, reader, index.isClosed(), new ReleaseReader() {
-            @Override
-            public void release() throws IOException {
-              // this will allow for closing of index
-              searcher.close();
-            }
-          }, _pauseWarmup);
-        } catch (Exception e) {
-          LOG.error("Unknown error while trying to warmup index [" + index + "]", e);
-        }
-      }
-    });
   }
 
   private synchronized Map<String, BlurIndex> openMissingShards(final String table, Set<String> shardsToServe,

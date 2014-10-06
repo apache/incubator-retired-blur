@@ -45,7 +45,6 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.manager.ReadInterceptor;
-import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
@@ -325,7 +324,7 @@ public class TableContext {
 
   @SuppressWarnings("unchecked")
   public BlurIndex newInstanceBlurIndex(ShardContext shardContext, Directory dir, SharedMergeScheduler mergeScheduler,
-      ExecutorService searchExecutor, BlurIndexCloser indexCloser, BlurIndexWarmup indexWarmup) throws IOException {
+      ExecutorService searchExecutor, BlurIndexCloser indexCloser) throws IOException {
 
     String className = _blurConfiguration.get(BLUR_SHARD_BLURINDEX_CLASS, BlurIndexSimpleWriter.class.getName());
 
@@ -337,7 +336,7 @@ public class TableContext {
     }
     Constructor<? extends BlurIndex> constructor = findConstructor(clazz);
     try {
-      return constructor.newInstance(shardContext, dir, mergeScheduler, searchExecutor, indexCloser, indexWarmup);
+      return constructor.newInstance(shardContext, dir, mergeScheduler, searchExecutor, indexCloser);
     } catch (InstantiationException e) {
       throw new IOException(e);
     } catch (IllegalAccessException e) {
@@ -352,7 +351,7 @@ public class TableContext {
   private Constructor<? extends BlurIndex> findConstructor(Class<? extends BlurIndex> clazz) throws IOException {
     try {
       return clazz.getConstructor(new Class[] { ShardContext.class, Directory.class, SharedMergeScheduler.class,
-          ExecutorService.class, BlurIndexCloser.class, BlurIndexWarmup.class });
+          ExecutorService.class, BlurIndexCloser.class });
     } catch (NoSuchMethodException e) {
       throw new IOException(e);
     } catch (SecurityException e) {

@@ -22,7 +22,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.thrift.generated.RowMutation;
@@ -42,7 +41,7 @@ public abstract class BlurIndex {
   protected ShardContext _shardContext;
 
   public BlurIndex(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
-      ExecutorService searchExecutor, BlurIndexCloser indexCloser, BlurIndexWarmup indexWarmup) throws IOException {
+      ExecutorService searchExecutor, BlurIndexCloser indexCloser) throws IOException {
     _shardContext = shardContext;
   }
 

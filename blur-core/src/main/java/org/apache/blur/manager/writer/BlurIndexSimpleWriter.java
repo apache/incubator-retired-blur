@@ -41,8 +41,6 @@ import org.apache.blur.index.IndexDeletionPolicyReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.codec.Blur024Codec;
-import org.apache.blur.lucene.warmup.TraceableDirectory;
-import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -90,9 +88,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final MutationQueueProcessor _mutationQueueProcessor;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
-      final ExecutorService searchExecutor, BlurIndexCloser indexCloser, BlurIndexWarmup indexWarmup)
-      throws IOException {
-    super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexWarmup);
+      final ExecutorService searchExecutor, BlurIndexCloser indexCloser) throws IOException {
+    super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser);
     _searchThreadPool = searchExecutor;
     _shardContext = shardContext;
     _tableContext = _shardContext.getTableContext();
@@ -103,7 +100,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     _conf.setCodec(new Blur024Codec(_tableContext.getBlurConfiguration()));
     _conf.setSimilarity(_tableContext.getSimilarity());
-    _conf.setMergedSegmentWarmer(new BlurIndexReaderWarmer(shardContext, _isClosed, indexWarmup));
     TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     _conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
@@ -119,9 +115,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       new BlurIndexWriter(directory, _conf).close();
     }
 
-    // This directory allows for warm up by adding tracing ability.
-    TraceableDirectory dir = new TraceableDirectory(directory);
-    _directory = dir;
+    _directory = directory;
 
     _indexCloser = indexCloser;
     _indexReader.set(wrap(DirectoryReader.open(_directory)));

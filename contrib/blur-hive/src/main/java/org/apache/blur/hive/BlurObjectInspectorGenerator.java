@@ -59,8 +59,8 @@ public class BlurObjectInspectorGenerator {
   };
 
   private ObjectInspector _objectInspector;
-  private List<String> _columnNames;
-  private List<TypeInfo> _columnTypes;
+  private List<String> _columnNames = new ArrayList<String>();
+  private List<TypeInfo> _columnTypes = new ArrayList<TypeInfo>();
 
   public BlurObjectInspectorGenerator(Collection<ColumnDefinition> colDefs) throws SerDeException {
     List<ColumnDefinition> colDefList = new ArrayList<ColumnDefinition>(colDefs);

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.mapreduce.lib.BlurOutputFormat;
 import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
@@ -30,6 +31,7 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Schema;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -71,11 +73,16 @@ public class BlurSerDe extends AbstractSerDe {
       if (!tableList.contains(table)) {
         throw new SerDeException("Table [" + table + "] does not exist.");
       }
-      // tableDescriptor = client.describe(table);
+      if (conf != null) {
+        TableDescriptor tableDescriptor = client.describe(table);
+        BlurOutputFormat.setTableDescriptor(conf, tableDescriptor);
+      }
       schema = client.schema(table);
     } catch (BlurException e) {
       throw new SerDeException(e);
     } catch (TException e) {
+      throw new SerDeException(e);
+    } catch (IOException e) {
       throw new SerDeException(e);
     }
 

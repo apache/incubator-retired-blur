@@ -22,6 +22,7 @@ import java.util.Properties;
 import org.apache.blur.mapreduce.lib.BlurMutate;
 import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
 import org.apache.blur.mapreduce.lib.BlurRecord;
+import org.apache.blur.mapreduce.lib.CheckOutputSpecs;
 import org.apache.blur.mapreduce.lib.GenericBlurRecordWriter;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -37,7 +38,11 @@ public class BlurHiveOutputFormat implements HiveOutputFormat<Text, BlurRecord> 
 
   @Override
   public void checkOutputSpecs(FileSystem fileSystem, JobConf jobConf) throws IOException {
-    throw new RuntimeException("Not Implemented");
+    try {
+      CheckOutputSpecs.checkOutputSpecs(jobConf, jobConf.getNumReduceTasks());
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
   }
 
   @Override

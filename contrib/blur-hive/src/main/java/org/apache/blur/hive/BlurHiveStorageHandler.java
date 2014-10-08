@@ -16,6 +16,11 @@
  */
 package org.apache.blur.hive;
 
+import java.io.IOException;
+import java.util.Map;
+
+import org.apache.blur.mapreduce.lib.BlurOutputFormat;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -44,6 +49,19 @@ public class BlurHiveStorageHandler extends DefaultStorageHandler {
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
     // Will set setup Table Descriptor and Output Committer.
+    jobConf.setPartitionerClass(BlurHiveParitioner.class);
+    jobConf.setOutputCommitter(BlurHiveOutputCommitter.class);
+    TableDescriptor tableDescriptor;
+    try {
+      tableDescriptor = BlurOutputFormat.getTableDescriptor(jobConf);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    jobConf.setNumReduceTasks(tableDescriptor.getShardCount());
+  }
+
+  @Override
+  public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
   }
 
 }

@@ -123,9 +123,10 @@ public class TableContext implements Cloneable {
     }
     TableContext tableContext = _cache.get(name);
     if (tableContext != null) {
-      TableDescriptor newTd = new TableDescriptor(tableDescriptor);
       TableContext clone = tableContext.clone();
+      TableDescriptor newTd = new TableDescriptor(clone._descriptor);
       clone._descriptor = newTd;
+      clone._descriptor.setEnabled(tableDescriptor.isEnabled());
       return clone;
     }
     LOG.info("Creating table context for table [{0}]", name);

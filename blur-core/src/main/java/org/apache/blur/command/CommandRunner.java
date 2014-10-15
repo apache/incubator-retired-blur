@@ -193,15 +193,29 @@ public class CommandRunner {
       IOException, BlurException, TimeoutException, TException {
     List<Connection> connections = new ArrayList<Connection>(Arrays.asList(connectionsArray));
     Collections.shuffle(connections);
+    BlurObjectSerDe serde = new BlurObjectSerDe();
     for (Connection connection : connections) {
       if (BlurClientManager.isBadConnection(connection)) {
         continue;
       }
       ClientPool clientPool = BlurClientManager.getClientPool();
       Client client = clientPool.getClient(connection);
+
       try {
-        BlurObjectSerDe serde = new BlurObjectSerDe();
-        Response response = client.execute(command.getName(), CommandUtil.toArguments(command, serde));
+        String executionId = null;
+        Response response;
+        INNER: while (true) {
+          try {
+            if (executionId == null) {
+              response = client.execute(command.getName(), CommandUtil.toArguments(command, serde));
+            } else {
+              response = client.reconnect(executionId);
+            }
+            break INNER;
+          } catch (TimeoutException te) {
+            executionId = te.getExecutionId();
+          }
+        }
         Object thriftObject = CommandUtil.fromThriftResponseToObject(response);
         return serde.fromSupportedThriftObject(thriftObject);
       } finally {

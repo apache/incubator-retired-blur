@@ -63,7 +63,7 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 
-public class TableContext {
+public class TableContext implements Cloneable {
 
   private static final Log LOG = LogFactory.getLog(TableContext.class);
 
@@ -123,7 +123,10 @@ public class TableContext {
     }
     TableContext tableContext = _cache.get(name);
     if (tableContext != null) {
-      return tableContext;
+      TableDescriptor newTd = new TableDescriptor(tableDescriptor);
+      TableContext clone = tableContext.clone();
+      clone._descriptor = newTd;
+      return clone;
     }
     LOG.info("Creating table context for table [{0}]", name);
     Configuration configuration = getSystemConfiguration();
@@ -191,7 +194,7 @@ public class TableContext {
     // DEFAULT_INTERCEPTOR
 
     _cache.put(name, tableContext);
-    return tableContext;
+    return tableContext.clone();
   }
 
   @SuppressWarnings("unchecked")
@@ -361,6 +364,15 @@ public class TableContext {
 
   public ReadInterceptor getReadInterceptor() {
     return _readInterceptor;
+  }
+
+  @Override
+  public TableContext clone() {
+    try {
+      return (TableContext) super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

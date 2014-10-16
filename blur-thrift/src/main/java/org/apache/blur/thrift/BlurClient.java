@@ -27,22 +27,28 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.commands.BlurCommand;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.zookeeper.WatchChildren;
+import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.blur.zookeeper.ZookeeperPathConstants;
-import org.apache.commons.lang.StringUtils;
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
 public class BlurClient {
+
+  private static final Log LOG = LogFactory.getLog(BlurClient.class);
 
   public static class BlurClientInvocationHandler implements InvocationHandler {
 
@@ -94,6 +100,11 @@ public class BlurClient {
     }
   }
 
+  private static volatile BlurConfiguration _blurConfiguration;
+  private static final List<Connection> _connections = new CopyOnWriteArrayList<Connection>();
+  private static volatile ZooKeeper _zooKeeper;
+  private static WatchChildren _watchConntrollers;
+
   public static Iface getClient() {
     try {
       return getClient(getBlurConfiguration());
@@ -101,9 +112,6 @@ public class BlurClient {
       throw new RuntimeException("Unable to load configurations.", e);
     }
   }
-
-  private static volatile BlurConfiguration _blurConfiguration;
-  private static final AtomicReference<List<Connection>> _connections = new AtomicReference<List<Connection>>();
 
   private static synchronized BlurConfiguration getBlurConfiguration() throws IOException {
     if (_blurConfiguration == null) {
@@ -163,25 +171,69 @@ public class BlurClient {
   }
 
   private static List<Connection> getOnlineControllers(BlurConfiguration conf) {
-setupZooKeeper(conf);
-
-
+    setupZooKeeper(conf);
+    return _connections;
   }
 
   private static void setupZooKeeper(BlurConfiguration conf) {
-    String zkConn = conf.getExpected(BLUR_ZOOKEEPER_CONNECTION);
-    int zkSessionTimeout = conf.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
-    ZooKeeper zkClient = null;
-    try {
-      zkClient = ZkUtils.newZooKeeper(zkConn, zkSessionTimeout);
-      return zkClient.getChildren(ZookeeperPathConstants.getOnlineControllersPath(), false);
-    } catch (KeeperException e) {
-      throw new RuntimeException("Error communicating with Zookeeper", e);
-    } catch (InterruptedException e) {
-      throw new RuntimeException("Error communicating with Zookeeper", e);
-    } catch (IOException e) {
-      throw new RuntimeException("Unable to initialize Zookeeper", e);
+    if (_zooKeeper == null) {
+      String zkConn = conf.getExpected(BLUR_ZOOKEEPER_CONNECTION);
+      int zkSessionTimeout = conf.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
+      try {
+        _zooKeeper = ZkUtils.newZooKeeper(zkConn, zkSessionTimeout);
+        setConnections(_zooKeeper.getChildren(ZookeeperPathConstants.getOnlineControllersPath(), false));
+        _watchConntrollers = new WatchChildren(_zooKeeper, ZookeeperPathConstants.getOnlineControllersPath());
+        _watchConntrollers.watch(new OnChange() {
+          @Override
+          public void action(List<String> children) {
+            setConnections(children);
+          }
+        });
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+          @Override
+          public void run() {
+            closeZooKeeper();
+          }
+        }));
+      } catch (Exception e) {
+        throw new RuntimeException("Unknown error while trying to connect to ZooKeeper and fetch controllers.", e);
+      }
     }
+  }
+
+  public static void closeZooKeeper() {
+    if (_watchConntrollers != null) {
+      try {
+        _watchConntrollers.close();
+      } catch (Exception e) {
+        LOG.error("Unknown error while closing Controller Watcher.", e);
+      }
+    }
+    if (_zooKeeper != null) {
+      try {
+        _zooKeeper.close();
+      } catch (Exception e) {
+        LOG.error("Unknown error while closing ZooKeeper client.", e);
+      }
+    }
+  }
+
+  private static void setConnections(List<String> children) {
+    Set<Connection> goodConnections = new HashSet<Connection>();
+    for (String s : children) {
+      Connection connection = new Connection(s);
+      goodConnections.add(connection);
+      if (!_connections.contains(connection)) {
+        _connections.add(connection);
+      }
+    }
+    Set<Connection> badConnections = new HashSet<Connection>();
+    for (Connection c : _connections) {
+      if (!goodConnections.contains(c)) {
+        badConnections.add(c);
+      }
+    }
+    _connections.removeAll(badConnections);
   }
 
 }

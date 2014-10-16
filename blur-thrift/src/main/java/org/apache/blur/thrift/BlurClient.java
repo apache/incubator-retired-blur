@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
@@ -95,15 +96,24 @@ public class BlurClient {
 
   public static Iface getClient() {
     try {
-      return getClient(new BlurConfiguration());
+      return getClient(getBlurConfiguration());
     } catch (IOException e) {
       throw new RuntimeException("Unable to load configurations.", e);
     }
   }
 
+  private static volatile BlurConfiguration _blurConfiguration;
+  private static final AtomicReference<List<Connection>> _connections = new AtomicReference<List<Connection>>();
+
+  private static synchronized BlurConfiguration getBlurConfiguration() throws IOException {
+    if (_blurConfiguration == null) {
+      _blurConfiguration = new BlurConfiguration();
+    }
+    return _blurConfiguration;
+  }
+
   public static Iface getClient(BlurConfiguration conf) {
-    List<String> onlineControllers = getOnlineControllers(conf);
-    return getClient(StringUtils.join(onlineControllers, ","));
+    return getClient(getOnlineControllers(conf));
   }
 
   /**
@@ -152,7 +162,13 @@ public class BlurClient {
         new BlurClientInvocationHandler(connections, maxRetries, backOffTime, maxBackOffTime));
   }
 
-  private static List<String> getOnlineControllers(BlurConfiguration conf) {
+  private static List<Connection> getOnlineControllers(BlurConfiguration conf) {
+setupZooKeeper(conf);
+
+
+  }
+
+  private static void setupZooKeeper(BlurConfiguration conf) {
     String zkConn = conf.getExpected(BLUR_ZOOKEEPER_CONNECTION);
     int zkSessionTimeout = conf.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
     ZooKeeper zkClient = null;

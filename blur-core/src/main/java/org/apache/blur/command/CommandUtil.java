@@ -216,6 +216,10 @@ public class CommandUtil {
     Map<String, Object> args = new HashMap<String, Object>();
     addArguments(clazz, args, command);
     BlurObject blurObject = serde.serialize(args);
+    return toArguments(blurObject);
+  }
+
+  public static Arguments toArguments(BlurObject blurObject) throws BlurException {
     Arguments arguments = new Arguments();
     Iterator<String> keys = blurObject.keys();
     while (keys.hasNext()) {

@@ -272,9 +272,4 @@ public class ShardCommandManager extends BaseCommandManager {
 
   }
 
-  public void cancel(ExecutionId executionId) {
-    // TODO
-    System.out.println("IMPLEMENT ME!!!!");
-  }
-
 }

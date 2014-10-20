@@ -38,6 +38,7 @@ import org.apache.blur.thrift.BlurClient.BlurClientInvocationHandler;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.ClientPool;
 import org.apache.blur.thrift.Connection;
+import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -47,7 +48,7 @@ import org.apache.blur.thrift.generated.Response;
 import org.apache.blur.thrift.generated.TimeoutException;
 
 public class CommandRunner {
-  private static Connection[] getConnection(Iface client) {
+  public static Connection[] getConnection(Iface client) {
     if (client instanceof Proxy) {
       InvocationHandler invocationHandler = Proxy.getInvocationHandler(client);
       if (invocationHandler instanceof BlurClientInvocationHandler) {
@@ -189,25 +190,31 @@ public class CommandRunner {
     return (T) runInternal((Command<?>) command, connection);
   }
 
-  private static Object runInternal(Command<?> command, Connection... connectionsArray) throws TTransportException,
+  public static Object runInternal(Command<?> command, Connection... connectionsArray) throws TTransportException,
       IOException, BlurException, TimeoutException, TException {
+    BlurObjectSerDe serde = new BlurObjectSerDe();
+    Arguments arguments = CommandUtil.toArguments(command, serde);
+    Object thriftObject = runInternalReturnThriftObject(command.getName(), arguments, connectionsArray);
+    return serde.fromSupportedThriftObject(thriftObject);
+  }
+
+  public static Object runInternalReturnThriftObject(String name, Arguments arguments, Connection... connectionsArray)
+      throws TTransportException, IOException, BlurException, TimeoutException, TException {
     List<Connection> connections = new ArrayList<Connection>(Arrays.asList(connectionsArray));
     Collections.shuffle(connections);
-    BlurObjectSerDe serde = new BlurObjectSerDe();
     for (Connection connection : connections) {
       if (BlurClientManager.isBadConnection(connection)) {
         continue;
       }
       ClientPool clientPool = BlurClientManager.getClientPool();
       Client client = clientPool.getClient(connection);
-
       try {
         String executionId = null;
         Response response;
         INNER: while (true) {
           try {
             if (executionId == null) {
-              response = client.execute(command.getName(), CommandUtil.toArguments(command, serde));
+              response = client.execute(name, arguments);
             } else {
               response = client.reconnect(executionId);
             }
@@ -216,8 +223,7 @@ public class CommandRunner {
             executionId = te.getExecutionId();
           }
         }
-        Object thriftObject = CommandUtil.fromThriftResponseToObject(response);
-        return serde.fromSupportedThriftObject(thriftObject);
+        return CommandUtil.fromThriftResponseToObject(response);
       } finally {
         clientPool.returnClient(connection, client);
       }

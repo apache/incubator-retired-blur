@@ -103,6 +103,19 @@ public abstract class BaseCommandManager implements Closeable {
     }
   }
 
+  public void cancel(ExecutionId executionId) {
+    ResponseFuture responseFuture = _runningMap.get(executionId);
+    responseFuture.cancel(true);
+  }
+
+  public List<String> commandStatusList(CommandStatusStateEnum commandStatus) {
+    throw new RuntimeException("Not implemented.");
+  }
+
+  public void cancel(String executionId) {
+    cancel(new ExecutionId(executionId));
+  }
+
   private TimerTask getTimerTaskForRemovalOfOldCommands() {
     return new TimerTask() {
       @Override

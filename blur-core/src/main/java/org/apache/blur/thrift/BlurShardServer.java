@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import org.apache.blur.command.ArgumentOverlay;
 import org.apache.blur.command.BlurObject;
 import org.apache.blur.command.BlurObjectSerDe;
+import org.apache.blur.command.CommandStatusStateEnum;
 import org.apache.blur.command.CommandUtil;
 import org.apache.blur.command.ExecutionId;
 import org.apache.blur.command.Response;
@@ -669,7 +670,12 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state) throws BlurException,
       TException {
-    throw new BException("Not Implemented");
+    try {
+      List<String> ids = _commandManager.commandStatusList(toCommandStatus(state));
+      return ids.subList(startingAt, fetch);
+    } catch (Exception e) {
+      throw new BException(e.getMessage(), e);
+    }
   }
 
   @Override
@@ -679,6 +685,14 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public void commandCancel(String executionId) throws BlurException, TException {
-    throw new BException("Not Implemented");
+    try {
+      _commandManager.cancel(executionId);
+    } catch (Exception e) {
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  private CommandStatusStateEnum toCommandStatus(CommandStatusState state) {
+    return CommandStatusStateEnum.valueOf(state.name());
   }
 }

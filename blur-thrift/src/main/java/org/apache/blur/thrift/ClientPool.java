@@ -226,12 +226,21 @@ public class ClientPool {
       if (client.isStale()) {
         // Test client
         if (testClient(connection, client)) {
-          return client;
+          return refresh(client);
         }
       } else {
-        return client;
+        return refresh(client);
       }
     }
+  }
+
+  private Client refresh(WeightedClient client) throws IOException {
+    try {
+      client.refresh();
+    } catch (TException e) {
+      throw new IOException(e);
+    }
+    return client;
   }
 
   public Client newClient(Connection connection) throws TTransportException, IOException {
@@ -264,6 +273,7 @@ public class ClientPool {
   private static boolean testClient(Connection connection, WeightedClient weightedClient) {
     LOG.debug("Testing client, could be stale. Client [{0}] for connection [{1}]", weightedClient, connection);
     try {
+      weightedClient.refresh();
       weightedClient.ping();
       weightedClient.touch();
       return true;

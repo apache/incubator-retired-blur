@@ -289,7 +289,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       client.ping();
       LOG.debug("Pinging shard server [{0}]", shardServer);
     } catch (Exception e) {
-      e.printStackTrace();
       LOG.error("Error while trying to ping shard server [{0}]", shardServer);
     }
   }

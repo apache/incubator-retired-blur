@@ -18,7 +18,8 @@ package org.apache.blur.thrift;
  */
 
 import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY;
-import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_CLOSE_THRESHOLD;
+import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_STALE_THRESHOLD;
+import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_MAX_CONNECTIONS_PER_HOST;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 
 import java.io.IOException;
@@ -26,13 +27,15 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Proxy.Type;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
@@ -50,79 +53,87 @@ public class ClientPool {
 
   private static final Log LOG = LogFactory.getLog(ClientPool.class);
   private static final Map<Connection, BlockingQueue<Client>> _connMap = new ConcurrentHashMap<Connection, BlockingQueue<Client>>();
-  private int _maxConnectionsPerHost = Integer.MAX_VALUE;
   private static final int _maxFrameSize;
-  private static AtomicBoolean _running = new AtomicBoolean(true);
-  private static long _idleTimeBeforeClosingClient;
-  private static long _clientPoolCleanFrequency;
-  private static Thread _master;
+  private static final int _maxConnectionsPerHost;
+
+  private static final long _idleTimeBeforeClosingClient;
+  private static final long _clientPoolCleanFrequency;
+  private static final Timer _master;
 
   static {
     try {
       BlurConfiguration config = new BlurConfiguration();
-      _idleTimeBeforeClosingClient = config.getLong(BLUR_CLIENTPOOL_CLIENT_CLOSE_THRESHOLD,
-          TimeUnit.SECONDS.toNanos(30));
-      _clientPoolCleanFrequency = config.getLong(BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY, TimeUnit.SECONDS.toMillis(3));
+      int maxConnectionsPerHost = config.getInt(BLUR_CLIENTPOOL_CLIENT_MAX_CONNECTIONS_PER_HOST, 64);
+      if (maxConnectionsPerHost < 1) {
+        LOG.fatal("Max connections per host cannot be less than 1 current value [{0}] using 1.", maxConnectionsPerHost);
+        maxConnectionsPerHost = 1;
+      }
+      _maxConnectionsPerHost = maxConnectionsPerHost;
+      _idleTimeBeforeClosingClient = TimeUnit.SECONDS.toNanos(config
+          .getLong(BLUR_CLIENTPOOL_CLIENT_STALE_THRESHOLD, 30));
+      _clientPoolCleanFrequency = TimeUnit.SECONDS.toMillis(config.getLong(BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY, 10));
       _maxFrameSize = config.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, 16384000);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    checkAndRemoveStaleClients();
+    _master = checkAndRemoveStaleClients();
   }
 
-  private static void checkAndRemoveStaleClients() {
-    _master = new Thread(new Runnable() {
+  public static void close() {
+    _master.cancel();
+    _master.purge();
+  }
+
+  private static Timer checkAndRemoveStaleClients() {
+    Timer master = new Timer("Blur-Client-Connection-Cleaner", true);
+    master.schedule(new TimerTask() {
       @Override
       public void run() {
-        while (_running.get()) {
-          for (Entry<Connection, BlockingQueue<Client>> e : _connMap.entrySet()) {
-            testConnections(e.getKey(), e.getValue());
-          }
-          try {
-            Thread.sleep(getClientPoolCleanFrequency());
-          } catch (InterruptedException e) {
-            return;
-          }
+        for (Entry<Connection, BlockingQueue<Client>> e : _connMap.entrySet()) {
+          testConnections(e.getKey(), e.getValue());
         }
       }
+    }, getClientPoolCleanFrequency(), getClientPoolCleanFrequency());
+    return master;
+  }
 
-      private void testConnections(Connection connection, BlockingQueue<Client> clients) {
-        LOG.debug("Testing clients for connection [{0}]", connection);
-        int size = clients.size();
-        for (int i = 0; i < size; i++) {
-          WeightedClient weightedClient = (WeightedClient) clients.poll();
-          if (weightedClient == null) {
-            return;
-          }
-          if (weightedClient.isStale()) {
-            if (testClient(connection, weightedClient)) {
-              tryToReturnToQueue(clients, weightedClient);
-            } else {
-              close(weightedClient);
-            }
-          } else {
-            tryToReturnToQueue(clients, weightedClient);
-          }
-        }
+  private static void testConnections(Connection connection, BlockingQueue<Client> clients) {
+    int size = clients.size();
+    LOG.debug("Testing clients for connection [{0}] has size of [{1}]", connection, size);
+    for (int i = 0; i < size; i++) {
+      WeightedClient weightedClient = (WeightedClient) clients.poll();
+      if (weightedClient == null) {
+        return;
       }
-
-      private void tryToReturnToQueue(BlockingQueue<Client> clients, WeightedClient weightedClient) {
-        if (!clients.offer(weightedClient)) {
-          // Close client
+      if (weightedClient.isStale()) {
+        if (testClient(connection, weightedClient)) {
+          tryToReturnToQueue(clients, weightedClient);
+        } else {
+          LOG.error("Closing potentially bad client [{0}]", weightedClient);
           close(weightedClient);
         }
+      } else {
+        tryToReturnToQueue(clients, weightedClient);
       }
-    });
-    _master.setDaemon(true);
-    _master.setName("Blur-Client-Connection-Cleaner");
-    _master.start();
+    }
+  }
+
+  private static void tryToReturnToQueue(BlockingQueue<Client> clients, WeightedClient weightedClient) {
+    LOG.debug("Offering client [{0}] to queue.", weightedClient);
+    if (!clients.offer(weightedClient)) {
+      // Close client
+      LOG.info("Too many clients in pool, closing client [{0}]", weightedClient);
+      close(weightedClient);
+    }
   }
 
   private class WeightedClient extends SafeClientGen {
     private long _lastUse = System.nanoTime();
+    private final String _id;
 
-    public WeightedClient(TProtocol prot) {
+    public WeightedClient(TProtocol prot, String id) {
       super(prot);
+      _id = id;
     }
 
     public void touch() {
@@ -133,6 +144,12 @@ public class ClientPool {
       long diff = System.nanoTime() - _lastUse;
       return diff >= getClientIdleTimeThreshold();
     }
+
+    @Override
+    public String toString() {
+      return _id;
+    }
+
   }
 
   private static long getClientIdleTimeThreshold() {
@@ -144,11 +161,10 @@ public class ClientPool {
   }
 
   public void returnClient(Connection connection, Client client) {
-    ((WeightedClient) client).touch();
-    if (!getQueue(connection).offer(client)) {
-      // Close client
-      close(client);
-    }
+    BlockingQueue<Client> queue = getQueue(connection);
+    WeightedClient weightedClient = (WeightedClient) client;
+    weightedClient.touch();
+    tryToReturnToQueue(queue, weightedClient);
   }
 
   private BlockingQueue<Client> getQueue(Connection connection) {
@@ -176,7 +192,7 @@ public class ClientPool {
         throw new RuntimeException(e);
       }
     }
-    LOG.info("Trashing client for connections [{0}]", connection);
+    LOG.debug("Trashing client for connections [{0}]", connection);
     for (Client c : blockingQueue) {
       close(c);
     }
@@ -198,11 +214,13 @@ public class ClientPool {
   public Client getClient(Connection connection) throws TTransportException, IOException {
     BlockingQueue<Client> blockingQueue = getQueue(connection);
     if (blockingQueue.isEmpty()) {
+      LOG.debug("New client for connection [{0}]", connection);
       return newClient(connection);
     }
     while (true) {
       WeightedClient client = (WeightedClient) blockingQueue.poll();
       if (client == null) {
+        LOG.debug("New client for connection [{0}]", connection);
         return newClient(connection);
       }
       if (client.isStale()) {
@@ -234,7 +252,13 @@ public class ClientPool {
     trans = new TSocket(socket);
 
     TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans, _maxFrameSize));
-    return new WeightedClient(proto);
+    return new WeightedClient(proto, getIdentifer(socket));
+  }
+
+  private String getIdentifer(Socket socket) {
+    SocketAddress localSocketAddress = socket.getLocalSocketAddress();
+    SocketAddress remoteSocketAddress = socket.getRemoteSocketAddress();
+    return localSocketAddress.toString() + " -> " + remoteSocketAddress.toString();
   }
 
   private static boolean testClient(Connection connection, WeightedClient weightedClient) {

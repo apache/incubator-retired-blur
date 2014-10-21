@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class Connection {
 
-  public final static int DEFAULT_TIMEOUT = (int) TimeUnit.SECONDS.toMillis(10);
+  public final static int DEFAULT_TIMEOUT = (int) TimeUnit.SECONDS.toMillis(60);
 
   private final String _host;
   private final int _port;
@@ -160,4 +160,10 @@ public class Connection {
     }
     return _host + ":" + _port + "#" + _timeout;
   }
+
+  @Override
+  public String toString() {
+    return getConnectionStr();
+  }
+
 }

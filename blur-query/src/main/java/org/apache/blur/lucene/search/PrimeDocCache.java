@@ -75,6 +75,7 @@ public class PrimeDocCache {
         if (count == docFreq) {
           primeDocMap.put(key, bs);
         } else {
+          // @TODO deal with deletes correctly...  docFreq does not reflect deletes
           LOG.info("PrimeDoc for reader [{0}] not stored, because count [{1}] and freq [{2}] do not match.", reader,
               count, docFreq);
         }

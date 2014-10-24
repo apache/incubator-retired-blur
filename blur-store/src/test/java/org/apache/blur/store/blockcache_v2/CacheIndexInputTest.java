@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.Random;
 
+import org.apache.blur.store.blockcache_v2.cachevalue.ByteArrayCacheValue;
 import org.apache.blur.store.blockcache_v2.cachevalue.UnsafeCacheValue;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.lucene.store.IOContext;
@@ -193,7 +194,7 @@ public class CacheIndexInputTest {
 
       @Override
       public CacheValue newInstance(CacheDirectory directory, String fileName, int cacheBlockSize) {
-        return new UnsafeCacheValue(cacheBlockSize);
+        return new ByteArrayCacheValue(cacheBlockSize);
       }
 
       @Override
@@ -258,11 +259,10 @@ public class CacheIndexInputTest {
 
       @Override
       public void fileClosedForWriting(CacheDirectory directory, String fileName, long fileId) throws IOException {
-        
+
       }
 
     };
     return cacheFactory;
   }
-
 }

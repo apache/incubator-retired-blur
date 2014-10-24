@@ -17,6 +17,7 @@
  */
 package org.apache.blur.store.blockcache_v2.cachevalue;
 
+import static org.apache.blur.metrics.MetricsConstants.CACHE_VALUE_FINALIZE;
 import static org.apache.blur.metrics.MetricsConstants.JVM;
 import static org.apache.blur.metrics.MetricsConstants.OFF_HEAP_MEMORY;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
@@ -32,6 +33,13 @@ import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.MetricName;
 
 public class UnsafeCacheValue extends BaseCacheValue {
+
+  private static final AtomicLong _neededFinalizedCall = new AtomicLong();
+
+  static {
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, JVM, CACHE_VALUE_FINALIZE), new AtomicLongGauge(
+        _neededFinalizedCall));
+  }
 
   private static final Unsafe _unsafe;
   private static final AtomicLong _offHeapMemorySize = new AtomicLong();
@@ -88,9 +96,18 @@ public class UnsafeCacheValue extends BaseCacheValue {
       _unsafe.freeMemory(_address);
       _released = true;
       _offHeapMemorySize.addAndGet(0 - _capacity);
-//    } else {
-      // @TODO this is here to debug against double releases.
-//      new Throwable().printStackTrace();
     }
   }
+
+  // This is commented out normally. Add code when debugging memory related
+  // issues.
+  // @Override
+  // protected void finalize() throws Throwable {
+  // if (!_released) {
+  // new Throwable().printStackTrace();
+  // System.exit(1);
+  // release();
+  // _neededFinalizedCall.incrementAndGet();
+  // }
+  // }
 }

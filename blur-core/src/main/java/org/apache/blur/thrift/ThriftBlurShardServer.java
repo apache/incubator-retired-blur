@@ -161,7 +161,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     }
 
-    BlockCacheDirectoryFactory blockCacheDirectoryFactory;
+    final BlockCacheDirectoryFactory blockCacheDirectoryFactory;
     // Alternate BlockCacheDirectoryFactory support currently disabled in 0.2.0,
     // look for it in 0.2.1
     String blockCacheVersion = configuration.get(BLUR_SHARD_BLOCK_CACHE_VERSION, "v2");
@@ -205,7 +205,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     int internalSearchThreads = configuration.getInt(BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT, 16);
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
         filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay,
-        shardOpenerThreadCount, maxMergeThreads,internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode);
+        shardOpenerThreadCount, maxMergeThreads, internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode);
 
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 
@@ -301,8 +301,8 @@ public class ThriftBlurShardServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(commandManager, traceStorage, refresher, server, shardServer, indexManager, indexServer,
-            threadWatcher, clusterStatus, zooKeeper, httpServer);
+        quietClose(blockCacheDirectoryFactory, commandManager, traceStorage, refresher, server, shardServer,
+            indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);

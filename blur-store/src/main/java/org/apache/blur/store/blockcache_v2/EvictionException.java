@@ -14,17 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.store;
+package org.apache.blur.store.blockcache_v2;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.Set;
+public class EvictionException extends Exception {
 
-import org.apache.lucene.store.Directory;
-
-public abstract class BlockCacheDirectoryFactory implements Closeable {
-
-  public abstract Directory newDirectory(String table, String shard, Directory directory,
-      Set<String> blockCacheFileTypes) throws IOException;
+  private static final long serialVersionUID = -5956627469112676201L;
 
 }

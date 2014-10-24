@@ -182,4 +182,9 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     return fileName.substring(indexOf + 1);
   }
 
+  @Override
+  public void close() throws IOException {
+    _cache.close();
+  }
+
 }

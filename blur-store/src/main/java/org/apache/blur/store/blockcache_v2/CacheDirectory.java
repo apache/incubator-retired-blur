@@ -61,11 +61,6 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
     return _table;
   }
 
-  @Override
-  protected void finalize() throws Throwable {
-    _cache.releaseDirectory(getDirectoryName());
-  }
-
   public IndexInput openInput(String name, IOContext context) throws IOException {
     IndexInput indexInput = _internal.openInput(name, context);
     if (_cache.cacheFileForReading(this, name, context) || isCachableFile(name)) {
@@ -126,6 +121,7 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
   }
 
   public void close() throws IOException {
+    _cache.releaseDirectory(getDirectoryName());
     _internal.close();
   }
 

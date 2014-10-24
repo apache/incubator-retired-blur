@@ -20,13 +20,14 @@ package org.apache.blur.store.blockcache_v2;
 import javax.swing.text.Position;
 
 public interface CacheValue {
-  
+
   /**
    * Detach from the base cache.
+   * 
    * @return old cache value.
    */
   CacheValue detachFromCache();
-  
+
   /**
    * The length of the data in this block.
    * 
@@ -60,7 +61,7 @@ public interface CacheValue {
    * @param length
    *          the length of data to read.
    */
-  void read(int position, byte[] buf, int offset, int length);
+  void read(int position, byte[] buf, int offset, int length) throws EvictionException;
 
   /**
    * Reads a byte from the given position.
@@ -69,22 +70,7 @@ public interface CacheValue {
    *          the position.
    * @return the byte.
    */
-  byte read(int position);
-
-//  /**
-//   * Increments the reference.
-//   */
-//  void incRef();
-//
-//  /**
-//   * Decrements the reference.
-//   */
-//  void decRef();
-//
-//  /**
-//   * Gets the reference count.
-//   */
-//  long refCount();
+  byte read(int position) throws EvictionException;
 
   /**
    * Releases any underlying resources.
@@ -98,7 +84,7 @@ public interface CacheValue {
    *          the {@link Position} to read from.
    * @return the short.
    */
-  short readShort(int position);
+  short readShort(int position) throws EvictionException;
 
   /**
    * Reads a int from the given position.
@@ -107,7 +93,7 @@ public interface CacheValue {
    *          the {@link Position} to read from.
    * @return the int.
    */
-  int readInt(int position);
+  int readInt(int position) throws EvictionException;
 
   /**
    * Reads a long from the given position.
@@ -116,7 +102,7 @@ public interface CacheValue {
    *          the {@link Position} to read from.
    * @return the long.
    */
-  long readLong(int position);
+  long readLong(int position) throws EvictionException;
 
   /**
    * This method <i>may</i> trim the existing {@link CacheValue} and produce
@@ -130,8 +116,6 @@ public interface CacheValue {
    */
   CacheValue trim(int length);
 
-  void decRef();
+  boolean isEvicted();
 
-  void incRef();
-  
 }

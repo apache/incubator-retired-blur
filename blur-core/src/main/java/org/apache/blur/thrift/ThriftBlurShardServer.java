@@ -55,6 +55,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -227,7 +228,14 @@ public class ThriftBlurShardServer extends ThriftServer {
         fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay, facetThreadCount,
         deepPagingCache);
 
-    String tmpPath = configuration.get(BLUR_TMP_PATH, getDefaultTmpPath(BLUR_TMP_PATH));
+    File defaultTmpPath = getDefaultTmpPath(BLUR_TMP_PATH);
+    String configTmpPath = configuration.get(BLUR_TMP_PATH);
+    File tmpPath;
+    if (!(configTmpPath == null || configTmpPath.isEmpty())) {
+      tmpPath = new File(configTmpPath);
+    } else {
+      tmpPath = defaultTmpPath;
+    }
     int numberOfShardWorkerCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_WORKER_THREADS, 16);
     int numberOfShardDriverCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_DRIVER_THREADS, 16);
     String commandPath = configuration.get(BLUR_COMMAND_LIB_PATH, getCommandLibPath());

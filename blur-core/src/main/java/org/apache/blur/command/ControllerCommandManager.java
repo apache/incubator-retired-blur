@@ -1,5 +1,6 @@
 package org.apache.blur.command;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -7,10 +8,10 @@ import java.util.concurrent.Callable;
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.command.commandtype.ClusterExecuteCommand;
 import org.apache.blur.command.commandtype.ClusterExecuteServerReadCommand;
-import org.apache.blur.command.commandtype.ClusterServerReadCommand;
 import org.apache.blur.command.commandtype.ClusterIndexReadCommand;
-import org.apache.blur.command.commandtype.ServerReadCommand;
+import org.apache.blur.command.commandtype.ClusterServerReadCommand;
 import org.apache.blur.command.commandtype.IndexReadCommand;
+import org.apache.blur.command.commandtype.ServerReadCommand;
 import org.apache.blur.server.LayoutFactory;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.TableContextFactory;
@@ -35,7 +36,7 @@ import org.apache.hadoop.conf.Configuration;
 @SuppressWarnings("unchecked")
 public class ControllerCommandManager extends BaseCommandManager {
 
-  public ControllerCommandManager(String tmpPath, String commandPath, int workerThreadCount, int driverThreadCount,
+  public ControllerCommandManager(File tmpPath, String commandPath, int workerThreadCount, int driverThreadCount,
       long connectionTimeout, Configuration configuration) throws IOException {
     super(tmpPath, commandPath, workerThreadCount, driverThreadCount, connectionTimeout, configuration);
   }

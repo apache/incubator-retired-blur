@@ -16,6 +16,7 @@
  */
 package org.apache.blur.command;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class ShardCommandManager extends BaseCommandManager {
 
   private final IndexServer _indexServer;
 
-  public ShardCommandManager(IndexServer indexServer, String tmpPath, String commandPath, int workerThreadCount,
+  public ShardCommandManager(IndexServer indexServer, File tmpPath, String commandPath, int workerThreadCount,
       int driverThreadCount, long connectionTimeout, Configuration configuration) throws IOException {
     super(tmpPath, commandPath, workerThreadCount, driverThreadCount, connectionTimeout, configuration);
     _indexServer = indexServer;

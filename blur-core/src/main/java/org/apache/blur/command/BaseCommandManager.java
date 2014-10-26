@@ -74,7 +74,7 @@ public abstract class BaseCommandManager implements Closeable {
   protected final Map<Class<? extends Command<?>>, String> _commandNameLookup = new ConcurrentHashMap<Class<? extends Command<?>>, String>();
   protected final ConcurrentMap<ExecutionId, ResponseFuture> _runningMap = new MapMaker().makeMap();
   protected final long _connectionTimeout;
-  protected final String _tmpPath;
+  protected final File _tmpPath;
   protected final String _commandPath;
   protected final Timer _timer;
   protected final long _pollingPeriod = TimeUnit.SECONDS.toMillis(15);
@@ -83,7 +83,7 @@ public abstract class BaseCommandManager implements Closeable {
   protected final BlurObjectSerDe _serDe = new BlurObjectSerDe();
   protected final long _runningCacheTombstoneTime = TimeUnit.SECONDS.toMillis(60);
 
-  public BaseCommandManager(String tmpPath, String commandPath, int workerThreadCount, int driverThreadCount,
+  public BaseCommandManager(File tmpPath, String commandPath, int workerThreadCount, int driverThreadCount,
       long connectionTimeout, Configuration configuration) throws IOException {
     _configuration = configuration;
     lookForCommandsToRegisterInClassPath();

@@ -71,7 +71,7 @@ public class ShardCommandManagerTest {
       throw new RuntimeException(e);
     }
   }
-  private String _tmpPath = "./target/tmp/ShardCommandManagerTest/tmp";
+  private File _tmpPath = new File("./target/tmp/ShardCommandManagerTest/tmp");
   private String _commandPath = "./target/tmp/ShardCommandManagerTest/command";
   private ShardCommandManager _manager;
   private Configuration _config;
@@ -114,7 +114,7 @@ public class ShardCommandManagerTest {
   @Test
   public void testNewCommandLoading() throws IOException, TimeoutException, InterruptedException, ExceptionCollector {
     _manager.close();
-    new File(_tmpPath).mkdirs();
+    _tmpPath.mkdirs();
     File commandPath = new File(_commandPath);
     rmr(commandPath);
     if (commandPath.exists()) {

@@ -114,7 +114,7 @@ public class ThriftServer {
     return System.getenv(BLUR_HOME);
   }
 
-  public static String getDefaultTmpPath(String propName) throws IOException {
+  public static File getDefaultTmpPath(String propName) throws IOException {
     String blurHomeDir = getBlurHomeDir();
     File tmp;
     if (blurHomeDir == null) {
@@ -137,7 +137,7 @@ public class ThriftServer {
       throw new IOException("Cannot create tmp file in [" + tmp.toURI() + "].");
     }
     file.delete();
-    return tmp.toURI().toString();
+    return tmp;
   }
 
   private static File getTmpDir() {

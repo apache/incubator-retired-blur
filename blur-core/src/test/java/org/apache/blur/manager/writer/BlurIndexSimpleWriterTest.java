@@ -32,7 +32,6 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.Executors;
-import org.apache.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -77,7 +76,6 @@ public class BlurIndexSimpleWriterTest {
   private SharedMergeScheduler _mergeScheduler;
   private String uuid;
   private BlurIndexCloser _closer;
-  private DefaultBlurIndexWarmup _indexWarmup;
 
   @Before
   public void setup() throws IOException {
@@ -91,7 +89,6 @@ public class BlurIndexSimpleWriterTest {
     _configuration = new Configuration();
     _service = Executors.newThreadPool("test", 10);
     _closer = new BlurIndexCloser();
-    _indexWarmup = new DefaultBlurIndexWarmup(1000000);
   }
 
   private void setupWriter(Configuration configuration) throws IOException {
@@ -117,7 +114,7 @@ public class BlurIndexSimpleWriterTest {
     path.mkdirs();
     FSDirectory directory = FSDirectory.open(path);
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer, _indexWarmup);
+    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer);
   }
 
   @After

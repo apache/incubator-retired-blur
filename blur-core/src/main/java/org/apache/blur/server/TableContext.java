@@ -45,7 +45,6 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
 import org.apache.blur.manager.ReadInterceptor;
-import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
@@ -64,7 +63,7 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.similarities.Similarity;
 import org.apache.lucene.store.Directory;
 
-public class TableContext {
+public class TableContext implements Cloneable {
 
   private static final Log LOG = LogFactory.getLog(TableContext.class);
 
@@ -124,7 +123,11 @@ public class TableContext {
     }
     TableContext tableContext = _cache.get(name);
     if (tableContext != null) {
-      return tableContext;
+      TableContext clone = tableContext.clone();
+      TableDescriptor newTd = new TableDescriptor(clone._descriptor);
+      clone._descriptor = newTd;
+      clone._descriptor.setEnabled(tableDescriptor.isEnabled());
+      return clone;
     }
     LOG.info("Creating table context for table [{0}]", name);
     Configuration configuration = getSystemConfiguration();
@@ -192,7 +195,7 @@ public class TableContext {
     // DEFAULT_INTERCEPTOR
 
     _cache.put(name, tableContext);
-    return tableContext;
+    return tableContext.clone();
   }
 
   @SuppressWarnings("unchecked")
@@ -325,7 +328,7 @@ public class TableContext {
 
   @SuppressWarnings("unchecked")
   public BlurIndex newInstanceBlurIndex(ShardContext shardContext, Directory dir, SharedMergeScheduler mergeScheduler,
-      ExecutorService searchExecutor, BlurIndexCloser indexCloser, BlurIndexWarmup indexWarmup) throws IOException {
+      ExecutorService searchExecutor, BlurIndexCloser indexCloser) throws IOException {
 
     String className = _blurConfiguration.get(BLUR_SHARD_BLURINDEX_CLASS, BlurIndexSimpleWriter.class.getName());
 
@@ -337,7 +340,7 @@ public class TableContext {
     }
     Constructor<? extends BlurIndex> constructor = findConstructor(clazz);
     try {
-      return constructor.newInstance(shardContext, dir, mergeScheduler, searchExecutor, indexCloser, indexWarmup);
+      return constructor.newInstance(shardContext, dir, mergeScheduler, searchExecutor, indexCloser);
     } catch (InstantiationException e) {
       throw new IOException(e);
     } catch (IllegalAccessException e) {
@@ -352,7 +355,7 @@ public class TableContext {
   private Constructor<? extends BlurIndex> findConstructor(Class<? extends BlurIndex> clazz) throws IOException {
     try {
       return clazz.getConstructor(new Class[] { ShardContext.class, Directory.class, SharedMergeScheduler.class,
-          ExecutorService.class, BlurIndexCloser.class, BlurIndexWarmup.class });
+          ExecutorService.class, BlurIndexCloser.class });
     } catch (NoSuchMethodException e) {
       throw new IOException(e);
     } catch (SecurityException e) {
@@ -362,6 +365,15 @@ public class TableContext {
 
   public ReadInterceptor getReadInterceptor() {
     return _readInterceptor;
+  }
+
+  @Override
+  public TableContext clone() {
+    try {
+      return (TableContext) super.clone();
+    } catch (CloneNotSupportedException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

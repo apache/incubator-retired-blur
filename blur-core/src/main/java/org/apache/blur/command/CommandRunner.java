@@ -38,6 +38,7 @@ import org.apache.blur.thrift.BlurClient.BlurClientInvocationHandler;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.ClientPool;
 import org.apache.blur.thrift.Connection;
+import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -47,7 +48,7 @@ import org.apache.blur.thrift.generated.Response;
 import org.apache.blur.thrift.generated.TimeoutException;
 
 public class CommandRunner {
-  private static Connection[] getConnection(Iface client) {
+  public static Connection[] getConnection(Iface client) {
     if (client instanceof Proxy) {
       InvocationHandler invocationHandler = Proxy.getInvocationHandler(client);
       if (invocationHandler instanceof BlurClientInvocationHandler) {
@@ -83,14 +84,13 @@ public class CommandRunner {
     return (Map<Shard, T>) runInternal((Command<?>) command, connection);
   }
 
-  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command) throws IOException, BlurException,
-      TException {
+  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command) throws IOException, BlurException, TException {
     Iface client = BlurClient.getClient();
     return run(command, getConnection(client));
   }
 
-  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, String connectionStr)
-      throws IOException, BlurException, TException {
+  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, String connectionStr) throws IOException,
+      BlurException, TException {
     Iface client = BlurClient.getClient(connectionStr);
     return run(command, getConnection(client));
   }
@@ -101,8 +101,8 @@ public class CommandRunner {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, Connection... connection)
-      throws IOException, BlurException, TException {
+  public static <T> Map<Server, T> run(ServerReadCommand<?, T> command, Connection... connection) throws IOException,
+      BlurException, TException {
     return (Map<Server, T>) runInternal((Command<?>) command, connection);
   }
 
@@ -132,8 +132,8 @@ public class CommandRunner {
   }
 
   @SuppressWarnings("unchecked")
-  public static <T> T run(ClusterServerReadCommand<T> command, String connectioStr) throws IOException,
-      BlurException, TException {
+  public static <T> T run(ClusterServerReadCommand<T> command, String connectioStr) throws IOException, BlurException,
+      TException {
     return (T) runInternal((Command<?>) command, getConnection(BlurClient.getClient(connectioStr)));
   }
 
@@ -190,8 +190,16 @@ public class CommandRunner {
     return (T) runInternal((Command<?>) command, connection);
   }
 
-  private static Object runInternal(Command<?> command, Connection... connectionsArray) throws TTransportException,
+  public static Object runInternal(Command<?> command, Connection... connectionsArray) throws TTransportException,
       IOException, BlurException, TimeoutException, TException {
+    BlurObjectSerDe serde = new BlurObjectSerDe();
+    Arguments arguments = CommandUtil.toArguments(command, serde);
+    Object thriftObject = runInternalReturnThriftObject(command.getName(), arguments, connectionsArray);
+    return serde.fromSupportedThriftObject(thriftObject);
+  }
+
+  public static Object runInternalReturnThriftObject(String name, Arguments arguments, Connection... connectionsArray)
+      throws TTransportException, IOException, BlurException, TimeoutException, TException {
     List<Connection> connections = new ArrayList<Connection>(Arrays.asList(connectionsArray));
     Collections.shuffle(connections);
     for (Connection connection : connections) {
@@ -201,7 +209,20 @@ public class CommandRunner {
       ClientPool clientPool = BlurClientManager.getClientPool();
       Client client = clientPool.getClient(connection);
       try {
-        Response response = client.execute(command.getName(), CommandUtil.toArguments(command));
+        String executionId = null;
+        Response response;
+        INNER: while (true) {
+          try {
+            if (executionId == null) {
+              response = client.execute(name, arguments);
+            } else {
+              response = client.reconnect(executionId);
+            }
+            break INNER;
+          } catch (TimeoutException te) {
+            executionId = te.getExecutionId();
+          }
+        }
         return CommandUtil.fromThriftResponseToObject(response);
       } finally {
         clientPool.returnClient(connection, client);

@@ -19,12 +19,13 @@ package org.apache.blur.store.blockcache_v2.cachevalue;
 
 import static org.junit.Assert.*;
 
+import org.apache.blur.store.blockcache_v2.EvictionException;
 import org.junit.Test;
 
 public class ByteArrayCacheValueTest {
 
   @Test
-  public void test1() {
+  public void test1() throws EvictionException {
     ByteArrayCacheValue value = new ByteArrayCacheValue(10);
     byte[] buf = "hello world".getBytes();
     value.write(0, buf, 0, 10);
@@ -56,7 +57,7 @@ public class ByteArrayCacheValueTest {
   }
 
   @Test
-  public void test4() {
+  public void test4() throws EvictionException {
     ByteArrayCacheValue value = new ByteArrayCacheValue(10);
     byte[] buf = "hello world".getBytes();
     value.write(8, buf, 0, 2);

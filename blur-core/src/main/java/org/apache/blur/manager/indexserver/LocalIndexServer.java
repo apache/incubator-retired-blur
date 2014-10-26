@@ -66,7 +66,6 @@ public class LocalIndexServer extends AbstractIndexServer {
   private final TableContext _tableContext;
   private final Closer _closer;
   private final boolean _ramDir;
-  private final BlurIndexWarmup _indexWarmup;
   private final BlurIndexCloser _indexCloser;
 
   public LocalIndexServer(TableDescriptor tableDescriptor) throws IOException {
@@ -82,7 +81,6 @@ public class LocalIndexServer extends AbstractIndexServer {
     _ramDir = ramDir;
     _indexCloser = _closer.register(new BlurIndexCloser());
     getIndexes(_tableContext.getTable());
-    _indexWarmup = BlurIndexWarmup.getIndexWarmup(_tableContext.getBlurConfiguration());
   }
 
   @Override
@@ -159,7 +157,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     ShardContext shardContext = ShardContext.create(_tableContext, shard);
     BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(shardContext, dir, _mergeScheduler, _searchExecutor,
-        _indexCloser, _indexWarmup);
+        _indexCloser);
     return index;
   }
 

@@ -33,6 +33,8 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.command.ArgumentOverlay;
 import org.apache.blur.command.BlurObject;
+import org.apache.blur.command.BlurObjectSerDe;
+import org.apache.blur.command.CommandStatusStateEnum;
 import org.apache.blur.command.CommandUtil;
 import org.apache.blur.command.ExecutionId;
 import org.apache.blur.command.Response;
@@ -90,6 +92,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   private String _cluster = BlurConstants.BLUR_CLUSTER;
   private int _dataFetchThreadCount = 32;
   private ShardCommandManager _commandManager;
+  private BlurObjectSerDe _serDe = new BlurObjectSerDe();
 
   public void init() throws BlurException {
     _queryCache = new QueryCache("shard-cache", _maxQueryCacheElements, _maxTimeToLive);
@@ -610,8 +613,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
         }
       };
       BlurObject args = CommandUtil.toBlurObject(arguments);
-      Response response = _commandManager.execute(tableContextFactory, commandName, new ArgumentOverlay(args));
-      return CommandUtil.fromObjectToThrift(response);
+      Response response = _commandManager.execute(tableContextFactory, commandName, new ArgumentOverlay(args, _serDe));
+      return CommandUtil.fromObjectToThrift(response, _serDe);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
         throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
@@ -633,7 +636,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
       TimeoutException, TException {
     try {
       Response response = _commandManager.reconnect(new ExecutionId(executionId));
-      return CommandUtil.fromObjectToThrift(response);
+      return CommandUtil.fromObjectToThrift(response, _serDe);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
         throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
@@ -650,7 +653,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public void refresh() throws TException {
     ShardServerContext.resetSearchers();
   }
-  
+
   @Override
   public List<CommandDescriptor> listInstalledCommands() throws BlurException, TException {
     try {
@@ -667,7 +670,12 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state) throws BlurException,
       TException {
-    throw new BException("Not Implemented");
+    try {
+      List<String> ids = _commandManager.commandStatusList(toCommandStatus(state));
+      return ids.subList(startingAt, fetch);
+    } catch (Exception e) {
+      throw new BException(e.getMessage(), e);
+    }
   }
 
   @Override
@@ -677,6 +685,14 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public void commandCancel(String executionId) throws BlurException, TException {
-    throw new BException("Not Implemented");
+    try {
+      _commandManager.cancel(executionId);
+    } catch (Exception e) {
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  private CommandStatusStateEnum toCommandStatus(CommandStatusState state) {
+    return CommandStatusStateEnum.valueOf(state.name());
   }
 }

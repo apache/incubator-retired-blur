@@ -1,4 +1,3 @@
-package org.apache.blur.lucene.warmup;
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,14 +14,14 @@ package org.apache.blur.lucene.warmup;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.apache.blur.lucene.warmup.IndexTracerResult.FILE_TYPE;
+package org.apache.blur.hive;
 
-public class NotSupported extends RuntimeException {
+import org.apache.hadoop.hive.cli.CliDriver;
 
-  private static final long serialVersionUID = 5988131795588013735L;
+public class RunHiveTest {
 
-  public NotSupported(FILE_TYPE type) {
-    super("FILE_TYPE of [" + type.name() + "] not supported");
+  public static void main(String[] args) throws Exception {
+    CliDriver.main(new String[] { "-f", "./src/test/java/test.hive" });
   }
 
 }

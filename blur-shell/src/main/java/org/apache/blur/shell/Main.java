@@ -694,6 +694,7 @@ public class Main {
     register(builder, new QueryCommand());
     register(builder, new ListPlatformCommandsCommand());
     register(builder, new DescribePlatformCommandCommand());
+    register(builder, new ExecutePlatformCommandCommand());
     commands = builder.build();
   }
 
@@ -701,8 +702,8 @@ public class Main {
     builder.put(command.name(), command);
   }
 
-  private static void setPrompt(Iface client, ConsoleReader reader, PrintWriter out)
-      throws BlurException, TException, CommandException, IOException {
+  private static void setPrompt(Iface client, ConsoleReader reader, PrintWriter out) throws BlurException, TException,
+      CommandException, IOException {
     List<String> shardClusterList;
     try {
       shardClusterList = client.shardClusterList();

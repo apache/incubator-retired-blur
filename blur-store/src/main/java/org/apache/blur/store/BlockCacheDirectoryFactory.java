@@ -16,12 +16,13 @@
  */
 package org.apache.blur.store;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Set;
 
 import org.apache.lucene.store.Directory;
 
-public abstract class BlockCacheDirectoryFactory {
+public abstract class BlockCacheDirectoryFactory implements Closeable {
 
   public abstract Directory newDirectory(String table, String shard, Directory directory,
       Set<String> blockCacheFileTypes) throws IOException;

@@ -17,22 +17,22 @@
 package org.apache.blur.command;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import org.apache.blur.command.annotation.OptionalArgument;
 import org.apache.blur.command.annotation.RequiredArgument;
 
 public class ArgumentOverlay {
 
-  private BlurObject _args;
+  private final Map<String, ? extends Object> _args;
 
-  public ArgumentOverlay(BlurObject args) {
-    _args = args;
+  public ArgumentOverlay(BlurObject args, BlurObjectSerDe serDe) {
+    _args = serDe.deserialize(args);
   }
 
   public <T> Command<T> setup(Command<T> command) {
     Class<?> clazz = command.getClass();
     setupInternal(clazz, command);
-
     return command;
   }
 

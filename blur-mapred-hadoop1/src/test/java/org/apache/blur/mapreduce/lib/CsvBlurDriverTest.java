@@ -133,6 +133,24 @@ public class CsvBlurDriverTest {
     assertEquals(SnappyCodec.class.getName(), configuration.get(CsvBlurDriver.MAPRED_MAP_OUTPUT_COMPRESSION_CODEC));
   }
 
+  @Test
+  public void multiplierParamShouldIncreaseReduceTasks() throws Exception {
+    Configuration configurationSetup = new Configuration();
+    ControllerPool controllerPool = new CsvBlurDriver.ControllerPool() {
+      @Override
+      public Iface getClient(String controllerConnectionStr) {
+        return getMockIface();
+      }
+    };
+    int multiplierParam = 10;
+    Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, "-c", "host:40010", "-d", "family1", "col1",
+        "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i", "file:///tmp/test2",
+        "-S", "-C", "1000000", "2000000", "-p", "SNAPPY", "-r", Integer.toString(multiplierParam));
+    assertNotNull(job);
+
+    assertEquals(multiplierParam * shardCount, job.getNumReduceTasks());
+  }
+
   protected Iface getMockIface() {
     InvocationHandler handler = new InvocationHandler() {
 

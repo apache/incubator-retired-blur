@@ -97,12 +97,10 @@ public class CacheIndexOutput extends IndexOutput {
     }
     if (!_shouldBeQuiet) {
       CacheValue cacheValue = _cache.newInstance(_directory, _fileName);
-      cacheValue.incRef();
       cacheValue.write(0, _buffer, 0, length);
       long blockId = (_position - length) / _cacheBlockSize;
       cacheValue = cacheValue.trim(length);
       _cache.put(new CacheKey(_fileId, blockId), cacheValue);
-      cacheValue.decRef();
     }
     _bufferPosition = 0;
     writeBufferToOutputStream(length);

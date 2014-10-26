@@ -93,7 +93,7 @@ public class SafeMode extends ZooKeeperLockManager {
         List<String> children = new ArrayList<String>(_zooKeeper.getChildren(_nodePath, _watcher));
         Collections.sort(children);
         if (children.equals(prev) && children.size() >= _minimumNumberOfNodes) {
-          LOG.info("Clustered has settled.");
+          LOG.info("Cluster has settled.");
           return;
         } else {
           prev = children;

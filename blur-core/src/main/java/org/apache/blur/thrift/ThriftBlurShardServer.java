@@ -38,6 +38,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DEEP_PAGING_CACHE_S
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FETCHCOUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_MERGE_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
@@ -46,8 +47,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREA
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_SELECTOR_THREADS;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_WARMUP_DISABLED;
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_WARMUP_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
@@ -75,7 +74,6 @@ import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.DefaultBlurFilterCache;
 import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
-import org.apache.blur.manager.indexserver.BlurIndexWarmup;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
@@ -163,7 +161,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     }
 
-    BlockCacheDirectoryFactory blockCacheDirectoryFactory;
+    final BlockCacheDirectoryFactory blockCacheDirectoryFactory;
     // Alternate BlockCacheDirectoryFactory support currently disabled in 0.2.0,
     // look for it in 0.2.1
     String blockCacheVersion = configuration.get(BLUR_SHARD_BLOCK_CACHE_VERSION, "v2");
@@ -195,23 +193,19 @@ public class ThriftBlurShardServer extends ThriftServer {
     final BlurIndexRefresher refresher = new BlurIndexRefresher();
 
     BlurFilterCache filterCache = getFilterCache(configuration);
-    BlurIndexWarmup indexWarmup = BlurIndexWarmup.getIndexWarmup(configuration);
 
     DistributedLayoutFactory distributedLayoutFactory = DistributedLayoutFactoryImpl.getDistributedLayoutFactory(
         configuration, cluster, zooKeeper);
 
     long safeModeDelay = configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000);
     int shardOpenerThreadCount = configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16);
-    int internalSearchThreads = configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 16);
-    int warmupThreads = configuration.getInt(BLUR_SHARD_WARMUP_THREAD_COUNT, 16);
     int maxMergeThreads = configuration.getInt(BLUR_SHARD_MERGE_THREAD_COUNT, 3);
-    boolean warmupDisabled = configuration.getBoolean(BLUR_SHARD_WARMUP_DISABLED, false);
     int minimumNumberOfNodesBeforeExitingSafeMode = configuration.getInt(
         BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT, 0);
+    int internalSearchThreads = configuration.getInt(BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT, 16);
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
-        indexWarmup, filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName,
-        safeModeDelay, shardOpenerThreadCount, internalSearchThreads, warmupThreads, maxMergeThreads, warmupDisabled,
-        minimumNumberOfNodesBeforeExitingSafeMode);
+        filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay,
+        shardOpenerThreadCount, maxMergeThreads, internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode);
 
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 
@@ -307,8 +301,8 @@ public class ThriftBlurShardServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(commandManager, traceStorage, refresher, server, shardServer, indexManager, indexServer,
-            threadWatcher, clusterStatus, zooKeeper, httpServer);
+        quietClose(blockCacheDirectoryFactory, commandManager, traceStorage, refresher, server, shardServer,
+            indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);

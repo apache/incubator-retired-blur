@@ -91,4 +91,9 @@ public class BlockCacheDirectoryFactoryV1 extends BlockCacheDirectoryFactory {
     return slabCount;
   }
 
+  @Override
+  public void close() throws IOException {
+
+  }
+
 }

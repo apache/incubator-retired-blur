@@ -78,17 +78,15 @@ public class BlurConstants {
   public static final String BLUR_MAX_HEAP_PER_ROW_FETCH = "blur.max.heap.per.row.fetch";
   public static final String BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST = "blur.max.records.per.row.fetch.request";
   public static final String BLUR_SHARD_READ_INTERCEPTOR = "blur.shard.read.interceptor";
+  public static final String BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT = "blur.shard.internal.search.thread.count";
 
   public static final String BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT = "blur.shard.server.thrift.thread.count";
   public static final String BLUR_SHARD_CACHE_MAX_TIMETOLIVE = "blur.shard.cache.max.timetolive";
   public static final String BLUR_SHARD_FILTER_CACHE_CLASS = "blur.shard.filter.cache.class";
-  public static final String BLUR_SHARD_INDEX_WARMUP_CLASS = "blur.shard.index.warmup.class";
   public static final String BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT = "blur.indexmanager.search.thread.count";
   public static final String BLUR_INDEXMANAGER_MUTATE_THREAD_COUNT = "blur.indexmanager.mutate.thread.count";
   public static final String BLUR_INDEXMANAGER_FACET_THREAD_COUNT = "blur.indexmanager.facet.thread.count";
   public static final String BLUR_SHARD_DATA_FETCH_THREAD_COUNT = "blur.shard.data.fetch.thread.count";
-  public static final String BLUR_SHARD_WARMUP_THREAD_COUNT = "blur.shard.warmup.thread.count";
-  public static final String BLUR_SHARD_INDEX_WARMUP_THROTTLE = "blur.shard.index.warmup.throttle";
   public static final String BLUR_MAX_CLAUSE_COUNT = "blur.max.clause.count";
   public static final String BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS = "blur.shard.cache.max.querycache.elements";
   public static final String BLUR_SHARD_OPENER_THREAD_COUNT = "blur.shard.opener.thread.count";
@@ -100,7 +98,6 @@ public class BlurConstants {
   public static final String BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES = "blur.shard.thrift.max.read.buffer.bytes";
   public static final String BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD = "blur.shard.thrift.accept.queue.size.per.thread";
   public static final String BLUR_SHARD_DISTRIBUTED_LAYOUT_FACTORY_CLASS = "blur.shard.distributed.layout.factory.class";
-  public static final String BLUR_SHARD_WARMUP_DISABLED = "blur.shard.warmup.disabled";
   public static final String BLUR_SHARD_DEEP_PAGING_CACHE_SIZE = "blur.shard.deep.paging.cache.size";
 
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT = "blur.shard.block.cache.v2.read.cache.ext";
@@ -140,7 +137,8 @@ public class BlurConstants {
   public static final String BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS = "blur.controller.thrift.selector.threads";
   public static final String BLUR_CONTROLLER_THRIFT_MAX_READ_BUFFER_BYTES = "blur.controller.thrift.max.read.buffer.bytes";
   public static final String BLUR_CONTROLLER_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD = "blur.controller.thrift.accept.queue.size.per.thread";
-  public static final String BLUR_CLIENTPOOL_CLIENT_CLOSE_THRESHOLD = "blur.clientpool.client.close.threshold";
+  public static final String BLUR_CLIENTPOOL_CLIENT_MAX_CONNECTIONS_PER_HOST = "blur.clientpool.client.max.connections.per.host";
+  public static final String BLUR_CLIENTPOOL_CLIENT_STALE_THRESHOLD = "blur.clientpool.client.stale.threshold";
   public static final String BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY = "blur.clientpool.client.clean.frequency";
   public static final String BLUR_LUCENE_FST_BYTEARRAY_FACTORY = "blur.lucene.fst.bytearray.factory";
 

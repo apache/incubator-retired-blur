@@ -374,6 +374,9 @@ public class HdfsKeyValueStore implements Store {
   }
 
   public void cleanupOldFiles() throws IOException {
+    if (!isOpenForWriting()) {
+      return;
+    }
     SortedSet<FileStatus> fileStatusSet = getSortedSet(_path);
     if (fileStatusSet == null || fileStatusSet.size() < 1) {
       return;
@@ -396,6 +399,10 @@ public class HdfsKeyValueStore implements Store {
       LOG.info("Removing file no longer referenced [{0}]", p);
       _fileSystem.delete(p, false);
     }
+  }
+
+  private boolean isOpenForWriting() {
+    return _output != null;
   }
 
   private Operation getPutOperation(OperationType put, BytesRef key, BytesRef value) {

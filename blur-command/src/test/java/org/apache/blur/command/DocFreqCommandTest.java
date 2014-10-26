@@ -3,13 +3,9 @@ package org.apache.blur.command;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.util.Map;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more

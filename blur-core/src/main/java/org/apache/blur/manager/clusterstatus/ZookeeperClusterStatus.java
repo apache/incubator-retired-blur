@@ -155,14 +155,14 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         }
         _tableDescriptorCache.remove(table);
       }
-      for (String table : newTables) {
+      for (final String table : newTables) {
         final String clusterTableKey = getClusterTableKey(_cluster, table);
         WatchNodeData enabledWatcher = new WatchNodeData(_zk, ZookeeperPathConstants.getTablePath(_cluster, table));
         enabledWatcher.watch(new WatchNodeData.OnChange() {
           @Override
           public void action(byte[] data) {
             runActions();
-            _tableDescriptorCache.clear();
+            _tableDescriptorCache.remove(table);
           }
         });
         if (_enabledWatchNodeExistance.putIfAbsent(clusterTableKey, enabledWatcher) != null) {

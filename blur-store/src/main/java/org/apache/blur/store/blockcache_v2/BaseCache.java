@@ -29,6 +29,7 @@ import static org.apache.blur.metrics.MetricsConstants.SIZE;
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -160,9 +161,17 @@ public class BaseCache extends Cache implements Closeable {
   @Override
   public void close() throws IOException {
     _running.set(false);
-    _cacheMap.clear();
+    closeCachMap();
     _oldFileDaemonThread.interrupt();
     _cacheValueBufferPool.close();
+  }
+
+  private void closeCachMap() {
+    Collection<CacheValue> values = _cacheMap.values();
+    for (CacheValue cacheValue : values) {
+      cacheValue.release();
+    }
+    _cacheMap.clear();
   }
 
   @Override

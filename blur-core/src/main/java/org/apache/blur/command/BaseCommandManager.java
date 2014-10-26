@@ -14,6 +14,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Timer;
@@ -33,6 +34,7 @@ import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.Arguments;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -70,7 +72,7 @@ public abstract class BaseCommandManager implements Closeable {
   protected final Map<String, BigInteger> _commandLoadTime = new ConcurrentHashMap<String, BigInteger>();
   protected final Map<String, Command<?>> _command = new ConcurrentHashMap<String, Command<?>>();
   protected final Map<Class<? extends Command<?>>, String> _commandNameLookup = new ConcurrentHashMap<Class<? extends Command<?>>, String>();
-  protected final ConcurrentMap<ExecutionId, Future<Response>> _runningMap;
+  protected final ConcurrentMap<ExecutionId, ResponseFuture> _runningMap = new MapMaker().makeMap();
   protected final long _connectionTimeout;
   protected final String _tmpPath;
   protected final String _commandPath;
@@ -78,6 +80,8 @@ public abstract class BaseCommandManager implements Closeable {
   protected final long _pollingPeriod = TimeUnit.SECONDS.toMillis(15);
   protected final Map<Path, BigInteger> _commandPathLastChange = new ConcurrentHashMap<Path, BigInteger>();
   protected final Configuration _configuration;
+  protected final BlurObjectSerDe _serDe = new BlurObjectSerDe();
+  protected final long _runningCacheTombstoneTime = TimeUnit.SECONDS.toMillis(60);
 
   public BaseCommandManager(String tmpPath, String commandPath, int workerThreadCount, int driverThreadCount,
       long connectionTimeout, Configuration configuration) throws IOException {
@@ -88,16 +92,45 @@ public abstract class BaseCommandManager implements Closeable {
     _executorService = Executors.newThreadPool("command-worker-", workerThreadCount);
     _executorServiceDriver = Executors.newThreadPool("command-driver-", driverThreadCount);
     _connectionTimeout = connectionTimeout / 2;
-    _runningMap = new MapMaker().weakKeys().makeMap();
+    _timer = new Timer("BaseCommandManager-Timer", true);
+    _timer.schedule(getTimerTaskForRemovalOfOldCommands(), _pollingPeriod, _pollingPeriod);
     if (_tmpPath == null || _commandPath == null) {
-      _timer = null;
       LOG.info("Tmp Path [{0}] or Command Path [{1}] is null so the automatic command reload will be disabled.",
           _tmpPath, _commandPath);
     } else {
       loadNewCommandsFromCommandPath();
-      _timer = new Timer("Command-Loader", true);
       _timer.schedule(getNewCommandTimerTask(), _pollingPeriod, _pollingPeriod);
     }
+  }
+
+  public void cancel(ExecutionId executionId) {
+    ResponseFuture responseFuture = _runningMap.get(executionId);
+    responseFuture.cancel(true);
+  }
+
+  public List<String> commandStatusList(CommandStatusStateEnum commandStatus) {
+    throw new RuntimeException("Not implemented.");
+  }
+
+  public void cancel(String executionId) {
+    cancel(new ExecutionId(executionId));
+  }
+
+  private TimerTask getTimerTaskForRemovalOfOldCommands() {
+    return new TimerTask() {
+      @Override
+      public void run() {
+        Set<Entry<ExecutionId, ResponseFuture>> entrySet = _runningMap.entrySet();
+        for (Entry<ExecutionId, ResponseFuture> e : entrySet) {
+          ExecutionId executionId = e.getKey();
+          ResponseFuture responseFuture = e.getValue();
+          if (!responseFuture.isRunning() && responseFuture.hasExpired()) {
+            LOG.info("Removing old execution id [{0}]", executionId);
+            _runningMap.remove(executionId);
+          }
+        }
+      }
+    };
   }
 
   public Map<String, BigInteger> getCommands() {
@@ -113,64 +146,6 @@ public abstract class BaseCommandManager implements Closeable {
     Command<?> command = getCommandObject(commandName, null);
     return command.getOptionalArguments();
   }
-
-  protected Map<String, String> getArguments(String commandName, boolean optional) {
-
-    // @RequiredArguments({ @Argument(name = "table", value =
-    // "The name of the table to execute the document count command.", type =
-    // String.class) })
-    // @OptionalArguments({ @Argument(name = "shard", value =
-    // "The shard id to execute the document count command.", type =
-    // String.class) })
-
-    throw new RuntimeException("not implemented");
-    // Command<?> command = getCommandObject(commandName);
-    // if (command == null) {
-    // return null;
-    // }
-    // Class<Command<?>> clazz = (Class<Command<?>>) command.getClass();
-    // Map<String, String> arguments = new TreeMap<String, String>();
-    // Argument[] args = getArgumentArray(clazz, optional);
-    // addArguments(arguments, args);
-    // if (optional) {
-    // if (!(command instanceof ShardRoute)) {
-    // Argument[] argumentArray = getArgumentArray(Command.class, optional);
-    // addArguments(arguments, argumentArray);
-    // }
-    // } else {
-    // if (!(command instanceof TableRoute)) {
-    // Argument[] argumentArray = getArgumentArray(Command.class, optional);
-    // addArguments(arguments, argumentArray);
-    // }
-    // }
-    // return arguments;
-  }
-
-  // private void addArguments(Map<String, String> arguments, Argument[] args) {
-  // if (args != null) {
-  // for (Argument argument : args) {
-  // Class<?> type = argument.type();
-  // arguments.put(argument.name(), ("(" + type.getSimpleName() + ") " +
-  // argument.value()).trim());
-  // }
-  // }
-  // }
-  //
-  // protected Argument[] getArgumentArray(Class<?> clazz, boolean optional) {
-  // if (optional) {
-  // OptionalArguments arguments = clazz.getAnnotation(OptionalArguments.class);
-  // if (arguments == null) {
-  // return null;
-  // }
-  // return arguments.value();
-  // } else {
-  // RequiredArguments arguments = clazz.getAnnotation(RequiredArguments.class);
-  // if (arguments == null) {
-  // return null;
-  // }
-  // return arguments.value();
-  // }
-  // }
 
   protected TimerTask getNewCommandTimerTask() {
     return new TimerTask() {
@@ -334,7 +309,7 @@ public abstract class BaseCommandManager implements Closeable {
     Future<Response> future = _executorServiceDriver.submit(executionContext.wrapCallable(callable));
     executionContext.registerDriverFuture(future);
     ExecutionId executionId = executionContext.getExecutionId();
-    _runningMap.put(executionId, future);
+    _runningMap.put(executionId, new ResponseFuture(_runningCacheTombstoneTime, future));
     try {
       return future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
     } catch (CancellationException e) {
@@ -482,8 +457,12 @@ public abstract class BaseCommandManager implements Closeable {
     return command.getReturnType();
   }
 
-  protected Arguments toArguments(Command<?> command) {
-    return CommandUtil.toArguments(command);
+  protected Arguments toArguments(Command<?> command) throws IOException {
+    try {
+      return CommandUtil.toArguments(command, _serDe);
+    } catch (BlurException e) {
+      throw new IOException(e);
+    }
   }
 
   protected void validate(Command<?> command) throws IOException {

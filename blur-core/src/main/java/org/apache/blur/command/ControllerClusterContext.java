@@ -53,6 +53,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   private final Map<Server, Client> _clientMap;
   private final ControllerCommandManager _manager;
   private final LayoutFactory _layoutFactory;
+  private final BlurObjectSerDe _serDe = new BlurObjectSerDe();
 
   public ControllerClusterContext(TableContextFactory tableContextFactory, LayoutFactory layoutFactory,
       ControllerCommandManager manager) throws IOException {
@@ -121,7 +122,8 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
         @Override
         public Map<Shard, T> call() throws Exception {
           Response response = waitForResponse(client, command, arguments);
-          Map<Shard, Object> shardToValue = CommandUtil.fromThriftToObjectShard(response.getShardToValue());
+          Map<Shard, Object> shardToThriftValue = CommandUtil.fromThriftToObjectShard(response.getShardToValue());
+          Map<Shard, Object> shardToValue = CommandUtil.fromThriftSupportedObjects(shardToThriftValue, _serDe);
           return (Map<Shard, T>) shardToValue;
         }
       });
@@ -207,7 +209,8 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
         public T call() throws Exception {
           Response response = waitForResponse(client, command, arguments);
           ValueObject valueObject = response.getValue();
-          return (T) CommandUtil.toObject(valueObject);
+          Object thriftObject = CommandUtil.toObject(valueObject);
+          return (T) _serDe.fromSupportedThriftObject(thriftObject);
         }
       });
       futureMap.put(server, future);

@@ -134,7 +134,7 @@ public class ShardCommandManagerTest {
     {
       BlurObject args = new BlurObject();
       args.put("table", "test");
-      ArgumentOverlay argumentOverlay = new ArgumentOverlay(args);
+      ArgumentOverlay argumentOverlay = new ArgumentOverlay(args, new BlurObjectSerDe());
       Response response = manager.execute(getTableContextFactory(), "test", argumentOverlay);
       Map<Shard, Object> shardResults = response.getShardResults();
       for (Object o : shardResults.values()) {
@@ -156,7 +156,7 @@ public class ShardCommandManagerTest {
     {
       BlurObject args = new BlurObject();
       args.put("table", "test");
-      ArgumentOverlay argumentOverlay = new ArgumentOverlay(args);
+      ArgumentOverlay argumentOverlay = new ArgumentOverlay(args, new BlurObjectSerDe());
       Response response = manager.execute(getTableContextFactory(), "test", argumentOverlay);
       Map<Shard, Object> shardResults = response.getShardResults();
       for (Object o : shardResults.values()) {
@@ -189,7 +189,7 @@ public class ShardCommandManagerTest {
     args.put("table", "test");
     args.put("seconds", 5);
 
-    ArgumentOverlay argumentOverlay = new ArgumentOverlay(args);
+    ArgumentOverlay argumentOverlay = new ArgumentOverlay(args, new BlurObjectSerDe());
 
     long start = System.nanoTime();
     while (true) {
@@ -216,7 +216,7 @@ public class ShardCommandManagerTest {
     BlurObject args = new BlurObject();
     args.put("table", "test");
     args.put("seconds", 1);
-    ArgumentOverlay argumentOverlay = new ArgumentOverlay(args);
+    ArgumentOverlay argumentOverlay = new ArgumentOverlay(args, new BlurObjectSerDe());
     TableContextFactory tableContextFactory = getTableContextFactory();
     try {
       _manager.execute(tableContextFactory, "error", argumentOverlay);
@@ -237,7 +237,7 @@ public class ShardCommandManagerTest {
     args.put("table", "test");
     args.put("seconds", 5);
 
-    ArgumentOverlay argumentOverlay = new ArgumentOverlay(args);
+    ArgumentOverlay argumentOverlay = new ArgumentOverlay(args, new BlurObjectSerDe());
 
     try {
       TableContextFactory tableContextFactory = getTableContextFactory();
@@ -322,7 +322,7 @@ public class ShardCommandManagerTest {
 
   protected BlurIndex getNullBlurIndex(String shard) throws IOException {
     ShardContext shardContext = ShardContext.create(getTableContextFactory().getTableContext("test"), shard);
-    return new BlurIndex(shardContext, null, null, null, null, null) {
+    return new BlurIndex(shardContext, null, null, null, null) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {

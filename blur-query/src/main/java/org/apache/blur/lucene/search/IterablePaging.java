@@ -82,7 +82,11 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
     _totalHitsRef = totalHitsRef == null ? new TotalHitsRef() : totalHitsRef;
     _progressRef = progressRef == null ? new ProgressRef() : progressRef;
     _runSlow = runSlow;
-    _key = new DeepPageKey(_query, _sort, _searcher.getIndexReader().getCombinedCoreAndDeletesKey());
+    if (DISABLED) {
+      _key = null;
+    } else {
+      _key = new DeepPageKey(_query, _sort, _searcher.getIndexReader().getCombinedCoreAndDeletesKey());
+    }
   }
 
   public static class TotalHitsRef {

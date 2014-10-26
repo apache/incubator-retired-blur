@@ -234,8 +234,10 @@ blurconsole.search = (function () {
   function _updateOptionDisplay() {
     var displayText = '';
     displayText += configMap.superQueryMap[stateMap.$rowRecordOption];
-    displayText += '<br/>User: ';
-    displayText += stateMap.$userOption;
+    if (stateMap.$userOption && stateMap.$userOption !== 'null') {
+      displayText += '<br/>User: ';
+      displayText += stateMap.$userOption;
+    }
     jqueryMap.$optionsDisplay.html(displayText);
   }
 
@@ -558,8 +560,28 @@ blurconsole.search = (function () {
     _unregisterPageEvents();
   }
 
+  function anchorChanged() {
+    var anchorMap = $.uriAnchor.makeAnchorMap();
+    if (anchorMap._tab && anchorMap._tab.query) {
+      stateMap.$currentQuery = anchorMap._tab.query;
+      jqueryMap.$queryField.val(stateMap.$currentQuery);
+      stateMap.$currentTable = anchorMap._tab.table;
+      jqueryMap.$tableField.val(stateMap.$currentTable);
+      stateMap.$rowRecordOption = anchorMap._tab.rr;
+      stateMap.$userOption = anchorMap._tab.user;
+      _updateOptionDisplay();
+      _sendSearch();
+    } else {
+      stateMap.$currentQuery = null;
+      jqueryMap.$queryField.val('');
+      jqueryMap.$resultsHolder.html('');
+      jqueryMap.$countHolder.html('');
+    }
+  }
+
   return {
     initModule : initModule,
-    unloadModule : unloadModule
+    unloadModule : unloadModule,
+    anchorChanged : anchorChanged
   };
 }());

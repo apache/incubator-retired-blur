@@ -73,6 +73,8 @@ blurconsole.shell = (function () {
           tab : 'dashboard'
         });
       }
+    } else if (blurconsole[tab].anchorChanged) {
+      blurconsole[tab].anchorChanged();
     }
 
     return true;

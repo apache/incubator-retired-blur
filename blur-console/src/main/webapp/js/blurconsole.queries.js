@@ -28,7 +28,7 @@ blurconsole.queries = (function() {
     queryDef: [
       { label: 'User', key: 'user', width: '0%', style: 'white-space:nowrap' },
       { label: 'Query', key: 'query', style: 'text-overflow:ellipsis; overflow: hidden; max-width:1px;', width: '100%' },
-      { label: 'Time Started', width: '0%', style: 'white-space:nowrap', key: function(row) {
+      { label: 'Started', width: '0%', style: 'white-space:nowrap', key: function(row) {
         var start = new Date(row.startTime);
         return start.toLocaleTimeString(); //start.getHours() + ':' + start.getMinutes() + ':' + start.getSeconds();
       } },

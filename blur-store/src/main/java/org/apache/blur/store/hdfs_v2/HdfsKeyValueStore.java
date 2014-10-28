@@ -155,7 +155,6 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private final ConcurrentNavigableMap<BytesRef, Value> _pointers = new ConcurrentSkipListMap<BytesRef, Value>(COMP);
-  private final Configuration _configuration;
   private final Path _path;
   private final ReentrantReadWriteLock _readWriteLock;
   private final AtomicReference<SortedSet<FileStatus>> _fileStatus = new AtomicReference<SortedSet<FileStatus>>();
@@ -177,10 +176,8 @@ public class HdfsKeyValueStore implements Store {
 
   public HdfsKeyValueStore(Configuration configuration, Path path, long maxAmountAllowedPerFile) throws IOException {
     _maxAmountAllowedPerFile = maxAmountAllowedPerFile;
-    _configuration = configuration;
     _path = path;
-    _configuration.setBoolean("fs.hdfs.impl.disable.cache", true);
-    _fileSystem = FileSystem.get(_path.toUri(), _configuration);
+    _fileSystem = _path.getFileSystem(configuration);
     _fileSystem.mkdirs(_path);
     _readWriteLock = new ReentrantReadWriteLock();
     _writeLock = _readWriteLock.writeLock();

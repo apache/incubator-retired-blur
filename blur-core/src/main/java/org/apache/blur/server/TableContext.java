@@ -67,7 +67,6 @@ public class TableContext implements Cloneable {
 
   private static final Log LOG = LogFactory.getLog(TableContext.class);
 
-  private static final String LOGS = "logs";
   private static final String TYPES = "types";
 
   private static ConcurrentHashMap<String, TableContext> _cache = new ConcurrentHashMap<String, TableContext>();
@@ -82,7 +81,6 @@ public class TableContext implements Cloneable {
   };
 
   private Path _tablePath;
-  private Path _walTablePath;
   private String _defaultFieldName;
   private String _table;
   private IndexDeletionPolicy _indexDeletionPolicy;
@@ -144,7 +142,6 @@ public class TableContext implements Cloneable {
     tableContext._configuration = configuration;
     tableContext._blurConfiguration = blurConfiguration;
     tableContext._tablePath = new Path(tableUri);
-    tableContext._walTablePath = new Path(tableContext._tablePath, LOGS);
 
     tableContext._defaultFieldName = SUPER;
     tableContext._table = name;
@@ -274,10 +271,6 @@ public class TableContext implements Cloneable {
 
   public Path getTablePath() {
     return _tablePath;
-  }
-
-  public Path getWalTablePath() {
-    return _walTablePath;
   }
 
   public String getDefaultFieldName() {

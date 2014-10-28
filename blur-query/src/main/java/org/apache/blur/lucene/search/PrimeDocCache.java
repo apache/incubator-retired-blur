@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.blur.index.ExitableReader.ExitableFilterAtomicReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.lucene.index.AtomicReader;
@@ -43,8 +44,9 @@ public class PrimeDocCache {
    * creating multiple bitsets during a race condition is very low, that's why
    * this method is not synced.
    */
-  public static OpenBitSet getPrimeDocBitSet(Term primeDocTerm, AtomicReader reader) throws IOException {
-    Object key = reader.getCoreCacheKey();
+  public static OpenBitSet getPrimeDocBitSet(Term primeDocTerm, AtomicReader providedReader) throws IOException {
+    AtomicReader reader = getRealReader(providedReader);
+    final Object key = reader.getCoreCacheKey();
     final Map<Object, OpenBitSet> primeDocMap = getPrimeDocMap(primeDocTerm);
     OpenBitSet bitSet = primeDocMap.get(key);
     if (bitSet == null) {
@@ -52,10 +54,12 @@ public class PrimeDocCache {
         reader.addReaderClosedListener(new ReaderClosedListener() {
           @Override
           public void onClose(IndexReader reader) {
-            Object key = reader.getCoreCacheKey();
             LOG.debug("Current size [" + primeDocMap.size() + "] Prime Doc BitSet removing for segment [" + reader
                 + "]");
-            primeDocMap.remove(key);
+            OpenBitSet openBitSet = primeDocMap.remove(key);
+            if (openBitSet == null) {
+              LOG.warn("Primedoc was missing for key [{0}]", key);
+            }
           }
         });
         LOG.debug("Prime Doc BitSet missing for segment [" + reader + "] current size [" + primeDocMap.size() + "]");
@@ -75,7 +79,8 @@ public class PrimeDocCache {
         if (count == docFreq) {
           primeDocMap.put(key, bs);
         } else {
-          // @TODO deal with deletes correctly...  docFreq does not reflect deletes
+          // @TODO deal with deletes correctly... docFreq does not reflect
+          // deletes
           LOG.info("PrimeDoc for reader [{0}] not stored, because count [{1}] and freq [{2}] do not match.", reader,
               count, docFreq);
         }
@@ -83,6 +88,14 @@ public class PrimeDocCache {
       }
     }
     return bitSet;
+  }
+
+  private static AtomicReader getRealReader(AtomicReader providedReader) {
+    if (providedReader instanceof ExitableFilterAtomicReader) {
+      ExitableFilterAtomicReader exitableFilterAtomicReader = (ExitableFilterAtomicReader) providedReader;
+      return exitableFilterAtomicReader.getOriginalReader();
+    }
+    return providedReader;
   }
 
   private static Map<Object, OpenBitSet> getPrimeDocMap(Term primeDocTerm) {

@@ -366,6 +366,10 @@ respond
 ./docs/resources/js/respond.min.js
 Copyright (c) 2012 Scott Jehl
 
+moment.js
+./blur-console/src/main/webapp/libs/moment/moment.js
+Copyright (c) 2011-2014 Tim Wood, Iskren Chernev, Moment.js contributors
+
 ==========================================================================
 The following license applies to the following libraries: d3
 ./blur-gui/src/main/webapp/js/d3.v2.js

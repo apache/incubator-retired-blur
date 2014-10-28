@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-/*global blurconsole:false, confirm:false */
+/*global blurconsole:false, confirm:false, moment:false */
 blurconsole.search = (function () {
   'use strict';
 
@@ -65,7 +65,8 @@ blurconsole.search = (function () {
       $countHolder : $('#resultCount'),
       $facetTrigger : $('#facetTrigger'),
       $optionsTrigger: $('#searchOptionsTrigger'),
-      $searchTrigger : $('#searchTrigger')
+      $searchTrigger : $('#searchTrigger'),
+      $historyTrigger : $('#searchHistory')
     };
   }
 
@@ -197,6 +198,8 @@ blurconsole.search = (function () {
       stateMap.$currentTable = $(evt.currentTarget).val();
     });
     jqueryMap.$resultsHolder.on('click', 'a.fetchRow', _fetchRow);
+    jqueryMap.$historyTrigger.on('click', _showHistory);
+    $(document).on('click.history', '.rerunhistory', _setupSearchFromHistory);
   }
 
   function _unregisterPageEvents() {
@@ -210,7 +213,9 @@ blurconsole.search = (function () {
       jqueryMap.$optionsTrigger.popover('destroy');
       jqueryMap.$optionsTrigger.off('shown.bs.popover');
       $(document).off('change');
+      $(document).off('click.history');
       jqueryMap.$tableField.off('change');
+      jqueryMap.$historyTrigger.off('click');
       //jqueryMap.$facetTrigger.off('click');
     }
   }
@@ -230,12 +235,49 @@ blurconsole.search = (function () {
     return cols;
   }
 
+  function _getHistoryList() {
+    if (_supportsLocalStorage()) {
+      return JSON.parse(localStorage.getItem('search-history')) || [];
+    } else {
+      return stateMap.searchHistory || [];
+    }
+  }
+
+  function _saveToHistory(runDate, query) {
+    var currentHistory = _getHistoryList();
+    if (currentHistory.length === 20) {
+      currentHistory.shift();
+    }
+
+    if (currentHistory.length === 0 || currentHistory[currentHistory.length-1].query !== query) {
+      currentHistory.push({runTime: runDate, query: query});
+      if (_supportsLocalStorage()) {
+        localStorage.setItem('search-history', JSON.stringify(currentHistory));
+      } else {
+        stateMap.searchHistory = currentHistory;
+      }
+    }
+  }
+
+  function _supportsLocalStorage() {
+    var b = 'blur';
+    try {
+      localStorage.setItem(b, b);
+      localStorage.removeItem(b);
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
+
   //------------------------------ Event Handlers and DOM Methods ---------------------
   function _updateOptionDisplay() {
     var displayText = '';
     displayText += configMap.superQueryMap[stateMap.$rowRecordOption];
-    displayText += '<br/>User: ';
-    displayText += stateMap.$userOption;
+    if (stateMap.$userOption && stateMap.$userOption !== 'null') {
+      displayText += '<br/>User: ';
+      displayText += stateMap.$userOption;
+    }
     jqueryMap.$optionsDisplay.html(displayText);
   }
 
@@ -348,6 +390,7 @@ blurconsole.search = (function () {
     if (stateMap.$currentDisplay === 'fetch') {
       _drawFetchHolder();
     } else {
+      _saveToHistory(new Date(), stateMap.$currentQuery);
       _drawSearchHolder();
     }
   }
@@ -526,6 +569,29 @@ blurconsole.search = (function () {
     jqueryMap.facetModal.modal();
   }
 
+  function _showHistory() {
+    var history = _getHistoryList();
+    history.sort(function(a, b){
+      return new Date(b.runTime) - new Date(a.runTime);
+    });
+
+    var markup = '<table class="table table-bordered table-condensed table-hover"><thead><tr><th>Query</th><th>Ran</th><th></th></tr></thead><tbody>';
+    $.each(history, function(i, his){
+      markup += '<tr><td>' + his.query + '</td><td>' + moment(his.runTime).fromNow() + '</td><td><button class="btn btn-default rerunhistory" type="button" title="Re-run search" data-query="' + his.query + '"><i class="glyphicon glyphicon-search"></i></button></td></tr>';
+    });
+    markup += '</tbody></table>';
+    jqueryMap.historyModal = $(blurconsole.browserUtils.modal('historyDialog', 'Search History', markup, null, 'large'));
+    jqueryMap.historyModal.modal();
+  }
+
+  function _setupSearchFromHistory(evt) {
+    jqueryMap.historyModal.modal('hide');
+    var query = $(evt.currentTarget).data('query');
+    jqueryMap.$queryField.val(query);
+    jqueryMap.$resultsHolder.html('');
+    jqueryMap.$countHolder.html('');
+  }
+
   //--------------------------------- Public API ------------------------------------------
   function initModule($container) {
     $container.load(configMap.view, function() {
@@ -558,8 +624,28 @@ blurconsole.search = (function () {
     _unregisterPageEvents();
   }
 
+  function anchorChanged() {
+    var anchorMap = $.uriAnchor.makeAnchorMap();
+    if (anchorMap._tab && anchorMap._tab.query) {
+      stateMap.$currentQuery = anchorMap._tab.query;
+      jqueryMap.$queryField.val(stateMap.$currentQuery);
+      stateMap.$currentTable = anchorMap._tab.table;
+      jqueryMap.$tableField.val(stateMap.$currentTable);
+      stateMap.$rowRecordOption = anchorMap._tab.rr;
+      stateMap.$userOption = anchorMap._tab.user;
+      _updateOptionDisplay();
+      _sendSearch();
+    } else {
+      stateMap.$currentQuery = null;
+      jqueryMap.$queryField.val('');
+      jqueryMap.$resultsHolder.html('');
+      jqueryMap.$countHolder.html('');
+    }
+  }
+
   return {
     initModule : initModule,
-    unloadModule : unloadModule
+    unloadModule : unloadModule,
+    anchorChanged : anchorChanged
   };
 }());

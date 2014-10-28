@@ -184,7 +184,11 @@ public class CacheIndexInputTest {
     Weigher<CacheValue> weigher = new Weigher<CacheValue>() {
       @Override
       public int weightOf(CacheValue value) {
-        return value.length();
+        try {
+          return value.length();
+        } catch (EvictionException e) {
+          return 0;
+        }
       }
     };
     long maximumWeightedCapacity = 1 * 1024 * 1024;

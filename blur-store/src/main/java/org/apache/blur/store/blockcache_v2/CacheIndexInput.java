@@ -364,7 +364,11 @@ public class CacheIndexInput extends IndexInput {
   }
 
   private int remaining() {
-    return _cacheValue.length() - _blockPosition;
+    try {
+      return _cacheValue.length() - _blockPosition;
+    } catch (EvictionException e) {
+      return 0;
+    }
   }
 
   private void tryToFill() throws IOException {

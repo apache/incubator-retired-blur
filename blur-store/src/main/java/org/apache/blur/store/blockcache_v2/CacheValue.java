@@ -32,8 +32,9 @@ public interface CacheValue {
    * The length of the data in this block.
    * 
    * @return the length.
+   * @throws EvictionException 
    */
-  int length();
+  int length() throws EvictionException;
 
   /**
    * Writes data out to a given position in this block.

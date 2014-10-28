@@ -63,7 +63,8 @@ public class DetachableCacheValue implements CacheValue {
   }
 
   @Override
-  public int length() {
+  public int length() throws EvictionException {
+    checkEviction();
     return _baseCacheValue.length();
   }
 

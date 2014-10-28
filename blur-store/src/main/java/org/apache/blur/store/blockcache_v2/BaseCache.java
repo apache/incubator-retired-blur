@@ -74,7 +74,11 @@ public class BaseCache extends Cache implements Closeable {
   class BaseCacheWeigher implements Weigher<CacheValue> {
     @Override
     public int weightOf(CacheValue value) {
-      return value.length();
+      try {
+        return value.length();
+      } catch (EvictionException e) {
+        return 0;
+      }
     }
   }
 

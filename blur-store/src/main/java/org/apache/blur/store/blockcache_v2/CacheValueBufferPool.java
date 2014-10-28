@@ -91,13 +91,17 @@ public class CacheValueBufferPool implements Closeable {
   }
 
   public void returnToPool(CacheValue cacheValue) {
-    if (cacheValue == null) {
+    if (cacheValue == null || cacheValue.isEvicted()) {
       return;
     }
-    BlockingQueue<CacheValue> blockingQueue = getPool(cacheValue.length());
-    if (!blockingQueue.offer(cacheValue)) {
-      _detroyed.mark();
-      cacheValue.release();
+    try {
+      BlockingQueue<CacheValue> blockingQueue = getPool(cacheValue.length());
+      if (!blockingQueue.offer(cacheValue)) {
+        _detroyed.mark();
+        cacheValue.release();
+      }
+    } catch (EvictionException e) {
+      return;
     }
   }
 

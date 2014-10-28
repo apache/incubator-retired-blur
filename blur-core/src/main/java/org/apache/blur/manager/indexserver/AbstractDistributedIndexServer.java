@@ -87,7 +87,7 @@ public abstract class AbstractDistributedIndexServer extends AbstractIndexServer
     checkTable(table);
     String tableUri = getTableContext(table).getTablePath().toUri().toString();
     Path tablePath = new Path(tableUri);
-    FileSystem fileSystem = FileSystem.get(tablePath.toUri(), _configuration);
+    FileSystem fileSystem = tablePath.getFileSystem(_configuration);
     ContentSummary contentSummary = fileSystem.getContentSummary(tablePath);
     return contentSummary.getLength();
   }
@@ -101,7 +101,7 @@ public abstract class AbstractDistributedIndexServer extends AbstractIndexServer
       TableContext tableContext = getTableContext(table);
       TableDescriptor descriptor = tableContext.getDescriptor();
       Path tablePath = new Path(descriptor.tableUri);
-      FileSystem fileSystem = FileSystem.get(tablePath.toUri(), _configuration);
+      FileSystem fileSystem = tablePath.getFileSystem(_configuration);
       if (!fileSystem.exists(tablePath)) {
         LOG.error("Table [{0}] is missing, defined location [{1}]", table, tablePath.toUri());
         throw new RuntimeException("Table [" + table + "] is missing, defined location [" + tablePath.toUri() + "]");

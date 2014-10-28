@@ -49,6 +49,7 @@ import org.apache.blur.zookeeper.WatchNodeData;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.blur.zookeeper.ZookeeperPathConstants;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -73,8 +74,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private final Map<String, SafeModeCacheEntry> _clusterToSafeMode = new ConcurrentHashMap<String, ZookeeperClusterStatus.SafeModeCacheEntry>();
   private final ConcurrentMap<String, WatchNodeData> _enabledWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeData>();
   private final Set<Action> _tableStateChange = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
+  private final Configuration _config;
 
-  public ZookeeperClusterStatus(ZooKeeper zooKeeper, BlurConfiguration configuration) {
+  public ZookeeperClusterStatus(ZooKeeper zooKeeper, BlurConfiguration configuration, Configuration config) {
+    _config = config;
     _zk = zooKeeper;
     _running.set(true);
     _clusterWatcher = new WatchChildren(_zk, ZookeeperPathConstants.getClustersPath());
@@ -87,21 +90,22 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
   }
 
-  public ZookeeperClusterStatus(String connectionStr, BlurConfiguration configuration) throws IOException {
+  public ZookeeperClusterStatus(String connectionStr, BlurConfiguration configuration, Configuration config)
+      throws IOException {
     this(new ZooKeeper(connectionStr, 30000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
       }
-    }), configuration);
+    }), configuration, config);
   }
 
   public ZookeeperClusterStatus(ZooKeeper zooKeeper) throws IOException {
-    this(zooKeeper, new BlurConfiguration());
+    this(zooKeeper, new BlurConfiguration(), new Configuration());
   }
 
   public ZookeeperClusterStatus(String connectionStr) throws IOException {
-    this(connectionStr, new BlurConfiguration());
+    this(connectionStr, new BlurConfiguration(), new Configuration());
   }
 
   class Clusters extends OnChange {
@@ -551,7 +555,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       if (_zk.exists(blurTablePath, false) != null) {
         throw new IOException("Table [" + table + "] already exists.");
       }
-      BlurUtil.setupFileSystem(uri, shardCount);
+      BlurUtil.setupFileSystem(uri, shardCount, _config);
       byte[] bytes = serializeTableDescriptor(tableDescriptor);
       BlurUtil.createPath(_zk, blurTablePath, bytes);
     } catch (IOException e) {
@@ -660,7 +664,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       String uri = tableDescriptor.getTableUri();
       BlurUtil.removeAll(_zk, blurTablePath);
       if (deleteIndexFiles) {
-        BlurUtil.removeIndexFiles(uri);
+        BlurUtil.removeIndexFiles(uri, _config);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

@@ -28,7 +28,6 @@ import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -66,25 +65,31 @@ public class IndexImporter extends TimerTask implements Closeable {
   private static final String INUSE = ".inuse";
   private static final String BADINDEX = ".badindex";
   private static final Lock _globalLock = new ReentrantReadWriteLock().writeLock();
+  private static final Timer _timer;
+
+  static {
+    _timer = new Timer("IndexImporter", true);
+  }
+
+  public static void closeIndexImporterTimer() {
+    _timer.cancel();
+    _timer.purge();
+  }
 
   private final static Log LOG = LogFactory.getLog(IndexImporter.class);
 
   private final BlurIndex _blurIndex;
   private final ShardContext _shardContext;
-  private final Timer _timer;
   private final String _table;
   private final String _shard;
-  private final AtomicBoolean _running = new AtomicBoolean();
   private final long _cleanupDelay;
 
   private long _lastCleanup;
 
   public IndexImporter(BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit, long refreshAmount) {
-    _running.set(true);
     _blurIndex = blurIndex;
     _shardContext = shardContext;
-    _timer = new Timer("IndexImporter [" + shardContext.getShard() + "/" + shardContext.getTableContext().getTable()
-        + "]", true);
+
     long period = refreshUnit.toMillis(refreshAmount);
     _timer.schedule(this, period, period);
     _table = _shardContext.getTableContext().getTable();
@@ -94,11 +99,7 @@ public class IndexImporter extends TimerTask implements Closeable {
 
   @Override
   public void close() throws IOException {
-    if (_running.get()) {
-      _running.set(false);
-      _timer.cancel();
-      _timer.purge();
-    }
+
   }
 
   @Override
@@ -120,9 +121,6 @@ public class IndexImporter extends TimerTask implements Closeable {
         FileSystem fileSystem = path.getFileSystem(configuration);
         SortedSet<FileStatus> listStatus;
         while (true) {
-          if (!_running.get()) {
-            return;
-          }
           try {
             listStatus = sort(fileSystem.listStatus(path, new PathFilter() {
               @Override

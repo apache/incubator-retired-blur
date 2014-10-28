@@ -712,9 +712,9 @@ public class BlurUtil {
     zookeeper.create(path, data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
   }
 
-  public static void setupFileSystem(String uri, int shardCount) throws IOException {
+  public static void setupFileSystem(String uri, int shardCount, Configuration configuration) throws IOException {
     Path tablePath = new Path(uri);
-    FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
+    FileSystem fileSystem = tablePath.getFileSystem(configuration);
     if (createPath(fileSystem, tablePath)) {
       LOG.info("Table uri existed.");
       validateShardCount(shardCount, fileSystem, tablePath);
@@ -844,9 +844,9 @@ public class BlurUtil {
     zooKeeper.delete(path, -1);
   }
 
-  public static void removeIndexFiles(String uri) throws IOException {
+  public static void removeIndexFiles(String uri, Configuration configuration) throws IOException {
     Path tablePath = new Path(uri);
-    FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
+    FileSystem fileSystem = tablePath.getFileSystem(configuration);
     fileSystem.delete(tablePath, true);
   }
 

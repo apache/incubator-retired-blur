@@ -128,9 +128,11 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
 
+    Configuration config = new Configuration();
+
     BlurUtil.setupZookeeper(zooKeeper, null);
 
-    final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration);
+    final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration, config);
 
     int timeout = configuration.getInt(BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT, 60000);
     BlurControllerServer.BlurClient client = new BlurControllerServer.BlurClientRemote(timeout);
@@ -148,7 +150,6 @@ public class ThriftBlurControllerServer extends ThriftServer {
     int numberOfControllerDriverCommandThreads = configuration.getInt(BLUR_CONTROLLER_COMMAND_DRIVER_THREADS, 16);
     String commandPath = configuration.get(BLUR_COMMAND_LIB_PATH, getCommandLibPath());
 
-    Configuration config = new Configuration();
     final ControllerCommandManager controllerCommandManager = new ControllerCommandManager(tmpPath, commandPath,
         numberOfControllerWorkerCommandThreads, numberOfControllerDriverCommandThreads, Connection.DEFAULT_TIMEOUT,
         config);

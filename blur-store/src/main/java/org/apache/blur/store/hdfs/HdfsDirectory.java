@@ -69,10 +69,24 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
    */
   protected static Map<URI, MetricsGroup> _metricsGroupMap = new WeakHashMap<URI, MetricsGroup>();
 
+  static class FStat {
+    FStat(FileStatus fileStatus) {
+      this(fileStatus.getModificationTime(), fileStatus.getLen());
+    }
+
+    FStat(long lastMod, long length) {
+      _lastMod = lastMod;
+      _length = length;
+    }
+
+    final long _lastMod;
+    final long _length;
+  }
+
   protected final Path _path;
   protected final FileSystem _fileSystem;
   protected final MetricsGroup _metricsGroup;
-  protected final Map<String, Long> _fileLengthMap = new ConcurrentHashMap<String, Long>();
+  protected final Map<String, FStat> _fileStatusMap = new ConcurrentHashMap<String, FStat>();
   protected final Map<String, Boolean> _symlinkMap = new ConcurrentHashMap<String, Boolean>();
   protected final Map<String, Path> _symlinkPathMap = new ConcurrentHashMap<String, Path>();
   protected final Map<Path, FSDataInputStream> _inputMap = new ConcurrentHashMap<Path, FSDataInputStream>();
@@ -103,9 +117,9 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
             String resolvedName = getRealFileName(name);
             Path resolvedPath = getPath(resolvedName);
             FileStatus resolvedFileStatus = _fileSystem.getFileStatus(resolvedPath);
-            _fileLengthMap.put(resolvedName, resolvedFileStatus.getLen());
+            _fileStatusMap.put(resolvedName, new FStat(resolvedFileStatus));
           } else {
-            _fileLengthMap.put(name, fileStatus.getLen());
+            _fileStatusMap.put(name, new FStat(fileStatus));
           }
         }
       }
@@ -144,7 +158,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     if (fileExists(name)) {
       throw new IOException("File [" + name + "] already exists found.");
     }
-    _fileLengthMap.put(name, 0L);
+    _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), 0L));
     final FSDataOutputStream outputStream = openForOutput(name);
     return new BufferedIndexOutput() {
 
@@ -165,7 +179,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       @Override
       public void close() throws IOException {
         super.close();
-        _fileLengthMap.put(name, outputStream.getPos());
+        _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), outputStream.getPos()));
         outputStream.close();
         openForInput(name);
       }
@@ -219,7 +233,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     LOG.debug("listAll [{0}]", _path);
 
     if (_useCache) {
-      Set<String> names = new HashSet<String>(_fileLengthMap.keySet());
+      Set<String> names = new HashSet<String>(_fileStatusMap.keySet());
       return names.toArray(new String[names.size()]);
     }
 
@@ -249,7 +263,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   public boolean fileExists(String name) throws IOException {
     LOG.debug("fileExists [{0}] [{1}]", name, _path);
     if (_useCache) {
-      return _fileLengthMap.containsKey(name);
+      return _fileStatusMap.containsKey(name);
     }
     return exists(name);
   }
@@ -269,7 +283,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     LOG.debug("deleteFile [{0}] [{1}]", name, _path);
     if (fileExists(name)) {
       if (_useCache) {
-        _fileLengthMap.remove(name);
+        _fileStatusMap.remove(name);
       }
       delete(name);
     } else {
@@ -299,11 +313,11 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   public long fileLength(String name) throws IOException {
     LOG.debug("fileLength [{0}] [{1}]", name, _path);
     if (_useCache) {
-      Long length = _fileLengthMap.get(name);
-      if (length == null) {
+      FStat fStat = _fileStatusMap.get(name);
+      if (fStat == null) {
         throw new FileNotFoundException(name);
       }
-      return length;
+      return fStat._length;
     }
 
     return length(name);
@@ -399,8 +413,12 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   }
 
   public long getFileModified(String name) throws IOException {
-    if (!fileExists(name)) {
-      throw new FileNotFoundException("File [" + name + "] not found");
+    if (_useCache) {
+      FStat fStat = _fileStatusMap.get(name);
+      if (fStat == null) {
+        throw new FileNotFoundException("File [" + name + "] not found");
+      }
+      return fStat._lastMod;
     }
     return fileModified(name);
   }
@@ -409,7 +427,11 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     Path path = getPath(name);
     Tracer trace = Trace.trace("filesystem - fileModified", Trace.param("path", path));
     try {
-      return _fileSystem.getFileStatus(path).getModificationTime();
+      FileStatus fileStatus = _fileSystem.getFileStatus(path);
+      if (_useCache) {
+        _fileStatusMap.put(name, new FStat(fileStatus));
+      }
+      return fileStatus.getModificationTime();
     } finally {
       trace.done();
     }
@@ -439,7 +461,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     outputStream.write(srcPath.toString().getBytes(UTF_8));
     outputStream.close();
     if (_useCache) {
-      to._fileLengthMap.put(dest, _fileLengthMap.get(src));
+      to._fileStatusMap.put(dest, _fileStatusMap.get(src));
     }
     return true;
   }

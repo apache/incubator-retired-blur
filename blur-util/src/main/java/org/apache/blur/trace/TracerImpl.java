@@ -19,6 +19,7 @@ package org.apache.blur.trace;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.trace.Trace.Parameter;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -98,23 +99,19 @@ public class TracerImpl implements Tracer {
       jsonObject.put("collector", _traceCollector.toJsonObject());
     }
     if (_parameters != null) {
-      jsonObject.put("parameters", getParametersJsonObject());
+      jsonObject.put("parameters", getParametersJSONArray());
     }
     return jsonObject;
   }
 
-  private JSONObject getParametersJsonObject() throws JSONException {
-    JSONObject jsonObject = new JSONObject();
+  private JSONArray getParametersJSONArray() throws JSONException {
+    JSONArray jsonArray = new JSONArray();
     for (Parameter parameter : _parameters) {
-      jsonObject.put(toString(parameter._name), parameter._value);
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put(parameter._name, parameter._value);
+      jsonArray.put(jsonObject);
     }
-    return jsonObject;
+    return jsonArray;
   }
 
-  private String toString(Object o) {
-    if (o == null) {
-      return null;
-    }
-    return o.toString();
-  }
 }

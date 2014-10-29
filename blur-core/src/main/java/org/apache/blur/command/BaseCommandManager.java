@@ -235,7 +235,7 @@ public abstract class BaseCommandManager implements Closeable {
 
   protected BigInteger checkContents(FileStatus fileStatus, FileSystem fileSystem) throws IOException {
     if (fileStatus.isDir()) {
-      LOG.info("Scanning directory [{0}].", fileStatus.getPath());
+      LOG.debug("Scanning directory [{0}].", fileStatus.getPath());
       BigInteger count = BigInteger.ZERO;
       Path path = fileStatus.getPath();
       FileStatus[] listStatus = fileSystem.listStatus(path);
@@ -249,7 +249,7 @@ public abstract class BaseCommandManager implements Closeable {
       long len = fileStatus.getLen();
       BigInteger bi = BigInteger.valueOf(hashCode).add(
           BigInteger.valueOf(modificationTime).add(BigInteger.valueOf(len)));
-      LOG.info("File path hashcode [{0}], mod time [{1}], len [{2}] equals file code [{3}].",
+      LOG.debug("File path hashcode [{0}], mod time [{1}], len [{2}] equals file code [{3}].",
           Integer.toString(hashCode), Long.toString(modificationTime), Long.toString(len),
           bi.toString(Character.MAX_RADIX));
       return bi;

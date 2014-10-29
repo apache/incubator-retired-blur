@@ -223,6 +223,11 @@ public class HdfsKeyValueStore implements Store {
         _writeLock.lock();
         try {
           if (_output != null && _lastWrite.get() + MAX_OPEN_FOR_WRITING < System.currentTimeMillis()) {
+            try {
+              cleanupOldFiles();
+            } catch (IOException e) {
+              LOG.error("Unknown error while trying to clean up old files.", e);
+            }
             // Close writer
             LOG.info("Closing KV log due to inactivity [{0}].", _path);
             try {
@@ -231,11 +236,6 @@ public class HdfsKeyValueStore implements Store {
               LOG.error("Unknown error while trying to close output file.", e);
             } finally {
               _output = null;
-            }
-            try {
-              cleanupOldFiles();
-            } catch (IOException e) {
-              LOG.error("Unknown error while trying to clean up old files.", e);
             }
           }
         } finally {

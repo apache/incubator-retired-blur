@@ -167,16 +167,18 @@ public abstract class BaseCommandManager implements Closeable {
   protected synchronized int loadNewCommandsFromCommandPath() throws IOException {
     Path path = new Path(_commandPath);
     FileSystem fileSystem = path.getFileSystem(_configuration);
-    FileStatus[] listStatus = fileSystem.listStatus(path);
     int changeCount = 0;
-    for (FileStatus fileStatus : listStatus) {
-      BigInteger contentsCheck = checkContents(fileStatus, fileSystem);
-      Path entryPath = fileStatus.getPath();
-      BigInteger currentValue = _commandPathLastChange.get(entryPath);
-      if (!contentsCheck.equals(currentValue)) {
-        changeCount++;
-        loadNewCommand(fileSystem, fileStatus, contentsCheck);
-        _commandPathLastChange.put(entryPath, contentsCheck);
+    if(fileSystem.exists(path)) {
+      FileStatus[] listStatus = fileSystem.listStatus(path);
+      for (FileStatus fileStatus : listStatus) {
+        BigInteger contentsCheck = checkContents(fileStatus, fileSystem);
+        Path entryPath = fileStatus.getPath();
+        BigInteger currentValue = _commandPathLastChange.get(entryPath);
+        if (!contentsCheck.equals(currentValue)) {
+          changeCount++;
+          loadNewCommand(fileSystem, fileStatus, contentsCheck);
+          _commandPathLastChange.put(entryPath, contentsCheck);
+        }
       }
     }
     return changeCount;

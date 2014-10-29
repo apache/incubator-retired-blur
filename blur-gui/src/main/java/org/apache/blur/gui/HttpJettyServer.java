@@ -22,12 +22,13 @@ import java.util.Properties;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.mortbay.jetty.Connector;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.servlet.ServletHolder;
-import org.mortbay.jetty.webapp.WebAppContext;
 
 import com.yammer.metrics.reporting.MetricsServlet;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 /**
  * Starts up a Jetty server to run the utility gui.
@@ -89,7 +90,7 @@ public class HttpJettyServer {
     }
     Connector[] connectors = server.getConnectors();
     for (Connector connector : connectors) {
-      _localPort = connector.getLocalPort();
+      _localPort = ((ServerConnector)(connector)).getLocalPort();
     }
     LOG.info("Http server up on port: " + _localPort);
   }

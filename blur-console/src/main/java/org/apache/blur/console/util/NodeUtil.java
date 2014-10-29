@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 
 public class NodeUtil {
   private static Set<String> onlineControllers = new HashSet<String>();

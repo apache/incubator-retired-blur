@@ -83,26 +83,7 @@ under the License.
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
-			<version>${log4j.version}</version>
 			<scope>provided</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>javax.mail</groupId>
-					<artifactId>mail</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>javax.jms</groupId>
-					<artifactId>jms</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sun.jdmk</groupId>
-					<artifactId>jmxtools</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sun.jmx</groupId>
-					<artifactId>jmxri</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
 
@@ -158,9 +139,6 @@ under the License.
 					<name>hadoop1</name>
 				</property>
 			</activation>
-        <properties>
-            <projectVersion>${project.parent.version}-hadoop1</projectVersion>
-        </properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -182,19 +160,14 @@ under the License.
 					<name>hadoop2-mr1</name>
 				</property>
 			</activation>
-        <properties>
-            <projectVersion>${project.parent.version}-hadoop2-mr1</projectVersion>
-        </properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-client</artifactId>
-					<version>${hadoop.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-minicluster</artifactId>
-					<version>${hadoop.version}</version>
 					<scope>test</scope>
 				</dependency>
 			</dependencies>
@@ -206,19 +179,14 @@ under the License.
 					<name>hadoop2</name>
 				</property>
 			</activation>
-        <properties>
-            <projectVersion>${project.parent.version}-hadoop2</projectVersion>
-        </properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-client</artifactId>
-					<version>${hadoop.version}</version>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-minicluster</artifactId>
-					<version>${hadoop.version}</version>
 					<scope>test</scope>
 				</dependency>
 			</dependencies>

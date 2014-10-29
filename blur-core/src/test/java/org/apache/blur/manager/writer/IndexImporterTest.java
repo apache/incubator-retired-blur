@@ -76,6 +76,7 @@ public class IndexImporterTest {
 
   @Before
   public void setup() throws IOException {
+    _timer = new Timer("Index Importer", true);
     TableContext.clear();
     _configuration = new Configuration();
     _base = new Path(TMPDIR, "blur-index-importer-test");
@@ -83,7 +84,6 @@ public class IndexImporterTest {
     _fileSystem.delete(_base, true);
     _fileSystem.mkdirs(_base);
     setupWriter(_configuration);
-    _timer = new Timer("Index Importer", true);
   }
 
   private void setupWriter(Configuration configuration) throws IOException {

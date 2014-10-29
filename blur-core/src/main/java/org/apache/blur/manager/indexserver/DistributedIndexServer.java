@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
@@ -112,13 +113,18 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final Closer _closer;
   private long _shortDelay = 250;
   private final int _minimumNumberOfNodes;
+  private final Timer _hdfsKeyValueTimer;
+  private final Timer _indexImporterTimer;
 
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
       int shardOpenerThreadCount, int maxMergeThreads, int internalSearchThreads,
-      int minimumNumberOfNodesBeforeExitingSafeMode) throws KeeperException, InterruptedException {
+      int minimumNumberOfNodesBeforeExitingSafeMode, Timer hdfsKeyValueTimer, Timer indexImporterTimer)
+      throws KeeperException, InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
+    _indexImporterTimer = indexImporterTimer;
+    _hdfsKeyValueTimer = hdfsKeyValueTimer;
     _minimumNumberOfNodes = minimumNumberOfNodesBeforeExitingSafeMode;
     _running.set(true);
     _closer = Closer.create();
@@ -496,8 +502,8 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     String scheme = uri.getScheme();
     if (scheme != null && scheme.equals("hdfs")) {
       LOG.info("Using Fast HDFS directory implementation on shard [{0}] for table [{1}]", shard, table);
-      FastHdfsKeyValueDirectory shortTermStorage = new FastHdfsKeyValueDirectory(_configuration, new Path(hdfsDirPath,
-          "fast"));
+      FastHdfsKeyValueDirectory shortTermStorage = new FastHdfsKeyValueDirectory(_hdfsKeyValueTimer, _configuration,
+          new Path(hdfsDirPath, "fast"));
       directory = new JoinDirectory(longTermStorage, shortTermStorage);
     } else {
       directory = longTermStorage;
@@ -513,7 +519,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, directory, _mergeScheduler, _searchExecutor,
-        _indexCloser);
+        _indexCloser, _indexImporterTimer);
 
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
       index = new BlurIndexReadOnly(index);

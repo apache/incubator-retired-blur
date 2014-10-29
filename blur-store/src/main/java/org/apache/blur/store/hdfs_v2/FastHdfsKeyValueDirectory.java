@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,9 +58,9 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
   private final Path _path;
   private long _lastGc;
 
-  public FastHdfsKeyValueDirectory(Configuration configuration, Path path) throws IOException {
+  public FastHdfsKeyValueDirectory(Timer hdfsKeyValueTimer, Configuration configuration, Path path) throws IOException {
     _path = path;
-    _store = new HdfsKeyValueStore(configuration, path);
+    _store = new HdfsKeyValueStore(hdfsKeyValueTimer, configuration, path);
     BytesRef value = new BytesRef();
     if (_store.get(FILES, value)) {
       String filesString = value.utf8ToString();

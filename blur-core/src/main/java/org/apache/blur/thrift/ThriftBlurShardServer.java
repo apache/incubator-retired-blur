@@ -55,10 +55,13 @@ import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
+import java.io.Closeable;
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
@@ -204,9 +207,12 @@ public class ThriftBlurShardServer extends ThriftServer {
     int minimumNumberOfNodesBeforeExitingSafeMode = configuration.getInt(
         BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT, 0);
     int internalSearchThreads = configuration.getInt(BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT, 16);
+    final Timer hdfsKeyValueTimer = new Timer("HDFS KV Store", true);
+    final Timer indexImporterTimer = new Timer("IndexImporter", true);
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
         filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay,
-        shardOpenerThreadCount, maxMergeThreads, internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode);
+        shardOpenerThreadCount, maxMergeThreads, internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode,
+        hdfsKeyValueTimer, indexImporterTimer);
 
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 
@@ -309,13 +315,24 @@ public class ThriftBlurShardServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(blockCacheDirectoryFactory, commandManager, traceStorage, refresher, server, shardServer,
-            indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper, httpServer);
+        quietClose(makeCloseable(hdfsKeyValueTimer), makeCloseable(indexImporterTimer), blockCacheDirectoryFactory,
+            commandManager, traceStorage, refresher, server, shardServer, indexManager, indexServer, threadWatcher,
+            clusterStatus, zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);
     new BlurServerShutDown().register(shutdown, zooKeeper);
     return server;
+  }
+
+  protected static Closeable makeCloseable(final Timer timer) {
+    return new Closeable() {
+      @Override
+      public void close() throws IOException {
+        timer.cancel();
+        timer.purge();
+      }
+    };
   }
 
   @SuppressWarnings("unchecked")

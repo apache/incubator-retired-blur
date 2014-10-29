@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
@@ -76,9 +77,11 @@ public class BlurIndexSimpleWriterTest {
   private SharedMergeScheduler _mergeScheduler;
   private String uuid;
   private BlurIndexCloser _closer;
+  private Timer _timer;
 
   @Before
   public void setup() throws IOException {
+    _timer = new Timer("Index Importer", true);
     TableContext.clear();
     _base = new File(TMPDIR, "blur-index-writer-test");
     rmr(_base);
@@ -114,11 +117,13 @@ public class BlurIndexSimpleWriterTest {
     path.mkdirs();
     FSDirectory directory = FSDirectory.open(path);
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer);
+    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer, _timer);
   }
 
   @After
   public void tearDown() throws IOException {
+    _timer.cancel();
+    _timer.purge();
     _writer.close();
     _mergeScheduler.close();
     _service.shutdownNow();

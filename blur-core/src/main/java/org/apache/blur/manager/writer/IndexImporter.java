@@ -65,16 +65,6 @@ public class IndexImporter extends TimerTask implements Closeable {
   private static final String INUSE = ".inuse";
   private static final String BADINDEX = ".badindex";
   private static final Lock _globalLock = new ReentrantReadWriteLock().writeLock();
-  private static final Timer _timer;
-
-  static {
-    _timer = new Timer("IndexImporter", true);
-  }
-
-  public static void closeIndexImporterTimer() {
-    _timer.cancel();
-    _timer.purge();
-  }
 
   private final static Log LOG = LogFactory.getLog(IndexImporter.class);
 
@@ -86,12 +76,13 @@ public class IndexImporter extends TimerTask implements Closeable {
 
   private long _lastCleanup;
 
-  public IndexImporter(BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit, long refreshAmount) {
+  public IndexImporter(Timer indexImporterTimer, BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit,
+      long refreshAmount) {
     _blurIndex = blurIndex;
     _shardContext = shardContext;
 
     long period = refreshUnit.toMillis(refreshAmount);
-    _timer.schedule(this, period, period);
+    indexImporterTimer.schedule(this, period, period);
     _table = _shardContext.getTableContext().getTable();
     _shard = _shardContext.getShard();
     _cleanupDelay = TimeUnit.MINUTES.toMillis(10);

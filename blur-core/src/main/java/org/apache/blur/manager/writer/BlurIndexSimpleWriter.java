@@ -22,6 +22,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -86,10 +87,12 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final AtomicInteger _writesWaiting = new AtomicInteger();
   private final BlockingQueue<RowMutation> _queue;
   private final MutationQueueProcessor _mutationQueueProcessor;
+  private final Timer _indexImporterTimer;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
-      final ExecutorService searchExecutor, BlurIndexCloser indexCloser) throws IOException {
-    super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser);
+      final ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer) throws IOException {
+    super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexImporterTimer);
+    _indexImporterTimer = indexImporterTimer;
     _searchThreadPool = searchExecutor;
     _shardContext = shardContext;
     _tableContext = _shardContext.getTableContext();
@@ -156,7 +159,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
           synchronized (_writer) {
             _writer.notify();
           }
-          _indexImporter = new IndexImporter(BlurIndexSimpleWriter.this, _shardContext, TimeUnit.SECONDS, 10);
+          _indexImporter = new IndexImporter(_indexImporterTimer, BlurIndexSimpleWriter.this, _shardContext,
+              TimeUnit.SECONDS, 10);
         } catch (IOException e) {
           LOG.error("Unknown error on index writer open.", e);
         }

@@ -77,7 +77,6 @@ public class HdfsKeyValueStore implements Store {
   private static final long MAX_OPEN_FOR_WRITING = TimeUnit.MINUTES.toMillis(1);
   private static final long DAEMON_POLL_TIME = TimeUnit.SECONDS.toMillis(5);
   private static final int VERSION_LENGTH = 4;
-  private static final Timer HDFS_KEY_VALUE_TIMER;
 
   static {
     try {
@@ -85,12 +84,6 @@ public class HdfsKeyValueStore implements Store {
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
-    HDFS_KEY_VALUE_TIMER = new Timer("HDFS KV Store", true);
-  }
-  
-  public static void stopCleanupTimer() {
-    HDFS_KEY_VALUE_TIMER.cancel();
-    HDFS_KEY_VALUE_TIMER.purge();
   }
 
   static enum OperationType {
@@ -170,11 +163,12 @@ public class HdfsKeyValueStore implements Store {
   private final long _maxAmountAllowedPerFile;
   private boolean _isClosed;
 
-  public HdfsKeyValueStore(Configuration configuration, Path path) throws IOException {
-    this(configuration, path, DEFAULT_MAX);
+  public HdfsKeyValueStore(Timer hdfsKeyValueTimer, Configuration configuration, Path path) throws IOException {
+    this(hdfsKeyValueTimer, configuration, path, DEFAULT_MAX);
   }
 
-  public HdfsKeyValueStore(Configuration configuration, Path path, long maxAmountAllowedPerFile) throws IOException {
+  public HdfsKeyValueStore(Timer hdfsKeyValueTimer, Configuration configuration, Path path, long maxAmountAllowedPerFile)
+      throws IOException {
     _maxAmountAllowedPerFile = maxAmountAllowedPerFile;
     _path = path;
     _fileSystem = _path.getFileSystem(configuration);
@@ -188,7 +182,7 @@ public class HdfsKeyValueStore implements Store {
     }
     removeAnyTruncatedFiles();
     loadIndexes();
-    startDaemon();
+    addToTimer(hdfsKeyValueTimer);
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, HDFS_KV, SIZE, path.getParent().toString()), new Gauge<Long>() {
       @Override
       public Long value() {
@@ -212,7 +206,7 @@ public class HdfsKeyValueStore implements Store {
     }
   }
 
-  private void startDaemon() {
+  private void addToTimer(Timer hdfsKeyValueTimer) {
     _writeLock.lock();
     try {
       try {
@@ -223,7 +217,7 @@ public class HdfsKeyValueStore implements Store {
     } finally {
       _writeLock.unlock();
     }
-    HDFS_KEY_VALUE_TIMER.schedule(new TimerTask() {
+    hdfsKeyValueTimer.schedule(new TimerTask() {
       @Override
       public void run() {
         _writeLock.lock();

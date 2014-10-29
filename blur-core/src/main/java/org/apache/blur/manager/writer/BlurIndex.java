@@ -18,6 +18,7 @@ package org.apache.blur.manager.writer;
  */
 import java.io.IOException;
 import java.util.List;
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -41,7 +42,7 @@ public abstract class BlurIndex {
   protected ShardContext _shardContext;
 
   public BlurIndex(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
-      ExecutorService searchExecutor, BlurIndexCloser indexCloser) throws IOException {
+      ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer) throws IOException {
     _shardContext = shardContext;
   }
 

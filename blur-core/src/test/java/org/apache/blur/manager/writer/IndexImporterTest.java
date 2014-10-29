@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -71,6 +72,7 @@ public class IndexImporterTest {
   private Path _inUsePath;
   private Path _shardPath;
   private HdfsDirectory _mainDirectory;
+  private Timer _timer;
 
   @Before
   public void setup() throws IOException {
@@ -81,6 +83,7 @@ public class IndexImporterTest {
     _fileSystem.delete(_base, true);
     _fileSystem.mkdirs(_base);
     setupWriter(_configuration);
+    _timer = new Timer("Index Importer", true);
   }
 
   private void setupWriter(Configuration configuration) throws IOException {
@@ -116,11 +119,12 @@ public class IndexImporterTest {
     _mainWriter = new IndexWriter(_mainDirectory, conf.clone());
     BufferStore.initNewBuffer(128, 128 * 128);
 
-    _indexImporter = new IndexImporter(getBlurIndex(shardContext, _mainDirectory), shardContext, TimeUnit.MINUTES, 10);
+    _indexImporter = new IndexImporter(_timer, getBlurIndex(shardContext, _mainDirectory), shardContext,
+        TimeUnit.MINUTES, 10);
   }
 
   private BlurIndex getBlurIndex(ShardContext shardContext, final Directory mainDirectory) throws IOException {
-    return new BlurIndex(shardContext, mainDirectory, null, null, null) {
+    return new BlurIndex(shardContext, mainDirectory, null, null, null, null) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {
@@ -198,6 +202,8 @@ public class IndexImporterTest {
 
   @After
   public void tearDown() throws IOException {
+    _timer.cancel();
+    _timer.purge();
     IOUtils.closeQuietly(_commitWriter);
     IOUtils.closeQuietly(_mainWriter);
     IOUtils.closeQuietly(_indexImporter);

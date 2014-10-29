@@ -18,6 +18,7 @@ package org.apache.blur.manager.indexserver;
  */
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.Timer;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -67,12 +69,14 @@ public class LocalIndexServer extends AbstractIndexServer {
   private final Closer _closer;
   private final boolean _ramDir;
   private final BlurIndexCloser _indexCloser;
+  private final Timer _timer;
 
   public LocalIndexServer(TableDescriptor tableDescriptor) throws IOException {
     this(tableDescriptor, false);
   }
 
   public LocalIndexServer(TableDescriptor tableDescriptor, boolean ramDir) throws IOException {
+    _timer = new Timer("Index Importer", true);
     _closer = Closer.create();
     _tableContext = TableContext.create(tableDescriptor);
     _mergeScheduler = _closer.register(new SharedMergeScheduler(3));
@@ -80,6 +84,13 @@ public class LocalIndexServer extends AbstractIndexServer {
     _closer.register(new CloseableExecutorService(_searchExecutor));
     _ramDir = ramDir;
     _indexCloser = _closer.register(new BlurIndexCloser());
+    _closer.register(new Closeable() {
+      @Override
+      public void close() throws IOException {
+        _timer.cancel();
+        _timer.purge();
+      }
+    });
     getIndexes(_tableContext.getTable());
   }
 
@@ -157,7 +168,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     ShardContext shardContext = ShardContext.create(_tableContext, shard);
     BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(shardContext, dir, _mergeScheduler, _searchExecutor,
-        _indexCloser);
+        _indexCloser, _timer);
     return index;
   }
 

@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Timer;
 
 import org.apache.blur.HdfsMiniClusterUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -45,16 +46,21 @@ public class FastHdfsKeyValueDirectoryTest {
 
   private Configuration _configuration = new Configuration();
   private static MiniDFSCluster _cluster;
+
+  private static Timer _timer;
   private Path _path;
 
   @BeforeClass
   public static void startCluster() {
     Configuration conf = new Configuration();
     _cluster = HdfsMiniClusterUtil.startDfs(conf, true, TMPDIR.getAbsolutePath());
+    _timer = new Timer("IndexImporter", true);
   }
 
   @AfterClass
   public static void stopCluster() {
+    _timer.cancel();
+    _timer.purge();
     HdfsMiniClusterUtil.shutdownDfs(_cluster);
   }
 
@@ -68,8 +74,8 @@ public class FastHdfsKeyValueDirectoryTest {
   @Test
   public void testMultipleWritersOpenOnSameDirectory() throws IOException {
     IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
-    FastHdfsKeyValueDirectory directory = new FastHdfsKeyValueDirectory(_configuration,
-        new Path(_path, "test_multiple"));
+    FastHdfsKeyValueDirectory directory = new FastHdfsKeyValueDirectory(_timer, _configuration, new Path(_path,
+        "test_multiple"));
     IndexWriter writer1 = new IndexWriter(directory, config.clone());
     addDoc(writer1, getDoc(1));
     IndexWriter writer2 = new IndexWriter(directory, config.clone());

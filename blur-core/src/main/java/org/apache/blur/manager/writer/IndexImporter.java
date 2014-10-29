@@ -193,6 +193,7 @@ public class IndexImporter extends TimerTask implements Closeable {
       @Override
       public void doPostCommit(IndexWriter writer) throws IOException {
         LOG.info("Import complete on [{0}/{1}]", _shard, _table);
+        writer.maybeMerge();
       }
 
       @Override

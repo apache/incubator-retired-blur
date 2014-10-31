@@ -53,7 +53,6 @@ import org.apache.blur.command.BlurObject;
 import org.apache.blur.command.BlurObjectSerDe;
 import org.apache.blur.command.CommandUtil;
 import org.apache.blur.command.ControllerCommandManager;
-import org.apache.blur.command.ExecutionId;
 import org.apache.blur.command.Response;
 import org.apache.blur.command.Server;
 import org.apache.blur.command.Shard;
@@ -1525,7 +1524,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       return CommandUtil.fromObjectToThrift(response, _serDe);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getInstanceExecutionId());
       }
       LOG.error("Unknown error while trying to execute command [{0}]", e, commandName);
       if (e instanceof BlurException) {
@@ -1623,16 +1622,16 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public org.apache.blur.thrift.generated.Response reconnect(String executionId) throws BlurException,
+  public org.apache.blur.thrift.generated.Response reconnect(long instanceExecutionId) throws BlurException,
       TimeoutException, TException {
     try {
-      Response response = _commandManager.reconnect(new ExecutionId(executionId));
+      Response response = _commandManager.reconnect(instanceExecutionId);
       return CommandUtil.fromObjectToThrift(response, _serDe);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getInstanceExecutionId());
       }
-      LOG.error("Unknown error while trying to reconnect to executing command [{0}]", e, executionId);
+      LOG.error("Unknown error while trying to reconnect to executing command [{0}]", e, instanceExecutionId);
       if (e instanceof BlurException) {
         throw (BlurException) e;
       }
@@ -1665,12 +1664,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public CommandStatus commandStatus(String executionId) throws BlurException, TException {
+  public CommandStatus commandStatus(String commandExecutionId) throws BlurException, TException {
     throw new BException("Not Implemented");
   }
 
   @Override
-  public void commandCancel(String executionId) throws BlurException, TException {
+  public void commandCancel(String commandExecutionId) throws BlurException, TException {
     throw new BException("Not Implemented");
   }
 

@@ -51,10 +51,10 @@ public class ShardCommandManager extends BaseCommandManager {
   public Response execute(final TableContextFactory tableContextFactory, final String commandName,
       final ArgumentOverlay argumentOverlay) throws IOException, TimeoutException, ExceptionCollector {
     final ShardServerContext shardServerContext = getShardServerContext();
+    final Command<?> command = getCommandObject(commandName, argumentOverlay);
     Callable<Response> callable = new Callable<Response>() {
       @Override
       public Response call() throws Exception {
-        Command<?> command = getCommandObject(commandName, argumentOverlay);
         if (command == null) {
           throw new IOException("Command with name [" + commandName + "] not found.");
         }
@@ -80,7 +80,7 @@ public class ShardCommandManager extends BaseCommandManager {
         };
       }
     };
-    return submitDriverCallable(callable);
+    return submitDriverCallable(callable, command);
   }
 
   private ShardServerContext getShardServerContext() {
@@ -137,16 +137,17 @@ public class ShardCommandManager extends BaseCommandManager {
         }
         final BlurIndex blurIndex = e.getValue();
         Callable<Object> callable;
-        if (command instanceof IndexRead) {
-          final IndexRead<?> readCommand = (IndexRead<?>) command.clone();
+        Command<?> clone = command.clone();
+        if (clone instanceof IndexRead) {
+          final IndexRead<?> readCommand = (IndexRead<?>) clone;
           callable = getCallable(shardServerContext, tableContextFactory, table, shard, blurIndex, readCommand);
-        } else if (command instanceof ServerRead) {
-          final ServerRead<?, ?> readCombiningCommand = (ServerRead<?, ?>) command.clone();
+        } else if (clone instanceof ServerRead) {
+          final ServerRead<?, ?> readCombiningCommand = (ServerRead<?, ?>) clone;
           callable = getCallable(shardServerContext, tableContextFactory, table, shard, blurIndex, readCombiningCommand);
         } else {
-          throw new IOException("Command type of [" + command.getClass() + "] not supported.");
+          throw new IOException("Command type of [" + clone.getClass() + "] not supported.");
         }
-        Future<Object> future = submitToExecutorService(callable);
+        Future<Object> future = submitToExecutorService(callable, clone);
         futureMap.put(shard, future);
       }
     }

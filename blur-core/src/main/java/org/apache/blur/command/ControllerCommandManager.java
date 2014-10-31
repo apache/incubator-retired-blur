@@ -77,7 +77,7 @@ public class ControllerCommandManager extends BaseCommandManager {
         throw new IOException("Command type of [" + command.getClass() + "] not supported.");
       }
 
-    });
+    }, command);
   }
 
   private CombiningContext getCombiningContext(final TableContextFactory tableContextFactory) {

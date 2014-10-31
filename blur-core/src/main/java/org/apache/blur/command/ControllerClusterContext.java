@@ -126,7 +126,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
           Map<Shard, Object> shardToValue = CommandUtil.fromThriftSupportedObjects(shardToThriftValue, _serDe);
           return (Map<Shard, T>) shardToValue;
         }
-      });
+      }, command);
       for (Shard shard : getShardsOnServer(server, tables, shards)) {
         futureMap.put(shard, new ShardResultFuture<T>(shard, future));
       }
@@ -149,7 +149,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   protected static Response waitForResponse(Client client, Command<?> command, Arguments arguments) throws TException {
     // TODO This should likely be changed to run of a AtomicBoolean used for
     // the status of commands.
-    String executionId = null;
+    Long executionId = null;
     while (true) {
       try {
         if (executionId == null) {
@@ -160,7 +160,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
       } catch (BlurException e) {
         throw e;
       } catch (TimeoutException e) {
-        executionId = e.getExecutionId();
+        executionId = e.getInstanceExecutionId();
         LOG.info("Execution fetch timed out, reconnecting using [{0}].", executionId);
       } catch (TException e) {
         throw e;
@@ -212,7 +212,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
           Object thriftObject = CommandUtil.toObject(valueObject);
           return (T) _serDe.fromSupportedThriftObject(thriftObject);
         }
-      });
+      }, command);
       futureMap.put(server, future);
     }
     return futureMap;

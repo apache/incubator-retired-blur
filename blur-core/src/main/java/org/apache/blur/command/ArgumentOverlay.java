@@ -18,11 +18,16 @@ package org.apache.blur.command;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.blur.command.annotation.OptionalArgument;
 import org.apache.blur.command.annotation.RequiredArgument;
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 
 public class ArgumentOverlay {
+
+  private static final Log LOG = LogFactory.getLog(ArgumentOverlay.class);
 
   private final Map<String, ? extends Object> _args;
 
@@ -33,14 +38,29 @@ public class ArgumentOverlay {
   public <T> Command<T> setup(Command<T> command) {
     Class<?> clazz = command.getClass();
     setupInternal(clazz, command);
+    return setupCommandExecutionId(command);
+  }
+
+  private <T> Command<T> setupCommandExecutionId(Command<T> command) {
+    String commandExecutionId = command.getCommandExecutionId();
+    if (commandExecutionId == null) {
+      commandExecutionId = UUID.randomUUID().toString();
+      LOG.info("Command execution id [{0}] has been assigned to [{1}]", commandExecutionId, command);
+      command.setCommandExecutionId(commandExecutionId);
+    }
     return command;
   }
 
   private void setupInternal(Class<?> clazz, Command<?> command) {
     if (clazz.equals(Command.class)) {
+      mapValuesToFields(clazz, command);
       return;
     }
     setupInternal(clazz.getSuperclass(), command);
+    mapValuesToFields(clazz, command);
+  }
+
+  private void mapValuesToFields(Class<?> clazz, Command<?> command) {
     Field[] declaredFields = clazz.getDeclaredFields();
     for (Field field : declaredFields) {
       RequiredArgument requiredArgument = field.getAnnotation(RequiredArgument.class);

@@ -22,15 +22,21 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class ResponseFuture implements Future<Response> {
+public class ResponseFuture<T> implements Future<T> {
 
-  private final Future<Response> _future;
+  private final Future<T> _future;
   private final AtomicLong _timeWhenNotRunningObserved = new AtomicLong();
   private final long _tombstone;
+  private final Command<?> _commandExecuting;
 
-  public ResponseFuture(long tombstone, Future<Response> future) {
+  public ResponseFuture(long tombstone, Future<T> future, Command<?> commandExecuting) {
     _tombstone = tombstone;
     _future = future;
+    _commandExecuting = commandExecuting;
+  }
+
+  public Command<?> getCommandExecuting() {
+    return _commandExecuting;
   }
 
   public boolean cancel(boolean mayInterruptIfRunning) {
@@ -45,11 +51,11 @@ public class ResponseFuture implements Future<Response> {
     return _future.isDone();
   }
 
-  public Response get() throws InterruptedException, ExecutionException {
+  public T get() throws InterruptedException, ExecutionException {
     return _future.get();
   }
 
-  public Response get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+  public T get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
     return _future.get(timeout, unit);
   }
 

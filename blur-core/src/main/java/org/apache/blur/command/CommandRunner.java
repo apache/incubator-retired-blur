@@ -209,7 +209,7 @@ public class CommandRunner {
       ClientPool clientPool = BlurClientManager.getClientPool();
       Client client = clientPool.getClient(connection);
       try {
-        String executionId = null;
+        Long executionId = null;
         Response response;
         INNER: while (true) {
           try {
@@ -220,7 +220,7 @@ public class CommandRunner {
             }
             break INNER;
           } catch (TimeoutException te) {
-            executionId = te.getExecutionId();
+            executionId = te.getInstanceExecutionId();
           }
         }
         return CommandUtil.fromThriftResponseToObject(response);

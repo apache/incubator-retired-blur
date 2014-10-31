@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -66,13 +67,15 @@ public abstract class BaseCommandManager implements Closeable {
   private static final String META_INF_SERVICES_ORG_APACHE_BLUR_COMMAND_COMMANDS = "META-INF/services/org.apache.blur.command.Commands";
   private static final Log LOG = LogFactory.getLog(BaseCommandManager.class);
 
-  private final ExecutorService _executorService;
+  private final ExecutorService _executorServiceWorker;
   private final ExecutorService _executorServiceDriver;
+  private final Random _random = new Random();
 
   protected final Map<String, BigInteger> _commandLoadTime = new ConcurrentHashMap<String, BigInteger>();
   protected final Map<String, Command<?>> _command = new ConcurrentHashMap<String, Command<?>>();
   protected final Map<Class<? extends Command<?>>, String> _commandNameLookup = new ConcurrentHashMap<Class<? extends Command<?>>, String>();
-  protected final ConcurrentMap<ExecutionId, ResponseFuture> _runningMap = new MapMaker().makeMap();
+  protected final ConcurrentMap<Long, ResponseFuture<?>> _driverRunningMap = new MapMaker().makeMap();
+  protected final ConcurrentMap<Long, ResponseFuture<?>> _workerRunningMap = new MapMaker().makeMap();
   protected final long _connectionTimeout;
   protected final File _tmpPath;
   protected final String _commandPath;
@@ -89,11 +92,12 @@ public abstract class BaseCommandManager implements Closeable {
     lookForCommandsToRegisterInClassPath();
     _tmpPath = tmpPath;
     _commandPath = commandPath;
-    _executorService = Executors.newThreadPool("command-worker-", workerThreadCount);
+    _executorServiceWorker = Executors.newThreadPool("command-worker-", workerThreadCount);
     _executorServiceDriver = Executors.newThreadPool("command-driver-", driverThreadCount);
     _connectionTimeout = connectionTimeout / 2;
     _timer = new Timer("BaseCommandManager-Timer", true);
-    _timer.schedule(getTimerTaskForRemovalOfOldCommands(), _pollingPeriod, _pollingPeriod);
+    _timer.schedule(getTimerTaskForRemovalOfOldCommands(_driverRunningMap), _pollingPeriod, _pollingPeriod);
+    _timer.schedule(getTimerTaskForRemovalOfOldCommands(_workerRunningMap), _pollingPeriod, _pollingPeriod);
     if (_tmpPath == null || _commandPath == null) {
       LOG.info("Tmp Path [{0}] or Command Path [{1}] is null so the automatic command reload will be disabled.",
           _tmpPath, _commandPath);
@@ -103,30 +107,45 @@ public abstract class BaseCommandManager implements Closeable {
     }
   }
 
-  public void cancel(ExecutionId executionId) {
-    ResponseFuture responseFuture = _runningMap.get(executionId);
-    responseFuture.cancel(true);
+  public void cancelCommand(String commandExecutionId) {
+    LOG.info("Trying to cancel command [{0}]", commandExecutionId);
+    cancelAllExecuting(commandExecutionId, _workerRunningMap);
+    cancelAllExecuting(commandExecutionId, _driverRunningMap);
+  }
+
+  private void cancelAllExecuting(String commandExecutionId, ConcurrentMap<Long, ResponseFuture<?>> runningMap) {
+    for (Entry<Long, ResponseFuture<?>> e : runningMap.entrySet()) {
+      Long instanceExecutionId = e.getKey();
+      ResponseFuture<?> future = e.getValue();
+      Command<?> commandExecuting = future.getCommandExecuting();
+      if (commandExecuting.getCommandExecutionId().equals(commandExecutionId)) {
+        LOG.info("Canceling Command with executing id [{0}] command [{1}]", instanceExecutionId, commandExecuting);
+        future.cancel(true);
+      }
+    }
   }
 
   public List<String> commandStatusList(CommandStatusStateEnum commandStatus) {
     throw new RuntimeException("Not implemented.");
   }
 
-  public void cancel(String executionId) {
-    cancel(new ExecutionId(executionId));
-  }
-
-  private TimerTask getTimerTaskForRemovalOfOldCommands() {
+  private TimerTask getTimerTaskForRemovalOfOldCommands(final Map<Long, ResponseFuture<?>> runningMap) {
     return new TimerTask() {
       @Override
       public void run() {
-        Set<Entry<ExecutionId, ResponseFuture>> entrySet = _runningMap.entrySet();
-        for (Entry<ExecutionId, ResponseFuture> e : entrySet) {
-          ExecutionId executionId = e.getKey();
-          ResponseFuture responseFuture = e.getValue();
+        Set<Entry<Long, ResponseFuture<?>>> entrySet = runningMap.entrySet();
+        for (Entry<Long, ResponseFuture<?>> e : entrySet) {
+          Long instanceExecutionId = e.getKey();
+          ResponseFuture<?> responseFuture = e.getValue();
           if (!responseFuture.isRunning() && responseFuture.hasExpired()) {
-            LOG.info("Removing old execution id [{0}]", executionId);
-            _runningMap.remove(executionId);
+            Command<?> commandExecuting = responseFuture.getCommandExecuting();
+            String commandExecutionId = null;
+            if (commandExecuting != null) {
+              commandExecutionId = commandExecuting.getCommandExecutionId();
+            }
+            LOG.info("Removing old execution instance id [{0}] with command execution id of [{1}]",
+                instanceExecutionId, commandExecutionId);
+            runningMap.remove(instanceExecutionId);
           }
         }
       }
@@ -284,10 +303,11 @@ public abstract class BaseCommandManager implements Closeable {
     }
   }
 
-  public Response reconnect(ExecutionId executionId) throws IOException, TimeoutException {
-    Future<Response> future = _runningMap.get(executionId);
+  @SuppressWarnings("unchecked")
+  public Response reconnect(Long instanceExecutionId) throws IOException, TimeoutException {
+    Future<Response> future = (Future<Response>) _driverRunningMap.get(instanceExecutionId);
     if (future == null) {
-      throw new IOException("Command id [" + executionId + "] did not find any executing commands.");
+      throw new IOException("Execution instance id [" + instanceExecutionId + "] did not find any executing commands.");
     }
     try {
       return future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
@@ -298,18 +318,17 @@ public abstract class BaseCommandManager implements Closeable {
     } catch (ExecutionException e) {
       throw new IOException(e.getCause());
     } catch (java.util.concurrent.TimeoutException e) {
-      LOG.info("Timeout of command [{0}]", executionId);
-      throw new TimeoutException(executionId);
+      LOG.info("Timeout of command [{0}]", instanceExecutionId);
+      throw new TimeoutException(instanceExecutionId);
     }
   }
 
-  protected Response submitDriverCallable(Callable<Response> callable) throws IOException, TimeoutException,
-      ExceptionCollector {
-    ExecutionContext executionContext = ExecutionContext.create();
-    Future<Response> future = _executorServiceDriver.submit(executionContext.wrapCallable(callable));
-    executionContext.registerDriverFuture(future);
-    ExecutionId executionId = executionContext.getExecutionId();
-    _runningMap.put(executionId, new ResponseFuture(_runningCacheTombstoneTime, future));
+  protected Response submitDriverCallable(Callable<Response> callable, Command<?> commandExecuting) throws IOException,
+      TimeoutException, ExceptionCollector {
+    Future<Response> future = _executorServiceDriver.submit(callable);
+    Long instanceExecutionId = getInstanceExecutionId();
+    _driverRunningMap.put(instanceExecutionId, new ResponseFuture<Response>(_runningCacheTombstoneTime, future,
+        commandExecuting));
     try {
       return future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
     } catch (CancellationException e) {
@@ -323,21 +342,37 @@ public abstract class BaseCommandManager implements Closeable {
       }
       throw new IOException(cause);
     } catch (java.util.concurrent.TimeoutException e) {
-      LOG.info("Timeout of command [{0}]", executionId);
-      throw new TimeoutException(executionId);
+      LOG.info("Timeout of command [{0}]", instanceExecutionId);
+      throw new TimeoutException(instanceExecutionId);
     }
   }
 
-  protected <T> Future<T> submitToExecutorService(Callable<T> callable) {
-    ExecutionContext executionContext = ExecutionContext.get();
-    Future<T> future = _executorService.submit(executionContext.wrapCallable(callable));
-    executionContext.registerFuture(future);
+  private Long getInstanceExecutionId() {
+    synchronized (_random) {
+      while (true) {
+        Long id = _random.nextLong();
+        if (_driverRunningMap.containsKey(id)) {
+          continue;
+        }
+        if (_workerRunningMap.containsKey(id)) {
+          continue;
+        }
+        return id;
+      }
+    }
+  }
+
+  protected <T> Future<T> submitToExecutorService(Callable<T> callable, Command<?> commandExecuting) {
+    Future<T> future = _executorServiceWorker.submit(callable);
+    Long instanceExecutionId = getInstanceExecutionId();
+    _workerRunningMap.put(instanceExecutionId, new ResponseFuture<T>(_runningCacheTombstoneTime, future,
+        commandExecuting));
     return future;
   }
 
   @Override
   public void close() throws IOException {
-    _executorService.shutdownNow();
+    _executorServiceWorker.shutdownNow();
     _executorServiceDriver.shutdownNow();
     if (_timer != null) {
       _timer.cancel();

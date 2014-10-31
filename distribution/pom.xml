@@ -39,12 +39,17 @@ under the License.
 			<artifactId>blur-shell</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-                <dependency>
-                        <groupId>org.apache.blur</groupId>
-                        <artifactId>blur-console</artifactId>
-                        <version>${project.version}</version>
-                        <classifier>webapp</classifier>
-                </dependency>
+		<dependency>
+			<groupId>org.apache.blur</groupId>
+			<artifactId>blur-command</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.blur</groupId>
+			<artifactId>blur-console</artifactId>
+			<version>${project.version}</version>
+			<classifier>webapp</classifier>
+		</dependency>
 	</dependencies>
 
 	<build>

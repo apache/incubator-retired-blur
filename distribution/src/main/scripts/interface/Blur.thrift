@@ -60,7 +60,7 @@ exception BlurException {
   * happens so that the client can reconnect. 
   */
 exception TimeoutException {
-  1:string executionId
+  1:i64 instanceExecutionId
 }
 
 /**
@@ -937,7 +937,7 @@ service Blur {
    * network tcp timeout this method allows the client to reconnect to the already 
    * executing command.
    */
-  Response reconnect(1:string executionId) throws (1:BlurException bex, 2:TimeoutException tex)
+  Response reconnect(1:i64 instanceExecutionId) throws (1:BlurException bex, 2:TimeoutException tex)
 
   /**
    * Fetches the command status ids in the order they were submitted.
@@ -945,14 +945,14 @@ service Blur {
   list<string> commandStatusList(1:i32 startingAt, 2:i16 fetch, 3:CommandStatusState state) throws (1:BlurException ex)
 
   /**
-   * Retrieves the command status by the given execution id.
+   * Retrieves the command status by the given command execution id.
    */
-  CommandStatus commandStatus(1:string executionId) throws (1:BlurException ex)
+  CommandStatus commandStatus(1:string commandExecutionId) throws (1:BlurException ex)
 
   /**
-   * Cancels the command with the given execution id.
+   * Cancels the command with the given command execution id.
    */
-  void commandCancel(1:string executionId) throws (1:BlurException ex)
+  void commandCancel(1:string commandExecutionId) throws (1:BlurException ex)
 
   /**
    * Releases and refreshes the read snapshots of the indexes in the session for the 

@@ -149,7 +149,11 @@ public class ThriftBlurControllerServer extends ThriftServer {
     int numberOfControllerWorkerCommandThreads = configuration.getInt(BLUR_CONTROLLER_COMMAND_WORKER_THREADS, 16);
     int numberOfControllerDriverCommandThreads = configuration.getInt(BLUR_CONTROLLER_COMMAND_DRIVER_THREADS, 16);
     String commandPath = configuration.get(BLUR_COMMAND_LIB_PATH, getCommandLibPath());
-
+    if (commandPath != null) {
+      LOG.info("Command Path was set to [{0}].", commandPath);
+    } else {
+      LOG.info("Command Path was not set.");
+    }
     final ControllerCommandManager controllerCommandManager = new ControllerCommandManager(tmpPath, commandPath,
         numberOfControllerWorkerCommandThreads, numberOfControllerDriverCommandThreads, Connection.DEFAULT_TIMEOUT,
         config);

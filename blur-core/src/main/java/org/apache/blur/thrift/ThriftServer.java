@@ -107,7 +107,12 @@ public class ThriftServer {
     if (blurHomeDir == null) {
       return null;
     }
-    return new File(blurHomeDir, "commands").toURI().toString();
+    File file = new File(blurHomeDir, "commands");
+    file.mkdirs();
+    if (file.exists()) {
+      return file.toURI().toString();
+    }
+    return null;
   }
 
   public static String getBlurHomeDir() {

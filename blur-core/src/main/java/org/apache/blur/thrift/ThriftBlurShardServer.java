@@ -245,7 +245,11 @@ public class ThriftBlurShardServer extends ThriftServer {
     int numberOfShardWorkerCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_WORKER_THREADS, 16);
     int numberOfShardDriverCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_DRIVER_THREADS, 16);
     String commandPath = configuration.get(BLUR_COMMAND_LIB_PATH, getCommandLibPath());
-
+    if (commandPath != null) {
+      LOG.info("Command Path was set to [{0}].", commandPath);
+    } else {
+      LOG.info("Command Path was not set.");
+    }
     final ShardCommandManager commandManager = new ShardCommandManager(indexServer, tmpPath, commandPath,
         numberOfShardWorkerCommandThreads, numberOfShardDriverCommandThreads, Connection.DEFAULT_TIMEOUT, config);
 

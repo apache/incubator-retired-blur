@@ -75,9 +75,9 @@ public class Blur {
      * network tcp timeout this method allows the client to reconnect to the already
      * executing command.
      * 
-     * @param executionId
+     * @param instanceExecutionId
      */
-    public Response reconnect(String executionId) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public Response reconnect(long instanceExecutionId) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Fetches the command status ids in the order they were submitted.
@@ -89,18 +89,18 @@ public class Blur {
     public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
-     * Retrieves the command status by the given execution id.
+     * Retrieves the command status by the given command execution id.
      * 
-     * @param executionId
+     * @param commandExecutionId
      */
-    public CommandStatus commandStatus(String executionId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public CommandStatus commandStatus(String commandExecutionId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
-     * Cancels the command with the given execution id.
+     * Cancels the command with the given command execution id.
      * 
-     * @param executionId
+     * @param commandExecutionId
      */
-    public void commandCancel(String executionId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void commandCancel(String commandExecutionId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Releases and refreshes the read snapshots of the indexes in the session for the
@@ -498,13 +498,13 @@ public class Blur {
 
     public void execute(String commandName, Arguments arguments, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.execute_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void reconnect(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.reconnect_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void reconnect(long instanceExecutionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.reconnect_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void commandStatusList(int startingAt, short fetch, CommandStatusState state, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.commandStatusList_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void commandStatus(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.commandStatus_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void commandStatus(String commandExecutionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.commandStatus_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void commandCancel(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.commandCancel_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void commandCancel(String commandExecutionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.commandCancel_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void refresh(org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.refresh_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
@@ -673,16 +673,16 @@ public class Blur {
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "execute failed: unknown result");
     }
 
-    public Response reconnect(String executionId) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public Response reconnect(long instanceExecutionId) throws BlurException, TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_reconnect(executionId);
+      send_reconnect(instanceExecutionId);
       return recv_reconnect();
     }
 
-    public void send_reconnect(String executionId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_reconnect(long instanceExecutionId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       reconnect_args args = new reconnect_args();
-      args.setExecutionId(executionId);
+      args.setInstanceExecutionId(instanceExecutionId);
       sendBase("reconnect", args);
     }
 
@@ -730,16 +730,16 @@ public class Blur {
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "commandStatusList failed: unknown result");
     }
 
-    public CommandStatus commandStatus(String executionId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public CommandStatus commandStatus(String commandExecutionId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_commandStatus(executionId);
+      send_commandStatus(commandExecutionId);
       return recv_commandStatus();
     }
 
-    public void send_commandStatus(String executionId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_commandStatus(String commandExecutionId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       commandStatus_args args = new commandStatus_args();
-      args.setExecutionId(executionId);
+      args.setCommandExecutionId(commandExecutionId);
       sendBase("commandStatus", args);
     }
 
@@ -756,16 +756,16 @@ public class Blur {
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "commandStatus failed: unknown result");
     }
 
-    public void commandCancel(String executionId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void commandCancel(String commandExecutionId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_commandCancel(executionId);
+      send_commandCancel(commandExecutionId);
       recv_commandCancel();
     }
 
-    public void send_commandCancel(String executionId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_commandCancel(String commandExecutionId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       commandCancel_args args = new commandCancel_args();
-      args.setExecutionId(executionId);
+      args.setCommandExecutionId(commandExecutionId);
       sendBase("commandCancel", args);
     }
 
@@ -1951,24 +1951,24 @@ public class Blur {
       }
     }
 
-    public void reconnect(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<reconnect_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void reconnect(long instanceExecutionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<reconnect_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      reconnect_call method_call = new reconnect_call(executionId, resultHandler, this, ___protocolFactory, ___transport);
+      reconnect_call method_call = new reconnect_call(instanceExecutionId, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class reconnect_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
-      private String executionId;
-      public reconnect_call(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<reconnect_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      private long instanceExecutionId;
+      public reconnect_call(long instanceExecutionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<reconnect_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.executionId = executionId;
+        this.instanceExecutionId = instanceExecutionId;
       }
 
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("reconnect", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         reconnect_args args = new reconnect_args();
-        args.setExecutionId(executionId);
+        args.setInstanceExecutionId(instanceExecutionId);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -2021,24 +2021,24 @@ public class Blur {
       }
     }
 
-    public void commandStatus(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<commandStatus_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void commandStatus(String commandExecutionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<commandStatus_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      commandStatus_call method_call = new commandStatus_call(executionId, resultHandler, this, ___protocolFactory, ___transport);
+      commandStatus_call method_call = new commandStatus_call(commandExecutionId, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class commandStatus_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
-      private String executionId;
-      public commandStatus_call(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<commandStatus_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      private String commandExecutionId;
+      public commandStatus_call(String commandExecutionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<commandStatus_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.executionId = executionId;
+        this.commandExecutionId = commandExecutionId;
       }
 
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("commandStatus", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         commandStatus_args args = new commandStatus_args();
-        args.setExecutionId(executionId);
+        args.setCommandExecutionId(commandExecutionId);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -2053,24 +2053,24 @@ public class Blur {
       }
     }
 
-    public void commandCancel(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<commandCancel_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void commandCancel(String commandExecutionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<commandCancel_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      commandCancel_call method_call = new commandCancel_call(executionId, resultHandler, this, ___protocolFactory, ___transport);
+      commandCancel_call method_call = new commandCancel_call(commandExecutionId, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class commandCancel_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
-      private String executionId;
-      public commandCancel_call(String executionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<commandCancel_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      private String commandExecutionId;
+      public commandCancel_call(String commandExecutionId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<commandCancel_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.executionId = executionId;
+        this.commandExecutionId = commandExecutionId;
       }
 
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("commandCancel", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         commandCancel_args args = new commandCancel_args();
-        args.setExecutionId(executionId);
+        args.setCommandExecutionId(commandExecutionId);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -3694,7 +3694,7 @@ public class Blur {
       public reconnect_result getResult(I iface, reconnect_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         reconnect_result result = new reconnect_result();
         try {
-          result.success = iface.reconnect(args.executionId);
+          result.success = iface.reconnect(args.instanceExecutionId);
         } catch (BlurException bex) {
           result.bex = bex;
         } catch (TimeoutException tex) {
@@ -3744,7 +3744,7 @@ public class Blur {
       public commandStatus_result getResult(I iface, commandStatus_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         commandStatus_result result = new commandStatus_result();
         try {
-          result.success = iface.commandStatus(args.executionId);
+          result.success = iface.commandStatus(args.commandExecutionId);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -3768,7 +3768,7 @@ public class Blur {
       public commandCancel_result getResult(I iface, commandCancel_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         commandCancel_result result = new commandCancel_result();
         try {
-          iface.commandCancel(args.executionId);
+          iface.commandCancel(args.commandExecutionId);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -6620,7 +6620,7 @@ public class Blur {
   public static class reconnect_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<reconnect_args, reconnect_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("reconnect_args");
 
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EXECUTION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("executionId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField INSTANCE_EXECUTION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("instanceExecutionId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -6628,11 +6628,11 @@ public class Blur {
       schemes.put(TupleScheme.class, new reconnect_argsTupleSchemeFactory());
     }
 
-    public String executionId; // required
+    public long instanceExecutionId; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-      EXECUTION_ID((short)1, "executionId");
+      INSTANCE_EXECUTION_ID((short)1, "instanceExecutionId");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -6647,8 +6647,8 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // EXECUTION_ID
-            return EXECUTION_ID;
+          case 1: // INSTANCE_EXECUTION_ID
+            return INSTANCE_EXECUTION_ID;
           default:
             return null;
         }
@@ -6689,11 +6689,13 @@ public class Blur {
     }
 
     // isset id assignments
+    private static final int __INSTANCEEXECUTIONID_ISSET_ID = 0;
+    private byte __isset_bitfield = 0;
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.EXECUTION_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("executionId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      tmpMap.put(_Fields.INSTANCE_EXECUTION_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("instanceExecutionId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(reconnect_args.class, metaDataMap);
     }
@@ -6702,19 +6704,19 @@ public class Blur {
     }
 
     public reconnect_args(
-      String executionId)
+      long instanceExecutionId)
     {
       this();
-      this.executionId = executionId;
+      this.instanceExecutionId = instanceExecutionId;
+      setInstanceExecutionIdIsSet(true);
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public reconnect_args(reconnect_args other) {
-      if (other.isSetExecutionId()) {
-        this.executionId = other.executionId;
-      }
+      __isset_bitfield = other.__isset_bitfield;
+      this.instanceExecutionId = other.instanceExecutionId;
     }
 
     public reconnect_args deepCopy() {
@@ -6723,40 +6725,40 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.executionId = null;
+      setInstanceExecutionIdIsSet(false);
+      this.instanceExecutionId = 0;
     }
 
-    public String getExecutionId() {
-      return this.executionId;
+    public long getInstanceExecutionId() {
+      return this.instanceExecutionId;
     }
 
-    public reconnect_args setExecutionId(String executionId) {
-      this.executionId = executionId;
+    public reconnect_args setInstanceExecutionId(long instanceExecutionId) {
+      this.instanceExecutionId = instanceExecutionId;
+      setInstanceExecutionIdIsSet(true);
       return this;
     }
 
-    public void unsetExecutionId() {
-      this.executionId = null;
+    public void unsetInstanceExecutionId() {
+      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __INSTANCEEXECUTIONID_ISSET_ID);
     }
 
-    /** Returns true if field executionId is set (has been assigned a value) and false otherwise */
-    public boolean isSetExecutionId() {
-      return this.executionId != null;
+    /** Returns true if field instanceExecutionId is set (has been assigned a value) and false otherwise */
+    public boolean isSetInstanceExecutionId() {
+      return EncodingUtils.testBit(__isset_bitfield, __INSTANCEEXECUTIONID_ISSET_ID);
     }
 
-    public void setExecutionIdIsSet(boolean value) {
-      if (!value) {
-        this.executionId = null;
-      }
+    public void setInstanceExecutionIdIsSet(boolean value) {
+      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __INSTANCEEXECUTIONID_ISSET_ID, value);
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case EXECUTION_ID:
+      case INSTANCE_EXECUTION_ID:
         if (value == null) {
-          unsetExecutionId();
+          unsetInstanceExecutionId();
         } else {
-          setExecutionId((String)value);
+          setInstanceExecutionId((Long)value);
         }
         break;
 
@@ -6765,8 +6767,8 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case EXECUTION_ID:
-        return getExecutionId();
+      case INSTANCE_EXECUTION_ID:
+        return Long.valueOf(getInstanceExecutionId());
 
       }
       throw new IllegalStateException();
@@ -6779,8 +6781,8 @@ public class Blur {
       }
 
       switch (field) {
-      case EXECUTION_ID:
-        return isSetExecutionId();
+      case INSTANCE_EXECUTION_ID:
+        return isSetInstanceExecutionId();
       }
       throw new IllegalStateException();
     }
@@ -6798,12 +6800,12 @@ public class Blur {
       if (that == null)
         return false;
 
-      boolean this_present_executionId = true && this.isSetExecutionId();
-      boolean that_present_executionId = true && that.isSetExecutionId();
-      if (this_present_executionId || that_present_executionId) {
-        if (!(this_present_executionId && that_present_executionId))
+      boolean this_present_instanceExecutionId = true;
+      boolean that_present_instanceExecutionId = true;
+      if (this_present_instanceExecutionId || that_present_instanceExecutionId) {
+        if (!(this_present_instanceExecutionId && that_present_instanceExecutionId))
           return false;
-        if (!this.executionId.equals(that.executionId))
+        if (this.instanceExecutionId != that.instanceExecutionId)
           return false;
       }
 
@@ -6823,12 +6825,12 @@ public class Blur {
       int lastComparison = 0;
       reconnect_args typedOther = (reconnect_args)other;
 
-      lastComparison = Boolean.valueOf(isSetExecutionId()).compareTo(typedOther.isSetExecutionId());
+      lastComparison = Boolean.valueOf(isSetInstanceExecutionId()).compareTo(typedOther.isSetInstanceExecutionId());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetExecutionId()) {
-        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.executionId, typedOther.executionId);
+      if (isSetInstanceExecutionId()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.instanceExecutionId, typedOther.instanceExecutionId);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -6853,12 +6855,8 @@ public class Blur {
       StringBuilder sb = new StringBuilder("reconnect_args(");
       boolean first = true;
 
-      sb.append("executionId:");
-      if (this.executionId == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.executionId);
-      }
+      sb.append("instanceExecutionId:");
+      sb.append(this.instanceExecutionId);
       first = false;
       sb.append(")");
       return sb.toString();
@@ -6879,6 +6877,8 @@ public class Blur {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
         read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
       } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
         throw new java.io.IOException(te);
@@ -6903,10 +6903,10 @@ public class Blur {
             break;
           }
           switch (schemeField.id) {
-            case 1: // EXECUTION_ID
-              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-                struct.executionId = iprot.readString();
-                struct.setExecutionIdIsSet(true);
+            case 1: // INSTANCE_EXECUTION_ID
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
+                struct.instanceExecutionId = iprot.readI64();
+                struct.setInstanceExecutionIdIsSet(true);
               } else { 
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -6926,11 +6926,9 @@ public class Blur {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.executionId != null) {
-          oprot.writeFieldBegin(EXECUTION_ID_FIELD_DESC);
-          oprot.writeString(struct.executionId);
-          oprot.writeFieldEnd();
-        }
+        oprot.writeFieldBegin(INSTANCE_EXECUTION_ID_FIELD_DESC);
+        oprot.writeI64(struct.instanceExecutionId);
+        oprot.writeFieldEnd();
         oprot.writeFieldStop();
         oprot.writeStructEnd();
       }
@@ -6949,12 +6947,12 @@ public class Blur {
       public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, reconnect_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetExecutionId()) {
+        if (struct.isSetInstanceExecutionId()) {
           optionals.set(0);
         }
         oprot.writeBitSet(optionals, 1);
-        if (struct.isSetExecutionId()) {
-          oprot.writeString(struct.executionId);
+        if (struct.isSetInstanceExecutionId()) {
+          oprot.writeI64(struct.instanceExecutionId);
         }
       }
 
@@ -6963,8 +6961,8 @@ public class Blur {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.executionId = iprot.readString();
-          struct.setExecutionIdIsSet(true);
+          struct.instanceExecutionId = iprot.readI64();
+          struct.setInstanceExecutionIdIsSet(true);
         }
       }
     }
@@ -8604,7 +8602,7 @@ public class Blur {
   public static class commandStatus_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<commandStatus_args, commandStatus_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("commandStatus_args");
 
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EXECUTION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("executionId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COMMAND_EXECUTION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("commandExecutionId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -8612,11 +8610,11 @@ public class Blur {
       schemes.put(TupleScheme.class, new commandStatus_argsTupleSchemeFactory());
     }
 
-    public String executionId; // required
+    public String commandExecutionId; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-      EXECUTION_ID((short)1, "executionId");
+      COMMAND_EXECUTION_ID((short)1, "commandExecutionId");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -8631,8 +8629,8 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // EXECUTION_ID
-            return EXECUTION_ID;
+          case 1: // COMMAND_EXECUTION_ID
+            return COMMAND_EXECUTION_ID;
           default:
             return null;
         }
@@ -8676,7 +8674,7 @@ public class Blur {
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.EXECUTION_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("executionId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.COMMAND_EXECUTION_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("commandExecutionId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(commandStatus_args.class, metaDataMap);
@@ -8686,18 +8684,18 @@ public class Blur {
     }
 
     public commandStatus_args(
-      String executionId)
+      String commandExecutionId)
     {
       this();
-      this.executionId = executionId;
+      this.commandExecutionId = commandExecutionId;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public commandStatus_args(commandStatus_args other) {
-      if (other.isSetExecutionId()) {
-        this.executionId = other.executionId;
+      if (other.isSetCommandExecutionId()) {
+        this.commandExecutionId = other.commandExecutionId;
       }
     }
 
@@ -8707,40 +8705,40 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.executionId = null;
+      this.commandExecutionId = null;
     }
 
-    public String getExecutionId() {
-      return this.executionId;
+    public String getCommandExecutionId() {
+      return this.commandExecutionId;
     }
 
-    public commandStatus_args setExecutionId(String executionId) {
-      this.executionId = executionId;
+    public commandStatus_args setCommandExecutionId(String commandExecutionId) {
+      this.commandExecutionId = commandExecutionId;
       return this;
     }
 
-    public void unsetExecutionId() {
-      this.executionId = null;
+    public void unsetCommandExecutionId() {
+      this.commandExecutionId = null;
     }
 
-    /** Returns true if field executionId is set (has been assigned a value) and false otherwise */
-    public boolean isSetExecutionId() {
-      return this.executionId != null;
+    /** Returns true if field commandExecutionId is set (has been assigned a value) and false otherwise */
+    public boolean isSetCommandExecutionId() {
+      return this.commandExecutionId != null;
     }
 
-    public void setExecutionIdIsSet(boolean value) {
+    public void setCommandExecutionIdIsSet(boolean value) {
       if (!value) {
-        this.executionId = null;
+        this.commandExecutionId = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case EXECUTION_ID:
+      case COMMAND_EXECUTION_ID:
         if (value == null) {
-          unsetExecutionId();
+          unsetCommandExecutionId();
         } else {
-          setExecutionId((String)value);
+          setCommandExecutionId((String)value);
         }
         break;
 
@@ -8749,8 +8747,8 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case EXECUTION_ID:
-        return getExecutionId();
+      case COMMAND_EXECUTION_ID:
+        return getCommandExecutionId();
 
       }
       throw new IllegalStateException();
@@ -8763,8 +8761,8 @@ public class Blur {
       }
 
       switch (field) {
-      case EXECUTION_ID:
-        return isSetExecutionId();
+      case COMMAND_EXECUTION_ID:
+        return isSetCommandExecutionId();
       }
       throw new IllegalStateException();
     }
@@ -8782,12 +8780,12 @@ public class Blur {
       if (that == null)
         return false;
 
-      boolean this_present_executionId = true && this.isSetExecutionId();
-      boolean that_present_executionId = true && that.isSetExecutionId();
-      if (this_present_executionId || that_present_executionId) {
-        if (!(this_present_executionId && that_present_executionId))
+      boolean this_present_commandExecutionId = true && this.isSetCommandExecutionId();
+      boolean that_present_commandExecutionId = true && that.isSetCommandExecutionId();
+      if (this_present_commandExecutionId || that_present_commandExecutionId) {
+        if (!(this_present_commandExecutionId && that_present_commandExecutionId))
           return false;
-        if (!this.executionId.equals(that.executionId))
+        if (!this.commandExecutionId.equals(that.commandExecutionId))
           return false;
       }
 
@@ -8807,12 +8805,12 @@ public class Blur {
       int lastComparison = 0;
       commandStatus_args typedOther = (commandStatus_args)other;
 
-      lastComparison = Boolean.valueOf(isSetExecutionId()).compareTo(typedOther.isSetExecutionId());
+      lastComparison = Boolean.valueOf(isSetCommandExecutionId()).compareTo(typedOther.isSetCommandExecutionId());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetExecutionId()) {
-        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.executionId, typedOther.executionId);
+      if (isSetCommandExecutionId()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.commandExecutionId, typedOther.commandExecutionId);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8837,11 +8835,11 @@ public class Blur {
       StringBuilder sb = new StringBuilder("commandStatus_args(");
       boolean first = true;
 
-      sb.append("executionId:");
-      if (this.executionId == null) {
+      sb.append("commandExecutionId:");
+      if (this.commandExecutionId == null) {
         sb.append("null");
       } else {
-        sb.append(this.executionId);
+        sb.append(this.commandExecutionId);
       }
       first = false;
       sb.append(")");
@@ -8887,10 +8885,10 @@ public class Blur {
             break;
           }
           switch (schemeField.id) {
-            case 1: // EXECUTION_ID
+            case 1: // COMMAND_EXECUTION_ID
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-                struct.executionId = iprot.readString();
-                struct.setExecutionIdIsSet(true);
+                struct.commandExecutionId = iprot.readString();
+                struct.setCommandExecutionIdIsSet(true);
               } else { 
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -8910,9 +8908,9 @@ public class Blur {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.executionId != null) {
-          oprot.writeFieldBegin(EXECUTION_ID_FIELD_DESC);
-          oprot.writeString(struct.executionId);
+        if (struct.commandExecutionId != null) {
+          oprot.writeFieldBegin(COMMAND_EXECUTION_ID_FIELD_DESC);
+          oprot.writeString(struct.commandExecutionId);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -8933,12 +8931,12 @@ public class Blur {
       public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, commandStatus_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetExecutionId()) {
+        if (struct.isSetCommandExecutionId()) {
           optionals.set(0);
         }
         oprot.writeBitSet(optionals, 1);
-        if (struct.isSetExecutionId()) {
-          oprot.writeString(struct.executionId);
+        if (struct.isSetCommandExecutionId()) {
+          oprot.writeString(struct.commandExecutionId);
         }
       }
 
@@ -8947,8 +8945,8 @@ public class Blur {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.executionId = iprot.readString();
-          struct.setExecutionIdIsSet(true);
+          struct.commandExecutionId = iprot.readString();
+          struct.setCommandExecutionIdIsSet(true);
         }
       }
     }
@@ -9419,7 +9417,7 @@ public class Blur {
   public static class commandCancel_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<commandCancel_args, commandCancel_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("commandCancel_args");
 
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EXECUTION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("executionId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField COMMAND_EXECUTION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("commandExecutionId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -9427,11 +9425,11 @@ public class Blur {
       schemes.put(TupleScheme.class, new commandCancel_argsTupleSchemeFactory());
     }
 
-    public String executionId; // required
+    public String commandExecutionId; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-      EXECUTION_ID((short)1, "executionId");
+      COMMAND_EXECUTION_ID((short)1, "commandExecutionId");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -9446,8 +9444,8 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // EXECUTION_ID
-            return EXECUTION_ID;
+          case 1: // COMMAND_EXECUTION_ID
+            return COMMAND_EXECUTION_ID;
           default:
             return null;
         }
@@ -9491,7 +9489,7 @@ public class Blur {
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.EXECUTION_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("executionId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.COMMAND_EXECUTION_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("commandExecutionId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(commandCancel_args.class, metaDataMap);
@@ -9501,18 +9499,18 @@ public class Blur {
     }
 
     public commandCancel_args(
-      String executionId)
+      String commandExecutionId)
     {
       this();
-      this.executionId = executionId;
+      this.commandExecutionId = commandExecutionId;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public commandCancel_args(commandCancel_args other) {
-      if (other.isSetExecutionId()) {
-        this.executionId = other.executionId;
+      if (other.isSetCommandExecutionId()) {
+        this.commandExecutionId = other.commandExecutionId;
       }
     }
 
@@ -9522,40 +9520,40 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.executionId = null;
+      this.commandExecutionId = null;
     }
 
-    public String getExecutionId() {
-      return this.executionId;
+    public String getCommandExecutionId() {
+      return this.commandExecutionId;
     }
 
-    public commandCancel_args setExecutionId(String executionId) {
-      this.executionId = executionId;
+    public commandCancel_args setCommandExecutionId(String commandExecutionId) {
+      this.commandExecutionId = commandExecutionId;
       return this;
     }
 
-    public void unsetExecutionId() {
-      this.executionId = null;
+    public void unsetCommandExecutionId() {
+      this.commandExecutionId = null;
     }
 
-    /** Returns true if field executionId is set (has been assigned a value) and false otherwise */
-    public boolean isSetExecutionId() {
-      return this.executionId != null;
+    /** Returns true if field commandExecutionId is set (has been assigned a value) and false otherwise */
+    public boolean isSetCommandExecutionId() {
+      return this.commandExecutionId != null;
     }
 
-    public void setExecutionIdIsSet(boolean value) {
+    public void setCommandExecutionIdIsSet(boolean value) {
       if (!value) {
-        this.executionId = null;
+        this.commandExecutionId = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case EXECUTION_ID:
+      case COMMAND_EXECUTION_ID:
         if (value == null) {
-          unsetExecutionId();
+          unsetCommandExecutionId();
         } else {
-          setExecutionId((String)value);
+          setCommandExecutionId((String)value);
         }
         break;
 
@@ -9564,8 +9562,8 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case EXECUTION_ID:
-        return getExecutionId();
+      case COMMAND_EXECUTION_ID:
+        return getCommandExecutionId();
 
       }
       throw new IllegalStateException();
@@ -9578,8 +9576,8 @@ public class Blur {
       }
 
       switch (field) {
-      case EXECUTION_ID:
-        return isSetExecutionId();
+      case COMMAND_EXECUTION_ID:
+        return isSetCommandExecutionId();
       }
       throw new IllegalStateException();
     }
@@ -9597,12 +9595,12 @@ public class Blur {
       if (that == null)
         return false;
 
-      boolean this_present_executionId = true && this.isSetExecutionId();
-      boolean that_present_executionId = true && that.isSetExecutionId();
-      if (this_present_executionId || that_present_executionId) {
-        if (!(this_present_executionId && that_present_executionId))
+      boolean this_present_commandExecutionId = true && this.isSetCommandExecutionId();
+      boolean that_present_commandExecutionId = true && that.isSetCommandExecutionId();
+      if (this_present_commandExecutionId || that_present_commandExecutionId) {
+        if (!(this_present_commandExecutionId && that_present_commandExecutionId))
           return false;
-        if (!this.executionId.equals(that.executionId))
+        if (!this.commandExecutionId.equals(that.commandExecutionId))
           return false;
       }
 
@@ -9622,12 +9620,12 @@ public class Blur {
       int lastComparison = 0;
       commandCancel_args typedOther = (commandCancel_args)other;
 
-      lastComparison = Boolean.valueOf(isSetExecutionId()).compareTo(typedOther.isSetExecutionId());
+      lastComparison = Boolean.valueOf(isSetCommandExecutionId()).compareTo(typedOther.isSetCommandExecutionId());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetExecutionId()) {
-        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.executionId, typedOther.executionId);
+      if (isSetCommandExecutionId()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.commandExecutionId, typedOther.commandExecutionId);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -9652,11 +9650,11 @@ public class Blur {
       StringBuilder sb = new StringBuilder("commandCancel_args(");
       boolean first = true;
 
-      sb.append("executionId:");
-      if (this.executionId == null) {
+      sb.append("commandExecutionId:");
+      if (this.commandExecutionId == null) {
         sb.append("null");
       } else {
-        sb.append(this.executionId);
+        sb.append(this.commandExecutionId);
       }
       first = false;
       sb.append(")");
@@ -9702,10 +9700,10 @@ public class Blur {
             break;
           }
           switch (schemeField.id) {
-            case 1: // EXECUTION_ID
+            case 1: // COMMAND_EXECUTION_ID
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-                struct.executionId = iprot.readString();
-                struct.setExecutionIdIsSet(true);
+                struct.commandExecutionId = iprot.readString();
+                struct.setCommandExecutionIdIsSet(true);
               } else { 
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
@@ -9725,9 +9723,9 @@ public class Blur {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.executionId != null) {
-          oprot.writeFieldBegin(EXECUTION_ID_FIELD_DESC);
-          oprot.writeString(struct.executionId);
+        if (struct.commandExecutionId != null) {
+          oprot.writeFieldBegin(COMMAND_EXECUTION_ID_FIELD_DESC);
+          oprot.writeString(struct.commandExecutionId);
           oprot.writeFieldEnd();
         }
         oprot.writeFieldStop();
@@ -9748,12 +9746,12 @@ public class Blur {
       public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, commandCancel_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetExecutionId()) {
+        if (struct.isSetCommandExecutionId()) {
           optionals.set(0);
         }
         oprot.writeBitSet(optionals, 1);
-        if (struct.isSetExecutionId()) {
-          oprot.writeString(struct.executionId);
+        if (struct.isSetCommandExecutionId()) {
+          oprot.writeString(struct.commandExecutionId);
         }
       }
 
@@ -9762,8 +9760,8 @@ public class Blur {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.executionId = iprot.readString();
-          struct.setExecutionIdIsSet(true);
+          struct.commandExecutionId = iprot.readString();
+          struct.setCommandExecutionIdIsSet(true);
         }
       }
     }

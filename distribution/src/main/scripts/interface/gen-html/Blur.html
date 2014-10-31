@@ -249,7 +249,7 @@ Logging level enum used to change the logging levels at runtime.
 trace (if any).
 <br/></div><div class="definition"><h3 id="Struct_TimeoutException">Exception: TimeoutException</h3>
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>executionId</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>1</td><td>instanceExecutionId</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
 </table><br/>TimeoutException occurs before the network connection timeout
 happens so that the client can reconnect.
 <br/></div><div class="definition"><h3 id="Struct_User">Struct: User</h3>
@@ -682,7 +682,7 @@ shards servers.  Each of the methods are documented.
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_TimeoutException">TimeoutException</a></code>
 </pre>Executes the given command by name on the table with the provided arguments.
 <br/></div><div class="definition"><h4 id="Fn_Blur_reconnect">Function: Blur.reconnect</h4>
-<pre><code><a href="Blur.html#Struct_Response">Response</a></code> reconnect(<code>string</code> executionId)
+<pre><code><a href="Blur.html#Struct_Response">Response</a></code> reconnect(<code>i64</code> instanceExecutionId)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_TimeoutException">TimeoutException</a></code>
 </pre>If the execute command times out due to command taking longer than the configured
 network tcp timeout this method allows the client to reconnect to the already
@@ -694,13 +694,13 @@ executing command.
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Fetches the command status ids in the order they were submitted.
 <br/></div><div class="definition"><h4 id="Fn_Blur_commandStatus">Function: Blur.commandStatus</h4>
-<pre><code><a href="Blur.html#Struct_CommandStatus">CommandStatus</a></code> commandStatus(<code>string</code> executionId)
+<pre><code><a href="Blur.html#Struct_CommandStatus">CommandStatus</a></code> commandStatus(<code>string</code> commandExecutionId)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>Retrieves the command status by the given execution id.
+</pre>Retrieves the command status by the given command execution id.
 <br/></div><div class="definition"><h4 id="Fn_Blur_commandCancel">Function: Blur.commandCancel</h4>
-<pre><code>void</code> commandCancel(<code>string</code> executionId)
+<pre><code>void</code> commandCancel(<code>string</code> commandExecutionId)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>Cancels the command with the given execution id.
+</pre>Cancels the command with the given command execution id.
 <br/></div><div class="definition"><h4 id="Fn_Blur_refresh">Function: Blur.refresh</h4>
 <pre><code>void</code> refresh()
 </pre>Releases and refreshes the read snapshots of the indexes in the session for the

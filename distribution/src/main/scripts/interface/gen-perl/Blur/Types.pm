@@ -160,16 +160,16 @@ sub write {
 package Blur::TimeoutException;
 use base qw(Thrift::TException);
 use base qw(Class::Accessor);
-Blur::TimeoutException->mk_accessors( qw( executionId ) );
+Blur::TimeoutException->mk_accessors( qw( instanceExecutionId ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{executionId} = undef;
+  $self->{instanceExecutionId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{executionId}) {
-      $self->{executionId} = $vals->{executionId};
+    if (defined $vals->{instanceExecutionId}) {
+      $self->{instanceExecutionId} = $vals->{instanceExecutionId};
     }
   }
   return bless ($self, $classname);
@@ -194,8 +194,8 @@ sub read {
     }
     SWITCH: for($fid)
     {
-      /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{executionId});
+      /^1$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{instanceExecutionId});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -212,9 +212,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('TimeoutException');
-  if (defined $self->{executionId}) {
-    $xfer += $output->writeFieldBegin('executionId', TType::STRING, 1);
-    $xfer += $output->writeString($self->{executionId});
+  if (defined $self->{instanceExecutionId}) {
+    $xfer += $output->writeFieldBegin('instanceExecutionId', TType::I64, 1);
+    $xfer += $output->writeI64($self->{instanceExecutionId});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

@@ -152,10 +152,10 @@ BlurException.prototype.write = function(output) {
 };
 
 TimeoutException = function(args) {
-  this.executionId = null;
+  this.instanceExecutionId = null;
   if (args) {
-    if (args.executionId !== undefined) {
-      this.executionId = args.executionId;
+    if (args.instanceExecutionId !== undefined) {
+      this.instanceExecutionId = args.instanceExecutionId;
     }
   }
 };
@@ -175,8 +175,8 @@ TimeoutException.prototype.read = function(input) {
     switch (fid)
     {
       case 1:
-      if (ftype == Thrift.Type.STRING) {
-        this.executionId = input.readString().value;
+      if (ftype == Thrift.Type.I64) {
+        this.instanceExecutionId = input.readI64().value;
       } else {
         input.skip(ftype);
       }
@@ -195,9 +195,9 @@ TimeoutException.prototype.read = function(input) {
 
 TimeoutException.prototype.write = function(output) {
   output.writeStructBegin('TimeoutException');
-  if (this.executionId !== null && this.executionId !== undefined) {
-    output.writeFieldBegin('executionId', Thrift.Type.STRING, 1);
-    output.writeString(this.executionId);
+  if (this.instanceExecutionId !== null && this.instanceExecutionId !== undefined) {
+    output.writeFieldBegin('instanceExecutionId', Thrift.Type.I64, 1);
+    output.writeI64(this.instanceExecutionId);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

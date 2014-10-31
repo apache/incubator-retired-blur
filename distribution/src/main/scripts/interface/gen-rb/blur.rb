@@ -45,13 +45,13 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'execute failed: unknown result')
       end
 
-      def reconnect(executionId)
-        send_reconnect(executionId)
+      def reconnect(instanceExecutionId)
+        send_reconnect(instanceExecutionId)
         return recv_reconnect()
       end
 
-      def send_reconnect(executionId)
-        send_message('reconnect', Reconnect_args, :executionId => executionId)
+      def send_reconnect(instanceExecutionId)
+        send_message('reconnect', Reconnect_args, :instanceExecutionId => instanceExecutionId)
       end
 
       def recv_reconnect()
@@ -78,13 +78,13 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'commandStatusList failed: unknown result')
       end
 
-      def commandStatus(executionId)
-        send_commandStatus(executionId)
+      def commandStatus(commandExecutionId)
+        send_commandStatus(commandExecutionId)
         return recv_commandStatus()
       end
 
-      def send_commandStatus(executionId)
-        send_message('commandStatus', CommandStatus_args, :executionId => executionId)
+      def send_commandStatus(commandExecutionId)
+        send_message('commandStatus', CommandStatus_args, :commandExecutionId => commandExecutionId)
       end
 
       def recv_commandStatus()
@@ -94,13 +94,13 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'commandStatus failed: unknown result')
       end
 
-      def commandCancel(executionId)
-        send_commandCancel(executionId)
+      def commandCancel(commandExecutionId)
+        send_commandCancel(commandExecutionId)
         recv_commandCancel()
       end
 
-      def send_commandCancel(executionId)
-        send_message('commandCancel', CommandCancel_args, :executionId => executionId)
+      def send_commandCancel(commandExecutionId)
+        send_message('commandCancel', CommandCancel_args, :commandExecutionId => commandExecutionId)
       end
 
       def recv_commandCancel()
@@ -818,7 +818,7 @@ module Blur
         args = read_args(iprot, Reconnect_args)
         result = Reconnect_result.new()
         begin
-          result.success = @handler.reconnect(args.executionId)
+          result.success = @handler.reconnect(args.instanceExecutionId)
         rescue ::Blur::BlurException => bex
           result.bex = bex
         rescue ::Blur::TimeoutException => tex
@@ -842,7 +842,7 @@ module Blur
         args = read_args(iprot, CommandStatus_args)
         result = CommandStatus_result.new()
         begin
-          result.success = @handler.commandStatus(args.executionId)
+          result.success = @handler.commandStatus(args.commandExecutionId)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -853,7 +853,7 @@ module Blur
         args = read_args(iprot, CommandCancel_args)
         result = CommandCancel_result.new()
         begin
-          @handler.commandCancel(args.executionId)
+          @handler.commandCancel(args.commandExecutionId)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -1413,10 +1413,10 @@ module Blur
 
     class Reconnect_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      EXECUTIONID = 1
+      INSTANCEEXECUTIONID = 1
 
       FIELDS = {
-        EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+        INSTANCEEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'instanceExecutionId'}
       }
 
       def struct_fields; FIELDS; end
@@ -1490,10 +1490,10 @@ module Blur
 
     class CommandStatus_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      EXECUTIONID = 1
+      COMMANDEXECUTIONID = 1
 
       FIELDS = {
-        EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+        COMMANDEXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'commandExecutionId'}
       }
 
       def struct_fields; FIELDS; end
@@ -1524,10 +1524,10 @@ module Blur
 
     class CommandCancel_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      EXECUTIONID = 1
+      COMMANDEXECUTIONID = 1
 
       FIELDS = {
-        EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+        COMMANDEXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'commandExecutionId'}
       }
 
       def struct_fields; FIELDS; end

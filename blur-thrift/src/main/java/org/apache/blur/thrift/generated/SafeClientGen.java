@@ -272,7 +272,7 @@ public java.util.List queryStatusIdList(java.lang.String arg0) throws org.apache
 }
 
 @Override
-public org.apache.blur.thrift.generated.Response reconnect(java.lang.String arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thrift.generated.TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public org.apache.blur.thrift.generated.Response reconnect(long arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thrift.generated.TimeoutException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.reconnect(arg0);
   } finally {_lock.unlock();}
@@ -867,7 +867,7 @@ public void send_queryStatusIdList(java.lang.String arg0) throws org.apache.blur
 }
 
 @Override
-public void send_reconnect(java.lang.String arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void send_reconnect(long arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_reconnect(arg0);
   } finally {_lock.unlock();}

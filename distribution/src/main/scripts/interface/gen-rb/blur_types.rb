@@ -132,17 +132,10 @@ module Blur
 # happens so that the client can reconnect.
   class TimeoutException < ::Thrift::Exception
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    def initialize(message=nil)
-      super()
-      self.executionId = message
-    end
-
-    def message; executionId end
-
-    EXECUTIONID = 1
+    INSTANCEEXECUTIONID = 1
 
     FIELDS = {
-      EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+      INSTANCEEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'instanceExecutionId'}
     }
 
     def struct_fields; FIELDS; end

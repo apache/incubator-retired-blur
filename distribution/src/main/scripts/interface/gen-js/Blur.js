@@ -290,10 +290,10 @@ Blur_execute_result.prototype.write = function(output) {
 };
 
 Blur_reconnect_args = function(args) {
-  this.executionId = null;
+  this.instanceExecutionId = null;
   if (args) {
-    if (args.executionId !== undefined) {
-      this.executionId = args.executionId;
+    if (args.instanceExecutionId !== undefined) {
+      this.instanceExecutionId = args.instanceExecutionId;
     }
   }
 };
@@ -312,8 +312,8 @@ Blur_reconnect_args.prototype.read = function(input) {
     switch (fid)
     {
       case 1:
-      if (ftype == Thrift.Type.STRING) {
-        this.executionId = input.readString().value;
+      if (ftype == Thrift.Type.I64) {
+        this.instanceExecutionId = input.readI64().value;
       } else {
         input.skip(ftype);
       }
@@ -332,9 +332,9 @@ Blur_reconnect_args.prototype.read = function(input) {
 
 Blur_reconnect_args.prototype.write = function(output) {
   output.writeStructBegin('Blur_reconnect_args');
-  if (this.executionId !== null && this.executionId !== undefined) {
-    output.writeFieldBegin('executionId', Thrift.Type.STRING, 1);
-    output.writeString(this.executionId);
+  if (this.instanceExecutionId !== null && this.instanceExecutionId !== undefined) {
+    output.writeFieldBegin('instanceExecutionId', Thrift.Type.I64, 1);
+    output.writeI64(this.instanceExecutionId);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -611,10 +611,10 @@ Blur_commandStatusList_result.prototype.write = function(output) {
 };
 
 Blur_commandStatus_args = function(args) {
-  this.executionId = null;
+  this.commandExecutionId = null;
   if (args) {
-    if (args.executionId !== undefined) {
-      this.executionId = args.executionId;
+    if (args.commandExecutionId !== undefined) {
+      this.commandExecutionId = args.commandExecutionId;
     }
   }
 };
@@ -634,7 +634,7 @@ Blur_commandStatus_args.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.STRING) {
-        this.executionId = input.readString().value;
+        this.commandExecutionId = input.readString().value;
       } else {
         input.skip(ftype);
       }
@@ -653,9 +653,9 @@ Blur_commandStatus_args.prototype.read = function(input) {
 
 Blur_commandStatus_args.prototype.write = function(output) {
   output.writeStructBegin('Blur_commandStatus_args');
-  if (this.executionId !== null && this.executionId !== undefined) {
-    output.writeFieldBegin('executionId', Thrift.Type.STRING, 1);
-    output.writeString(this.executionId);
+  if (this.commandExecutionId !== null && this.commandExecutionId !== undefined) {
+    output.writeFieldBegin('commandExecutionId', Thrift.Type.STRING, 1);
+    output.writeString(this.commandExecutionId);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -736,10 +736,10 @@ Blur_commandStatus_result.prototype.write = function(output) {
 };
 
 Blur_commandCancel_args = function(args) {
-  this.executionId = null;
+  this.commandExecutionId = null;
   if (args) {
-    if (args.executionId !== undefined) {
-      this.executionId = args.executionId;
+    if (args.commandExecutionId !== undefined) {
+      this.commandExecutionId = args.commandExecutionId;
     }
   }
 };
@@ -759,7 +759,7 @@ Blur_commandCancel_args.prototype.read = function(input) {
     {
       case 1:
       if (ftype == Thrift.Type.STRING) {
-        this.executionId = input.readString().value;
+        this.commandExecutionId = input.readString().value;
       } else {
         input.skip(ftype);
       }
@@ -778,9 +778,9 @@ Blur_commandCancel_args.prototype.read = function(input) {
 
 Blur_commandCancel_args.prototype.write = function(output) {
   output.writeStructBegin('Blur_commandCancel_args');
-  if (this.executionId !== null && this.executionId !== undefined) {
-    output.writeFieldBegin('executionId', Thrift.Type.STRING, 1);
-    output.writeString(this.executionId);
+  if (this.commandExecutionId !== null && this.commandExecutionId !== undefined) {
+    output.writeFieldBegin('commandExecutionId', Thrift.Type.STRING, 1);
+    output.writeString(this.commandExecutionId);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -6771,15 +6771,15 @@ BlurClient.prototype.recv_execute = function() {
   }
   throw 'execute failed: unknown result';
 };
-BlurClient.prototype.reconnect = function(executionId) {
-  this.send_reconnect(executionId);
+BlurClient.prototype.reconnect = function(instanceExecutionId) {
+  this.send_reconnect(instanceExecutionId);
   return this.recv_reconnect();
 };
 
-BlurClient.prototype.send_reconnect = function(executionId) {
+BlurClient.prototype.send_reconnect = function(instanceExecutionId) {
   this.output.writeMessageBegin('reconnect', Thrift.MessageType.CALL, this.seqid);
   var args = new Blur_reconnect_args();
-  args.executionId = executionId;
+  args.instanceExecutionId = instanceExecutionId;
   args.write(this.output);
   this.output.writeMessageEnd();
   return this.output.getTransport().flush();
@@ -6850,15 +6850,15 @@ BlurClient.prototype.recv_commandStatusList = function() {
   }
   throw 'commandStatusList failed: unknown result';
 };
-BlurClient.prototype.commandStatus = function(executionId) {
-  this.send_commandStatus(executionId);
+BlurClient.prototype.commandStatus = function(commandExecutionId) {
+  this.send_commandStatus(commandExecutionId);
   return this.recv_commandStatus();
 };
 
-BlurClient.prototype.send_commandStatus = function(executionId) {
+BlurClient.prototype.send_commandStatus = function(commandExecutionId) {
   this.output.writeMessageBegin('commandStatus', Thrift.MessageType.CALL, this.seqid);
   var args = new Blur_commandStatus_args();
-  args.executionId = executionId;
+  args.commandExecutionId = commandExecutionId;
   args.write(this.output);
   this.output.writeMessageEnd();
   return this.output.getTransport().flush();
@@ -6887,15 +6887,15 @@ BlurClient.prototype.recv_commandStatus = function() {
   }
   throw 'commandStatus failed: unknown result';
 };
-BlurClient.prototype.commandCancel = function(executionId) {
-  this.send_commandCancel(executionId);
+BlurClient.prototype.commandCancel = function(commandExecutionId) {
+  this.send_commandCancel(commandExecutionId);
   this.recv_commandCancel();
 };
 
-BlurClient.prototype.send_commandCancel = function(executionId) {
+BlurClient.prototype.send_commandCancel = function(commandExecutionId) {
   this.output.writeMessageBegin('commandCancel', Thrift.MessageType.CALL, this.seqid);
   var args = new Blur_commandCancel_args();
-  args.executionId = executionId;
+  args.commandExecutionId = commandExecutionId;
   args.write(this.output);
   this.output.writeMessageEnd();
   return this.output.getTransport().flush();

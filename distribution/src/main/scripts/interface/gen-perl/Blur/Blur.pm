@@ -339,16 +339,16 @@ sub write {
 
 package Blur::Blur_reconnect_args;
 use base qw(Class::Accessor);
-Blur::Blur_reconnect_args->mk_accessors( qw( executionId ) );
+Blur::Blur_reconnect_args->mk_accessors( qw( instanceExecutionId ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{executionId} = undef;
+  $self->{instanceExecutionId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{executionId}) {
-      $self->{executionId} = $vals->{executionId};
+    if (defined $vals->{instanceExecutionId}) {
+      $self->{instanceExecutionId} = $vals->{instanceExecutionId};
     }
   }
   return bless ($self, $classname);
@@ -373,8 +373,8 @@ sub read {
     }
     SWITCH: for($fid)
     {
-      /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{executionId});
+      /^1$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{instanceExecutionId});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -391,9 +391,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_reconnect_args');
-  if (defined $self->{executionId}) {
-    $xfer += $output->writeFieldBegin('executionId', TType::STRING, 1);
-    $xfer += $output->writeString($self->{executionId});
+  if (defined $self->{instanceExecutionId}) {
+    $xfer += $output->writeFieldBegin('instanceExecutionId', TType::I64, 1);
+    $xfer += $output->writeI64($self->{instanceExecutionId});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -695,16 +695,16 @@ sub write {
 
 package Blur::Blur_commandStatus_args;
 use base qw(Class::Accessor);
-Blur::Blur_commandStatus_args->mk_accessors( qw( executionId ) );
+Blur::Blur_commandStatus_args->mk_accessors( qw( commandExecutionId ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{executionId} = undef;
+  $self->{commandExecutionId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{executionId}) {
-      $self->{executionId} = $vals->{executionId};
+    if (defined $vals->{commandExecutionId}) {
+      $self->{commandExecutionId} = $vals->{commandExecutionId};
     }
   }
   return bless ($self, $classname);
@@ -730,7 +730,7 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{executionId});
+        $xfer += $input->readString(\$self->{commandExecutionId});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -747,9 +747,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_commandStatus_args');
-  if (defined $self->{executionId}) {
-    $xfer += $output->writeFieldBegin('executionId', TType::STRING, 1);
-    $xfer += $output->writeString($self->{executionId});
+  if (defined $self->{commandExecutionId}) {
+    $xfer += $output->writeFieldBegin('commandExecutionId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{commandExecutionId});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -840,16 +840,16 @@ sub write {
 
 package Blur::Blur_commandCancel_args;
 use base qw(Class::Accessor);
-Blur::Blur_commandCancel_args->mk_accessors( qw( executionId ) );
+Blur::Blur_commandCancel_args->mk_accessors( qw( commandExecutionId ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{executionId} = undef;
+  $self->{commandExecutionId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{executionId}) {
-      $self->{executionId} = $vals->{executionId};
+    if (defined $vals->{commandExecutionId}) {
+      $self->{commandExecutionId} = $vals->{commandExecutionId};
     }
   }
   return bless ($self, $classname);
@@ -875,7 +875,7 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{executionId});
+        $xfer += $input->readString(\$self->{commandExecutionId});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -892,9 +892,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_commandCancel_args');
-  if (defined $self->{executionId}) {
-    $xfer += $output->writeFieldBegin('executionId', TType::STRING, 1);
-    $xfer += $output->writeString($self->{executionId});
+  if (defined $self->{commandExecutionId}) {
+    $xfer += $output->writeFieldBegin('commandExecutionId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{commandExecutionId});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -7762,7 +7762,7 @@ sub execute{
 
 sub reconnect{
   my $self = shift;
-  my $executionId = shift;
+  my $instanceExecutionId = shift;
 
   die 'implement interface';
 }
@@ -7778,14 +7778,14 @@ sub commandStatusList{
 
 sub commandStatus{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
   die 'implement interface';
 }
 
 sub commandCancel{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
   die 'implement interface';
 }
@@ -8147,8 +8147,8 @@ sub execute{
 sub reconnect{
   my ($self, $request) = @_;
 
-  my $executionId = ($request->{'executionId'}) ? $request->{'executionId'} : undef;
-  return $self->{impl}->reconnect($executionId);
+  my $instanceExecutionId = ($request->{'instanceExecutionId'}) ? $request->{'instanceExecutionId'} : undef;
+  return $self->{impl}->reconnect($instanceExecutionId);
 }
 
 sub commandStatusList{
@@ -8163,15 +8163,15 @@ sub commandStatusList{
 sub commandStatus{
   my ($self, $request) = @_;
 
-  my $executionId = ($request->{'executionId'}) ? $request->{'executionId'} : undef;
-  return $self->{impl}->commandStatus($executionId);
+  my $commandExecutionId = ($request->{'commandExecutionId'}) ? $request->{'commandExecutionId'} : undef;
+  return $self->{impl}->commandStatus($commandExecutionId);
 }
 
 sub commandCancel{
   my ($self, $request) = @_;
 
-  my $executionId = ($request->{'executionId'}) ? $request->{'executionId'} : undef;
-  return $self->{impl}->commandCancel($executionId);
+  my $commandExecutionId = ($request->{'commandExecutionId'}) ? $request->{'commandExecutionId'} : undef;
+  return $self->{impl}->commandCancel($commandExecutionId);
 }
 
 sub refresh{
@@ -8612,19 +8612,19 @@ sub recv_execute{
 }
 sub reconnect{
   my $self = shift;
-  my $executionId = shift;
+  my $instanceExecutionId = shift;
 
-    $self->send_reconnect($executionId);
+    $self->send_reconnect($instanceExecutionId);
   return $self->recv_reconnect();
 }
 
 sub send_reconnect{
   my $self = shift;
-  my $executionId = shift;
+  my $instanceExecutionId = shift;
 
   $self->{output}->writeMessageBegin('reconnect', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_reconnect_args();
-  $args->{executionId} = $executionId;
+  $args->{instanceExecutionId} = $instanceExecutionId;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
@@ -8713,19 +8713,19 @@ sub recv_commandStatusList{
 }
 sub commandStatus{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
-    $self->send_commandStatus($executionId);
+    $self->send_commandStatus($commandExecutionId);
   return $self->recv_commandStatus();
 }
 
 sub send_commandStatus{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
   $self->{output}->writeMessageBegin('commandStatus', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_commandStatus_args();
-  $args->{executionId} = $executionId;
+  $args->{commandExecutionId} = $commandExecutionId;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
@@ -8759,19 +8759,19 @@ sub recv_commandStatus{
 }
 sub commandCancel{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
-    $self->send_commandCancel($executionId);
+    $self->send_commandCancel($commandExecutionId);
   $self->recv_commandCancel();
 }
 
 sub send_commandCancel{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
   $self->{output}->writeMessageBegin('commandCancel', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_commandCancel_args();
-  $args->{executionId} = $executionId;
+  $args->{commandExecutionId} = $commandExecutionId;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
@@ -10851,7 +10851,7 @@ sub process_reconnect {
     $input->readMessageEnd();
     my $result = new Blur::Blur_reconnect_result();
     eval {
-      $result->{success} = $self->{handler}->reconnect($args->executionId);
+      $result->{success} = $self->{handler}->reconnect($args->instanceExecutionId);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{bex} = $@;
         }; if( UNIVERSAL::isa($@,'Blur::TimeoutException') ){ 
@@ -10887,7 +10887,7 @@ sub process_commandStatus {
     $input->readMessageEnd();
     my $result = new Blur::Blur_commandStatus_result();
     eval {
-      $result->{success} = $self->{handler}->commandStatus($args->executionId);
+      $result->{success} = $self->{handler}->commandStatus($args->commandExecutionId);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }
@@ -10904,7 +10904,7 @@ sub process_commandCancel {
     $input->readMessageEnd();
     my $result = new Blur::Blur_commandCancel_result();
     eval {
-      $self->{handler}->commandCancel($args->executionId);
+      $self->{handler}->commandCancel($args->commandExecutionId);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }

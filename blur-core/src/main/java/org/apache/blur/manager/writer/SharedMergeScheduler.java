@@ -19,13 +19,14 @@ package org.apache.blur.manager.writer;
 import static org.apache.blur.metrics.MetricsConstants.LUCENE;
 import static org.apache.blur.metrics.MetricsConstants.MERGE_THROUGHPUT_BYTES;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
-import static org.apache.blur.utils.BlurConstants.SHARED_MERGE_SCHEDULER;
+import static org.apache.blur.utils.BlurConstants.SHARED_MERGE_SCHEDULER_PREFIX;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.concurrent.BlockingQueue;
+import java.util.Iterator;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -34,106 +35,164 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MergePolicy;
+import org.apache.lucene.index.MergePolicy.OneMerge;
 import org.apache.lucene.index.MergeScheduler;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
-public class SharedMergeScheduler implements Runnable, Closeable {
+public class SharedMergeScheduler implements Closeable {
 
   private static final Log LOG = LogFactory.getLog(SharedMergeScheduler.class);
-  private static final long ONE_SECOND = TimeUnit.SECONDS.toMillis(1);
+  private static final Meter _throughputBytes;
 
-  private final BlockingQueue<IndexWriter> _writers = new LinkedBlockingQueue<IndexWriter>();
-  private final AtomicBoolean _running = new AtomicBoolean(true);
-  private final ExecutorService _service;
-  private final Meter _throughputBytes;
-
-  public SharedMergeScheduler(int threads) {
-    _service = Executors.newThreadPool(SHARED_MERGE_SCHEDULER, threads, false);
-    for (int i = 0; i < threads; i++) {
-      _service.submit(this);
-    }
+  static {
     MetricName mergeThoughputBytes = new MetricName(ORG_APACHE_BLUR, LUCENE, MERGE_THROUGHPUT_BYTES);
     _throughputBytes = Metrics.newMeter(mergeThoughputBytes, MERGE_THROUGHPUT_BYTES, TimeUnit.SECONDS);
   }
 
-  private void mergeIndexWriter(IndexWriter writer) {
-    LOG.debug("Adding writer to merge [{0}]", writer);
-    _writers.add(writer);
+  private final AtomicBoolean _running = new AtomicBoolean(true);
+
+  private final ExecutorService _smallMergeService;
+  private final ExecutorService _largeMergeService;
+  private final PriorityBlockingQueue<MergeWork> _smallMergeQueue = new PriorityBlockingQueue<MergeWork>();
+  private final PriorityBlockingQueue<MergeWork> _largeMergeQueue = new PriorityBlockingQueue<MergeWork>();
+  private final long _smallMergeThreshold;
+
+  static class MergeWork implements Comparable<MergeWork> {
+
+    private final String _id;
+    private final MergePolicy.OneMerge _merge;
+    private final IndexWriter _writer;
+    private final long _size;
+
+    public MergeWork(String id, OneMerge merge, IndexWriter writer) throws IOException {
+      _id = id;
+      _merge = merge;
+      _writer = writer;
+      _size = merge.totalBytesSize();
+    }
+
+    @Override
+    public int compareTo(MergeWork o) {
+      return Long.compare(_size, o._size);
+    }
+
+    public void merge() throws IOException {
+      long s = System.nanoTime();
+      _writer.merge(_merge);
+      long e = System.nanoTime();
+      double time = (e - s) / 1000000000.0;
+      double rate = (_size / 1000 / 1000) / time;
+      LOG.info("Merge took [{0} s] to complete at rate of [{1} MB/s], input bytes [{2}], segments merged {3}", time,
+          rate, _size, _merge.segments);
+      _throughputBytes.mark(_size);
+    }
+
+    public String getId() {
+      return _id;
+    }
   }
 
-  private void removeWriter(IndexWriter writer) {
-    while (_writers.remove(writer)) {
-      // keep looping until all the references are gone
+  public SharedMergeScheduler(int threads) {
+    this(threads, 128 * 1000 * 1000);
+  }
+
+  public SharedMergeScheduler(int threads, long smallMergeThreshold) {
+    _smallMergeThreshold = smallMergeThreshold;
+    _smallMergeService = Executors.newThreadPool(SHARED_MERGE_SCHEDULER_PREFIX + "-small", threads, false);
+    _largeMergeService = Executors.newThreadPool(SHARED_MERGE_SCHEDULER_PREFIX + "-large", threads, false);
+    for (int i = 0; i < threads; i++) {
+      _smallMergeService.submit(getMergerRunnable(_smallMergeQueue));
+      _largeMergeService.submit(getMergerRunnable(_largeMergeQueue));
     }
+  }
+
+  private Runnable getMergerRunnable(final PriorityBlockingQueue<MergeWork> queue) {
+    return new Runnable() {
+      @Override
+      public void run() {
+        while (_running.get()) {
+          try {
+            MergeWork mergeWork = queue.take();
+            try {
+              mergeWork.merge();
+            } catch (IOException e) {
+              LOG.error("Unknown error while trying to perform merge on [{0}]", e, mergeWork);
+            }
+          } catch (InterruptedException e) {
+            if (_running.get()) {
+              LOG.error("Unknown error", e);
+            }
+            return;
+          }
+        }
+      }
+    };
   }
 
   public MergeScheduler getMergeScheduler() {
     return new MergeScheduler() {
 
-      private IndexWriter _writer;
+      private final String _id = UUID.randomUUID().toString();
 
       @Override
       public void merge(IndexWriter writer) throws IOException {
-        _writer = writer;
-        mergeIndexWriter(writer);
+        addMerges(_id, writer);
       }
 
       @Override
       public void close() throws IOException {
-        removeWriter(_writer);
+        remove(_id);
       }
     };
+  }
+
+  protected void addMerges(String id, IndexWriter writer) throws IOException {
+    OneMerge merge;
+    while ((merge = writer.getNextMerge()) != null) {
+      addMerge(id, writer, merge);
+    }
+  }
+
+  private void addMerge(String id, IndexWriter writer, OneMerge merge) throws IOException {
+    MergeWork mergeWork = new MergeWork(id, merge, writer);
+    if (isLargeMerge(merge)) {
+      _largeMergeQueue.add(mergeWork);
+    } else {
+      _smallMergeQueue.add(mergeWork);
+    }
+  }
+
+  private boolean isLargeMerge(OneMerge merge) throws IOException {
+    long totalBytesSize = merge.totalBytesSize();
+    if (totalBytesSize <= _smallMergeThreshold) {
+      return false;
+    }
+    return true;
+  }
+
+  protected void remove(String id) {
+    remove(_smallMergeQueue, id);
+    remove(_largeMergeQueue, id);
+  }
+
+  private void remove(PriorityBlockingQueue<MergeWork> queue, String id) {
+    Iterator<MergeWork> iterator = queue.iterator();
+    while (iterator.hasNext()) {
+      MergeWork mergeWork = iterator.next();
+      if (id.equals(mergeWork.getId())) {
+        iterator.remove();
+      }
+    }
   }
 
   @Override
   public void close() throws IOException {
     _running.set(false);
-    _service.shutdownNow();
-  }
-
-  @Override
-  public void run() {
-    while (_running.get()) {
-      try {
-        IndexWriter writer = _writers.poll();
-        if (writer == null) {
-          synchronized (this) {
-            wait(ONE_SECOND);
-          }
-        } else {
-          performMergeWriter(writer);
-        }
-      } catch (InterruptedException e) {
-        LOG.debug("Merging interrupted, exiting.");
-        return;
-      } catch (IOException e) {
-        LOG.error("Unknown IOException", e);
-      }
-    }
-  }
-
-  private void performMergeWriter(IndexWriter writer) throws IOException {
-    while (true) {
-      MergePolicy.OneMerge merge = writer.getNextMerge();
-      if (merge == null) {
-        LOG.debug("No merges to run for [{0}]", writer);
-        return;
-      }
-      long s = System.nanoTime();
-      writer.merge(merge);
-      long e = System.nanoTime();
-      double time = (e - s) / 1000000000.0;
-      double rate = (merge.totalBytesSize() / 1000 / 1000) / time;
-      if (time > 10) {
-        LOG.info("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
-      } else {
-        LOG.debug("Merge took [{0} s] to complete at rate of [{1} MB/s]", time, rate);
-      }
-      _throughputBytes.mark(merge.totalBytesSize());
-    }
+    _smallMergeService.shutdownNow();
+    _largeMergeService.shutdownNow();
   }
 
 }

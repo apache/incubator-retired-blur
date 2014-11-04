@@ -114,6 +114,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE = "blur.shard.block.cache.v2.cacheBlockSize";
   public static final String BLUR_SHARD_BLURINDEX_CLASS = "blur.shard.blurindex.class";
   public static final String BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT = "blur.shard.server.minimum.before.safemode.exit";
+  public static final String BLUR_SHARD_SMALL_MERGE_THRESHOLD = "blur.shard.small.merge.threshold";
 
   public static final String BLUR_FIELDTYPE = "blur.fieldtype.";
 
@@ -169,7 +170,7 @@ public class BlurConstants {
   public static final String DELETE_MARKER_VALUE = "delete";
   public static final String DELETE_MARKER = "_deletemarker_";
 
-  public static final String SHARED_MERGE_SCHEDULER = "sharedMergeScheduler";
+  public static final String SHARED_MERGE_SCHEDULER_PREFIX = "shared-merge-scheduler";
 
   public static final String BLUR_FILTER_ALIAS = "blur.filter.alias.";
 

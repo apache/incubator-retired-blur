@@ -28,7 +28,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_WRIT
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_WRITE_NOCACHE_EXT;
 import static org.apache.blur.utils.BlurConstants.DEFAULT_VALUE;
 import static org.apache.blur.utils.BlurConstants.OFF_HEAP;
-import static org.apache.blur.utils.BlurConstants.SHARED_MERGE_SCHEDULER;
+import static org.apache.blur.utils.BlurConstants.SHARED_MERGE_SCHEDULER_PREFIX;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -153,7 +153,7 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
       public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
         Thread thread = Thread.currentThread();
         String name = thread.getName();
-        if (name.startsWith(SHARED_MERGE_SCHEDULER)) {
+        if (name.startsWith(SHARED_MERGE_SCHEDULER_PREFIX)) {
           return true;
         }
         return false;

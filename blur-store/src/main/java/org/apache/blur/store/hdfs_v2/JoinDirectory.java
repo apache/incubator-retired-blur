@@ -93,7 +93,7 @@ public class JoinDirectory extends Directory implements LastModified, HdfsSymlin
 
   @Override
   public IndexOutput createOutput(String name, IOContext context) throws IOException {
-    if (Thread.currentThread().getName().startsWith(BlurConstants.SHARED_MERGE_SCHEDULER)) {
+    if (Thread.currentThread().getName().startsWith(BlurConstants.SHARED_MERGE_SCHEDULER_PREFIX)) {
       addLongTermSyncFile(name);
       return _longTermStorage.createOutput(name, context);
     }

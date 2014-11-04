@@ -44,6 +44,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SMALL_MERGE_THRESHOLD;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_SELECTOR_THREADS;
@@ -113,6 +114,7 @@ import sun.misc.VM;
 
 public class ThriftBlurShardServer extends ThriftServer {
 
+  
   private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
   private static final boolean enableJsonReporter = false;
   private static final long _64MB = 64 * 1024 * 1024;
@@ -209,10 +211,11 @@ public class ThriftBlurShardServer extends ThriftServer {
     int internalSearchThreads = configuration.getInt(BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT, 16);
     final Timer hdfsKeyValueTimer = new Timer("HDFS KV Store", true);
     final Timer indexImporterTimer = new Timer("IndexImporter", true);
+    long smallMergeThreshold = configuration.getLong(BLUR_SHARD_SMALL_MERGE_THRESHOLD, 128 * 1000 * 1000);
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
         filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay,
         shardOpenerThreadCount, maxMergeThreads, internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode,
-        hdfsKeyValueTimer, indexImporterTimer);
+        hdfsKeyValueTimer, indexImporterTimer, smallMergeThreshold);
 
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 

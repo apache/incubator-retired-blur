@@ -79,7 +79,7 @@ public class LocalIndexServer extends AbstractIndexServer {
     _timer = new Timer("Index Importer", true);
     _closer = Closer.create();
     _tableContext = TableContext.create(tableDescriptor);
-    _mergeScheduler = _closer.register(new SharedMergeScheduler(3));
+    _mergeScheduler = _closer.register(new SharedMergeScheduler(3, 128 * 1000 * 1000));
     _searchExecutor = Executors.newCachedThreadPool();
     _closer.register(new CloseableExecutorService(_searchExecutor));
     _ramDir = ramDir;

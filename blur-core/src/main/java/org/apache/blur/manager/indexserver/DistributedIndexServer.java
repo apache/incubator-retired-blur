@@ -23,10 +23,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.Timer;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -120,7 +120,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
       int shardOpenerThreadCount, int maxMergeThreads, int internalSearchThreads,
-      int minimumNumberOfNodesBeforeExitingSafeMode, Timer hdfsKeyValueTimer, Timer indexImporterTimer)
+      int minimumNumberOfNodesBeforeExitingSafeMode, Timer hdfsKeyValueTimer, Timer indexImporterTimer, long smallMergeThreshold)
       throws KeeperException, InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
     _indexImporterTimer = indexImporterTimer;
@@ -146,7 +146,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     _closer.register(CloseableExecutorService.close(_searchExecutor));
 
     // @TODO allow for configuration of these
-    _mergeScheduler = _closer.register(new SharedMergeScheduler(maxMergeThreads));
+    _mergeScheduler = _closer.register(new SharedMergeScheduler(maxMergeThreads, smallMergeThreshold));
 
     _indexCloser = _closer.register(new BlurIndexCloser());
     _timerCacheFlush = setupFlushCacheTimer();

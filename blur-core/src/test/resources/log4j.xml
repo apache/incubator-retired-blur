@@ -41,6 +41,12 @@ under the License.
     	<level value="ERROR" />
 	    <appender-ref ref="console"/>
 	</logger>
+	
+	<logger name="LUCENE_WRITER_INFO_STREAM" additivity="false">
+		<!-- Make value = "INFO"to enable -->
+    	<level value="ERROR" />
+	    <appender-ref ref="console"/>
+	</logger>
 	<root>
 		<priority value="info" />
 		<appender-ref ref="console" />

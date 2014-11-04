@@ -103,6 +103,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     _conf.setCodec(new Blur024Codec(_tableContext.getBlurConfiguration()));
     _conf.setSimilarity(_tableContext.getSimilarity());
+    _conf.setInfoStream(new LoggingInfoStream(_tableContext.getTable(),_shardContext.getShard()));
     TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     _conf.setMergeScheduler(mergeScheduler.getMergeScheduler());

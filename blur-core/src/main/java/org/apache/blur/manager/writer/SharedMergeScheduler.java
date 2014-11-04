@@ -39,11 +39,16 @@ import org.apache.lucene.index.MergePolicy.OneMerge;
 import org.apache.lucene.index.MergeScheduler;
 
 import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Gauge;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
 public class SharedMergeScheduler implements Closeable {
 
+  private static final String LARGE_QUEUE_DEPTH_IN_BYTES = "Large Queue Depth In Bytes";
+  private static final String LARGE_QUEUE_DEPTH = "Large Queue Depth";
+  private static final String SMALL_QUEUE_DEPTH_IN_BYTES = "Small Queue Depth In Bytes";
+  private static final String SMALL_QUEUE_DEPTH = "Small Queue Depth";
   private static final Log LOG = LogFactory.getLog(SharedMergeScheduler.class);
   private static final Meter _throughputBytes;
 
@@ -93,6 +98,10 @@ public class SharedMergeScheduler implements Closeable {
     public String getId() {
       return _id;
     }
+
+    public long getSize() {
+      return _size;
+    }
   }
 
   public SharedMergeScheduler(int threads) {
@@ -100,6 +109,11 @@ public class SharedMergeScheduler implements Closeable {
   }
 
   public SharedMergeScheduler(int threads, long smallMergeThreshold) {
+    MetricName mergeSmallQueueDepth = new MetricName(ORG_APACHE_BLUR, LUCENE, SMALL_QUEUE_DEPTH);
+    MetricName mergeSmallQueueDepthInBytes = new MetricName(ORG_APACHE_BLUR, LUCENE, SMALL_QUEUE_DEPTH_IN_BYTES);
+    MetricName mergeLargeQueueDepth = new MetricName(ORG_APACHE_BLUR, LUCENE, LARGE_QUEUE_DEPTH);
+    MetricName mergeLargeQueueDepthInBytes = new MetricName(ORG_APACHE_BLUR, LUCENE, LARGE_QUEUE_DEPTH_IN_BYTES);
+
     _smallMergeThreshold = smallMergeThreshold;
     _smallMergeService = Executors.newThreadPool(SHARED_MERGE_SCHEDULER_PREFIX + "-small", threads, false);
     _largeMergeService = Executors.newThreadPool(SHARED_MERGE_SCHEDULER_PREFIX + "-large", threads, false);
@@ -107,6 +121,39 @@ public class SharedMergeScheduler implements Closeable {
       _smallMergeService.submit(getMergerRunnable(_smallMergeQueue));
       _largeMergeService.submit(getMergerRunnable(_largeMergeQueue));
     }
+
+    Metrics.newGauge(mergeSmallQueueDepth, new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return (long) _smallMergeQueue.size();
+      }
+    });
+    Metrics.newGauge(mergeSmallQueueDepthInBytes, new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return getSizeInBytes(_smallMergeQueue);
+      }
+    });
+    Metrics.newGauge(mergeLargeQueueDepth, new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return (long) _largeMergeQueue.size();
+      }
+    });
+    Metrics.newGauge(mergeLargeQueueDepthInBytes, new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return getSizeInBytes(_largeMergeQueue);
+      }
+    });
+  }
+
+  protected long getSizeInBytes(PriorityBlockingQueue<MergeWork> queue) {
+    long total = 0;
+    for (MergeWork mergeWork : queue) {
+      total += mergeWork.getSize();
+    }
+    return total;
   }
 
   private Runnable getMergerRunnable(final PriorityBlockingQueue<MergeWork> queue) {

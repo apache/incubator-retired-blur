@@ -86,7 +86,6 @@ under the License.
         <exclude>jline:jline</exclude>
         <exclude>com.fasterxml.jackson.core:*</exclude>
         <exclude>org.apache.commons:commons-collections4</exclude>
-        <exclude>org.mortbay.jetty:*</exclude>
         <exclude>org.eclipse.jetty:*</exclude>
       </excludes>
     </dependencySet>

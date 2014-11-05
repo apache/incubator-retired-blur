@@ -235,16 +235,6 @@ under the License.
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-minicluster</artifactId>
                 <version>${hadoop.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.mortbay.jetty</groupId>
-                        <artifactId>jetty-util</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.mortbay.jetty</groupId>
-                        <artifactId>jetty</artifactId>
-                    </exclusion>
-                </exclusions>
             </dependency>
             <dependency>
                 <groupId>log4j</groupId>

@@ -31,7 +31,7 @@ blurconsole.auth = (function() {
     }
     var serializedForm = _getLoginDiv().find('form').serialize();
     _getLoginDiv().html('Attempting to login <img src="img/ajax-loader.gif"/>');
-    $.ajax('/service/auth/login', {
+    $.ajax('service/auth/login', {
       type: 'POST',
       data: serializedForm,
       success: function(data) {

@@ -81,7 +81,10 @@ public class SharedMergeScheduler implements Closeable {
 
     @Override
     public int compareTo(MergeWork o) {
-      return Long.compare(_size, o._size);
+      if (_size == o._size) {
+        return 0;
+      }
+      return _size < o._size ? -1 : 1;
     }
 
     public void merge() throws IOException {

@@ -79,7 +79,7 @@ public class LoadDataContinuously {
     long calls = 0;
     while (true) {
       long now = System.currentTimeMillis();
-      if (s + timeBetweenReporting < now) {
+      if (s + timeBetweenReporting < now && calls > 0) {
         double avgSeconds = (now - start) / 1000.0;
         double seconds = (now - s) / 1000.0;
         double avgRate = recordCountTotal / avgSeconds;

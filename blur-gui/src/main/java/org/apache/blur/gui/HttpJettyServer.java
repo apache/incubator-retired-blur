@@ -26,7 +26,6 @@ import org.apache.blur.log.LogFactory;
 import com.yammer.metrics.reporting.MetricsServlet;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
 
@@ -90,7 +89,7 @@ public class HttpJettyServer {
     }
     Connector[] connectors = server.getConnectors();
     for (Connector connector : connectors) {
-      _localPort = ((ServerConnector)(connector)).getLocalPort();
+      _localPort = connector.getLocalPort();
     }
     LOG.info("Http server up on port: " + _localPort);
   }

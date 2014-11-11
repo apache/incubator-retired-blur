@@ -90,7 +90,7 @@ public class IndexImporter extends TimerTask implements Closeable {
 
   @Override
   public void close() throws IOException {
-
+    cancel();
   }
 
   @Override

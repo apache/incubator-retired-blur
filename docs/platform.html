@@ -57,7 +57,7 @@
             <ul class="nav bs-sidenav">
             <li><a href="#intro">Introduction</a></li>
             <li><a href="#motivation">Motivation</a></li>
-            <li><a href="#commands">Commands</a></li>
+            <li><a href="#commands">Command Overview</a></li>
             </ul>
           </div>
         </div>
@@ -115,12 +115,29 @@
           </section>
           <section>
             <div class="page-header">
-              <h2 id="commands">Commands</h2>
+              <h2 id="commands">Command Overview</h2>
             </div>
-            <p class="lead">
-          Text here.....
-
-          </p>
+            <p>
+							The Blur platform provides a set of <code>Command</code> classes that can 
+							be implemented to achieve new functionality.  A basic understanding of how Blur
+							works will greatly help in understanding how to implement commands. 
+          	</p>
+          	<h4>Blur Architecture Review</h4>
+          	<!-- 
+          		@TODO: Does this content exist somewhere we can just point to? 
+          	  @TODO: If the answer is no, we should beef up this quick-n-dirty explanation.
+          	-->
+          	<p>In Blur, we refer to a logical Lucene index as a table.  Tables are typically
+          	very large, and so we divide them up into 'shards'.  Now, each shard is exposed 
+          	through a Shard Server, which is sort of a container of shards.  The Shard Server(s)
+          	are organized into a cluster that work together to make all the shards of the table(s)
+          	available.  For scalability, we've divided up the logical table into shards spread
+          	across the Shard Server(s).  We then put another type of server, called a Controller, 
+          	in front of the cluster to present all the shards as a single logical table.
+          	</p>
+          	<p>
+          	
+          	</p>         	 
           </section>
         </div>
       </div>

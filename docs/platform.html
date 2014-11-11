@@ -17,7 +17,7 @@
 -->
 <html>
   <head>
-    <title>Extra - Apache Blur (Incubator) Documentation</title>
+    <title>Platform - Apache Blur (Incubator) Documentation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
     <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -38,7 +38,7 @@
           <ul class="nav navbar-nav">
           <li class="active"><a href="index.html">Main</a></li>
             <li><a href="getting-started.html">Getting Started</a></li>
-            <li>Platform</li>
+            <li><a href="platform.html">Platform</a></li>
             <li><a href="data-model.html">Data Model</a></li>
             <li><a href="cluster-setup.html">Cluster Setup</a></li>
             <li><a href="using-blur.html">Using Blur</a></li>
@@ -55,33 +55,72 @@
         <div class="col-md-3">
           <div class="bs-sidebar hidden-print affix" role="complementary">
             <ul class="nav bs-sidenav">
-	          <li><a href="#item1">Item 1</a></li>
-	          <li><a href="#item2">Item 2</a></li>
+            <li><a href="#intro">Introduction</a></li>
+            <li><a href="#motivation">Motivation</a></li>
+            <li><a href="#commands">Commands</a></li>
             </ul>
           </div>
         </div>
         <div class="col-md-9" role="main">
+        <!-- In some places, we need to describe both where the system is heading and 
+           describe its current limitations.  For ease of documentation maintenance, let
+           us try to write in a way that disclaimers are in their own paragraphs that can
+           easily be stripped out when they no longer apply, thus not requiring a bunch
+           of re-writing.  
+        -->
           <section>
             <div class="page-header">
-              <h1 id="item1">Item 1</h1>
+              <h1 id="intro">Introduction</h1>
             </div>
             <p class="lead">
-	        Text here.....
-<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-	        </p>
+      				While many users of Blur will find the search system sufficient for their
+      				needs out of the box, the Blur platform exposes a simple set of lower-level 
+      				primitives that allow the user to easily and quickly introduce new system behavior.
+          </p>
+          <!-- Disclaimer para for 0.2.4 -->
+          <p class="lead">
+          With this release, we expose the initial read-only constructs for the platform.  
+          Future releases, will allow introduce more rich read-write constructs.
+          </p>
+          <!-- Disclaimer para for 0.2.4 -->
+          <p class="alert">
+          <strong>NOTE:</strong> In 0.2.4, the platform capability described here exists,
+          but existing functionality of Blur has not yet been ported to use it.
+          </p>
           </section>
           <section>
             <div class="page-header">
-              <h1 id="item2">Item 2</h1>
+              <h2 id="motivation">Motivation</h2>
+            </div>
+            <p>
+							In modern open source search platforms, we find Lucene at the very core and 
+							a monolithic application stack implemented on top of it handling the distributed 
+							indexing, searching, failures, features, etc. Indeed, this was true of Blur
+							as well.
+						</p>	
+						<p>We wanted more flexibility.  We wanted to rapidly be able to introduce brand new
+							features into the system.  So, we supposed it would be helpful if an 
+							intermediate abstraction could be introduced providing the primitives for a 
+							distributed Lucene server on which specific search applications could be built. 
+          	</p>
+          	<p>Some specific goals we had in mind:</p>
+          	<ul>
+          	  <li>To allow for indexing/searching based on other/new data models (e.g. 
+          	  		more than just the Row/Record constructs).</li>
+							<li>Allow implementations to build whole new APIs given direct access to the Lucene primitives.</li>
+							<li>Allow flexibility to build totally custom applications.</li>
+							<li>Remove the complexities of threading, networking and concurrency from 
+									new feature creation.</li>
+ 						</ul>
+          </section>
+          <section>
+            <div class="page-header">
+              <h2 id="commands">Commands</h2>
             </div>
             <p class="lead">
-	        Text here.....
-			<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-			<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-			<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-	        </p>
+          Text here.....
+
+          </p>
           </section>
         </div>
       </div>

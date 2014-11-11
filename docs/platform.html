@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<!--
+<!-- 
   Licensed to the Apache Software Foundation (ASF) under one or more
   contributor license agreements.  See the NOTICE file distributed with
   this work for additional information regarding copyright ownership.
   The ASF licenses this file to You under the Apache License, Version 2.0
   (the "License"); you may not use this file except in compliance with
   the License.  You may obtain a copy of the License at
-
+  
        http://www.apache.org/licenses/LICENSE-2.0
-
+  
   Unless required by applicable law or agreed to in writing, software
   distributed under the License is distributed on an "AS IS" BASIS,
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,7 +17,7 @@
 -->
 <html>
   <head>
-    <title>Apache Blur (Incubator) Documentation</title>
+    <title>Extra - Apache Blur (Incubator) Documentation</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bootstrap -->
     <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
@@ -36,9 +36,9 @@
         </div>
         <div class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
-	        <li class="active"><a href="index.html">Main</a></li>
+          <li class="active"><a href="index.html">Main</a></li>
             <li><a href="getting-started.html">Getting Started</a></li>
-            <li><a href="platform.html">Platform</a></li>
+            <li>Platform</li>
             <li><a href="data-model.html">Data Model</a></li>
             <li><a href="cluster-setup.html">Cluster Setup</a></li>
             <li><a href="using-blur.html">Using Blur</a></li>
@@ -50,22 +50,49 @@
         </div>
       </div>
     </div>
-    <div class="container">
-      <div class="jumbotron">
-        <h1>Apache Blur (Incubator)</h1>
-        <p>
-          Blur is an open source search platform capable of querying massive amounts of data at incredible speeds. Blur is built on top of Lucene, Hadoop, Thrift, and ZooKeeper. Tables consist of a series of shards (Lucene indexes) that are distributed across a cluster of commodity servers. All index information is stored in HDFS, cluster coordination is handled by Apache ZooKeeper, Apache Thrift is used for the RPC, and Lucene handles all of the indexing and data storage.
-        </p>
-        <a href="getting-started.html" class="btn btn-primary btn-large">Get Started &raquo;</a>
-        <a href="release-notes.html" class="btn btn-primary btn-large">View Release Notes &raquo;</a>
+    <div class="container bs-docs-container">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="bs-sidebar hidden-print affix" role="complementary">
+            <ul class="nav bs-sidenav">
+	          <li><a href="#item1">Item 1</a></li>
+	          <li><a href="#item2">Item 2</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-9" role="main">
+          <section>
+            <div class="page-header">
+              <h1 id="item1">Item 1</h1>
+            </div>
+            <p class="lead">
+	        Text here.....
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+	        </p>
+          </section>
+          <section>
+            <div class="page-header">
+              <h1 id="item2">Item 2</h1>
+            </div>
+            <p class="lead">
+	        Text here.....
+			<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+			<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+			<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+	        </p>
+          </section>
+        </div>
       </div>
     </div>
-
+    
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="resources/js/jquery-2.0.3.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="resources/js/bootstrap.min.js"></script>
     <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
     <script src="resources/js/respond.min.js"></script>
+    <script src="resources/js/docs.js"></script>
   </body>
 </html>

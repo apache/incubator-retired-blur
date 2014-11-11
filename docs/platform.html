@@ -57,6 +57,7 @@
             <ul class="nav bs-sidenav">
             <li><a href="#intro">Introduction</a></li>
             <li><a href="#motivation">Motivation</a></li>
+            <li><a href="#arch">Blur Architecture Review</a></li>            
             <li><a href="#commands">Command Overview</a></li>
             </ul>
           </div>
@@ -115,14 +116,14 @@
           </section>
           <section>
             <div class="page-header">
-              <h2 id="commands">Command Overview</h2>
+              <h2 id="arch">Blur Architecture Review</h2>
             </div>
-            <p>
-							The Blur platform provides a set of <code>Command</code> classes that can 
+          	<p>
+          		The Blur platform provides a set of <code>Command</code> classes that can 
 							be implemented to achieve new functionality.  A basic understanding of how Blur
-							works will greatly help in understanding how to implement commands. 
+							works will greatly help in understanding how to implement commands.  So let's
+							take a moment to review.
           	</p>
-          	<h4>Blur Architecture Review</h4>
           	<!-- 
           		@TODO: Does this content exist somewhere we can just point to? 
           	  @TODO: If the answer is no, we should beef up this quick-n-dirty explanation.
@@ -135,10 +136,82 @@
           	across the Shard Server(s).  We then put another type of server, called a Controller, 
           	in front of the cluster to present all the shards as a single logical table.
           	</p>
-          	<p>
-          	
+          	<!-- 
+          	  @TODO: Find a graphic of the architecture so the bevy of words above can be simplified.
+             -->
+          	<p>For the controller to present all the shards as a single index, it needs to accept 
+          	a request, then scatter the request to all the shard servers, combine the results in 
+          	some meaningful way, and send them back to the client.
           	</p>         	 
           </section>
+          <section>
+            <div class="page-header">
+              <h2 id="commands">Command Overview</h2>
+            </div>
+            <p>
+						As we've gathered from above, the heart of a distributed search system is the ability
+						to execute some function across a set of indices and combine the results in a logical 
+						way to be returned to the user. Not surprisingly, this is also at the heart of the 
+						Blur Platform.  As an introduction, we'll explore how to take a look at finding the number
+						of documents that contain a particular term across all shards in a table.
+						</p>	
+						<p>Our first step will be to find the answer for a single shard/index.  Lucene's 
+						<code>IndexReader</code>, to which we'll have access in our command, conveniently 
+						gives us that.  Getting the answer for a single index requires implementing an <code>execute</code>
+						method.
+						</p>
+						<pre>
+@Override
+public Long execute(IndexContext context) throws IOException {
+  return new Long(context.getIndexReader().docFreq(new Term(fieldName, term)));
+}
+						</pre>
+						<p>We'll learn where the field name and term are defined later in the Arguments
+						 section. Inside of the <code>execute</code> method, we're focused on finding the answer for
+						 a single shard/index.  To find our answer, we're given an <code>IndexContext</code> which
+						 provides us access to the underlying Lucene index, so for our trivial command we can simply
+						 return the answer directly from the IndexReader.
+						 </p>
+						 <p>To reduce the number of network traffic, Blur asks for a single response for all shards
+						 on a given Shard Server.  To let Blur know how to combine the local shard responses together,
+						 we need to implement another method, appropriately named <code>combine</code>.  Let's look 
+						 at that now.
+						 </p>
+						 <code>
+@Override
+public Long combine(CombiningContext context, Map<? extends Location<?>, Long> results) throws IOException,
+      InterruptedException {
+    
+  Long total = 0l;
+    
+  for(Long shardTotal: results.values()) {
+    total += shardTotal;
+  }
+    
+  return total;
+}						 
+						 </code>
+						 <p>
+						 Again, we're given some execution context (which we don't need for our sample command) and we're
+						 given a <code>Map</code> of results that contain a Location as the key and result as the value.
+						 At this point, at this point Location is actually a <code>Shard</code> class that lets you know
+						 where the response came from.  For our sample command, all we need to do is add up all the document
+						 counts and return it.
+						 </p>
+						 <p>
+						 So we've found the result on a single index, combined those results for all shards hosted on a given
+						 Shard server, now all there is to do is further combine all the results from all the Shard servers,
+						 right?  Well, we've found that for many commands, the combine that would be executed to collapse shards
+						 on a server is actually exactly that same as to combine all the results across the cluster, so 
+						 by default Blur just re-uses the combine method. So, we're effectively done with the bulk of the command
+						 implementation, but let's go back now and look at the whole <code>Command</code> together and explore
+						 the house-keeping bits.
+						 </p>
+						 <pre>
+						 
+						 </pre>
+						 
+          </section>          
         </div>
       </div>
     </div>

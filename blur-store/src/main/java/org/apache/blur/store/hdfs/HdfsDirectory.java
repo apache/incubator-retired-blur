@@ -135,16 +135,23 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   }
 
   private MetricsGroup createNewMetricsGroup(String scope) {
-    MetricName readAccessName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Latency in \u00B5s", scope);
+    MetricName readRandomAccessName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Random Latency in \u00B5s", scope);
+    MetricName readStreamAccessName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Stream Latency in \u00B5s", scope);
     MetricName writeAcccessName = new MetricName(ORG_APACHE_BLUR, HDFS, "Write Latency in \u00B5s", scope);
-    MetricName readThroughputName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Throughput", scope);
+    MetricName readRandomThroughputName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Random Throughput", scope);
+    MetricName readStreamThroughputName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Stream Throughput", scope);
+    MetricName readSeekName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Stream Seeks", scope);
     MetricName writeThroughputName = new MetricName(ORG_APACHE_BLUR, HDFS, "Write Throughput", scope);
 
-    Histogram readAccess = Metrics.newHistogram(readAccessName);
+    Histogram readRandomAccess = Metrics.newHistogram(readRandomAccessName);
+    Histogram readStreamAccess = Metrics.newHistogram(readStreamAccessName);
     Histogram writeAccess = Metrics.newHistogram(writeAcccessName);
-    Meter readThroughput = Metrics.newMeter(readThroughputName, "Read Bytes", TimeUnit.SECONDS);
+    Meter readRandomThroughput = Metrics.newMeter(readRandomThroughputName, "Read Random Bytes", TimeUnit.SECONDS);
+    Meter readStreamThroughput = Metrics.newMeter(readStreamThroughputName, "Read Stream Bytes", TimeUnit.SECONDS);
+    Meter readStreamSeek = Metrics.newMeter(readSeekName, "Read Stream Seeks", TimeUnit.SECONDS);
     Meter writeThroughput = Metrics.newMeter(writeThroughputName, "Write Bytes", TimeUnit.SECONDS);
-    return new MetricsGroup(readAccess, writeAccess, readThroughput, writeThroughput);
+    return new MetricsGroup(readRandomAccess, readStreamAccess, writeAccess, readRandomThroughput,
+        readStreamThroughput, readStreamSeek, writeThroughput);
   }
 
   @Override
@@ -209,7 +216,8 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     }
     FSDataInputStream inputStream = openForInput(name);
     long fileLength = fileLength(name);
-    return new HdfsIndexInput(name, inputStream, fileLength, _metricsGroup, getPath(name));
+    
+    return new HdfsRandomAccessIndexInput(name, inputStream, fileLength, _metricsGroup, getPath(name));
   }
 
   protected synchronized FSDataInputStream openForInput(String name) throws IOException {

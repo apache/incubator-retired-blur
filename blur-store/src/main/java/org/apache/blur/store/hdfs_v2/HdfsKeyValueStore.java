@@ -162,6 +162,7 @@ public class HdfsKeyValueStore implements Store {
   private Path _outputPath;
   private final long _maxAmountAllowedPerFile;
   private boolean _isClosed;
+  private final TimerTask _timerTask;
 
   public HdfsKeyValueStore(Timer hdfsKeyValueTimer, Configuration configuration, Path path) throws IOException {
     this(hdfsKeyValueTimer, configuration, path, DEFAULT_MAX);
@@ -182,7 +183,7 @@ public class HdfsKeyValueStore implements Store {
     }
     removeAnyTruncatedFiles();
     loadIndexes();
-    addToTimer(hdfsKeyValueTimer);
+    _timerTask = addToTimer(hdfsKeyValueTimer);
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, HDFS_KV, SIZE, path.getParent().toString()), new Gauge<Long>() {
       @Override
       public Long value() {
@@ -206,7 +207,7 @@ public class HdfsKeyValueStore implements Store {
     }
   }
 
-  private void addToTimer(Timer hdfsKeyValueTimer) {
+  private TimerTask addToTimer(Timer hdfsKeyValueTimer) {
     _writeLock.lock();
     try {
       try {
@@ -217,7 +218,7 @@ public class HdfsKeyValueStore implements Store {
     } finally {
       _writeLock.unlock();
     }
-    hdfsKeyValueTimer.schedule(new TimerTask() {
+    TimerTask timerTask = new TimerTask() {
       @Override
       public void run() {
         _writeLock.lock();
@@ -242,8 +243,9 @@ public class HdfsKeyValueStore implements Store {
           _writeLock.unlock();
         }
       }
-    }, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
-
+    };
+    hdfsKeyValueTimer.schedule(timerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
+    return timerTask;
   }
 
   @Override
@@ -357,6 +359,7 @@ public class HdfsKeyValueStore implements Store {
   private void rollFile() throws IOException {
     LOG.info("Rolling file [" + _outputPath + "]");
     _output.close();
+    _output = null;
     openWriter();
   }
 
@@ -446,15 +449,16 @@ public class HdfsKeyValueStore implements Store {
 
   @Override
   public void close() throws IOException {
-    if (_isClosed) {
+    if (!_isClosed) {
+      _isClosed = true;
+      _timerTask.cancel();
       _writeLock.lock();
       try {
-        syncInternal();
-        if (_output != null) {
+        if (isOpenForWriting()) {
+          syncInternal();
           _output.close();
+          _output = null;
         }
-        _fileSystem.close();
-        _isClosed = true;
       } finally {
         _writeLock.unlock();
       }

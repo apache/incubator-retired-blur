@@ -317,7 +317,7 @@ public abstract class ReusedBufferedIndexInput extends IndexInput {
   protected abstract void seekInternal(long pos) throws IOException;
 
   @Override
-  public ReusedBufferedIndexInput clone() {
+  public IndexInput clone() {
     ReusedBufferedIndexInput clone = (ReusedBufferedIndexInput) super.clone();
 
     clone.buffer = null;

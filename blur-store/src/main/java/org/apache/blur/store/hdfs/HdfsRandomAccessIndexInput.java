@@ -24,16 +24,16 @@ import org.apache.blur.trace.Tracer;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 
-public class HdfsIndexInput extends ReusedBufferedIndexInput {
+public class HdfsRandomAccessIndexInput extends ReusedBufferedIndexInput {
 
   private final long _length;
   private FSDataInputStream _inputStream;
   private final MetricsGroup _metricsGroup;
   private final Path _path;
 
-  public HdfsIndexInput(String name, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup, Path path)
-      throws IOException {
-    super("HdfsIndexInput(" + path.toString() + ")");
+  public HdfsRandomAccessIndexInput(String name, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup,
+      Path path) throws IOException {
+    super("HdfsRandomAccessIndexInput(" + path.toString() + ")");
     _inputStream = inputStream;
     _length = length;
     _metricsGroup = metricsGroup;
@@ -57,6 +57,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
     try {
       long start = System.nanoTime();
       long filePointer = getFilePointer();
+      int olen = length;
       while (length > 0) {
         int amount;
         amount = _inputStream.read(filePointer, b, offset, length);
@@ -65,8 +66,8 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
         filePointer += amount;
       }
       long end = System.nanoTime();
-      _metricsGroup.readAccess.update((end - start) / 1000);
-      _metricsGroup.readThroughput.mark(length);
+      _metricsGroup.readRandomAccess.update((end - start) / 1000);
+      _metricsGroup.readRandomThroughput.mark(olen);
     } finally {
       trace.done();
     }
@@ -74,8 +75,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
 
   @Override
   public ReusedBufferedIndexInput clone() {
-    HdfsIndexInput clone = (HdfsIndexInput) super.clone();
-    return clone;
+    return (HdfsRandomAccessIndexInput) super.clone();
   }
 
   @Override

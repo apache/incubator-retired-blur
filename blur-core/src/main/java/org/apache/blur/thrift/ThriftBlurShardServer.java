@@ -84,7 +84,6 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
-import org.apache.blur.manager.writer.BlurIndexRefresher;
 import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ShardServerEventHandler;
@@ -107,9 +106,9 @@ import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.zookeeper.ZooKeeper;
-
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
+
 import sun.misc.VM;
 
 public class ThriftBlurShardServer extends ThriftServer {
@@ -195,8 +194,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     BlurUtil.setupZookeeper(zooKeeper, cluster);
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration, config);
-
-    final BlurIndexRefresher refresher = new BlurIndexRefresher();
 
     BlurFilterCache filterCache = getFilterCache(configuration);
 
@@ -323,7 +320,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
         quietClose(makeCloseable(hdfsKeyValueTimer), makeCloseable(indexImporterTimer), blockCacheDirectoryFactory,
-            commandManager, traceStorage, refresher, server, shardServer, indexManager, indexServer, threadWatcher,
+            commandManager, traceStorage, server, shardServer, indexManager, indexServer, threadWatcher,
             clusterStatus, zooKeeper, httpServer);
       }
     };

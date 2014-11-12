@@ -359,6 +359,7 @@ public class HdfsKeyValueStore implements Store {
   private void rollFile() throws IOException {
     LOG.info("Rolling file [" + _outputPath + "]");
     _output.close();
+    _output = null;
     openWriter();
   }
 
@@ -449,15 +450,15 @@ public class HdfsKeyValueStore implements Store {
   @Override
   public void close() throws IOException {
     if (!_isClosed) {
+      _isClosed = true;
       _timerTask.cancel();
       _writeLock.lock();
       try {
-        syncInternal();
-        if (_output != null) {
+        if (isOpenForWriting()) {
+          syncInternal();
           _output.close();
+          _output = null;
         }
-        _fileSystem.close();
-        _isClosed = true;
       } finally {
         _writeLock.unlock();
       }

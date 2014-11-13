@@ -57,7 +57,8 @@
             <ul class="nav bs-sidenav">
             <li><a href="#intro">Introduction</a></li>
             <li><a href="#motivation">Motivation</a></li>
-            <li><a href="#arch">Blur Architecture Review</a></li>            
+            <li><a href="#arch">Blur Architecture Review</a></li>  
+            <li><a href="#affordances">Platform Affordances</a></li>             
             <li><a href="#commands">Command Overview</a></li>
             <li><a href="#arguments">Arguments</a></li>
             <li><a href="#installation">Installation</a></li>
@@ -150,6 +151,15 @@
           </section>
           <section>
             <div class="page-header">
+              <h2 id="affordances">Platform Affordances</h2>
+            </div>
+            <p>
+							<code>@TODO</code>
+						</p>	
+						
+          </section>          
+          <section>
+            <div class="page-header">
               <h2 id="commands">Command Overview</h2>
             </div>
             <p>
@@ -204,16 +214,36 @@ public Long combine(CombiningContext context, Iterable<Long> results) throws IOE
               <h2 id="arguments">Arguments</h2>
             </div>
             <p>
-			
+							Recall from above that in the execute method we were able to use some member variables that
+							were treated like arguments to the command.  Now, let's take a closer look how they were provided.
 						</p>	
-
+						<p>
+							We've kept it very simple for you to declare arguments and for your users	to provide arguments. We provide
+							two simple annotations that you can place right on your member field declarations indicating whether 
+							they are required or optional.  You can [and are encouraged to] provide some helpful documentation
+							on the intent of the argument.  As an example, by extending the <code>TableReadCommand</code> you get
+							the <code>table</code> argument as required for free.  Let's look at how it's declared:
+						</p>
+						<pre>
+@RequiredArgument("The name of the table.")
+private String table;						
+						</pre>
+						<p>Naturally, we can also declare optional arguments as well:</p>
+						<pre>
+@OptionalArgument("The number of results to be returned. default=10")
+private short size = 10;						
+						</pre>
+						<p>
+						  By annotating your parameters, the Blur Platform is able to do the basic requirement checking for you 
+						  allowing you to keep the inside of your execute/combine clean of argument validation.
+						</p>
           </section>  
           <section>
             <div class="page-header">
               <h2 id="installation">Installation</h2>
             </div>
             <p>
-			
+							<code>@TODO</code>			
 						</p>	
 
           </section>   
@@ -222,7 +252,7 @@ public Long combine(CombiningContext context, Iterable<Long> results) throws IOE
               <h2 id="docs">Documentation</h2>
             </div>
             <p>
-			
+							<code>@TODO</code>			
 						</p>	
 
           </section>             
@@ -231,7 +261,7 @@ public Long combine(CombiningContext context, Iterable<Long> results) throws IOE
               <h2 id="cli">CLI</h2>
             </div>
             <p>
-			
+							<code>@TODO</code>			
 						</p>	
 
           </section>                             

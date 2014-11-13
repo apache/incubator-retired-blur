@@ -228,7 +228,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     Path path = getPath(name);
     Tracer trace = Trace.trace("filesystem - create", Trace.param("path", path));
     try {
-      return _fileSystem.create(path, true, 1024 * 1024);
+      return _fileSystem.create(path);
     } finally {
       trace.done();
     }

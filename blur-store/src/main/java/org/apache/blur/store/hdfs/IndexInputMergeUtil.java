@@ -20,7 +20,7 @@ import org.apache.blur.utils.BlurConstants;
 
 public class IndexInputMergeUtil {
 
-  private static boolean streamSwitch = false;
+  private static boolean streamSwitch = true;
 
   public static boolean isMergeThread() {
     if (!streamSwitch) {

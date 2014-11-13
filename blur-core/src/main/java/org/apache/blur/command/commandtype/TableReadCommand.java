@@ -20,26 +20,24 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.blur.command.CombiningContext;
-import org.apache.blur.command.IndexContext;
 import org.apache.blur.command.Location;
-import org.apache.blur.command.annotation.RequiredArgument;
-import org.apache.lucene.index.Term;
 
 /**
  * <p>
- * The TableReadCommand is a base command over a single table for use when 
- * the return type from an individual shard is the same as the return type 
- * for the combine.  
+ * The TableReadCommand is a base command over a single table for use when the
+ * return type from an individual shard is the same as the return type for the
+ * combine.
  * </p>
  * <p>
  * Example usage:
+ * 
  * <pre>
  * public class DocFreqCommand extends TableReadCommand<Long> {
  * private static final String NAME = "docFreq";
- *
+ * 
  * @RequiredArgument
  * private String fieldName;
- *
+ * 
  * @RequiredArgument
  * private String term;
  * ...
@@ -64,6 +62,7 @@ import org.apache.lucene.index.Term;
  * ...
  * }
  * </pre>
+ * 
  * </p>
  */
 public abstract class TableReadCommand<T> extends ClusterServerReadCommandSingleTable<T> {

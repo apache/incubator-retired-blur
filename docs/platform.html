@@ -252,8 +252,16 @@ private short size = 10;
               <h2 id="docs">Documentation</h2>
             </div>
             <p>
-							<code>@TODO</code>			
+							Commands should be self-documenting starting with a good name.  But good naming
+							is not sufficient, so Blur offers a <code>@Description</code> annotation to provide
+							a nice way to better express what your command does.  It's simply used like so:	
 						</p>	
+						<pre>
+@Description("Returns the number of documents containing the term in the given field.")
+public class DocFreqCommand extends TableReadCommand<Long> {
+  ...
+}						
+						</pre>
 
           </section>             
           <section>

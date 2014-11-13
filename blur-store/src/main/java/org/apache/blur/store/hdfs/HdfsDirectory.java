@@ -37,6 +37,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache.LastModified;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -83,13 +84,37 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     final long _length;
   }
 
+  static class StreamPair {
+
+    final FSDataInputStream _random;
+    final FSDataInputStream _stream;
+
+    StreamPair(FSDataInputStream random, FSDataInputStream stream) {
+      _random = random;
+      _stream = stream;
+    }
+
+    void close() {
+      IOUtils.closeQuietly(_random);
+      IOUtils.closeQuietly(_stream);
+    }
+
+    FSDataInputStream getInputStream(boolean stream) {
+      if (stream) {
+        return _stream;
+      }
+      return _random;
+    }
+
+  }
+
   protected final Path _path;
   protected final FileSystem _fileSystem;
   protected final MetricsGroup _metricsGroup;
   protected final Map<String, FStat> _fileStatusMap = new ConcurrentHashMap<String, FStat>();
   protected final Map<String, Boolean> _symlinkMap = new ConcurrentHashMap<String, Boolean>();
   protected final Map<String, Path> _symlinkPathMap = new ConcurrentHashMap<String, Path>();
-  protected final Map<Path, FSDataInputStream> _inputMap = new ConcurrentHashMap<Path, FSDataInputStream>();
+  protected final Map<Path, StreamPair> _inputMap = new ConcurrentHashMap<Path, StreamPair>();
   protected final boolean _useCache = true;
 
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
@@ -188,7 +213,8 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
         super.close();
         _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), outputStream.getPos()));
         outputStream.close();
-        openForInput(name);
+        openForInput(name, true);
+        openForInput(name, false);
       }
 
       @Override
@@ -202,7 +228,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     Path path = getPath(name);
     Tracer trace = Trace.trace("filesystem - create", Trace.param("path", path));
     try {
-      return _fileSystem.create(path);
+      return _fileSystem.create(path, true, 1024 * 1024);
     } finally {
       trace.done();
     }
@@ -214,23 +240,27 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     if (!fileExists(name)) {
       throw new FileNotFoundException("File [" + name + "] not found.");
     }
-    FSDataInputStream inputStream = openForInput(name);
+    FSDataInputStream inputRandomAccess = openForInput(name, false);
+    FSDataInputStream inputStreamAccess = openForInput(name, true);
     long fileLength = fileLength(name);
-    
-    return new HdfsRandomAccessIndexInput(name, inputStream, fileLength, _metricsGroup, getPath(name));
+    Path path = getPath(name);
+    HdfsStreamIndexInput streamInput = new HdfsStreamIndexInput(inputStreamAccess, fileLength, _metricsGroup, path);
+    return new HdfsRandomAccessIndexInput(inputRandomAccess, fileLength, _metricsGroup, path, streamInput);
   }
 
-  protected synchronized FSDataInputStream openForInput(String name) throws IOException {
+  protected synchronized FSDataInputStream openForInput(String name, boolean stream) throws IOException {
     Path path = getPath(name);
-    FSDataInputStream inputStream = _inputMap.get(path);
-    if (inputStream != null) {
-      return inputStream;
+    StreamPair streamPair = _inputMap.get(path);
+    if (streamPair != null) {
+      return streamPair.getInputStream(stream);
     }
     Tracer trace = Trace.trace("filesystem - open", Trace.param("path", path));
     try {
-      inputStream = _fileSystem.open(path);
-      _inputMap.put(path, inputStream);
-      return inputStream;
+      FSDataInputStream randomInputStream = _fileSystem.open(path);
+      FSDataInputStream streamInputStream = _fileSystem.open(path);
+      streamPair = new StreamPair(randomInputStream, streamInputStream);
+      _inputMap.put(path, streamPair);
+      return streamPair.getInputStream(stream);
     } finally {
       trace.done();
     }
@@ -301,10 +331,10 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   protected void delete(String name) throws IOException {
     Path path = getPathOrSymlink(name);
-    FSDataInputStream inputStream = _inputMap.remove(path);
+    StreamPair streamPair = _inputMap.remove(path);
     Tracer trace = Trace.trace("filesystem - delete", Trace.param("path", path));
-    if (inputStream != null) {
-      inputStream.close();
+    if (streamPair != null) {
+      streamPair.close();
     }
     if (_useCache) {
       _symlinkMap.remove(name);

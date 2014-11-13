@@ -36,6 +36,8 @@ import org.apache.blur.concurrent.Executors;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.store.hdfs.BlurLockFactory;
+import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
@@ -49,11 +51,13 @@ import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.TraceCollector;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.LockFactory;
 import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
@@ -115,7 +119,14 @@ public class BlurIndexSimpleWriterTest {
     TableContext tableContext = TableContext.create(tableDescriptor);
     File path = new File(_base, "index_" + uuid);
     path.mkdirs();
-    FSDirectory directory = FSDirectory.open(path);
+
+    Path hdfsPath = new Path(path.toURI());
+    HdfsDirectory directory = new HdfsDirectory(_configuration, hdfsPath);
+    BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsPath, "unit-test", BlurUtil.getPid());
+    directory.setLockFactory(lockFactory);
+
+    // FSDirectory directory = FSDirectory.open(path);
+
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
     _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer, _timer);
   }
@@ -192,11 +203,11 @@ public class BlurIndexSimpleWriterTest {
 
       @Override
       public void store(TraceCollector collector) {
-        try {
-          System.out.println(collector.toJsonObject());
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
+//        try {
+//          System.out.println(collector.toJsonObject().toString(1));
+//        } catch (JSONException e) {
+//          e.printStackTrace();
+//        }
       }
     });
     Trace.setupTrace("test");

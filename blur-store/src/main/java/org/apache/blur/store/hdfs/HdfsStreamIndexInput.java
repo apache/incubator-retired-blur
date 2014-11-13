@@ -18,7 +18,6 @@ package org.apache.blur.store.hdfs;
 
 import java.io.IOException;
 
-import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.IndexInput;
@@ -37,8 +36,8 @@ public class HdfsStreamIndexInput extends IndexInput {
 
   private long _postion;
 
-  public HdfsStreamIndexInput(String name, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup,
-      Path path) throws IOException {
+  public HdfsStreamIndexInput(FSDataInputStream inputStream, long length, MetricsGroup metricsGroup, Path path)
+      throws IOException {
     super("HdfsStreamIndexInput(" + path.toString() + ")");
     _inputStream = inputStream;
     _length = length;
@@ -52,22 +51,17 @@ public class HdfsStreamIndexInput extends IndexInput {
   private void checkPosition() throws IOException {
     long pos = _inputStream.getPos();
     if (pos != _postion) {
-      _inputStream.seek(pos);
+      _inputStream.seek(_postion);
       _readStreamSeek.mark();
     }
   }
 
-  public static boolean isMergeThread() {
-    String name = Thread.currentThread().getName();
-    if (name.startsWith(BlurConstants.SHARED_MERGE_SCHEDULER_PREFIX)) {
-      return true;
-    }
-    return false;
-  }
-
   @Override
   public IndexInput clone() {
-    return super.clone();
+    if (IndexInputMergeUtil.isMergeThread()) {
+      return super.clone();
+    }
+    throw new RuntimeException("who is doing this?");
   }
 
   @Override
@@ -77,11 +71,7 @@ public class HdfsStreamIndexInput extends IndexInput {
 
   @Override
   public long getFilePointer() {
-    try {
-      return _inputStream.getPos();
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    return _postion;
   }
 
   @Override

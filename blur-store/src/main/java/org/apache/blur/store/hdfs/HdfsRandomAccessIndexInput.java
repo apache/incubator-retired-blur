@@ -23,21 +23,24 @@ import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
+import org.apache.lucene.store.IndexInput;
 
 public class HdfsRandomAccessIndexInput extends ReusedBufferedIndexInput {
 
   private final long _length;
-  private FSDataInputStream _inputStream;
+  private final FSDataInputStream _inputStream;
   private final MetricsGroup _metricsGroup;
   private final Path _path;
+  private final HdfsStreamIndexInput _streamInput;
 
-  public HdfsRandomAccessIndexInput(String name, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup,
-      Path path) throws IOException {
+  public HdfsRandomAccessIndexInput(FSDataInputStream inputStream, long length, MetricsGroup metricsGroup, Path path,
+      HdfsStreamIndexInput streamInput) throws IOException {
     super("HdfsRandomAccessIndexInput(" + path.toString() + ")");
     _inputStream = inputStream;
     _length = length;
     _metricsGroup = metricsGroup;
     _path = path;
+    _streamInput = streamInput;
   }
 
   @Override
@@ -74,7 +77,16 @@ public class HdfsRandomAccessIndexInput extends ReusedBufferedIndexInput {
   }
 
   @Override
-  public ReusedBufferedIndexInput clone() {
+  public IndexInput clone() {
+    if (IndexInputMergeUtil.isMergeThread()) {
+      IndexInput clone = _streamInput.clone();
+      try {
+        clone.seek(getFilePointer());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+      return clone;
+    }
     return (HdfsRandomAccessIndexInput) super.clone();
   }
 

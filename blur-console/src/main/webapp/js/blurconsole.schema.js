@@ -21,7 +21,7 @@ under the License.
 /*global blurconsole:false */
 blurconsole.schema = (function () {
   'use strict';
-    
+
     //----------------------------- Configuration and State -------------------------
   var
     configMap = {

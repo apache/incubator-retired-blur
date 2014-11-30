@@ -20,7 +20,7 @@ under the License.
 /*global blurconsole:false, Intl:false */
 blurconsole.utils = (function(){
   'use strict';
-    
+
     //-------------------------- Public API ----------------------------
   function inject(collection, initial, block) {
     if (collection === null || collection.length === 0) {

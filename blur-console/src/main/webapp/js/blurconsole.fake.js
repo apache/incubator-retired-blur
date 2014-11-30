@@ -274,6 +274,16 @@ blurconsole.fake = (function() {
     }
   }
 
+  function runFacetCount(query, table, facetQuery, callback) {
+    console.log('sending fake facet count [' + facetQuery + '] on table [' + table + '] on against query [' + query + ']');
+    var terms = facetQuery.match(/:\((.*)\)\)/)[1].split(' ');
+    var data = {};
+    $.each(terms, function(i, term){
+      data[term] = _randomNumber(100, true);
+    });
+    _sendCallback(callback, data);
+  }
+
   function initModule() {
     $('nav.navbar .pull-right').append('<button type="button" id="fake_freeze" class="btn btn-default btn-sm">Freeze</button>');
     $('#fake_freeze').click(_toggleFreeze);
@@ -292,6 +302,7 @@ blurconsole.fake = (function() {
     getSchema : getSchema,
     findTerms : findTerms,
     copyTable : copyTable,
-    sendSearch : sendSearch
+    sendSearch : sendSearch,
+    runFacetCount: runFacetCount
   };
 }());

@@ -481,11 +481,16 @@ blurconsole.model = (function() {
       _sendSearch();
     }
 
+    function runFacetCount( query, table, facetQuery, callback ) {
+      configMap.poller.runFacetCount(query, table, facetQuery, callback);
+    }
+
     return {
       runSearch: runSearch,
       getResults: getResults,
       loadMoreResults: loadMoreResults,
-      getTotal: getTotal
+      getTotal: getTotal,
+      runFacetCount: runFacetCount
     };
   }());
 

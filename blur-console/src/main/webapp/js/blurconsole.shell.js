@@ -155,6 +155,7 @@ blurconsole.shell = (function () {
     _setJqueryMap();
 
     blurconsole.schema.initModule();
+    blurconsole.facets.initModule();
     blurconsole.logging.initModule();
 
     $('#dashboard_tab').show();

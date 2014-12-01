@@ -334,6 +334,7 @@ under the License.
 						<!-- JS Libraries that could not be included through bower -->
 						<exclude>**/src/main/webapp/js/utils/*</exclude>
 						<exclude>**/src/main/webapp/public/js/modernizr.js</exclude>
+						<exclude>**/src/main/webapp/less/tagmanager.less</exclude>
 
 						<!-- Files used for building the UI -->
 						<exclude>**/src/main/webapp/node_modules/**</exclude>

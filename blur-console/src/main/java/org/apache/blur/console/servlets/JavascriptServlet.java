@@ -30,6 +30,6 @@ public class JavascriptServlet  extends BaseConsoleServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException {
     String javascript = "blurconsole.config = {refreshtime: " + Config.getInt("blur.console.refreshtime", Config.DEFAULT_REFRESH_TIME) + "}";
-    HttpUtil.sendResponse(res, javascript, HttpUtil.TEXT);
+    HttpUtil.sendResponse(res, javascript, HttpUtil.JS);
   }
 }

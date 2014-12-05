@@ -128,7 +128,20 @@ blurconsole.data = (function() {
       'data': params,
       'success': callback,
       'error': function(xhr) {
-        _handleError(xhr, 'tables');
+        _handleError(xhr, 'search');
+      }
+    });
+  }
+
+  function runFacetCount(query, table, family, column, terms, callback) {
+    var params = {table: table, query: query, family: family, column: column, terms: terms};
+
+    $.ajax('service/search/facets', {
+      'type': 'POST',
+      'data': params,
+      'success': callback,
+      'error': function(xhr) {
+        _handleError(xhr, 'search');
       }
     });
   }
@@ -145,6 +158,7 @@ blurconsole.data = (function() {
     getSchema : getSchema,
     findTerms : findTerms,
     copyTable : copyTable,
-    sendSearch : sendSearch
+    sendSearch : sendSearch,
+    runFacetCount : runFacetCount
   };
 }());

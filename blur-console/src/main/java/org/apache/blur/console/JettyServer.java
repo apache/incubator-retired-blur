@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.session.HashSessionIdManager;
 import org.eclipse.jetty.server.session.HashSessionManager;
@@ -32,6 +33,7 @@ import org.eclipse.jetty.servlet.*;
 import org.eclipse.jetty.webapp.WebAppContext;
 
 import javax.servlet.DispatcherType;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -77,29 +79,31 @@ public class JettyServer {
       }
     String warUrlString = warUrl.toExternalForm();
     WebAppContext staticContext = new WebAppContext(warUrlString, CONTEXTPATH);
-
+    staticContext.setSessionHandler(new SessionHandler());
 
     // service calls
-    ContextHandler servletContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
-    servletContext.setContextPath("/console/service");
+//    ContextHandler servletContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
+//    servletContext.setContextPath("/console/service");
     ServletHandler serviceHandler = new ServletHandler();
-    serviceHandler.addServletWithMapping(AuthServlet.class, "/auth/*");
-    serviceHandler.addServletWithMapping(NodesServlet.class, "/nodes/*");
-    serviceHandler.addServletWithMapping(TablesServlet.class, "/tables/*");
-    serviceHandler.addServletWithMapping(QueriesServlet.class, "/queries/*");
-    serviceHandler.addServletWithMapping(SearchServlet.class, "/search/*");
-    serviceHandler.addServletWithMapping(JavascriptServlet.class, "/config.js");
-    serviceHandler.addFilterWithMapping(LoggedInFilter.class, "/*", FilterMapping.REQUEST);
-    servletContext.setHandler(serviceHandler);
+    serviceHandler.addServletWithMapping(AuthServlet.class, "/service/auth/*");
+    serviceHandler.addServletWithMapping(NodesServlet.class, "/service/nodes/*");
+    serviceHandler.addServletWithMapping(TablesServlet.class, "/service/tables/*");
+    serviceHandler.addServletWithMapping(QueriesServlet.class, "/service/queries/*");
+    serviceHandler.addServletWithMapping(SearchServlet.class, "/service/search/*");
+    serviceHandler.addServletWithMapping(JavascriptServlet.class, "/service/config.js");
+    serviceHandler.addFilterWithMapping(LoggedInFilter.class, "/service/*", FilterMapping.REQUEST);
+//    servletContext.setHandler(serviceHandler);
+    staticContext.setServletHandler(serviceHandler);
 
 
-    HandlerList handlers = new HandlerList();
-    handlers.setHandlers(new Handler[] { servletContext, staticContext  });
+//    ContextHandlerCollection handlers = new ContextHandlerCollection();
+//    handlers.setHandlers(new Handler[] { /*servletContext,*/ staticContext  });
 
-    server.setHandler(handlers);
+    server.setHandler(staticContext);
     System.out.println("started server on http://localhost:" + port + CONTEXTPATH);
     try {
       server.start();
+      System.out.println(server.getHandlers()[0]);
     } catch (Exception e) {
       log.error("Error starting Blur Console Jetty Server.  Exiting", e);
       System.exit(1);

@@ -151,8 +151,7 @@ blurconsole.facets = (function () {
 
     if (family && column && terms.length > 0) {
       $('.facetWarning', jqueryMap.modal).hide();
-      var facetQuery = '+(+' + family + '.' + column + ':(' + terms.join(' ') + '))';
-      blurconsole.model.search.runFacetCount(stateMap.query, stateMap.table, facetQuery, _displayFacetCounts);
+      blurconsole.model.search.runFacetCount(stateMap.query, stateMap.table, family, column, terms, _displayFacetCounts);
     } else {
       $('.facetWarning', jqueryMap.modal).show();
     }

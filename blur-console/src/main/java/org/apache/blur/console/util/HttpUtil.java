@@ -25,6 +25,7 @@ import java.io.IOException;
 public class HttpUtil {
   public static final String JSON = "application/json";
   public static final String TEXT = "plain/text";
+  public static final String JS = "text/javascript";
 
   public static void sendResponse(HttpServletResponse res, String body, String contentType) throws IOException {
     res.setContentType(contentType);

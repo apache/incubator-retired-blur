@@ -274,9 +274,8 @@ blurconsole.fake = (function() {
     }
   }
 
-  function runFacetCount(query, table, facetQuery, callback) {
-    console.log('sending fake facet count [' + facetQuery + '] on table [' + table + '] on against query [' + query + ']');
-    var terms = facetQuery.match(/:\((.*)\)\)/)[1].split(' ');
+  function runFacetCount(query, table, family, column, terms, callback) {
+    console.log('sending fake facet count [' + terms + '] on table [' + table + '] on against query [' + query + ']');
     var data = {};
     $.each(terms, function(i, term){
       data[term] = _randomNumber(100, true);

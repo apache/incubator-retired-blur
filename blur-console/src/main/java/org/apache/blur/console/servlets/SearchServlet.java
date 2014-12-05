@@ -38,6 +38,8 @@ public class SearchServlet extends BaseConsoleServlet {
     String path = req.getPathInfo();
     if (path == null) {
       search(req, res);
+    } else if ("/facets".equalsIgnoreCase(path)) {
+      facetSearch(req, res);
     } else {
       sendNotFound(res, req.getRequestURI());
     }
@@ -49,6 +51,22 @@ public class SearchServlet extends BaseConsoleServlet {
     Map<String, Object> results = new HashMap<String, Object>();
     try {
       results = SearchUtil.search(params, currentUser(req));
+    } catch (IOException e) {
+      throw new IOException(e);
+    } catch (Exception e) {
+      sendError(res, e);
+      return;
+    }
+
+    HttpUtil.sendResponse(res, new ObjectMapper().writeValueAsString(results), HttpUtil.JSON);
+  }
+
+  private void facetSearch(HttpServletRequest req, HttpServletResponse res) throws IOException {
+    authorize(req, User.SEARCHER_ROLE);
+    Map<String, String[]> params = req.getParameterMap();
+    Map<String, Long> results = new HashMap<String, Long>();
+    try {
+      results = SearchUtil.facetSearch(params, currentUser(req));
     } catch (IOException e) {
       throw new IOException(e);
     } catch (Exception e) {

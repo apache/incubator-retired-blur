@@ -481,8 +481,8 @@ blurconsole.model = (function() {
       _sendSearch();
     }
 
-    function runFacetCount( query, table, facetQuery, callback ) {
-      configMap.poller.runFacetCount(query, table, facetQuery, callback);
+    function runFacetCount( query, table, family, column, terms, callback ) {
+      configMap.poller.runFacetCount(query, table, family, column, terms, callback);
     }
 
     return {

@@ -52,6 +52,40 @@ public class SearchUtil {
     return searchAndFetch(table, query, rowQuery, start, fetch, families, user, securityUser);
   }
 
+  public static Map<String, Long> facetSearch(Map<String, String[]> params, User user) throws IOException, TException {
+    String table = HttpUtil.getFirstParam(params.get("table"));
+    String query = HttpUtil.getFirstParam(params.get("query"));
+    String family = HttpUtil.getFirstParam(params.get("family"));
+    String column = HttpUtil.getFirstParam(params.get("column"));
+    String[] terms = params.get("terms[]");
+    String rowQuery = HttpUtil.getFirstParam(params.get("rowRecordOption"));
+    String securityUser = HttpUtil.getFirstParam(params.get("securityUser"));
+    
+    System.out.println(params);
+
+    Iface client = Config.getClient(user, securityUser);
+
+    BlurQuery blurQuery = new BlurQuery();
+
+    Query q = new Query(query, ROW_ROW_OPTION.equalsIgnoreCase(rowQuery), ScoreType.SUPER, null, null);
+    blurQuery.setQuery(q);
+    blurQuery.setUserContext(user.getName());
+    for(String term : terms) {
+    	blurQuery.addToFacets(new Facet("+(+" + family + "." + column + ":(" + term + "))", 1000));
+    }
+
+    BlurResults blurResults = client.query(table, blurQuery);
+
+    List<Long> facetCounts = blurResults.getFacetCounts();
+    
+    Map<String, Long> countMap = new HashMap<String, Long>();
+    for (int i = 0; i < terms.length; i++) {
+    	countMap.put(terms[i], facetCounts.get(i));
+    }
+
+    return countMap;
+  }
+
   @SuppressWarnings({"unchecked", "rawtypes"})
   private static Map<String, Object> searchAndFetch(String table, String query, String rowQuery, String start, String fetch, String[] families, User user, String securityUser) throws IOException, TException {
     try {

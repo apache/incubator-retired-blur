@@ -17,26 +17,27 @@ package org.apache.blur.console;
  * limitations under the License.
  */
 
-import org.apache.blur.console.filters.LoggedInFilter;
-import org.apache.blur.console.servlets.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.session.HashSessionIdManager;
-import org.eclipse.jetty.server.session.HashSessionManager;
-import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.servlet.*;
-import org.eclipse.jetty.webapp.WebAppContext;
-
-import javax.servlet.DispatcherType;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import org.apache.blur.console.filters.LoggedInFilter;
+import org.apache.blur.console.servlets.AuthServlet;
+import org.apache.blur.console.servlets.JavascriptServlet;
+import org.apache.blur.console.servlets.NodesServlet;
+import org.apache.blur.console.servlets.QueriesServlet;
+import org.apache.blur.console.servlets.SearchServlet;
+import org.apache.blur.console.servlets.TablesServlet;
+import org.apache.blur.console.util.Config;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
+import org.eclipse.jetty.servlet.FilterMapping;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 public class JettyServer {
   private int port;
@@ -69,6 +70,19 @@ public class JettyServer {
 
   private void createServer() throws MalformedURLException {
     server = new Server(port);
+    
+    if (Boolean.parseBoolean(Config.getBlurConfig().get("blur.console.ssl.enable", "false"))) {
+    	SslContextFactory factory = new SslContextFactory(Boolean.parseBoolean(Config.getBlurConfig().get("blur.console.ssl.hostname.match", "true")));
+    	factory.setKeyStorePath(Config.getBlurConfig().get("blur.console.ssl.keystore.path"));
+    	factory.setKeyStorePassword(Config.getBlurConfig().get("blur.console.ssl.keystore.password"));
+    	factory.setTrustStore(Config.getBlurConfig().get("blur.console.ssl.truststore.path"));
+    	factory.setTrustStorePassword(Config.getBlurConfig().get("blur.console.ssl.truststore.password"));
+    	
+    	SslSelectChannelConnector sslConnector = new SslSelectChannelConnector(factory);
+    	sslConnector.setPort(port);
+    	
+    	server.addConnector(sslConnector);
+    }
 
     // for localhost:port/console/index.html and whatever else is in the webapp directory
     URL warUrl = null;

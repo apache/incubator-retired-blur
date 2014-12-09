@@ -21,8 +21,10 @@ import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -49,6 +51,8 @@ import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.RowDocumentUtil;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 
@@ -71,7 +75,7 @@ public class MutatableAction extends IndexAction {
   static class UpdateRow extends InternalAction {
 
     static abstract class UpdateRowAction {
-      abstract Row performAction(Row row);
+      abstract IterableRow performAction(IterableRow row);
     }
 
     private final List<UpdateRowAction> _actions = new ArrayList<UpdateRowAction>();
@@ -94,21 +98,17 @@ public class MutatableAction extends IndexAction {
     void deleteRecord(final String recordId) {
       _actions.add(new UpdateRowAction() {
         @Override
-        Row performAction(Row row) {
+        IterableRow performAction(IterableRow row) {
           if (row == null) {
             return null;
           } else {
-            if (row.getRecords() == null) {
-              return row;
-            }
-            Row result = new Row();
-            result.setId(row.getId());
-            for (Record record : row.getRecords()) {
+            List<Record> records = new ArrayList<Record>();
+            for (Record record : row) {
               if (!record.getRecordId().equals(recordId)) {
-                result.addToRecords(record);
+                records.add(record);
               }
             }
-            return result;
+            return new IterableRow(row.getRowId(), records);
           }
         }
       });
@@ -117,32 +117,27 @@ public class MutatableAction extends IndexAction {
     void appendColumns(final Record record) {
       _actions.add(new UpdateRowAction() {
         @Override
-        Row performAction(Row row) {
+        IterableRow performAction(IterableRow row) {
           if (row == null) {
-            row = new Row(_rowId, null);
-            row.addToRecords(record);
-            return row;
+            return new IterableRow(_rowId, Arrays.asList(record));
           } else {
-            Row result = new Row();
-            result.setId(row.getId());
             String recordId = record.getRecordId();
+            List<Record> records = new ArrayList<Record>();
             boolean found = false;
-            if (row.getRecords() != null) {
-              for (Record r : row.getRecords()) {
-                if (!r.getRecordId().equals(recordId)) {
-                  result.addToRecords(r);
-                } else {
-                  found = true;
-                  // Append columns
-                  r.getColumns().addAll(record.getColumns());
-                  result.addToRecords(r);
-                }
+            for (Record r : row) {
+              if (!r.getRecordId().equals(recordId)) {
+                records.add(r);
+              } else {
+                found = true;
+                // Append columns
+                r.getColumns().addAll(record.getColumns());
+                records.add(r);
               }
             }
             if (!found) {
-              result.addToRecords(record);
+              records.add(record);
             }
-            return result;
+            return new IterableRow(_rowId, records);
           }
         }
       });
@@ -151,31 +146,26 @@ public class MutatableAction extends IndexAction {
     void replaceColumns(final Record record) {
       _actions.add(new UpdateRowAction() {
         @Override
-        Row performAction(Row row) {
+        IterableRow performAction(IterableRow row) {
           if (row == null) {
-            row = new Row(_rowId, null);
-            row.addToRecords(record);
-            return row;
+            return new IterableRow(_rowId, Arrays.asList(record));
           } else {
-            Row result = new Row();
-            result.setId(row.getId());
             String recordId = record.getRecordId();
             boolean found = false;
-            if (row.getRecords() != null) {
-              for (Record r : row.getRecords()) {
-                if (!r.getRecordId().equals(recordId)) {
-                  result.addToRecords(r);
-                } else {
-                  found = true;
-                  // Replace columns
-                  result.addToRecords(replaceColumns(r, record));
-                }
+            List<Record> records = new ArrayList<Record>();
+            for (Record r : row) {
+              if (!r.getRecordId().equals(recordId)) {
+                records.add(r);
+              } else {
+                found = true;
+                // Replace columns
+                records.add(replaceColumns(r, record));
               }
             }
             if (!found) {
-              result.addToRecords(record);
+              records.add(record);
             }
-            return result;
+            return new IterableRow(_rowId, records);
           }
         }
       });
@@ -217,25 +207,20 @@ public class MutatableAction extends IndexAction {
     void replaceRecord(final Record record) {
       _actions.add(new UpdateRowAction() {
         @Override
-        Row performAction(Row row) {
+        IterableRow performAction(IterableRow row) {
           if (row == null) {
-            row = new Row(_rowId, null);
-            row.addToRecords(record);
-            return row;
+            return new IterableRow(_rowId, Arrays.asList(record));
           } else {
-            Row result = new Row();
-            result.setId(row.getId());
+            List<Record> records = new ArrayList<Record>();
             String recordId = record.getRecordId();
-            if (row.getRecords() != null) {
-              for (Record r : row.getRecords()) {
-                if (!r.getRecordId().equals(recordId)) {
-                  result.addToRecords(r);
-                }
+            for (Record r : row) {
+              if (!r.getRecordId().equals(recordId)) {
+                records.add(r);
               }
             }
             // Add replacement
-            result.addToRecords(record);
-            return result;
+            records.add(record);
+            return new IterableRow(_rowId, records);
           }
         }
       });
@@ -246,28 +231,79 @@ public class MutatableAction extends IndexAction {
       Selector selector = new Selector();
       selector.setRowId(_rowId);
       IndexManager.populateSelector(searcher, _shard, _table, selector);
-      Row row = null;
+      IterableRow iterableRow = null;
       if (!selector.getLocationId().equals(IndexManager.NOT_FOUND)) {
         FetchResult fetchResult = new FetchResult();
         IndexManager.fetchRow(searcher.getIndexReader(), _table, _shard, selector, fetchResult, null, null, _maxHeap,
             _tableContext, null);
         FetchRowResult rowResult = fetchResult.getRowResult();
         if (rowResult != null) {
-          row = rowResult.getRow();
+          Row r = rowResult.getRow();
+          iterableRow = new IterableRow(r.getId(), r.getRecords());
         }
       }
       for (UpdateRowAction action : _actions) {
-        row = action.performAction(row);
+        iterableRow = action.performAction(iterableRow);
       }
       Term term = createRowId(_rowId);
-      if (row != null && row.getRecords() != null && row.getRecords().size() > 0) {
-        List<List<Field>> docsToUpdate = RowDocumentUtil.getDocs(row, _fieldManager);
-        writer.updateDocuments(term, docsToUpdate);
-        _writeRecordsMeter.mark(docsToUpdate.size());
+      // if (iterableRow != null) {
+      RecordToDocumentIterable docsToUpdate = new RecordToDocumentIterable(iterableRow, _fieldManager);
+      Iterator<Iterable<Field>> iterator = docsToUpdate.iterator();
+      final GenericPeekableIterator<Iterable<Field>> gpi = GenericPeekableIterator.wrap(iterator);
+      if (gpi.peek() != null) {
+        writer.updateDocuments(term, wrapPrimeDoc(new Iterable<Iterable<Field>>() {
+          @Override
+          public Iterator<Iterable<Field>> iterator() {
+            return gpi;
+          }
+        }));
       } else {
         writer.deleteDocuments(term);
       }
+      _writeRecordsMeter.mark(docsToUpdate.count());
+      // }
       _writeRowMeter.mark();
+    }
+
+    Iterable<Iterable<Field>> wrapPrimeDoc(final Iterable<Iterable<Field>> iterable) {
+      return new Iterable<Iterable<Field>>() {
+
+        @Override
+        public Iterator<Iterable<Field>> iterator() {
+          final Iterator<Iterable<Field>> iterator = iterable.iterator();
+          return new Iterator<Iterable<Field>>() {
+
+            private boolean _first = true;
+
+            @Override
+            public boolean hasNext() {
+              return iterator.hasNext();
+            }
+
+            @Override
+            public Iterable<Field> next() {
+              Iterable<Field> fields = iterator.next();
+              if (_first) {
+                _first = false;
+                return addPrimeDocField(fields);
+              } else {
+                return fields;
+              }
+            }
+
+            private Iterable<Field> addPrimeDocField(Iterable<Field> fields) {
+              return new IterablePlusOne<Field>(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE,
+                  Store.NO), fields);
+            }
+
+            @Override
+            public void remove() {
+              throw new RuntimeException("Not Supported.");
+            }
+
+          };
+        }
+      };
     }
 
   }

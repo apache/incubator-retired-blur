@@ -18,7 +18,6 @@ package org.apache.blur.manager.writer;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.List;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.thrift.generated.Record;

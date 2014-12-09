@@ -266,8 +266,8 @@ public class MiniCluster {
 
   public void startControllers(BlurConfiguration configuration, int num, boolean randomPort) {
     BlurConfiguration localConf = getBlurConfiguration(configuration);
-    if(randomPort) {
-    	localConf.setInt(BLUR_CONTROLLER_BIND_PORT, 0);
+    if (randomPort) {
+      localConf.setInt(BLUR_CONTROLLER_BIND_PORT, 0);
     }
     for (int i = 0; i < num; i++) {
       try {
@@ -288,8 +288,8 @@ public class MiniCluster {
 
   public void startShards(final BlurConfiguration configuration, int num, final boolean randomPort) {
     final BlurConfiguration localConf = getBlurConfiguration(configuration);
-    if(randomPort) {
-    	localConf.setInt(BLUR_SHARD_BIND_PORT, 0);
+    if (randomPort) {
+      localConf.setInt(BLUR_SHARD_BIND_PORT, 0);
     }
     ExecutorService executorService = Executors.newFixedThreadPool(num);
     List<Future<ThriftServer>> futures = new ArrayList<Future<ThriftServer>>();
@@ -419,9 +419,14 @@ public class MiniCluster {
 
   public void startDfs(Configuration conf, boolean format, String path) {
     String perm;
-    Path p = new Path(new File("./target").getAbsolutePath());
+    Path p = new Path(new File(path).getAbsolutePath());
     try {
       FileSystem fileSystem = p.getFileSystem(conf);
+      if (!fileSystem.exists(p)) {
+        if (!fileSystem.mkdirs(p)) {
+          throw new RuntimeException("Could not create path [" + path + "]");
+        }
+      }
       FileStatus fileStatus = fileSystem.getFileStatus(p);
       FsPermission permission = fileStatus.getPermission();
       perm = permission.getUserAction().ordinal() + "" + permission.getGroupAction().ordinal() + ""

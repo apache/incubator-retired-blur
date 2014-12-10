@@ -287,7 +287,7 @@ public class IndexManagerTest {
   @Test
   public void testMutationReplaceLargeRow() throws Exception {
     final String rowId = "largerow";
-    indexManager.mutate(getLargeRow(rowId));
+    indexManager.mutate(getLargeRow(rowId, RowMutationType.REPLACE_ROW, 10000));
     TraceStorage oldReporter = Trace.getStorage();
     Trace.setStorage(new BaseTraceStorage(new BlurConfiguration()) {
 
@@ -341,12 +341,32 @@ public class IndexManagerTest {
 
   }
 
-  private RowMutation getLargeRow(String rowId) {
+  @Test
+  public void testMutationAppendLargeRow() throws Exception {
+    final String rowId = "largerowappend";
+    int batch = 2;
+    int batchSize = 10000;
+    for (int i = 0; i < batch; i++) {
+      System.out.println("Adding Batch [" + i + "]");
+      indexManager.mutate(getLargeRow(rowId, RowMutationType.UPDATE_ROW, batchSize));
+    }
+
+    FetchResult fetchResult = new FetchResult();
+    Selector selector = new Selector();
+    selector.setRowId(rowId);
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+
+    FetchRowResult fetchRowResult = fetchResult.getRowResult();
+    System.out.println(fetchRowResult.getTotalRecords());
+    assertEquals(batch * batchSize, fetchRowResult.getTotalRecords());
+  }
+
+  private RowMutation getLargeRow(String rowId, RowMutationType rowMutationType, int count) {
     RowMutation rowMutation = new RowMutation();
     rowMutation.setTable(TABLE);
     rowMutation.setRowId(rowId);
-    rowMutation.setRecordMutations(getRecordMutations(10000));
-    rowMutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+    rowMutation.setRecordMutations(getRecordMutations(count));
+    rowMutation.setRowMutationType(rowMutationType);
     return rowMutation;
   }
 

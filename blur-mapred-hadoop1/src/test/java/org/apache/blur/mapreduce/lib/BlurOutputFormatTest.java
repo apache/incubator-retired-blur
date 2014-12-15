@@ -125,23 +125,24 @@ public class BlurOutputFormatTest {
     job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(1);
-    tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setTableUri(new Path(TEST_ROOT_DIR + "/table/test").toString());
     tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 1);
 
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    Path output = new Path(TEST_ROOT_DIR + "/out");
+    BlurOutputFormat.setOutputPath(job, output);
 
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();
     System.out.println("Counters: " + ctrs);
 
-    Path path = new Path(tableUri, BlurUtil.getShardName(0));
+    Path path = new Path(output, BlurUtil.getShardName(0));
     Collection<Path> commitedTasks = getCommitedTasks(path);
     assertEquals(1, commitedTasks.size());
     DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, commitedTasks.iterator().next()));
@@ -174,17 +175,18 @@ public class BlurOutputFormatTest {
     job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(1);
-    tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setTableUri(new Path(TEST_ROOT_DIR + "/table/test").toString());
     tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 1);
 
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    Path output = new Path(TEST_ROOT_DIR + "/out");
+    BlurOutputFormat.setOutputPath(job, output);
     BlurOutputFormat.setIndexLocally(job, true);
     BlurOutputFormat.setOptimizeInFlight(job, false);
 
@@ -192,7 +194,7 @@ public class BlurOutputFormatTest {
     Counters ctrs = job.getCounters();
     System.out.println("Counters: " + ctrs);
 
-    Path path = new Path(tableUri, BlurUtil.getShardName(0));
+    Path path = new Path(output, BlurUtil.getShardName(0));
     Collection<Path> commitedTasks = getCommitedTasks(path);
     assertEquals(1, commitedTasks.size());
 
@@ -243,17 +245,18 @@ public class BlurOutputFormatTest {
     job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(2);
-    tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setTableUri(new Path(TEST_ROOT_DIR + "/table/test").toString());
     tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 2);
 
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    Path output = new Path(TEST_ROOT_DIR + "/out");
+    BlurOutputFormat.setOutputPath(job, output);
     BlurOutputFormat.setIndexLocally(job, false);
     BlurOutputFormat.setDocumentBufferStrategy(job, DocumentBufferStrategyHeapSize.class);
     BlurOutputFormat.setMaxDocumentBufferHeapSize(job, 128 * 1024);
@@ -264,7 +267,7 @@ public class BlurOutputFormatTest {
 
     long total = 0;
     for (int i = 0; i < tableDescriptor.getShardCount(); i++) {
-      Path path = new Path(tableUri, BlurUtil.getShardName(i));
+      Path path = new Path(output, BlurUtil.getShardName(i));
       Collection<Path> commitedTasks = getCommitedTasks(path);
       assertEquals(1, commitedTasks.size());
 
@@ -289,17 +292,18 @@ public class BlurOutputFormatTest {
     job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(7);
-    tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setTableUri(new Path(TEST_ROOT_DIR + "/table/test").toString());
     tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 7);
 
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    Path output = new Path(TEST_ROOT_DIR + "/out");
+    BlurOutputFormat.setOutputPath(job, output);
     int multiple = 2;
     BlurOutputFormat.setReducerMultiplier(job, multiple);
 
@@ -309,7 +313,7 @@ public class BlurOutputFormatTest {
 
     long total = 0;
     for (int i = 0; i < tableDescriptor.getShardCount(); i++) {
-      Path path = new Path(tableUri, BlurUtil.getShardName(i));
+      Path path = new Path(output, BlurUtil.getShardName(i));
       Collection<Path> commitedTasks = getCommitedTasks(path);
       assertTrue(multiple >= commitedTasks.size());
       for (Path p : commitedTasks) {
@@ -335,17 +339,18 @@ public class BlurOutputFormatTest {
     job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/out").toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setShardCount(1);
-    tableDescriptor.setTableUri(tableUri);
+    tableDescriptor.setTableUri(new Path(TEST_ROOT_DIR + "/table/test").toString());
     tableDescriptor.setName("test");
 
     createShardDirectories(outDir, 1);
 
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    Path output = new Path(TEST_ROOT_DIR + "/out");
+    BlurOutputFormat.setOutputPath(job, output);
     BlurOutputFormat.setReducerMultiplier(job, 2);
     job.setNumReduceTasks(4);
     job.submit();

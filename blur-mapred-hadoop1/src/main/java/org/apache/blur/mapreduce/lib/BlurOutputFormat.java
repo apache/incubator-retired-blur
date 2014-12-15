@@ -204,7 +204,6 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
     }
     transport.close();
     configuration.set(BLUR_TABLE_DESCRIPTOR, new String(outputStream.toByteArray()));
-    setOutputPath(configuration, new Path(tableDescriptor.getTableUri()));
   }
 
   /**
@@ -279,7 +278,11 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
   }
 
   public static Path getOutputPath(Configuration configuration) {
-    return new Path(configuration.get(BLUR_OUTPUT_PATH));
+    String pathString = configuration.get(BLUR_OUTPUT_PATH);
+    if (pathString == null) {
+      return null;
+    }
+    return new Path(pathString);
   }
 
   /**

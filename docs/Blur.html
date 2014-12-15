@@ -140,6 +140,7 @@ limitations under the License.
 <li><a href="#Fn_Blur_query">&nbsp;&nbsp;query</a></li>
 <li><a href="#Fn_Blur_fetchRow">&nbsp;&nbsp;fetchRow</a></li>
 <li><a href="#Fn_Blur_fetchRowBatch">&nbsp;&nbsp;fetchRowBatch</a></li>
+<li><a href="#Fn_Blur_loadData">&nbsp;&nbsp;loadData</a></li>
 <li><a href="#Fn_Blur_mutate">&nbsp;&nbsp;mutate</a></li>
 <li><a href="#Fn_Blur_enqueueMutate">&nbsp;&nbsp;enqueueMutate</a></li>
 <li><a href="#Fn_Blur_mutateBatch">&nbsp;&nbsp;mutateBatch</a></li>
@@ -921,6 +922,16 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>the table name.
 </td></tr>
 <tr><td>selectors</td><td>the Selector to use to fetch the Row or Record.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_loadData">Function: Blur.loadData</h4></div><p class="lead">
+<pre><code>void</code> loadData(<code>string</code> table,
+<code>string</code> location)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Loads data from external location.
+<br/><br/><h4 id="Parameters_Blur_loadData">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
+</td></tr>
+<tr><td>location</td><td>Location of bulk data load.
 </td></tr>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4></div><p class="lead">
 <pre><code>void</code> mutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)

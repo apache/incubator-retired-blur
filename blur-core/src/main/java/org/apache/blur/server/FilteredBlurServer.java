@@ -286,4 +286,9 @@ public class FilteredBlurServer implements Iface {
     _iface.commandCancel(commandExecutionId);
   }
 
+  @Override
+  public void loadData(String table, String location) throws BlurException, TException {
+    _iface.loadData(table, location);
+  }
+
 }

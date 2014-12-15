@@ -165,6 +165,9 @@ public class BlurOutputFormatMiniClusterTest {
     client.createTable(tableDescriptor);
 
     BlurOutputFormat.setupJob(job, tableDescriptor);
+    Path output = new Path(TEST_ROOT_DIR + "/out");
+    BlurOutputFormat.setOutputPath(job, output);
+    
     Path tablePath = new Path(tableUri);
     Path shardPath = new Path(tablePath, BlurUtil.getShardName(0));
     FileStatus[] listStatus = fileSystem.listStatus(shardPath);
@@ -177,6 +180,8 @@ public class BlurOutputFormatMiniClusterTest {
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();
     System.out.println("Counters: " + ctrs);
+    
+    client.loadData(tableName, output.toString());
 
     while (true) {
       TableStats tableStats = client.tableStats(tableName);

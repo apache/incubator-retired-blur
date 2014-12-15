@@ -696,4 +696,14 @@ public abstract class TableAdmin implements Iface {
     }
   }
 
+  @Override
+  public void loadData(String table, String location) throws BlurException, TException {
+    TableContext tableContext = getTableContext(table);
+    try {
+      tableContext.loadData(location);
+    } catch (IOException e) {
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
 }

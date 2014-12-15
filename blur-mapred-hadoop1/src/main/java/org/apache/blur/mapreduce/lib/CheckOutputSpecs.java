@@ -21,26 +21,21 @@ import java.io.IOException;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 public class CheckOutputSpecs {
-  
+
   public static void checkOutputSpecs(Configuration config, int reducers) throws IOException, InterruptedException {
     TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(config);
     if (tableDescriptor == null) {
       throw new IOException("setTableDescriptor needs to be called first.");
     }
-    int shardCount = tableDescriptor.getShardCount();
-    FileSystem fileSystem = BlurOutputFormat.getOutputPath(config).getFileSystem(config);
-    Path tablePath = new Path(tableDescriptor.getTableUri());
-    if (fileSystem.exists(tablePath)) {
-      BlurUtil.validateShardCount(shardCount, fileSystem, tablePath);
-    } else {
-      throw new IOException("Table path [ " + tablePath + " ] doesn't exist for table [ " + tableDescriptor.getName()
-          + " ].");
+    Path outputPath = BlurOutputFormat.getOutputPath(config);
+    if (outputPath == null) {
+      throw new IOException("Output path is not set.");
     }
-    BlurUtil.validateWritableDirectory(fileSystem, tablePath);
+    BlurUtil.validateWritableDirectory(outputPath.getFileSystem(config), outputPath);
+    int shardCount = tableDescriptor.getShardCount();
     int reducerMultiplier = BlurOutputFormat.getReducerMultiplier(config);
     int validNumberOfReducers = reducerMultiplier * shardCount;
     if (reducers > 0 && reducers != validNumberOfReducers) {
@@ -48,5 +43,5 @@ public class CheckOutputSpecs {
           + " Number of Reducers should be [ " + validNumberOfReducers + " ].");
     }
   }
-  
+
 }

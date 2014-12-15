@@ -3916,6 +3916,150 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_loadData_args;
+use base qw(Class::Accessor);
+Blur::Blur_loadData_args->mk_accessors( qw( table location ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{table} = undef;
+  $self->{location} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{table}) {
+      $self->{table} = $vals->{table};
+    }
+    if (defined $vals->{location}) {
+      $self->{location} = $vals->{location};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_loadData_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{table});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{location});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_loadData_args');
+  if (defined $self->{table}) {
+    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
+    $xfer += $output->writeString($self->{table});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{location}) {
+    $xfer += $output->writeFieldBegin('location', TType::STRING, 2);
+    $xfer += $output->writeString($self->{location});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_loadData_result;
+use base qw(Class::Accessor);
+Blur::Blur_loadData_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_loadData_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_loadData_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::Blur_mutate_args;
 use base qw(Class::Accessor);
 Blur::Blur_mutate_args->mk_accessors( qw( mutation ) );
@@ -7937,6 +8081,14 @@ sub fetchRowBatch{
   die 'implement interface';
 }
 
+sub loadData{
+  my $self = shift;
+  my $table = shift;
+  my $location = shift;
+
+  die 'implement interface';
+}
+
 sub mutate{
   my $self = shift;
   my $mutation = shift;
@@ -8319,6 +8471,14 @@ sub fetchRowBatch{
   my $table = ($request->{'table'}) ? $request->{'table'} : undef;
   my $selectors = ($request->{'selectors'}) ? $request->{'selectors'} : undef;
   return $self->{impl}->fetchRowBatch($table, $selectors);
+}
+
+sub loadData{
+  my ($self, $request) = @_;
+
+  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
+  my $location = ($request->{'location'}) ? $request->{'location'} : undef;
+  return $self->{impl}->loadData($table, $location);
 }
 
 sub mutate{
@@ -9663,6 +9823,52 @@ sub recv_fetchRowBatch{
     die $result->{ex};
   }
   die "fetchRowBatch failed: unknown result";
+}
+sub loadData{
+  my $self = shift;
+  my $table = shift;
+  my $location = shift;
+
+    $self->send_loadData($table, $location);
+  $self->recv_loadData();
+}
+
+sub send_loadData{
+  my $self = shift;
+  my $table = shift;
+  my $location = shift;
+
+  $self->{output}->writeMessageBegin('loadData', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_loadData_args();
+  $args->{table} = $table;
+  $args->{location} = $location;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_loadData{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_loadData_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
 }
 sub mutate{
   my $self = shift;
@@ -11231,6 +11437,23 @@ sub process_fetchRowBatch {
       $result->{ex} = $@;
     }
     $output->writeMessageBegin('fetchRowBatch', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_loadData {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_loadData_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_loadData_result();
+    eval {
+      $self->{handler}->loadData($args->table, $args->location);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('loadData', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();

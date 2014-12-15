@@ -404,6 +404,21 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'fetchRowBatch failed: unknown result')
       end
 
+      def loadData(table, location)
+        send_loadData(table, location)
+        recv_loadData()
+      end
+
+      def send_loadData(table, location)
+        send_message('loadData', LoadData_args, :table => table, :location => location)
+      end
+
+      def recv_loadData()
+        result = receive_message(LoadData_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
       def mutate(mutation)
         send_mutate(mutation)
         recv_mutate()
@@ -1068,6 +1083,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'fetchRowBatch', seqid)
+      end
+
+      def process_loadData(seqid, iprot, oprot)
+        args = read_args(iprot, LoadData_args)
+        result = LoadData_result.new()
+        begin
+          @handler.loadData(args.table, args.location)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'loadData', seqid)
       end
 
       def process_mutate(seqid, iprot, oprot)
@@ -2241,6 +2267,42 @@ module Blur
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::FetchResult}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class LoadData_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      LOCATION = 2
+
+      FIELDS = {
+        # The table name.
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # Location of bulk data load.
+        LOCATION => {:type => ::Thrift::Types::STRING, :name => 'location'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class LoadData_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 

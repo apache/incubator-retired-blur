@@ -202,6 +202,13 @@ public java.util.Map listSnapshots(java.lang.String arg0) throws org.apache.blur
 }
 
 @Override
+public void loadData(java.lang.String arg0, java.lang.String arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.loadData(arg0, arg1);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public void logging(java.lang.String arg0, org.apache.blur.thrift.generated.Level arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.logging(arg0, arg1);
@@ -422,6 +429,13 @@ public java.util.List recv_listInstalledCommands() throws org.apache.blur.thrift
 public java.util.Map recv_listSnapshots() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.recv_listSnapshots();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void recv_loadData() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_loadData();
   } finally {_lock.unlock();}
 }
 
@@ -793,6 +807,13 @@ public void send_listInstalledCommands() throws org.apache.blur.thirdparty.thrif
 public void send_listSnapshots(java.lang.String arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_listSnapshots(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_loadData(java.lang.String arg0, java.lang.String arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_loadData(arg0, arg1);
   } finally {_lock.unlock();}
 }
 

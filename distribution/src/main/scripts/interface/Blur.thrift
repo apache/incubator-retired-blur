@@ -1133,6 +1133,16 @@ service Blur {
   ) throws (1:BlurException ex)
 
   /**
+   * Loads data from external location.
+   */
+  void loadData(
+     /** The table name. */
+     1:string table,
+     /** Location of bulk data load. */
+     2:string location
+  ) throws (1:BlurException ex)
+
+  /**
    * Mutates a Row given the RowMutation that is provided.
    */
   void mutate(

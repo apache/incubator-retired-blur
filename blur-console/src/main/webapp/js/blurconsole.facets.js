@@ -72,7 +72,7 @@ blurconsole.facets = (function () {
     blurconsole.shell.changeAnchorPart({
       tab: 'search',
       _tab: {
-        query: encodeURIComponent(initialQuery + ' +(+' + family + '.' + column + ':(' + $(evt.currentTarget).data('term') + '))'),
+        query: encodeURIComponent('+(' + initialQuery + ') +(+' + family + '.' + column + ':(' + $(evt.currentTarget).data('term') + '))'),
         table: stateMap.table,
         rr: 'rowrow'
       }

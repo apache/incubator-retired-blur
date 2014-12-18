@@ -145,6 +145,9 @@ limitations under the License.
 <li><a href="#Fn_Blur_enqueueMutate">&nbsp;&nbsp;enqueueMutate</a></li>
 <li><a href="#Fn_Blur_mutateBatch">&nbsp;&nbsp;mutateBatch</a></li>
 <li><a href="#Fn_Blur_enqueueMutateBatch">&nbsp;&nbsp;enqueueMutateBatch</a></li>
+<li><a href="#Fn_Blur_bulkMutateStart">&nbsp;&nbsp;bulkMutateStart</a></li>
+<li><a href="#Fn_Blur_bulkMutateAdd">&nbsp;&nbsp;bulkMutateAdd</a></li>
+<li><a href="#Fn_Blur_bulkMutateFinish">&nbsp;&nbsp;bulkMutateFinish</a></li>
 <li><a href="#Fn_Blur_cancelQuery">&nbsp;&nbsp;cancelQuery</a></li>
 <li><a href="#Fn_Blur_queryStatusIdList">&nbsp;&nbsp;queryStatusIdList</a></li>
 <li><a href="#Fn_Blur_queryStatusById">&nbsp;&nbsp;queryStatusById</a></li>
@@ -960,6 +963,45 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Enqueue a batch of RowMutations. Note that the effect of the RowMutation will occur at some point in the future, volume and load will play a role in how much time will pass before the mutation goes into effect.
 <br/><br/><h4 id="Parameters_Blur_enqueueMutateBatch">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutations</td><td>the batch of RowMutations.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_bulkMutateStart">Function: Blur.bulkMutateStart</h4></div><p class="lead">
+<pre><code>void</code> bulkMutateStart(<code>string</code> table,
+<code>string</code> bulkId)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Starts a transaction for update (e.g. Mutate).  Returns a transaction id.
+<br/><br/><h4 id="Parameters_Blur_bulkMutateStart">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
+</td></tr>
+<tr><td>bulkId</td><td>The bulk id.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_bulkMutateAdd">Function: Blur.bulkMutateAdd</h4></div><p class="lead">
+<pre><code>void</code> bulkMutateAdd(<code>string</code> table,
+<code>string</code> bulkId,
+<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> rowMutation)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Adds to the specified transaction.  The
+<br/><br/><h4 id="Parameters_Blur_bulkMutateAdd">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
+</td></tr>
+<tr><td>bulkId</td><td>The bulk id.
+</td></tr>
+<tr><td>rowMutation</td><td>The row mutation.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_bulkMutateFinish">Function: Blur.bulkMutateFinish</h4></div><p class="lead">
+<pre><code>void</code> bulkMutateFinish(<code>string</code> table,
+<code>string</code> bulkId,
+<code>bool</code> apply,
+<code>bool</code> blockUntilComplete)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Finishes the bulk mutate.  If apply is true the mutations are applied and committed.  If false the bulk mutate is deleted and not applied.
+<br/><br/><h4 id="Parameters_Blur_bulkMutateFinish">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
+</td></tr>
+<tr><td>bulkId</td><td>The bulk id.
+</td></tr>
+<tr><td>apply</td><td>Apply the bulk mutate flag.
+</td></tr>
+<tr><td>blockUntilComplete</td><td>If true this call will not block on bulk completion.  This may be required for loader bulk loads.
 </td></tr>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4></div><p class="lead">
 <pre><code>void</code> cancelQuery(<code>string</code> table,

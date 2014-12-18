@@ -3987,6 +3987,427 @@ Blur_enqueueMutateBatch_result.prototype.write = function(output) {
   return;
 };
 
+Blur_bulkMutateStart_args = function(args) {
+  this.table = null;
+  this.bulkId = null;
+  if (args) {
+    if (args.table !== undefined) {
+      this.table = args.table;
+    }
+    if (args.bulkId !== undefined) {
+      this.bulkId = args.bulkId;
+    }
+  }
+};
+Blur_bulkMutateStart_args.prototype = {};
+Blur_bulkMutateStart_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.table = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.bulkId = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_bulkMutateStart_args.prototype.write = function(output) {
+  output.writeStructBegin('Blur_bulkMutateStart_args');
+  if (this.table !== null && this.table !== undefined) {
+    output.writeFieldBegin('table', Thrift.Type.STRING, 1);
+    output.writeString(this.table);
+    output.writeFieldEnd();
+  }
+  if (this.bulkId !== null && this.bulkId !== undefined) {
+    output.writeFieldBegin('bulkId', Thrift.Type.STRING, 2);
+    output.writeString(this.bulkId);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_bulkMutateStart_result = function(args) {
+  this.ex = null;
+  if (args instanceof BlurException) {
+    this.ex = args;
+    return;
+  }
+  if (args) {
+    if (args.ex !== undefined) {
+      this.ex = args.ex;
+    }
+  }
+};
+Blur_bulkMutateStart_result.prototype = {};
+Blur_bulkMutateStart_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.ex = new BlurException();
+        this.ex.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_bulkMutateStart_result.prototype.write = function(output) {
+  output.writeStructBegin('Blur_bulkMutateStart_result');
+  if (this.ex !== null && this.ex !== undefined) {
+    output.writeFieldBegin('ex', Thrift.Type.STRUCT, 1);
+    this.ex.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_bulkMutateAdd_args = function(args) {
+  this.table = null;
+  this.bulkId = null;
+  this.rowMutation = null;
+  if (args) {
+    if (args.table !== undefined) {
+      this.table = args.table;
+    }
+    if (args.bulkId !== undefined) {
+      this.bulkId = args.bulkId;
+    }
+    if (args.rowMutation !== undefined) {
+      this.rowMutation = args.rowMutation;
+    }
+  }
+};
+Blur_bulkMutateAdd_args.prototype = {};
+Blur_bulkMutateAdd_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.table = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.bulkId = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.rowMutation = new RowMutation();
+        this.rowMutation.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_bulkMutateAdd_args.prototype.write = function(output) {
+  output.writeStructBegin('Blur_bulkMutateAdd_args');
+  if (this.table !== null && this.table !== undefined) {
+    output.writeFieldBegin('table', Thrift.Type.STRING, 1);
+    output.writeString(this.table);
+    output.writeFieldEnd();
+  }
+  if (this.bulkId !== null && this.bulkId !== undefined) {
+    output.writeFieldBegin('bulkId', Thrift.Type.STRING, 2);
+    output.writeString(this.bulkId);
+    output.writeFieldEnd();
+  }
+  if (this.rowMutation !== null && this.rowMutation !== undefined) {
+    output.writeFieldBegin('rowMutation', Thrift.Type.STRUCT, 3);
+    this.rowMutation.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_bulkMutateAdd_result = function(args) {
+  this.ex = null;
+  if (args instanceof BlurException) {
+    this.ex = args;
+    return;
+  }
+  if (args) {
+    if (args.ex !== undefined) {
+      this.ex = args.ex;
+    }
+  }
+};
+Blur_bulkMutateAdd_result.prototype = {};
+Blur_bulkMutateAdd_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.ex = new BlurException();
+        this.ex.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_bulkMutateAdd_result.prototype.write = function(output) {
+  output.writeStructBegin('Blur_bulkMutateAdd_result');
+  if (this.ex !== null && this.ex !== undefined) {
+    output.writeFieldBegin('ex', Thrift.Type.STRUCT, 1);
+    this.ex.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_bulkMutateFinish_args = function(args) {
+  this.table = null;
+  this.bulkId = null;
+  this.apply = null;
+  this.blockUntilComplete = null;
+  if (args) {
+    if (args.table !== undefined) {
+      this.table = args.table;
+    }
+    if (args.bulkId !== undefined) {
+      this.bulkId = args.bulkId;
+    }
+    if (args.apply !== undefined) {
+      this.apply = args.apply;
+    }
+    if (args.blockUntilComplete !== undefined) {
+      this.blockUntilComplete = args.blockUntilComplete;
+    }
+  }
+};
+Blur_bulkMutateFinish_args.prototype = {};
+Blur_bulkMutateFinish_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.table = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.bulkId = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.BOOL) {
+        this.apply = input.readBool().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 4:
+      if (ftype == Thrift.Type.BOOL) {
+        this.blockUntilComplete = input.readBool().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_bulkMutateFinish_args.prototype.write = function(output) {
+  output.writeStructBegin('Blur_bulkMutateFinish_args');
+  if (this.table !== null && this.table !== undefined) {
+    output.writeFieldBegin('table', Thrift.Type.STRING, 1);
+    output.writeString(this.table);
+    output.writeFieldEnd();
+  }
+  if (this.bulkId !== null && this.bulkId !== undefined) {
+    output.writeFieldBegin('bulkId', Thrift.Type.STRING, 2);
+    output.writeString(this.bulkId);
+    output.writeFieldEnd();
+  }
+  if (this.apply !== null && this.apply !== undefined) {
+    output.writeFieldBegin('apply', Thrift.Type.BOOL, 3);
+    output.writeBool(this.apply);
+    output.writeFieldEnd();
+  }
+  if (this.blockUntilComplete !== null && this.blockUntilComplete !== undefined) {
+    output.writeFieldBegin('blockUntilComplete', Thrift.Type.BOOL, 4);
+    output.writeBool(this.blockUntilComplete);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_bulkMutateFinish_result = function(args) {
+  this.ex = null;
+  if (args instanceof BlurException) {
+    this.ex = args;
+    return;
+  }
+  if (args) {
+    if (args.ex !== undefined) {
+      this.ex = args.ex;
+    }
+  }
+};
+Blur_bulkMutateFinish_result.prototype = {};
+Blur_bulkMutateFinish_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.ex = new BlurException();
+        this.ex.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 0:
+        input.skip(ftype);
+        break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_bulkMutateFinish_result.prototype.write = function(output) {
+  output.writeStructBegin('Blur_bulkMutateFinish_result');
+  if (this.ex !== null && this.ex !== undefined) {
+    output.writeFieldBegin('ex', Thrift.Type.STRUCT, 1);
+    this.ex.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 Blur_cancelQuery_args = function(args) {
   this.table = null;
   this.uuid = null;
@@ -7884,6 +8305,114 @@ BlurClient.prototype.recv_enqueueMutateBatch = function() {
     throw x;
   }
   var result = new Blur_enqueueMutateBatch_result();
+  result.read(this.input);
+  this.input.readMessageEnd();
+
+  if (null !== result.ex) {
+    throw result.ex;
+  }
+  return;
+};
+BlurClient.prototype.bulkMutateStart = function(table, bulkId) {
+  this.send_bulkMutateStart(table, bulkId);
+  this.recv_bulkMutateStart();
+};
+
+BlurClient.prototype.send_bulkMutateStart = function(table, bulkId) {
+  this.output.writeMessageBegin('bulkMutateStart', Thrift.MessageType.CALL, this.seqid);
+  var args = new Blur_bulkMutateStart_args();
+  args.table = table;
+  args.bulkId = bulkId;
+  args.write(this.output);
+  this.output.writeMessageEnd();
+  return this.output.getTransport().flush();
+};
+
+BlurClient.prototype.recv_bulkMutateStart = function() {
+  var ret = this.input.readMessageBegin();
+  var fname = ret.fname;
+  var mtype = ret.mtype;
+  var rseqid = ret.rseqid;
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(this.input);
+    this.input.readMessageEnd();
+    throw x;
+  }
+  var result = new Blur_bulkMutateStart_result();
+  result.read(this.input);
+  this.input.readMessageEnd();
+
+  if (null !== result.ex) {
+    throw result.ex;
+  }
+  return;
+};
+BlurClient.prototype.bulkMutateAdd = function(table, bulkId, rowMutation) {
+  this.send_bulkMutateAdd(table, bulkId, rowMutation);
+  this.recv_bulkMutateAdd();
+};
+
+BlurClient.prototype.send_bulkMutateAdd = function(table, bulkId, rowMutation) {
+  this.output.writeMessageBegin('bulkMutateAdd', Thrift.MessageType.CALL, this.seqid);
+  var args = new Blur_bulkMutateAdd_args();
+  args.table = table;
+  args.bulkId = bulkId;
+  args.rowMutation = rowMutation;
+  args.write(this.output);
+  this.output.writeMessageEnd();
+  return this.output.getTransport().flush();
+};
+
+BlurClient.prototype.recv_bulkMutateAdd = function() {
+  var ret = this.input.readMessageBegin();
+  var fname = ret.fname;
+  var mtype = ret.mtype;
+  var rseqid = ret.rseqid;
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(this.input);
+    this.input.readMessageEnd();
+    throw x;
+  }
+  var result = new Blur_bulkMutateAdd_result();
+  result.read(this.input);
+  this.input.readMessageEnd();
+
+  if (null !== result.ex) {
+    throw result.ex;
+  }
+  return;
+};
+BlurClient.prototype.bulkMutateFinish = function(table, bulkId, apply, blockUntilComplete) {
+  this.send_bulkMutateFinish(table, bulkId, apply, blockUntilComplete);
+  this.recv_bulkMutateFinish();
+};
+
+BlurClient.prototype.send_bulkMutateFinish = function(table, bulkId, apply, blockUntilComplete) {
+  this.output.writeMessageBegin('bulkMutateFinish', Thrift.MessageType.CALL, this.seqid);
+  var args = new Blur_bulkMutateFinish_args();
+  args.table = table;
+  args.bulkId = bulkId;
+  args.apply = apply;
+  args.blockUntilComplete = blockUntilComplete;
+  args.write(this.output);
+  this.output.writeMessageEnd();
+  return this.output.getTransport().flush();
+};
+
+BlurClient.prototype.recv_bulkMutateFinish = function() {
+  var ret = this.input.readMessageBegin();
+  var fname = ret.fname;
+  var mtype = ret.mtype;
+  var rseqid = ret.rseqid;
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(this.input);
+    this.input.readMessageEnd();
+    throw x;
+  }
+  var result = new Blur_bulkMutateFinish_result();
   result.read(this.input);
   this.input.readMessageEnd();
 

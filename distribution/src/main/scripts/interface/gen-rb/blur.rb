@@ -479,6 +479,51 @@ module Blur
         return
       end
 
+      def bulkMutateStart(table, bulkId)
+        send_bulkMutateStart(table, bulkId)
+        recv_bulkMutateStart()
+      end
+
+      def send_bulkMutateStart(table, bulkId)
+        send_message('bulkMutateStart', BulkMutateStart_args, :table => table, :bulkId => bulkId)
+      end
+
+      def recv_bulkMutateStart()
+        result = receive_message(BulkMutateStart_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def bulkMutateAdd(table, bulkId, rowMutation)
+        send_bulkMutateAdd(table, bulkId, rowMutation)
+        recv_bulkMutateAdd()
+      end
+
+      def send_bulkMutateAdd(table, bulkId, rowMutation)
+        send_message('bulkMutateAdd', BulkMutateAdd_args, :table => table, :bulkId => bulkId, :rowMutation => rowMutation)
+      end
+
+      def recv_bulkMutateAdd()
+        result = receive_message(BulkMutateAdd_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def bulkMutateFinish(table, bulkId, apply, blockUntilComplete)
+        send_bulkMutateFinish(table, bulkId, apply, blockUntilComplete)
+        recv_bulkMutateFinish()
+      end
+
+      def send_bulkMutateFinish(table, bulkId, apply, blockUntilComplete)
+        send_message('bulkMutateFinish', BulkMutateFinish_args, :table => table, :bulkId => bulkId, :apply => apply, :blockUntilComplete => blockUntilComplete)
+      end
+
+      def recv_bulkMutateFinish()
+        result = receive_message(BulkMutateFinish_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
       def cancelQuery(table, uuid)
         send_cancelQuery(table, uuid)
         recv_cancelQuery()
@@ -1138,6 +1183,39 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'enqueueMutateBatch', seqid)
+      end
+
+      def process_bulkMutateStart(seqid, iprot, oprot)
+        args = read_args(iprot, BulkMutateStart_args)
+        result = BulkMutateStart_result.new()
+        begin
+          @handler.bulkMutateStart(args.table, args.bulkId)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'bulkMutateStart', seqid)
+      end
+
+      def process_bulkMutateAdd(seqid, iprot, oprot)
+        args = read_args(iprot, BulkMutateAdd_args)
+        result = BulkMutateAdd_result.new()
+        begin
+          @handler.bulkMutateAdd(args.table, args.bulkId, args.rowMutation)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'bulkMutateAdd', seqid)
+      end
+
+      def process_bulkMutateFinish(seqid, iprot, oprot)
+        args = read_args(iprot, BulkMutateFinish_args)
+        result = BulkMutateFinish_result.new()
+        begin
+          @handler.bulkMutateFinish(args.table, args.bulkId, args.apply, args.blockUntilComplete)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'bulkMutateFinish', seqid)
       end
 
       def process_cancelQuery(seqid, iprot, oprot)
@@ -2431,6 +2509,123 @@ module Blur
     end
 
     class EnqueueMutateBatch_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateStart_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      BULKID = 2
+
+      FIELDS = {
+        # The table name.
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # The bulk id.
+        BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateStart_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateAdd_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      BULKID = 2
+      ROWMUTATION = 3
+
+      FIELDS = {
+        # The table name.
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # The bulk id.
+        BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'},
+        # The row mutation.
+        ROWMUTATION => {:type => ::Thrift::Types::STRUCT, :name => 'rowMutation', :class => ::Blur::RowMutation}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateAdd_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateFinish_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      BULKID = 2
+      APPLY = 3
+      BLOCKUNTILCOMPLETE = 4
+
+      FIELDS = {
+        # The table name.
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # The bulk id.
+        BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'},
+        # Apply the bulk mutate flag.
+        APPLY => {:type => ::Thrift::Types::BOOL, :name => 'apply'},
+        # If true this call will not block on bulk completion.  This may be required for loader bulk loads.
+        BLOCKUNTILCOMPLETE => {:type => ::Thrift::Types::BOOL, :name => 'blockUntilComplete'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateFinish_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
       EX = 1
 

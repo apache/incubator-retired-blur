@@ -69,6 +69,27 @@ public boolean addColumnDefinition(java.lang.String arg0, org.apache.blur.thrift
 }
 
 @Override
+public void bulkMutateAdd(java.lang.String arg0, java.lang.String arg1, org.apache.blur.thrift.generated.RowMutation arg2) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.bulkMutateAdd(arg0, arg1, arg2);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void bulkMutateFinish(java.lang.String arg0, java.lang.String arg1, boolean arg2, boolean arg3) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.bulkMutateFinish(arg0, arg1, arg2, arg3);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void bulkMutateStart(java.lang.String arg0, java.lang.String arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.bulkMutateStart(arg0, arg1);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public void cancelQuery(java.lang.String arg0, java.lang.String arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.cancelQuery(arg0, arg1);
@@ -296,6 +317,27 @@ public long recordFrequency(java.lang.String arg0, java.lang.String arg1, java.l
 public boolean recv_addColumnDefinition() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.recv_addColumnDefinition();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void recv_bulkMutateAdd() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_bulkMutateAdd();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void recv_bulkMutateFinish() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_bulkMutateFinish();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void recv_bulkMutateStart() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_bulkMutateStart();
   } finally {_lock.unlock();}
 }
 
@@ -674,6 +716,27 @@ public org.apache.blur.thrift.generated.Schema schema(java.lang.String arg0) thr
 public void send_addColumnDefinition(java.lang.String arg0, org.apache.blur.thrift.generated.ColumnDefinition arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_addColumnDefinition(arg0, arg1);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_bulkMutateAdd(java.lang.String arg0, java.lang.String arg1, org.apache.blur.thrift.generated.RowMutation arg2) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_bulkMutateAdd(arg0, arg1, arg2);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_bulkMutateFinish(java.lang.String arg0, java.lang.String arg1, boolean arg2, boolean arg3) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_bulkMutateFinish(arg0, arg1, arg2, arg3);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_bulkMutateStart(java.lang.String arg0, java.lang.String arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_bulkMutateStart(arg0, arg1);
   } finally {_lock.unlock();}
 }
 

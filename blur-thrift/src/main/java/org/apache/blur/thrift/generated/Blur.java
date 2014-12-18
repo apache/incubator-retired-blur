@@ -307,6 +307,39 @@ public class Blur {
     public void enqueueMutateBatch(List<RowMutation> mutations) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
+     * Starts a transaction for update (e.g. Mutate).  Returns a transaction id.
+     * 
+     * @param table The table name.
+     * 
+     * @param bulkId The bulk id.
+     */
+    public void bulkMutateStart(String table, String bulkId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    /**
+     * Adds to the specified transaction.  The
+     * 
+     * @param table The table name.
+     * 
+     * @param bulkId The bulk id.
+     * 
+     * @param rowMutation The row mutation.
+     */
+    public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    /**
+     * Finishes the bulk mutate.  If apply is true the mutations are applied and committed.  If false the bulk mutate is deleted and not applied.
+     * 
+     * @param table The table name.
+     * 
+     * @param bulkId The bulk id.
+     * 
+     * @param apply Apply the bulk mutate flag.
+     * 
+     * @param blockUntilComplete If true this call will not block on bulk completion.  This may be required for loader bulk loads.
+     */
+    public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    /**
      * Cancels a query that is executing against the given table with the given uuid.  Note, the
      * cancel call maybe take some time for the query actually stops executing.
      * 
@@ -564,6 +597,12 @@ public class Blur {
     public void mutateBatch(List<RowMutation> mutations, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.mutateBatch_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void enqueueMutateBatch(List<RowMutation> mutations, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.enqueueMutateBatch_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    public void bulkMutateStart(String table, String bulkId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateStart_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateAdd_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateFinish_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void cancelQuery(String table, String uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.cancelQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
@@ -1378,6 +1417,81 @@ public class Blur {
     {
       enqueueMutateBatch_result result = new enqueueMutateBatch_result();
       receiveBase(result, "enqueueMutateBatch");
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      return;
+    }
+
+    public void bulkMutateStart(String table, String bulkId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      send_bulkMutateStart(table, bulkId);
+      recv_bulkMutateStart();
+    }
+
+    public void send_bulkMutateStart(String table, String bulkId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      bulkMutateStart_args args = new bulkMutateStart_args();
+      args.setTable(table);
+      args.setBulkId(bulkId);
+      sendBase("bulkMutateStart", args);
+    }
+
+    public void recv_bulkMutateStart() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      bulkMutateStart_result result = new bulkMutateStart_result();
+      receiveBase(result, "bulkMutateStart");
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      return;
+    }
+
+    public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      send_bulkMutateAdd(table, bulkId, rowMutation);
+      recv_bulkMutateAdd();
+    }
+
+    public void send_bulkMutateAdd(String table, String bulkId, RowMutation rowMutation) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      bulkMutateAdd_args args = new bulkMutateAdd_args();
+      args.setTable(table);
+      args.setBulkId(bulkId);
+      args.setRowMutation(rowMutation);
+      sendBase("bulkMutateAdd", args);
+    }
+
+    public void recv_bulkMutateAdd() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      bulkMutateAdd_result result = new bulkMutateAdd_result();
+      receiveBase(result, "bulkMutateAdd");
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      return;
+    }
+
+    public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      send_bulkMutateFinish(table, bulkId, apply, blockUntilComplete);
+      recv_bulkMutateFinish();
+    }
+
+    public void send_bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      bulkMutateFinish_args args = new bulkMutateFinish_args();
+      args.setTable(table);
+      args.setBulkId(bulkId);
+      args.setApply(apply);
+      args.setBlockUntilComplete(blockUntilComplete);
+      sendBase("bulkMutateFinish", args);
+    }
+
+    public void recv_bulkMutateFinish() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      bulkMutateFinish_result result = new bulkMutateFinish_result();
+      receiveBase(result, "bulkMutateFinish");
       if (result.ex != null) {
         throw result.ex;
       }
@@ -2942,6 +3056,120 @@ public class Blur {
       }
     }
 
+    public void bulkMutateStart(String table, String bulkId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateStart_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      checkReady();
+      bulkMutateStart_call method_call = new bulkMutateStart_call(table, bulkId, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class bulkMutateStart_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
+      private String table;
+      private String bulkId;
+      public bulkMutateStart_call(String table, String bulkId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateStart_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+        this.bulkId = bulkId;
+      }
+
+      public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("bulkMutateStart", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
+        bulkMutateStart_args args = new bulkMutateStart_args();
+        args.setTable(table);
+        args.setBulkId(bulkId);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport memoryTransport = new org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_bulkMutateStart();
+      }
+    }
+
+    public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateAdd_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      checkReady();
+      bulkMutateAdd_call method_call = new bulkMutateAdd_call(table, bulkId, rowMutation, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class bulkMutateAdd_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
+      private String table;
+      private String bulkId;
+      private RowMutation rowMutation;
+      public bulkMutateAdd_call(String table, String bulkId, RowMutation rowMutation, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateAdd_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+        this.bulkId = bulkId;
+        this.rowMutation = rowMutation;
+      }
+
+      public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("bulkMutateAdd", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
+        bulkMutateAdd_args args = new bulkMutateAdd_args();
+        args.setTable(table);
+        args.setBulkId(bulkId);
+        args.setRowMutation(rowMutation);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport memoryTransport = new org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_bulkMutateAdd();
+      }
+    }
+
+    public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateFinish_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      checkReady();
+      bulkMutateFinish_call method_call = new bulkMutateFinish_call(table, bulkId, apply, blockUntilComplete, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class bulkMutateFinish_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
+      private String table;
+      private String bulkId;
+      private boolean apply;
+      private boolean blockUntilComplete;
+      public bulkMutateFinish_call(String table, String bulkId, boolean apply, boolean blockUntilComplete, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateFinish_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+        this.bulkId = bulkId;
+        this.apply = apply;
+        this.blockUntilComplete = blockUntilComplete;
+      }
+
+      public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("bulkMutateFinish", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
+        bulkMutateFinish_args args = new bulkMutateFinish_args();
+        args.setTable(table);
+        args.setBulkId(bulkId);
+        args.setApply(apply);
+        args.setBlockUntilComplete(blockUntilComplete);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport memoryTransport = new org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_bulkMutateFinish();
+      }
+    }
+
     public void cancelQuery(String table, String uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<cancelQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
       cancelQuery_call method_call = new cancelQuery_call(table, uuid, resultHandler, this, ___protocolFactory, ___transport);
@@ -3675,6 +3903,9 @@ public class Blur {
       processMap.put("enqueueMutate", new enqueueMutate());
       processMap.put("mutateBatch", new mutateBatch());
       processMap.put("enqueueMutateBatch", new enqueueMutateBatch());
+      processMap.put("bulkMutateStart", new bulkMutateStart());
+      processMap.put("bulkMutateAdd", new bulkMutateAdd());
+      processMap.put("bulkMutateFinish", new bulkMutateFinish());
       processMap.put("cancelQuery", new cancelQuery());
       processMap.put("queryStatusIdList", new queryStatusIdList());
       processMap.put("queryStatusById", new queryStatusById());
@@ -4431,6 +4662,78 @@ public class Blur {
         enqueueMutateBatch_result result = new enqueueMutateBatch_result();
         try {
           iface.enqueueMutateBatch(args.mutations);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        }
+        return result;
+      }
+    }
+
+    public static class bulkMutateStart<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, bulkMutateStart_args> {
+      public bulkMutateStart() {
+        super("bulkMutateStart");
+      }
+
+      public bulkMutateStart_args getEmptyArgsInstance() {
+        return new bulkMutateStart_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public bulkMutateStart_result getResult(I iface, bulkMutateStart_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        bulkMutateStart_result result = new bulkMutateStart_result();
+        try {
+          iface.bulkMutateStart(args.table, args.bulkId);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        }
+        return result;
+      }
+    }
+
+    public static class bulkMutateAdd<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, bulkMutateAdd_args> {
+      public bulkMutateAdd() {
+        super("bulkMutateAdd");
+      }
+
+      public bulkMutateAdd_args getEmptyArgsInstance() {
+        return new bulkMutateAdd_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public bulkMutateAdd_result getResult(I iface, bulkMutateAdd_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        bulkMutateAdd_result result = new bulkMutateAdd_result();
+        try {
+          iface.bulkMutateAdd(args.table, args.bulkId, args.rowMutation);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        }
+        return result;
+      }
+    }
+
+    public static class bulkMutateFinish<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, bulkMutateFinish_args> {
+      public bulkMutateFinish() {
+        super("bulkMutateFinish");
+      }
+
+      public bulkMutateFinish_args getEmptyArgsInstance() {
+        return new bulkMutateFinish_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public bulkMutateFinish_result getResult(I iface, bulkMutateFinish_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        bulkMutateFinish_result result = new bulkMutateFinish_result();
+        try {
+          iface.bulkMutateFinish(args.table, args.bulkId, args.apply, args.blockUntilComplete);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -29945,6 +30248,2841 @@ public class Blur {
 
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, enqueueMutateBatch_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.ex = new BlurException();
+          struct.ex.read(iprot);
+          struct.setExIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class bulkMutateStart_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<bulkMutateStart_args, bulkMutateStart_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("bulkMutateStart_args");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new bulkMutateStart_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new bulkMutateStart_argsTupleSchemeFactory());
+    }
+
+    /**
+     * The table name.
+     */
+    public String table; // required
+    /**
+     * The bulk id.
+     */
+    public String bulkId; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * The table name.
+       */
+      TABLE((short)1, "table"),
+      /**
+       * The bulk id.
+       */
+      BULK_ID((short)2, "bulkId");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          case 2: // BULK_ID
+            return BULK_ID;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      tmpMap.put(_Fields.BULK_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(bulkMutateStart_args.class, metaDataMap);
+    }
+
+    public bulkMutateStart_args() {
+    }
+
+    public bulkMutateStart_args(
+      String table,
+      String bulkId)
+    {
+      this();
+      this.table = table;
+      this.bulkId = bulkId;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public bulkMutateStart_args(bulkMutateStart_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+      if (other.isSetBulkId()) {
+        this.bulkId = other.bulkId;
+      }
+    }
+
+    public bulkMutateStart_args deepCopy() {
+      return new bulkMutateStart_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.table = null;
+      this.bulkId = null;
+    }
+
+    /**
+     * The table name.
+     */
+    public String getTable() {
+      return this.table;
+    }
+
+    /**
+     * The table name.
+     */
+    public bulkMutateStart_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    /**
+     * The bulk id.
+     */
+    public String getBulkId() {
+      return this.bulkId;
+    }
+
+    /**
+     * The bulk id.
+     */
+    public bulkMutateStart_args setBulkId(String bulkId) {
+      this.bulkId = bulkId;
+      return this;
+    }
+
+    public void unsetBulkId() {
+      this.bulkId = null;
+    }
+
+    /** Returns true if field bulkId is set (has been assigned a value) and false otherwise */
+    public boolean isSetBulkId() {
+      return this.bulkId != null;
+    }
+
+    public void setBulkIdIsSet(boolean value) {
+      if (!value) {
+        this.bulkId = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      case BULK_ID:
+        if (value == null) {
+          unsetBulkId();
+        } else {
+          setBulkId((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      case BULK_ID:
+        return getBulkId();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      case BULK_ID:
+        return isSetBulkId();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof bulkMutateStart_args)
+        return this.equals((bulkMutateStart_args)that);
+      return false;
+    }
+
+    public boolean equals(bulkMutateStart_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      boolean this_present_bulkId = true && this.isSetBulkId();
+      boolean that_present_bulkId = true && that.isSetBulkId();
+      if (this_present_bulkId || that_present_bulkId) {
+        if (!(this_present_bulkId && that_present_bulkId))
+          return false;
+        if (!this.bulkId.equals(that.bulkId))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(bulkMutateStart_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      bulkMutateStart_args typedOther = (bulkMutateStart_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetBulkId()).compareTo(typedOther.isSetBulkId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBulkId()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.bulkId, typedOther.bulkId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("bulkMutateStart_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("bulkId:");
+      if (this.bulkId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.bulkId);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class bulkMutateStart_argsStandardSchemeFactory implements SchemeFactory {
+      public bulkMutateStart_argsStandardScheme getScheme() {
+        return new bulkMutateStart_argsStandardScheme();
+      }
+    }
+
+    private static class bulkMutateStart_argsStandardScheme extends StandardScheme<bulkMutateStart_args> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, bulkMutateStart_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // TABLE
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.table = iprot.readString();
+                struct.setTableIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // BULK_ID
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.bulkId = iprot.readString();
+                struct.setBulkIdIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, bulkMutateStart_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.table != null) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          oprot.writeString(struct.table);
+          oprot.writeFieldEnd();
+        }
+        if (struct.bulkId != null) {
+          oprot.writeFieldBegin(BULK_ID_FIELD_DESC);
+          oprot.writeString(struct.bulkId);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class bulkMutateStart_argsTupleSchemeFactory implements SchemeFactory {
+      public bulkMutateStart_argsTupleScheme getScheme() {
+        return new bulkMutateStart_argsTupleScheme();
+      }
+    }
+
+    private static class bulkMutateStart_argsTupleScheme extends TupleScheme<bulkMutateStart_args> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateStart_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetTable()) {
+          optionals.set(0);
+        }
+        if (struct.isSetBulkId()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetTable()) {
+          oprot.writeString(struct.table);
+        }
+        if (struct.isSetBulkId()) {
+          oprot.writeString(struct.bulkId);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateStart_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.table = iprot.readString();
+          struct.setTableIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.bulkId = iprot.readString();
+          struct.setBulkIdIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class bulkMutateStart_result implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<bulkMutateStart_result, bulkMutateStart_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("bulkMutateStart_result");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("ex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new bulkMutateStart_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new bulkMutateStart_resultTupleSchemeFactory());
+    }
+
+    public BlurException ex; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.EX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("ex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(bulkMutateStart_result.class, metaDataMap);
+    }
+
+    public bulkMutateStart_result() {
+    }
+
+    public bulkMutateStart_result(
+      BlurException ex)
+    {
+      this();
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public bulkMutateStart_result(bulkMutateStart_result other) {
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public bulkMutateStart_result deepCopy() {
+      return new bulkMutateStart_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.ex = null;
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public bulkMutateStart_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof bulkMutateStart_result)
+        return this.equals((bulkMutateStart_result)that);
+      return false;
+    }
+
+    public boolean equals(bulkMutateStart_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(bulkMutateStart_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      bulkMutateStart_result typedOther = (bulkMutateStart_result)other;
+
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("bulkMutateStart_result(");
+      boolean first = true;
+
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class bulkMutateStart_resultStandardSchemeFactory implements SchemeFactory {
+      public bulkMutateStart_resultStandardScheme getScheme() {
+        return new bulkMutateStart_resultStandardScheme();
+      }
+    }
+
+    private static class bulkMutateStart_resultStandardScheme extends StandardScheme<bulkMutateStart_result> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, bulkMutateStart_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // EX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.ex = new BlurException();
+                struct.ex.read(iprot);
+                struct.setExIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, bulkMutateStart_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.ex != null) {
+          oprot.writeFieldBegin(EX_FIELD_DESC);
+          struct.ex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class bulkMutateStart_resultTupleSchemeFactory implements SchemeFactory {
+      public bulkMutateStart_resultTupleScheme getScheme() {
+        return new bulkMutateStart_resultTupleScheme();
+      }
+    }
+
+    private static class bulkMutateStart_resultTupleScheme extends TupleScheme<bulkMutateStart_result> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateStart_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetEx()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetEx()) {
+          struct.ex.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateStart_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.ex = new BlurException();
+          struct.ex.read(iprot);
+          struct.setExIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class bulkMutateAdd_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<bulkMutateAdd_args, bulkMutateAdd_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("bulkMutateAdd_args");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_MUTATION_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowMutation", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)3);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new bulkMutateAdd_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new bulkMutateAdd_argsTupleSchemeFactory());
+    }
+
+    /**
+     * The table name.
+     */
+    public String table; // required
+    /**
+     * The bulk id.
+     */
+    public String bulkId; // required
+    /**
+     * The row mutation.
+     */
+    public RowMutation rowMutation; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * The table name.
+       */
+      TABLE((short)1, "table"),
+      /**
+       * The bulk id.
+       */
+      BULK_ID((short)2, "bulkId"),
+      /**
+       * The row mutation.
+       */
+      ROW_MUTATION((short)3, "rowMutation");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          case 2: // BULK_ID
+            return BULK_ID;
+          case 3: // ROW_MUTATION
+            return ROW_MUTATION;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      tmpMap.put(_Fields.BULK_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      tmpMap.put(_Fields.ROW_MUTATION, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowMutation", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, RowMutation.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(bulkMutateAdd_args.class, metaDataMap);
+    }
+
+    public bulkMutateAdd_args() {
+    }
+
+    public bulkMutateAdd_args(
+      String table,
+      String bulkId,
+      RowMutation rowMutation)
+    {
+      this();
+      this.table = table;
+      this.bulkId = bulkId;
+      this.rowMutation = rowMutation;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public bulkMutateAdd_args(bulkMutateAdd_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+      if (other.isSetBulkId()) {
+        this.bulkId = other.bulkId;
+      }
+      if (other.isSetRowMutation()) {
+        this.rowMutation = new RowMutation(other.rowMutation);
+      }
+    }
+
+    public bulkMutateAdd_args deepCopy() {
+      return new bulkMutateAdd_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.table = null;
+      this.bulkId = null;
+      this.rowMutation = null;
+    }
+
+    /**
+     * The table name.
+     */
+    public String getTable() {
+      return this.table;
+    }
+
+    /**
+     * The table name.
+     */
+    public bulkMutateAdd_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    /**
+     * The bulk id.
+     */
+    public String getBulkId() {
+      return this.bulkId;
+    }
+
+    /**
+     * The bulk id.
+     */
+    public bulkMutateAdd_args setBulkId(String bulkId) {
+      this.bulkId = bulkId;
+      return this;
+    }
+
+    public void unsetBulkId() {
+      this.bulkId = null;
+    }
+
+    /** Returns true if field bulkId is set (has been assigned a value) and false otherwise */
+    public boolean isSetBulkId() {
+      return this.bulkId != null;
+    }
+
+    public void setBulkIdIsSet(boolean value) {
+      if (!value) {
+        this.bulkId = null;
+      }
+    }
+
+    /**
+     * The row mutation.
+     */
+    public RowMutation getRowMutation() {
+      return this.rowMutation;
+    }
+
+    /**
+     * The row mutation.
+     */
+    public bulkMutateAdd_args setRowMutation(RowMutation rowMutation) {
+      this.rowMutation = rowMutation;
+      return this;
+    }
+
+    public void unsetRowMutation() {
+      this.rowMutation = null;
+    }
+
+    /** Returns true if field rowMutation is set (has been assigned a value) and false otherwise */
+    public boolean isSetRowMutation() {
+      return this.rowMutation != null;
+    }
+
+    public void setRowMutationIsSet(boolean value) {
+      if (!value) {
+        this.rowMutation = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      case BULK_ID:
+        if (value == null) {
+          unsetBulkId();
+        } else {
+          setBulkId((String)value);
+        }
+        break;
+
+      case ROW_MUTATION:
+        if (value == null) {
+          unsetRowMutation();
+        } else {
+          setRowMutation((RowMutation)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      case BULK_ID:
+        return getBulkId();
+
+      case ROW_MUTATION:
+        return getRowMutation();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      case BULK_ID:
+        return isSetBulkId();
+      case ROW_MUTATION:
+        return isSetRowMutation();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof bulkMutateAdd_args)
+        return this.equals((bulkMutateAdd_args)that);
+      return false;
+    }
+
+    public boolean equals(bulkMutateAdd_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      boolean this_present_bulkId = true && this.isSetBulkId();
+      boolean that_present_bulkId = true && that.isSetBulkId();
+      if (this_present_bulkId || that_present_bulkId) {
+        if (!(this_present_bulkId && that_present_bulkId))
+          return false;
+        if (!this.bulkId.equals(that.bulkId))
+          return false;
+      }
+
+      boolean this_present_rowMutation = true && this.isSetRowMutation();
+      boolean that_present_rowMutation = true && that.isSetRowMutation();
+      if (this_present_rowMutation || that_present_rowMutation) {
+        if (!(this_present_rowMutation && that_present_rowMutation))
+          return false;
+        if (!this.rowMutation.equals(that.rowMutation))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(bulkMutateAdd_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      bulkMutateAdd_args typedOther = (bulkMutateAdd_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetBulkId()).compareTo(typedOther.isSetBulkId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBulkId()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.bulkId, typedOther.bulkId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetRowMutation()).compareTo(typedOther.isSetRowMutation());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRowMutation()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.rowMutation, typedOther.rowMutation);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("bulkMutateAdd_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("bulkId:");
+      if (this.bulkId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.bulkId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("rowMutation:");
+      if (this.rowMutation == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.rowMutation);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+      if (rowMutation != null) {
+        rowMutation.validate();
+      }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class bulkMutateAdd_argsStandardSchemeFactory implements SchemeFactory {
+      public bulkMutateAdd_argsStandardScheme getScheme() {
+        return new bulkMutateAdd_argsStandardScheme();
+      }
+    }
+
+    private static class bulkMutateAdd_argsStandardScheme extends StandardScheme<bulkMutateAdd_args> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, bulkMutateAdd_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // TABLE
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.table = iprot.readString();
+                struct.setTableIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // BULK_ID
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.bulkId = iprot.readString();
+                struct.setBulkIdIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // ROW_MUTATION
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.rowMutation = new RowMutation();
+                struct.rowMutation.read(iprot);
+                struct.setRowMutationIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, bulkMutateAdd_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.table != null) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          oprot.writeString(struct.table);
+          oprot.writeFieldEnd();
+        }
+        if (struct.bulkId != null) {
+          oprot.writeFieldBegin(BULK_ID_FIELD_DESC);
+          oprot.writeString(struct.bulkId);
+          oprot.writeFieldEnd();
+        }
+        if (struct.rowMutation != null) {
+          oprot.writeFieldBegin(ROW_MUTATION_FIELD_DESC);
+          struct.rowMutation.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class bulkMutateAdd_argsTupleSchemeFactory implements SchemeFactory {
+      public bulkMutateAdd_argsTupleScheme getScheme() {
+        return new bulkMutateAdd_argsTupleScheme();
+      }
+    }
+
+    private static class bulkMutateAdd_argsTupleScheme extends TupleScheme<bulkMutateAdd_args> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateAdd_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetTable()) {
+          optionals.set(0);
+        }
+        if (struct.isSetBulkId()) {
+          optionals.set(1);
+        }
+        if (struct.isSetRowMutation()) {
+          optionals.set(2);
+        }
+        oprot.writeBitSet(optionals, 3);
+        if (struct.isSetTable()) {
+          oprot.writeString(struct.table);
+        }
+        if (struct.isSetBulkId()) {
+          oprot.writeString(struct.bulkId);
+        }
+        if (struct.isSetRowMutation()) {
+          struct.rowMutation.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateAdd_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(3);
+        if (incoming.get(0)) {
+          struct.table = iprot.readString();
+          struct.setTableIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.bulkId = iprot.readString();
+          struct.setBulkIdIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.rowMutation = new RowMutation();
+          struct.rowMutation.read(iprot);
+          struct.setRowMutationIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class bulkMutateAdd_result implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<bulkMutateAdd_result, bulkMutateAdd_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("bulkMutateAdd_result");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("ex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new bulkMutateAdd_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new bulkMutateAdd_resultTupleSchemeFactory());
+    }
+
+    public BlurException ex; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.EX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("ex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(bulkMutateAdd_result.class, metaDataMap);
+    }
+
+    public bulkMutateAdd_result() {
+    }
+
+    public bulkMutateAdd_result(
+      BlurException ex)
+    {
+      this();
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public bulkMutateAdd_result(bulkMutateAdd_result other) {
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public bulkMutateAdd_result deepCopy() {
+      return new bulkMutateAdd_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.ex = null;
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public bulkMutateAdd_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof bulkMutateAdd_result)
+        return this.equals((bulkMutateAdd_result)that);
+      return false;
+    }
+
+    public boolean equals(bulkMutateAdd_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(bulkMutateAdd_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      bulkMutateAdd_result typedOther = (bulkMutateAdd_result)other;
+
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("bulkMutateAdd_result(");
+      boolean first = true;
+
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class bulkMutateAdd_resultStandardSchemeFactory implements SchemeFactory {
+      public bulkMutateAdd_resultStandardScheme getScheme() {
+        return new bulkMutateAdd_resultStandardScheme();
+      }
+    }
+
+    private static class bulkMutateAdd_resultStandardScheme extends StandardScheme<bulkMutateAdd_result> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, bulkMutateAdd_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // EX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.ex = new BlurException();
+                struct.ex.read(iprot);
+                struct.setExIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, bulkMutateAdd_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.ex != null) {
+          oprot.writeFieldBegin(EX_FIELD_DESC);
+          struct.ex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class bulkMutateAdd_resultTupleSchemeFactory implements SchemeFactory {
+      public bulkMutateAdd_resultTupleScheme getScheme() {
+        return new bulkMutateAdd_resultTupleScheme();
+      }
+    }
+
+    private static class bulkMutateAdd_resultTupleScheme extends TupleScheme<bulkMutateAdd_result> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateAdd_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetEx()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetEx()) {
+          struct.ex.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateAdd_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(1);
+        if (incoming.get(0)) {
+          struct.ex = new BlurException();
+          struct.ex.read(iprot);
+          struct.setExIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class bulkMutateFinish_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<bulkMutateFinish_args, bulkMutateFinish_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("bulkMutateFinish_args");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField APPLY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("apply", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)3);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BLOCK_UNTIL_COMPLETE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("blockUntilComplete", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)4);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new bulkMutateFinish_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new bulkMutateFinish_argsTupleSchemeFactory());
+    }
+
+    /**
+     * The table name.
+     */
+    public String table; // required
+    /**
+     * The bulk id.
+     */
+    public String bulkId; // required
+    /**
+     * Apply the bulk mutate flag.
+     */
+    public boolean apply; // required
+    /**
+     * If true this call will not block on bulk completion.  This may be required for loader bulk loads.
+     */
+    public boolean blockUntilComplete; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      /**
+       * The table name.
+       */
+      TABLE((short)1, "table"),
+      /**
+       * The bulk id.
+       */
+      BULK_ID((short)2, "bulkId"),
+      /**
+       * Apply the bulk mutate flag.
+       */
+      APPLY((short)3, "apply"),
+      /**
+       * If true this call will not block on bulk completion.  This may be required for loader bulk loads.
+       */
+      BLOCK_UNTIL_COMPLETE((short)4, "blockUntilComplete");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          case 2: // BULK_ID
+            return BULK_ID;
+          case 3: // APPLY
+            return APPLY;
+          case 4: // BLOCK_UNTIL_COMPLETE
+            return BLOCK_UNTIL_COMPLETE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __APPLY_ISSET_ID = 0;
+    private static final int __BLOCKUNTILCOMPLETE_ISSET_ID = 1;
+    private byte __isset_bitfield = 0;
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      tmpMap.put(_Fields.BULK_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      tmpMap.put(_Fields.APPLY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("apply", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+      tmpMap.put(_Fields.BLOCK_UNTIL_COMPLETE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("blockUntilComplete", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(bulkMutateFinish_args.class, metaDataMap);
+    }
+
+    public bulkMutateFinish_args() {
+    }
+
+    public bulkMutateFinish_args(
+      String table,
+      String bulkId,
+      boolean apply,
+      boolean blockUntilComplete)
+    {
+      this();
+      this.table = table;
+      this.bulkId = bulkId;
+      this.apply = apply;
+      setApplyIsSet(true);
+      this.blockUntilComplete = blockUntilComplete;
+      setBlockUntilCompleteIsSet(true);
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public bulkMutateFinish_args(bulkMutateFinish_args other) {
+      __isset_bitfield = other.__isset_bitfield;
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+      if (other.isSetBulkId()) {
+        this.bulkId = other.bulkId;
+      }
+      this.apply = other.apply;
+      this.blockUntilComplete = other.blockUntilComplete;
+    }
+
+    public bulkMutateFinish_args deepCopy() {
+      return new bulkMutateFinish_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.table = null;
+      this.bulkId = null;
+      setApplyIsSet(false);
+      this.apply = false;
+      setBlockUntilCompleteIsSet(false);
+      this.blockUntilComplete = false;
+    }
+
+    /**
+     * The table name.
+     */
+    public String getTable() {
+      return this.table;
+    }
+
+    /**
+     * The table name.
+     */
+    public bulkMutateFinish_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    /**
+     * The bulk id.
+     */
+    public String getBulkId() {
+      return this.bulkId;
+    }
+
+    /**
+     * The bulk id.
+     */
+    public bulkMutateFinish_args setBulkId(String bulkId) {
+      this.bulkId = bulkId;
+      return this;
+    }
+
+    public void unsetBulkId() {
+      this.bulkId = null;
+    }
+
+    /** Returns true if field bulkId is set (has been assigned a value) and false otherwise */
+    public boolean isSetBulkId() {
+      return this.bulkId != null;
+    }
+
+    public void setBulkIdIsSet(boolean value) {
+      if (!value) {
+        this.bulkId = null;
+      }
+    }
+
+    /**
+     * Apply the bulk mutate flag.
+     */
+    public boolean isApply() {
+      return this.apply;
+    }
+
+    /**
+     * Apply the bulk mutate flag.
+     */
+    public bulkMutateFinish_args setApply(boolean apply) {
+      this.apply = apply;
+      setApplyIsSet(true);
+      return this;
+    }
+
+    public void unsetApply() {
+      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __APPLY_ISSET_ID);
+    }
+
+    /** Returns true if field apply is set (has been assigned a value) and false otherwise */
+    public boolean isSetApply() {
+      return EncodingUtils.testBit(__isset_bitfield, __APPLY_ISSET_ID);
+    }
+
+    public void setApplyIsSet(boolean value) {
+      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __APPLY_ISSET_ID, value);
+    }
+
+    /**
+     * If true this call will not block on bulk completion.  This may be required for loader bulk loads.
+     */
+    public boolean isBlockUntilComplete() {
+      return this.blockUntilComplete;
+    }
+
+    /**
+     * If true this call will not block on bulk completion.  This may be required for loader bulk loads.
+     */
+    public bulkMutateFinish_args setBlockUntilComplete(boolean blockUntilComplete) {
+      this.blockUntilComplete = blockUntilComplete;
+      setBlockUntilCompleteIsSet(true);
+      return this;
+    }
+
+    public void unsetBlockUntilComplete() {
+      __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __BLOCKUNTILCOMPLETE_ISSET_ID);
+    }
+
+    /** Returns true if field blockUntilComplete is set (has been assigned a value) and false otherwise */
+    public boolean isSetBlockUntilComplete() {
+      return EncodingUtils.testBit(__isset_bitfield, __BLOCKUNTILCOMPLETE_ISSET_ID);
+    }
+
+    public void setBlockUntilCompleteIsSet(boolean value) {
+      __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __BLOCKUNTILCOMPLETE_ISSET_ID, value);
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      case BULK_ID:
+        if (value == null) {
+          unsetBulkId();
+        } else {
+          setBulkId((String)value);
+        }
+        break;
+
+      case APPLY:
+        if (value == null) {
+          unsetApply();
+        } else {
+          setApply((Boolean)value);
+        }
+        break;
+
+      case BLOCK_UNTIL_COMPLETE:
+        if (value == null) {
+          unsetBlockUntilComplete();
+        } else {
+          setBlockUntilComplete((Boolean)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      case BULK_ID:
+        return getBulkId();
+
+      case APPLY:
+        return Boolean.valueOf(isApply());
+
+      case BLOCK_UNTIL_COMPLETE:
+        return Boolean.valueOf(isBlockUntilComplete());
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      case BULK_ID:
+        return isSetBulkId();
+      case APPLY:
+        return isSetApply();
+      case BLOCK_UNTIL_COMPLETE:
+        return isSetBlockUntilComplete();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof bulkMutateFinish_args)
+        return this.equals((bulkMutateFinish_args)that);
+      return false;
+    }
+
+    public boolean equals(bulkMutateFinish_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      boolean this_present_bulkId = true && this.isSetBulkId();
+      boolean that_present_bulkId = true && that.isSetBulkId();
+      if (this_present_bulkId || that_present_bulkId) {
+        if (!(this_present_bulkId && that_present_bulkId))
+          return false;
+        if (!this.bulkId.equals(that.bulkId))
+          return false;
+      }
+
+      boolean this_present_apply = true;
+      boolean that_present_apply = true;
+      if (this_present_apply || that_present_apply) {
+        if (!(this_present_apply && that_present_apply))
+          return false;
+        if (this.apply != that.apply)
+          return false;
+      }
+
+      boolean this_present_blockUntilComplete = true;
+      boolean that_present_blockUntilComplete = true;
+      if (this_present_blockUntilComplete || that_present_blockUntilComplete) {
+        if (!(this_present_blockUntilComplete && that_present_blockUntilComplete))
+          return false;
+        if (this.blockUntilComplete != that.blockUntilComplete)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(bulkMutateFinish_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      bulkMutateFinish_args typedOther = (bulkMutateFinish_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetBulkId()).compareTo(typedOther.isSetBulkId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBulkId()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.bulkId, typedOther.bulkId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetApply()).compareTo(typedOther.isSetApply());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetApply()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.apply, typedOther.apply);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetBlockUntilComplete()).compareTo(typedOther.isSetBlockUntilComplete());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBlockUntilComplete()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.blockUntilComplete, typedOther.blockUntilComplete);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("bulkMutateFinish_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("bulkId:");
+      if (this.bulkId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.bulkId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("apply:");
+      sb.append(this.apply);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("blockUntilComplete:");
+      sb.append(this.blockUntilComplete);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bitfield = 0;
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class bulkMutateFinish_argsStandardSchemeFactory implements SchemeFactory {
+      public bulkMutateFinish_argsStandardScheme getScheme() {
+        return new bulkMutateFinish_argsStandardScheme();
+      }
+    }
+
+    private static class bulkMutateFinish_argsStandardScheme extends StandardScheme<bulkMutateFinish_args> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, bulkMutateFinish_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // TABLE
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.table = iprot.readString();
+                struct.setTableIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // BULK_ID
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.bulkId = iprot.readString();
+                struct.setBulkIdIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 3: // APPLY
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
+                struct.apply = iprot.readBool();
+                struct.setApplyIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 4: // BLOCK_UNTIL_COMPLETE
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
+                struct.blockUntilComplete = iprot.readBool();
+                struct.setBlockUntilCompleteIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, bulkMutateFinish_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.table != null) {
+          oprot.writeFieldBegin(TABLE_FIELD_DESC);
+          oprot.writeString(struct.table);
+          oprot.writeFieldEnd();
+        }
+        if (struct.bulkId != null) {
+          oprot.writeFieldBegin(BULK_ID_FIELD_DESC);
+          oprot.writeString(struct.bulkId);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldBegin(APPLY_FIELD_DESC);
+        oprot.writeBool(struct.apply);
+        oprot.writeFieldEnd();
+        oprot.writeFieldBegin(BLOCK_UNTIL_COMPLETE_FIELD_DESC);
+        oprot.writeBool(struct.blockUntilComplete);
+        oprot.writeFieldEnd();
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class bulkMutateFinish_argsTupleSchemeFactory implements SchemeFactory {
+      public bulkMutateFinish_argsTupleScheme getScheme() {
+        return new bulkMutateFinish_argsTupleScheme();
+      }
+    }
+
+    private static class bulkMutateFinish_argsTupleScheme extends TupleScheme<bulkMutateFinish_args> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateFinish_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetTable()) {
+          optionals.set(0);
+        }
+        if (struct.isSetBulkId()) {
+          optionals.set(1);
+        }
+        if (struct.isSetApply()) {
+          optionals.set(2);
+        }
+        if (struct.isSetBlockUntilComplete()) {
+          optionals.set(3);
+        }
+        oprot.writeBitSet(optionals, 4);
+        if (struct.isSetTable()) {
+          oprot.writeString(struct.table);
+        }
+        if (struct.isSetBulkId()) {
+          oprot.writeString(struct.bulkId);
+        }
+        if (struct.isSetApply()) {
+          oprot.writeBool(struct.apply);
+        }
+        if (struct.isSetBlockUntilComplete()) {
+          oprot.writeBool(struct.blockUntilComplete);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateFinish_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(4);
+        if (incoming.get(0)) {
+          struct.table = iprot.readString();
+          struct.setTableIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.bulkId = iprot.readString();
+          struct.setBulkIdIsSet(true);
+        }
+        if (incoming.get(2)) {
+          struct.apply = iprot.readBool();
+          struct.setApplyIsSet(true);
+        }
+        if (incoming.get(3)) {
+          struct.blockUntilComplete = iprot.readBool();
+          struct.setBlockUntilCompleteIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class bulkMutateFinish_result implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<bulkMutateFinish_result, bulkMutateFinish_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("bulkMutateFinish_result");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("ex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new bulkMutateFinish_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new bulkMutateFinish_resultTupleSchemeFactory());
+    }
+
+    public BlurException ex; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.EX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("ex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(bulkMutateFinish_result.class, metaDataMap);
+    }
+
+    public bulkMutateFinish_result() {
+    }
+
+    public bulkMutateFinish_result(
+      BlurException ex)
+    {
+      this();
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public bulkMutateFinish_result(bulkMutateFinish_result other) {
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public bulkMutateFinish_result deepCopy() {
+      return new bulkMutateFinish_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.ex = null;
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public bulkMutateFinish_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof bulkMutateFinish_result)
+        return this.equals((bulkMutateFinish_result)that);
+      return false;
+    }
+
+    public boolean equals(bulkMutateFinish_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(bulkMutateFinish_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      bulkMutateFinish_result typedOther = (bulkMutateFinish_result)other;
+
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("bulkMutateFinish_result(");
+      boolean first = true;
+
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class bulkMutateFinish_resultStandardSchemeFactory implements SchemeFactory {
+      public bulkMutateFinish_resultStandardScheme getScheme() {
+        return new bulkMutateFinish_resultStandardScheme();
+      }
+    }
+
+    private static class bulkMutateFinish_resultStandardScheme extends StandardScheme<bulkMutateFinish_result> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, bulkMutateFinish_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // EX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.ex = new BlurException();
+                struct.ex.read(iprot);
+                struct.setExIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, bulkMutateFinish_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.ex != null) {
+          oprot.writeFieldBegin(EX_FIELD_DESC);
+          struct.ex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class bulkMutateFinish_resultTupleSchemeFactory implements SchemeFactory {
+      public bulkMutateFinish_resultTupleScheme getScheme() {
+        return new bulkMutateFinish_resultTupleScheme();
+      }
+    }
+
+    private static class bulkMutateFinish_resultTupleScheme extends TupleScheme<bulkMutateFinish_result> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateFinish_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetEx()) {
+          optionals.set(0);
+        }
+        oprot.writeBitSet(optionals, 1);
+        if (struct.isSetEx()) {
+          struct.ex.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateFinish_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
         BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {

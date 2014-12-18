@@ -42,6 +42,7 @@ import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.analysis.HdfsFieldManager;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
+import org.apache.blur.analysis.ThriftFieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
@@ -52,6 +53,8 @@ import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
 //import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
@@ -115,6 +118,10 @@ public class TableContext implements Cloneable {
   }
 
   public static TableContext create(TableDescriptor tableDescriptor) {
+    return create(tableDescriptor, false, null);
+  }
+
+  public static TableContext create(TableDescriptor tableDescriptor, boolean remote, Iface client) {
     if (tableDescriptor == null) {
       throw new NullPointerException("TableDescriptor can not be null.");
     }
@@ -165,11 +172,17 @@ public class TableContext implements Cloneable {
 
     Path storagePath = new Path(tableContext._tablePath, TYPES);
     try {
-      HdfsFieldManager hdfsFieldManager = new HdfsFieldManager(SUPER, new NoStopWordStandardAnalyzer(), storagePath,
-          configuration, strict, defaultMissingFieldType, defaultMissingFieldLessIndexing, defaultMissingFieldProps);
-      loadCustomTypes(tableContext, blurConfiguration, hdfsFieldManager);
-      hdfsFieldManager.loadFromStorage();
-      tableContext._fieldManager = hdfsFieldManager;
+      FieldManager fieldManager;
+      if (remote) {
+        fieldManager = new ThriftFieldManager(SUPER, new NoStopWordStandardAnalyzer(), strict, defaultMissingFieldType,
+            defaultMissingFieldLessIndexing, defaultMissingFieldProps, configuration, client, name);
+      } else {
+        fieldManager = new HdfsFieldManager(SUPER, new NoStopWordStandardAnalyzer(), storagePath, configuration,
+            strict, defaultMissingFieldType, defaultMissingFieldLessIndexing, defaultMissingFieldProps);
+      }
+      loadCustomTypes(tableContext, blurConfiguration, fieldManager);
+      fieldManager.loadFromStorage();
+      tableContext._fieldManager = fieldManager;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

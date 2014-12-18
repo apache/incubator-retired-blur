@@ -52,38 +52,38 @@ add jar /Users/amccurry/Development/incubator-blur/distribution/target/apache-bl
 add jar /Users/amccurry/Development/incubator-blur/distribution/target/apache-blur-0.2.4-incubating-SNAPSHOT-hadoop1-bin/lib/spatial4j-0.3.jar;
 add jar /Users/amccurry/Development/incubator-blur/distribution/target/apache-blur-0.2.4-incubating-SNAPSHOT-hadoop1-bin/lib/zookeeper-3.4.5.jar;
 
--- create database test;
+create database if not exists test;
 use test;
 
---  CREATE TABLE test
---  ROW FORMAT SERDE 'org.apache.blur.hive.BlurSerDe'
---  WITH SERDEPROPERTIES (
---    'blur.zookeeper.connection'='localhost',
---    'blur.table'='test_hdfs',
---    'blur.family'='fam0'
---  )
--- STORED BY 'org.apache.blur.hive.BlurHiveStorageHandler';
+CREATE TABLE if not exists test  
+ROW FORMAT SERDE 'org.apache.blur.hive.BlurSerDe'
+WITH SERDEPROPERTIES (
+  'blur.zookeeper.connection'='localhost',
+  'blur.table'='test_hdfs',
+  'blur.family'='fam0'
+)
+STORED BY 'org.apache.blur.hive.BlurHiveStorageHandler';
 
 desc test;
 
--- create table input_data (
--- rowid string,
--- recordid string,
--- col0 string,
--- col1 string,
--- col2 string,
--- col3 string,
--- col4 string,
--- col5 string,
--- col6 string,
--- col7 string,
--- col8 string,
--- col9 string
--- );
+create table if not exists input_data (
+ rowid string,
+ recordid string,
+ col0 string,
+ col1 string,
+ col2 string,
+ col3 string,
+ col4 string,
+ col5 string,
+ col6 string,
+ col7 string,
+ col8 string,
+ col9 string
+);
 
 select * from input_data;
 
-insert overwrite table test select * from input_data distribute by rowid;
+insert overwrite table test select * from input_data;
 
 
 

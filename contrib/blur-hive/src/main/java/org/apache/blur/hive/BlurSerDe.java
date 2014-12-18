@@ -43,6 +43,7 @@ import org.apache.hadoop.io.Writable;
 
 public class BlurSerDe extends AbstractSerDe {
 
+  public static final String BLUR_CONTROLLER_CONNECTION_STR = "BLUR_CONTROLLER_CONNECTION_STR";
   private static final String FAMILY = "blur.family";
   private static final String TABLE = "blur.table";
   private String _family;
@@ -66,7 +67,6 @@ public class BlurSerDe extends AbstractSerDe {
     }
 
     Iface client = BlurClient.getClient(configuration);
-    // TableDescriptor tableDescriptor;
     Schema schema;
     try {
       List<String> tableList = client.tableList();
@@ -76,6 +76,7 @@ public class BlurSerDe extends AbstractSerDe {
       if (conf != null) {
         TableDescriptor tableDescriptor = client.describe(table);
         BlurOutputFormat.setTableDescriptor(conf, tableDescriptor);
+        conf.set(BLUR_CONTROLLER_CONNECTION_STR, getControllerConnectionStr(client));
       }
       schema = client.schema(table);
     } catch (BlurException e) {
@@ -105,6 +106,18 @@ public class BlurSerDe extends AbstractSerDe {
     _columnTypes = blurObjectInspectorGenerator.getColumnTypes();
 
     _serializer = new BlurSerializer();
+  }
+
+  private String getControllerConnectionStr(Iface client) throws BlurException, TException {
+    List<String> controllerServerList = client.controllerServerList();
+    StringBuilder builder = new StringBuilder();
+    for (String c : controllerServerList) {
+      if (builder.length() != 0) {
+        builder.append(',');
+      }
+      builder.append(c);
+    }
+    return builder.toString();
   }
 
   @Override

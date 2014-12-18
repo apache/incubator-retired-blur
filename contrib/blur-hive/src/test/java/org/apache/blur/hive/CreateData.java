@@ -34,11 +34,12 @@ public class CreateData {
     FileSystem fileSystem = path.getFileSystem(configuration);
     FSDataOutputStream outputStream = fileSystem.create(path);
     PrintWriter print = new PrintWriter(outputStream);
-    for (int i = 0; i < 10; i++) {
+    int rows = 100000;
+    for (int i = 0; i < rows; i++) {
       String s = Integer.toString(i);
       print.print(s);
       print.print(SEP);
-      print.print(s);
+      print.print(s + "-" + System.currentTimeMillis());
       for (int c = 0; c < 10; c++) {
         print.print(SEP);
         print.print(s);

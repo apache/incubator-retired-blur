@@ -136,4 +136,10 @@ public abstract class BlurIndex {
 
   public abstract void enqueue(List<RowMutation> mutations) throws IOException;
 
+  public abstract void startBulkMutate(String bulkId) throws IOException;
+
+  public abstract void finishBulkMutate(String bulkId, boolean apply, boolean blockUntilComplete) throws IOException;
+
+  public abstract void addBulkMutate(String bulkId, RowMutation mutation) throws IOException;
+
 }

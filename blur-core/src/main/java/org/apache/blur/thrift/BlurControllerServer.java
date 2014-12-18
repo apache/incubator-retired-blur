@@ -1673,4 +1673,79 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     throw new BException("Not Implemented");
   }
 
+  @Override
+  public void bulkMutateStart(final String table, final String bulkId) throws BlurException, TException {
+    String cluster = getCluster(table);
+    try {
+      scatter(cluster, new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          client.bulkMutateStart(table, bulkId);
+          return null;
+        }
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get start a bulk mutate [{0}] [{1}]", e, table, bulkId);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public void bulkMutateAdd(final String table, final String bulkId, final RowMutation mutation) throws BlurException, TException {
+    try {
+      checkTable(mutation.table);
+      checkForUpdates(mutation.table);
+      MutationHelper.validateMutation(mutation);
+      if (!table.equals(mutation.getTable())) {
+        throw new BException("RowMutation table [{0}] has to match method table [{1}]", mutation.getTable(), table);
+      }
+
+      int numberOfShards = getShardCount(table);
+      Map<String, String> tableLayout = getTableLayout(table);
+      if (tableLayout.size() != numberOfShards) {
+        throw new BException("Cannot update data while shard is missing");
+      }
+
+      String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
+      String node = tableLayout.get(shardName);
+      _client.execute(node, new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          client.bulkMutateAdd(table, bulkId, mutation);
+          return null;
+        }
+      }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+    } catch (Exception e) {
+      LOG.error("Unknown error during bulk mutation of [{0}]", e, mutation);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error during bulk mutation of [{0}]", e, mutation);
+    }
+  }
+
+  @Override
+  public void bulkMutateFinish(final String table, final String bulkId, final boolean apply, final boolean blockUntilComplete) throws BlurException,
+      TException {
+    String cluster = getCluster(table);
+    try {
+      scatter(cluster, new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          client.bulkMutateFinish(table, bulkId, apply, blockUntilComplete);
+          return null;
+        }
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get finish a bulk mutate [{0}] [{1}]", e, table, bulkId);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
 }

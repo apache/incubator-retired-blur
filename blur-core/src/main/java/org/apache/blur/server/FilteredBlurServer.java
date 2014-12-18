@@ -291,4 +291,19 @@ public class FilteredBlurServer implements Iface {
     _iface.loadData(table, location);
   }
 
+  @Override
+  public void bulkMutateStart(String table, String bulkId) throws BlurException, TException {
+    _iface.bulkMutateStart(table, bulkId);
+  }
+
+  @Override
+  public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation) throws BlurException, TException {
+    _iface.bulkMutateAdd(table, bulkId, rowMutation);
+  }
+
+  @Override
+  public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, TException {
+    _iface.bulkMutateFinish(table, bulkId, apply, blockUntilComplete);
+  }
+
 }

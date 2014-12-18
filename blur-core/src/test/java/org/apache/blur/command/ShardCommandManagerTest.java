@@ -430,6 +430,21 @@ public class ShardCommandManagerTest {
       public void close() throws IOException {
         throw new RuntimeException("Not implemented.");
       }
+
+      @Override
+      public void startBulkMutate(String bulkId) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public void finishBulkMutate(String bulkId, boolean apply, boolean blockUntilComplete) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public void addBulkMutate(String bulkId, RowMutation mutation) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
     };
   }
 

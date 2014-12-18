@@ -1015,18 +1015,18 @@ public class IndexManager {
     List<String> terms = new ArrayList<String>(size);
     AtomicReader areader = BlurUtil.getAtomicReader(reader);
     Terms termsAll = areader.terms(term.field());
-    
+
     if (termsAll == null) {
       return terms;
     }
 
     TermsEnum termEnum = termsAll.iterator(null);
     SeekStatus status = termEnum.seekCeil(term.bytes());
-    
+
     if (status == SeekStatus.END) {
       return terms;
     }
-    
+
     BytesRef currentTermText = termEnum.term();
     do {
       terms.add(currentTermText.utf8ToString());
@@ -1287,6 +1287,30 @@ public class IndexManager {
 
   public void enqueue(RowMutation mutation) throws BlurException, IOException {
     enqueue(Arrays.asList(mutation));
+  }
+
+  public void bulkMutateStart(String table, String bulkId) throws BlurException, IOException {
+    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+    for (BlurIndex index : indexes.values()) {
+      index.startBulkMutate(bulkId);
+    }
+  }
+
+  public void bulkMutateAdd(String table, String bulkId, RowMutation mutation) throws BlurException, IOException {
+    String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), _blurPartitioner);
+    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+    BlurIndex blurIndex = indexes.get(shard);
+    if (blurIndex == null) {
+      throw new BException("Shard [{0}] for table [{1}] not found on this server.", shard, table);
+    }
+    blurIndex.addBulkMutate(bulkId, mutation);
+  }
+
+  public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, IOException {
+    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+    for (BlurIndex index : indexes.values()) {
+      index.finishBulkMutate(bulkId, apply,blockUntilComplete);
+    }
   }
 
 }

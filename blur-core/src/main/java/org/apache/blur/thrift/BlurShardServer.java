@@ -695,4 +695,43 @@ public class BlurShardServer extends TableAdmin implements Iface {
     return CommandStatusStateEnum.valueOf(state.name());
   }
 
+  @Override
+  public void bulkMutateStart(String table, String bulkId) throws BlurException, TException {
+    try {
+      _indexManager.bulkMutateStart(table, bulkId);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to start a bulk mutate on table [" + table + "]", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation) throws BlurException, TException {
+    try {
+      _indexManager.bulkMutateAdd(table, bulkId, rowMutation);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to add to a bulk mutate on table [" + table + "]", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, TException {
+    try {
+      _indexManager.bulkMutateFinish(table, bulkId, apply,blockUntilComplete);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to finsh a bulk mutate on table [" + table + "]", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
 }

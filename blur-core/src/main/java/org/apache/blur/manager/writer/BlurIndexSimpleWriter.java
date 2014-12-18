@@ -22,9 +22,11 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -45,15 +47,27 @@ import org.apache.blur.lucene.codec.Blur024Codec;
 import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.utils.BlurUtil;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.SequenceFile.Reader;
+import org.apache.hadoop.io.SequenceFile.Sorter;
+import org.apache.hadoop.io.SequenceFile.Writer;
+import org.apache.hadoop.io.Text;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
@@ -88,10 +102,12 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final BlockingQueue<RowMutation> _queue;
   private final MutationQueueProcessor _mutationQueueProcessor;
   private final Timer _indexImporterTimer;
+  private final Map<String, BulkEntry> _bulkWriters;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       final ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer) throws IOException {
     super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexImporterTimer);
+    _bulkWriters = new ConcurrentHashMap<String, BlurIndexSimpleWriter.BulkEntry>();
     _indexImporterTimer = indexImporterTimer;
     _searchThreadPool = searchExecutor;
     _shardContext = shardContext;
@@ -103,7 +119,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     _conf.setCodec(new Blur024Codec(_tableContext.getBlurConfiguration()));
     _conf.setSimilarity(_tableContext.getSimilarity());
-    _conf.setInfoStream(new LoggingInfoStream(_tableContext.getTable(),_shardContext.getShard()));
+    _conf.setInfoStream(new LoggingInfoStream(_tableContext.getTable(), _shardContext.getShard()));
     TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     _conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
@@ -379,6 +395,189 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   private void startQueueIfNeeded() {
     _mutationQueueProcessor.startIfNotRunning();
+  }
+
+  static class BulkEntry {
+    final SequenceFile.Writer _writer;
+    final Path _path;
+
+    BulkEntry(Writer writer, Path path) {
+      _writer = writer;
+      _path = path;
+    }
+  }
+
+  @Override
+  public void startBulkMutate(String bulkId) throws IOException {
+    BulkEntry bulkEntry = _bulkWriters.get(bulkId);
+    if (bulkEntry == null) {
+      Path tablePath = _tableContext.getTablePath();
+      Path bulk = new Path(tablePath, "bulk");
+      Path bulkInstance = new Path(bulk, bulkId);
+      Path path = new Path(bulkInstance, _shardContext.getShard() + ".notsorted.seq");
+      Configuration configuration = _tableContext.getConfiguration();
+      FileSystem fileSystem = path.getFileSystem(configuration);
+      Writer writer = new SequenceFile.Writer(fileSystem, configuration, path, Text.class, BytesWritable.class);
+      _bulkWriters.put(bulkId, new BulkEntry(writer, path));
+    } else {
+      LOG.info("Bulk [{0}] mutate already started on shard [{1}] in table [{2}].", bulkId, _shardContext.getShard(),
+          _tableContext.getTable());
+    }
+  }
+
+  @Override
+  public void finishBulkMutate(final String bulkId, boolean apply, boolean blockUntilComplete) throws IOException {
+    final String table = _tableContext.getTable();
+    final String shard = _shardContext.getShard();
+
+    LOG.info("Shard [{2}/{3}] Id [{0}] Finishing bulk mutate apply [{1}]", bulkId, apply, table, shard);
+    final BulkEntry bulkEntry = _bulkWriters.get(bulkId);
+    bulkEntry._writer.close();
+
+    Configuration configuration = _tableContext.getConfiguration();
+    final Path path = bulkEntry._path;
+    final FileSystem fileSystem = path.getFileSystem(configuration);
+
+    if (!apply) {
+      fileSystem.delete(path, false);
+      Path parent = path.getParent();
+      removeParentIfLastFile(fileSystem, parent);
+    } else {
+      Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+          try {
+            process(new IndexAction() {
+              private Path _sorted;
+
+              @Override
+              public void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+                Configuration configuration = _tableContext.getConfiguration();
+
+                SequenceFile.Sorter sorter = new Sorter(fileSystem, Text.class, BytesWritable.class, configuration);
+
+                _sorted = new Path(path.getParent(), shard + ".sorted.seq");
+
+                LOG.info("Shard [{2}/{3}] Id [{4}] Sorting mutates path [{0}] sorted path [{1}]", path, _sorted, table,
+                    shard, bulkId);
+                sorter.sort(path, _sorted);
+
+                LOG.info("Shard [{1}/{2}] Id [{3}] Applying mutates sorted path [{0}]", _sorted, table, shard, bulkId);
+                Reader reader = new SequenceFile.Reader(fileSystem, _sorted, configuration);
+
+                Text key = new Text();
+                BytesWritable value = new BytesWritable();
+
+                Text last = null;
+                List<RowMutation> list = new ArrayList<RowMutation>();
+                while (reader.next(key, value)) {
+                  if (!key.equals(last)) {
+                    flushMutates(searcher, writer, list);
+                    last = new Text(key);
+                    list.clear();
+                  }
+                  list.add(fromBytesWritable(value));
+                }
+                flushMutates(searcher, writer, list);
+                reader.close();
+                LOG.info("Shard [{0}/{1}] Id [{2}] Finished applying mutates starting commit.", table, shard, bulkId);
+              }
+
+              private void flushMutates(IndexSearcherClosable searcher, IndexWriter writer, List<RowMutation> list)
+                  throws IOException {
+                if (!list.isEmpty()) {
+                  List<RowMutation> reduceMutates;
+                  try {
+                    reduceMutates = MutatableAction.reduceMutates(list);
+                  } catch (BlurException e) {
+                    throw new IOException(e);
+                  }
+                  for (RowMutation mutation : reduceMutates) {
+                    MutatableAction mutatableAction = new MutatableAction(_shardContext);
+                    mutatableAction.mutate(mutation);
+                    mutatableAction.performMutate(searcher, writer);
+                  }
+                }
+              }
+
+              private void cleanupFiles() throws IOException {
+                fileSystem.delete(path, false);
+                fileSystem.delete(_sorted, false);
+                Path parent = path.getParent();
+                removeParentIfLastFile(fileSystem, parent);
+              }
+
+              @Override
+              public void doPreRollback(IndexWriter writer) throws IOException {
+
+              }
+
+              @Override
+              public void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) throws IOException {
+
+              }
+
+              @Override
+              public void doPostRollback(IndexWriter writer) throws IOException {
+                cleanupFiles();
+              }
+
+              @Override
+              public void doPostCommit(IndexWriter writer) throws IOException {
+                cleanupFiles();
+              }
+            });
+          } catch (IOException e) {
+            LOG.error("Shard [{0}/{1}] Id [{2}] Unknown error while trying to finish the bulk updates.", table, shard,
+                bulkId);
+          }
+        }
+      };
+      if (blockUntilComplete) {
+        runnable.run();
+      } else {
+        Thread thread = new Thread(runnable);
+        thread.setName("Bulk Finishing Thread Table [" + table + "] Shard [" + shard + "] BulkId [" + bulkId + "]");
+        thread.start();
+      }
+    }
+  }
+
+  @Override
+  public void addBulkMutate(String bulkId, RowMutation mutation) throws IOException {
+    BulkEntry bulkEntry = _bulkWriters.get(bulkId);
+    if (bulkEntry == null) {
+      throw new IOException("Bulk writer for [" + bulkId + "] not found.");
+    }
+    bulkEntry._writer.append(getKey(mutation), toBytesWritable(mutation));
+  }
+
+  private Text getKey(RowMutation mutation) {
+    return new Text(mutation.getRowId());
+  }
+
+  private BytesWritable toBytesWritable(RowMutation mutation) {
+    BytesWritable value = new BytesWritable();
+    byte[] bytes = BlurUtil.toBytes(mutation);
+    value.set(bytes, 0, bytes.length);
+    return value;
+  }
+
+  private RowMutation fromBytesWritable(BytesWritable value) {
+    return (RowMutation) BlurUtil.fromBytes(value.getBytes(), 0, value.getLength());
+  }
+
+  private static void removeParentIfLastFile(final FileSystem fileSystem, Path parent) throws IOException {
+    FileStatus[] listStatus = fileSystem.listStatus(parent);
+    if (listStatus != null) {
+      if (listStatus.length == 0) {
+        if (!fileSystem.delete(parent, false)) {
+          if (fileSystem.exists(parent)) {
+            LOG.error("Could not remove parent directory [{0}]", parent);
+          }
+        }
+      }
+    }
   }
 
 }

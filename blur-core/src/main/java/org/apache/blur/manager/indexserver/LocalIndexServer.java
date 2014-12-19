@@ -45,7 +45,7 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
@@ -147,7 +147,7 @@ public class LocalIndexServer extends AbstractIndexServer {
       int shardCount = _tableContext.getDescriptor().getShardCount();
       for (int i = 0; i < shardCount; i++) {
         Directory directory;
-        String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i);
+        String shardName = ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, i);
         if (_ramDir) {
           directory = new RAMDirectory();
         } else {

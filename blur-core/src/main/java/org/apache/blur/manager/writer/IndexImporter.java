@@ -39,7 +39,7 @@ import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -229,7 +229,7 @@ public class IndexImporter extends TimerTask implements Closeable {
       BlurPartitioner blurPartitioner = new BlurPartitioner();
       Text key = new Text();
       int numberOfShards = _shardContext.getTableContext().getDescriptor().getShardCount();
-      int shardId = BlurUtil.getShardIndex(shard);
+      int shardId = ShardUtil.getShardIndex(shard);
       for (AtomicReaderContext context : leaves) {
         AtomicReader atomicReader = context.reader();
         Fields fields = atomicReader.fields();

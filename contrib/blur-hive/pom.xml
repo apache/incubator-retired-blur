@@ -27,9 +27,22 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.hive</groupId>
 			<artifactId>hive-exec</artifactId>
 			<version>0.13.1</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hive</groupId>
@@ -41,6 +54,18 @@
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.httpcomponents</groupId>
+					<artifactId>httpclient</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>${log4j.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
@@ -101,11 +126,30 @@
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-core</artifactId>
 					<version>${hadoop.version}</version>
+					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.blur</groupId>
 					<artifactId>blur-mapred-hadoop1</artifactId>
 					<version>${project.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.apache.blur</groupId>
+							<artifactId>blur-store</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.blur</groupId>
+							<artifactId>blur-query</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.blur</groupId>
+							<artifactId>blur-gui</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.eclipse.jetty</groupId>
+							<artifactId>jetty-webapp</artifactId>
+						</exclusion>
+					</exclusions>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -131,6 +175,7 @@
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-client</artifactId>
 					<version>${hadoop.version}</version>
+					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -155,6 +200,7 @@
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-client</artifactId>
 					<version>${hadoop.version}</version>
+					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>

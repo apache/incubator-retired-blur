@@ -241,7 +241,7 @@ public class BlurUtilsTest {
 
   private void createShardDirs(int shardCount, FileSystem fileSystem, Path path) throws IOException {
     for (int i = 0; i < shardCount; i++) {
-      fileSystem.mkdirs(new Path(path, BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i)));
+      fileSystem.mkdirs(new Path(path, ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, i)));
     }
   }
 

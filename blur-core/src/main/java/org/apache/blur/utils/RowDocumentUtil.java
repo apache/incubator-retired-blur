@@ -125,7 +125,7 @@ public class RowDocumentUtil {
   }
 
   public static List<Field> getDoc(FieldManager fieldManager, final String rowId, Record record) throws IOException {
-    BlurUtil.validateRowIdAndRecord(rowId, record);
+    ShardUtil.validateRowIdAndRecord(rowId, record);
     List<Field> fields = fieldManager.getFields(rowId, record);
     return fields;
   }

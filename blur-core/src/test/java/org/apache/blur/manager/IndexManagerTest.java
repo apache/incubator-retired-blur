@@ -76,7 +76,7 @@ import org.apache.blur.trace.TraceCollector;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurIterator;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.QueryWrapperFilter;
@@ -90,7 +90,7 @@ public class IndexManagerTest {
 
   private static final File TMPDIR = new File("./target/tmp");
 
-  private static final String SHARD_NAME = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, 0);
+  private static final String SHARD_NAME = ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, 0);
   private static final String TABLE = "table";
   private static final String FAMILY = "test-family";
   private static final String FAMILY2 = "test-family2";

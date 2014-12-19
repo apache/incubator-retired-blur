@@ -46,7 +46,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -317,7 +317,7 @@ public class ShardCommandManagerTest {
       public Map<String, BlurIndex> getIndexes(String table) throws IOException {
         Map<String, BlurIndex> indexes = new HashMap<String, BlurIndex>();
         for (int i = 0; i < 3; i++) {
-          String shardName = BlurUtil.getShardName(i);
+          String shardName = ShardUtil.getShardName(i);
           indexes.put(shardName, getNullBlurIndex(shardName));
         }
         return indexes;

@@ -38,7 +38,7 @@ import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -110,7 +110,7 @@ public class BlurHiveOutputFormat implements HiveOutputFormat<Text, BlurRecord> 
 
       private Iface getClient(String rowId) throws BlurException, TException {
         int shard = _blurPartitioner.getShard(rowId, numberOfShardsInTable);
-        String shardId = BlurUtil.getShardName(shard);
+        String shardId = ShardUtil.getShardName(shard);
         return getClientFromShardId(table, shardId);
       }
 

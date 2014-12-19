@@ -59,7 +59,7 @@ public class TableShardCountCollapserTest {
 
   private void createShards(int shardCount) throws IOException {
     for (int i = 0; i < shardCount; i++) {
-      String shardName = BlurUtil.getShardName(i);
+      String shardName = ShardUtil.getShardName(i);
       createShard(configuration, i, new Path(path, shardName), shardCount);
     }
   }
@@ -78,7 +78,7 @@ public class TableShardCountCollapserTest {
   private void assertData(int totalShardCount) throws IOException {
     Partitioner<IntWritable, IntWritable> partitioner = new HashPartitioner<IntWritable, IntWritable>();
     for (int i = 0; i < totalShardCount; i++) {
-      HdfsDirectory directory = new HdfsDirectory(configuration, new Path(path, BlurUtil.getShardName(i)));
+      HdfsDirectory directory = new HdfsDirectory(configuration, new Path(path, ShardUtil.getShardName(i)));
       DirectoryReader reader = DirectoryReader.open(directory);
       int numDocs = reader.numDocs();
       for (int d = 0; d < numDocs; d++) {

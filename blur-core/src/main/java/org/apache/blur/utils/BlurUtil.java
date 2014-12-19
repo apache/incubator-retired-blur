@@ -88,7 +88,6 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
-import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
@@ -650,22 +649,6 @@ public class BlurUtil {
     }
   }
 
-  public static String getShardName(int id) {
-    return getShardName(BlurConstants.SHARD_PREFIX, id);
-  }
-
-  public static String getShardName(String prefix, int id) {
-    return prefix + buffer(id, 8);
-  }
-
-  private static String buffer(int value, int length) {
-    String str = Integer.toString(value);
-    while (str.length() < length) {
-      str = "0" + str;
-    }
-    return str;
-  }
-
   public static String humanizeTime(long time, TimeUnit unit) {
     long seconds = unit.toSeconds(time);
     long hours = getHours(seconds);
@@ -720,7 +703,7 @@ public class BlurUtil {
       validateShardCount(shardCount, fileSystem, tablePath);
     }
     for (int i = 0; i < shardCount; i++) {
-      String shardName = BlurUtil.getShardName(SHARD_PREFIX, i);
+      String shardName = ShardUtil.getShardName(SHARD_PREFIX, i);
       Path shardPath = new Path(tablePath, shardName);
       createPath(fileSystem, shardPath);
     }
@@ -729,7 +712,7 @@ public class BlurUtil {
   public static void validateShardCount(int shardCount, FileSystem fileSystem, Path tablePath) throws IOException {
     // Check that all the directories that should be are in fact there.
     for (int i = 0; i < shardCount; i++) {
-      Path path = new Path(tablePath, BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
+      Path path = new Path(tablePath, ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
       if (!fileSystem.exists(path)) {
         LOG.error("Path [{0}] for shard [{1}] does not exist.", path, i);
         throw new RuntimeException("Path [" + path + "] for shard [" + i + "] does not exist.");
@@ -1119,70 +1102,6 @@ public class BlurUtil {
 
   public static AtomicReader getAtomicReader(IndexReader reader) throws IOException {
     return SlowCompositeReaderWrapper.wrap(reader);
-  }
-
-  public static int getShardIndex(String shard) {
-    int index = shard.indexOf('-');
-    return Integer.parseInt(shard.substring(index + 1));
-  }
-
-  public static void validateRowIdAndRecord(String rowId, Record record) {
-    if (!validate(record.family)) {
-      throw new IllegalArgumentException("Invalid column family name [ " + record.family
-          + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-    }
-
-    for (Column column : record.getColumns()) {
-      if (!validate(column.name)) {
-        throw new IllegalArgumentException("Invalid column name [ " + column.name
-            + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-      }
-    }
-  }
-
-  public static boolean validate(String s) {
-    int length = s.length();
-    for (int i = 0; i < length; i++) {
-      char c = s.charAt(i);
-      if (!validate(c)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private static boolean validate(char c) {
-    if (c >= 'a' && c <= 'z') {
-      return true;
-    }
-    if (c >= 'A' && c <= 'Z') {
-      return true;
-    }
-    if (c >= '0' && c <= '9') {
-      return true;
-    }
-    switch (c) {
-    case '_':
-      return true;
-    case '-':
-      return true;
-    default:
-      return false;
-    }
-  }
-
-  public static void validateTableName(String tableName) {
-    if (!validate(tableName)) {
-      throw new IllegalArgumentException("Invalid table name [ " + tableName
-          + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-    }
-  }
-
-  public static void validateShardName(String shardName) {
-    if (!validate(shardName)) {
-      throw new IllegalArgumentException("Invalid shard name [ " + shardName
-          + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-    }
   }
 
   public static String getPid() {

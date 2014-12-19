@@ -54,8 +54,8 @@ import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.TraceStorage;
-import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.MemoryReporter;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
@@ -117,7 +117,7 @@ public abstract class TableAdmin implements Iface {
   public final void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
     try {
       TableContext.clear(tableDescriptor.getName());
-      BlurUtil.validateTableName(tableDescriptor.getName());
+      ShardUtil.validateTableName(tableDescriptor.getName());
       assignClusterIfNull(tableDescriptor);
       _clusterStatus.createTable(tableDescriptor);
     } catch (Exception e) {

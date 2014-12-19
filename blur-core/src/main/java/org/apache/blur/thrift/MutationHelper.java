@@ -24,13 +24,13 @@ import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.Row;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 
 public class MutationHelper {
 
   public static String getShardName(String table, String rowId, int numberOfShards, BlurPartitioner blurPartitioner) {
     int partition = blurPartitioner.getShard(rowId, numberOfShards);
-    return BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, partition);
+    return ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, partition);
   }
 
   public static void validateMutation(RowMutation mutation) {

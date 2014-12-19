@@ -30,9 +30,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Timer;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -53,12 +53,11 @@ import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
 //import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.store.hdfs.HdfsDirectory;
-import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -413,7 +412,7 @@ public class TableContext implements Cloneable {
     for (FileStatus fileStatus : listStatus) {
       Path shardPath = fileStatus.getPath();
       String shardId = shardPath.getName();
-      int shardIndex = BlurUtil.getShardIndex(shardId);
+      int shardIndex = ShardUtil.getShardIndex(shardId);
       if (shardIndex >= shardCount) {
         throw new IOException("Too many shards [" + shardIndex + "].");
       }

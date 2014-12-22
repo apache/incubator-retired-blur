@@ -22,7 +22,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -69,7 +69,7 @@ public class BlurOutputCommitter extends OutputCommitter {
     TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
     int shardCount = tableDescriptor.getShardCount();
     for (int i = 0; i < shardCount; i++) {
-      String shardName = BlurUtil.getShardName(i);
+      String shardName = ShardUtil.getShardName(i);
       fileSystem.mkdirs(new Path(tableOutput, shardName));
     }
   }
@@ -212,7 +212,7 @@ public class BlurOutputCommitter extends OutputCommitter {
     int shardId = attemptId % shardCount;
     conf._taskAttemptID = context.getTaskAttemptID();
     Path tableOutput = BlurOutputFormat.getOutputPath(conf._configuration);
-    String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
+    String shardName = ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
     conf._indexPath = new Path(tableOutput, shardName);
     conf._newIndex = new Path(conf._indexPath, conf._taskAttemptID.toString() + ".tmp");
     return conf;

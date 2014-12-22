@@ -34,8 +34,8 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.RowDocumentUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -105,7 +105,7 @@ public class GenericBlurRecordWriter {
     int shardId = attemptId % shardCount;
 
     Path tableOutput = BlurOutputFormat.getOutputPath(_configuration);
-    String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
+    String shardName = ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, shardId);
     Path indexPath = new Path(tableOutput, shardName);
     _newIndex = new Path(indexPath, tmpDirName);
     _finalDir = new ProgressableDirectory(new HdfsDirectory(_configuration, _newIndex), getProgressable());

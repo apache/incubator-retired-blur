@@ -37,8 +37,8 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
-import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.GCWatcher;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -169,7 +169,7 @@ public class BlurOutputFormatMiniClusterTest {
     BlurOutputFormat.setOutputPath(job, output);
     
     Path tablePath = new Path(tableUri);
-    Path shardPath = new Path(tablePath, BlurUtil.getShardName(0));
+    Path shardPath = new Path(tablePath, ShardUtil.getShardName(0));
     FileStatus[] listStatus = fileSystem.listStatus(shardPath);
     assertEquals(3, listStatus.length);
     System.out.println("======" + listStatus.length);

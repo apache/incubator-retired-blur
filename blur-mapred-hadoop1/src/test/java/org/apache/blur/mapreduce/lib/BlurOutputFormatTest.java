@@ -36,7 +36,7 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -142,7 +142,7 @@ public class BlurOutputFormatTest {
     Counters ctrs = job.getCounters();
     System.out.println("Counters: " + ctrs);
 
-    Path path = new Path(output, BlurUtil.getShardName(0));
+    Path path = new Path(output, ShardUtil.getShardName(0));
     Collection<Path> commitedTasks = getCommitedTasks(path);
     assertEquals(1, commitedTasks.size());
     DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(conf, commitedTasks.iterator().next()));
@@ -194,7 +194,7 @@ public class BlurOutputFormatTest {
     Counters ctrs = job.getCounters();
     System.out.println("Counters: " + ctrs);
 
-    Path path = new Path(output, BlurUtil.getShardName(0));
+    Path path = new Path(output, ShardUtil.getShardName(0));
     Collection<Path> commitedTasks = getCommitedTasks(path);
     assertEquals(1, commitedTasks.size());
 
@@ -267,7 +267,7 @@ public class BlurOutputFormatTest {
 
     long total = 0;
     for (int i = 0; i < tableDescriptor.getShardCount(); i++) {
-      Path path = new Path(output, BlurUtil.getShardName(i));
+      Path path = new Path(output, ShardUtil.getShardName(i));
       Collection<Path> commitedTasks = getCommitedTasks(path);
       assertEquals(1, commitedTasks.size());
 
@@ -313,7 +313,7 @@ public class BlurOutputFormatTest {
 
     long total = 0;
     for (int i = 0; i < tableDescriptor.getShardCount(); i++) {
-      Path path = new Path(output, BlurUtil.getShardName(i));
+      Path path = new Path(output, ShardUtil.getShardName(i));
       Collection<Path> commitedTasks = getCommitedTasks(path);
       assertTrue(multiple >= commitedTasks.size());
       for (Path p : commitedTasks) {
@@ -399,7 +399,7 @@ public class BlurOutputFormatTest {
     assertFalse(job.isSuccessful());
 
     for (int i = 0; i < tableDescriptor.getShardCount(); i++) {
-      Path path = new Path(tableUri, BlurUtil.getShardName(i));
+      Path path = new Path(tableUri, ShardUtil.getShardName(i));
       FileSystem fileSystem = path.getFileSystem(job.getConfiguration());
       FileStatus[] listStatus = fileSystem.listStatus(path);
       assertEquals(toString(listStatus), 0, listStatus.length);
@@ -453,7 +453,7 @@ public class BlurOutputFormatTest {
   private void createShardDirectories(Path outDir, int shardCount) throws IOException {
     localFs.mkdirs(outDir);
     for (int i = 0; i < shardCount; i++) {
-      localFs.mkdirs(new Path(outDir, BlurUtil.getShardName(i)));
+      localFs.mkdirs(new Path(outDir, ShardUtil.getShardName(i)));
     }
   }
 

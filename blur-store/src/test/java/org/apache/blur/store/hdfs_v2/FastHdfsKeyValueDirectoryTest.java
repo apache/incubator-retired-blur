@@ -20,7 +20,12 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 import java.util.Timer;
+import java.util.TreeSet;
 
 import org.apache.blur.HdfsMiniClusterUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -32,8 +37,12 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.SerialMergeScheduler;
+import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -89,6 +98,90 @@ public class FastHdfsKeyValueDirectoryTest {
     Document document = reader.document(0);
     assertEquals("2", document.get("id"));
     reader.close();
+  }
+
+  @Test
+  public void testMulipleCommitsAndReopens() throws IOException {
+    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
+    conf.setMergeScheduler(new SerialMergeScheduler());
+    TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
+    mergePolicy.setUseCompoundFile(false);
+
+    Set<String> fileSet = new TreeSet<String>();
+    long seed = new Random().nextLong();
+    System.out.println("Seed:" + seed);
+    Random random = new Random(seed);
+    int docCount = 0;
+    int passes = 100;
+    for (int run = 0; run < passes; run++) {
+      final FastHdfsKeyValueDirectory directory = new FastHdfsKeyValueDirectory(_timer, _configuration, new Path(_path,
+          "test_multiple_commits_reopens"));
+      assertFiles(fileSet, run, -1, directory);
+      assertEquals(docCount, getDocumentCount(directory));
+      IndexWriter writer = new IndexWriter(directory, conf.clone());
+      int numberOfCommits = random.nextInt(100);
+      for (int i = 0; i < numberOfCommits; i++) {
+        assertFiles(fileSet, run, i, directory);
+        addDocuments(writer, random.nextInt(100));
+        // System.out.println("Before Commit");
+        writer.commit();
+        // System.out.println("After Commit");
+
+        fileSet.clear();
+        List<IndexCommit> listCommits = DirectoryReader.listCommits(directory);
+        assertEquals(1, listCommits.size());
+        IndexCommit indexCommit = listCommits.get(0);
+        fileSet.addAll(indexCommit.getFileNames());
+        // System.out.println("Files after commit " + fileSet);
+      }
+      docCount = getDocumentCount(directory);
+    }
+  }
+
+  private int getDocumentCount(Directory directory) throws IOException {
+    if (DirectoryReader.indexExists(directory)) {
+      DirectoryReader reader = DirectoryReader.open(directory);
+      int maxDoc = reader.maxDoc();
+      reader.close();
+      return maxDoc;
+    }
+    return 0;
+  }
+
+  private void assertFiles(Set<String> expected, int run, int commit, FastHdfsKeyValueDirectory directory)
+      throws IOException {
+    Set<String> actual;
+    if (DirectoryReader.indexExists(directory)) {
+      List<IndexCommit> listCommits = DirectoryReader.listCommits(directory);
+      assertEquals(1, listCommits.size());
+      IndexCommit indexCommit = listCommits.get(0);
+      actual = new TreeSet<String>(indexCommit.getFileNames());
+    } else {
+      actual = new TreeSet<String>();
+    }
+
+    Set<String> missing = new TreeSet<String>(expected);
+    missing.removeAll(actual);
+    Set<String> extra = new TreeSet<String>(actual);
+    extra.removeAll(expected);
+    // System.out.println("Segment Files [" + getSegmentFiles(actual) + "]");
+    assertEquals("Pass [" + run + "] Missing Files " + " Extra Files " + extra + "", expected, actual);
+  }
+
+  private Set<String> getSegmentFiles(Set<String> actual) {
+    Set<String> result = new HashSet<String>();
+    for (String s : actual) {
+      if (s.startsWith("segments_")) {
+        result.add(s);
+      }
+    }
+    return result;
+  }
+
+  private void addDocuments(IndexWriter writer, int numberOfDocs) throws IOException {
+    for (int i = 0; i < numberOfDocs; i++) {
+      addDoc(writer, getDoc(i));
+    }
   }
 
   private void addDoc(IndexWriter writer, Document doc) throws IOException {

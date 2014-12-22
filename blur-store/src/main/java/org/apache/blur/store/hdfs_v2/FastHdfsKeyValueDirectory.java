@@ -23,9 +23,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -64,17 +65,17 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
     BytesRef value = new BytesRef();
     if (_store.get(FILES, value)) {
       String filesString = value.utf8ToString();
+//      System.out.println("Open Files String [" + filesString + "]");
       String[] files = filesString.split("\\" + SEP);
       for (String file : files) {
         if (file.isEmpty()) {
-          continue;
+          throw new IOException("Empty file names should not occur [" + filesString + "]");
         }
         BytesRef key = new BytesRef(file + LENGTH);
         if (_store.get(key, value)) {
           _files.put(file, Long.parseLong(value.utf8ToString()));
         } else {
-          // _files.put(file, 0L);
-          LOG.warn("Missing meta data for file [{0}], setting length to '0'.", file);
+          throw new IOException("Missing meta data for file [" + file + "], setting length to '0'.");
         }
       }
     }
@@ -128,12 +129,14 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   private void writeFilesNames() throws IOException {
     StringBuilder builder = new StringBuilder();
-    for (String n : _files.keySet()) {
+    Set<String> fileNames = new TreeSet<String>(_files.keySet());
+    for (String n : fileNames) {
       if (builder.length() != 0) {
         builder.append(SEP);
       }
       builder.append(n);
     }
+//    System.out.println("Writing Files String [" + builder.toString() + "]");
     _store.put(FILES, new BytesRef(builder.toString()));
   }
 
@@ -150,7 +153,6 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
   @Override
   public String[] listAll() throws IOException {
     Set<String> fileNames = new HashSet<String>(_files.keySet());
-    fileNames.remove(null);
     return fileNames.toArray(new String[fileNames.size()]);
   }
 
@@ -172,6 +174,7 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
       for (long l = 0; l <= blocks; l++) {
         _store.delete(new BytesRef(name + "/" + l));
       }
+      writeFileNamesAndSync();
     }
   }
 
@@ -185,11 +188,15 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   @Override
   public void sync(Collection<String> names) throws IOException {
-    writeFilesNames();
-    _store.sync();
+    writeFileNamesAndSync();
     if (shouldPerformGC()) {
       gc();
     }
+  }
+
+  private void writeFileNamesAndSync() throws IOException {
+    writeFilesNames();
+    _store.sync();
   }
 
   private boolean shouldPerformGC() {
@@ -212,4 +219,5 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
     }
     throw new FileNotFoundException(name);
   }
+
 }

@@ -507,6 +507,8 @@ public class HdfsKeyValueStore implements Store {
     _output.flush();
     _output.sync();
     _lastWrite.set(System.currentTimeMillis());
+    // System.out.println("Sync Output Path [" + _outputPath + "] Position [" +
+    // _output.getPos() + "]");
   }
 
   private void loadIndex(Path path) throws IOException {
@@ -519,6 +521,7 @@ public class HdfsKeyValueStore implements Store {
     int version = inputStream.readInt();
     if (version == 1) {
       long fileLength = getFileLength(path, inputStream);
+//      System.out.println("Load Index File [" + path + "] Length [" + fileLength + "]");
       Operation operation = new Operation();
       try {
         while (inputStream.getPos() < fileLength) {

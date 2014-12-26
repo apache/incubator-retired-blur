@@ -65,7 +65,7 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
     BytesRef value = new BytesRef();
     if (_store.get(FILES, value)) {
       String filesString = value.utf8ToString();
-//      System.out.println("Open Files String [" + filesString + "]");
+      // System.out.println("Open Files String [" + filesString + "]");
       String[] files = filesString.split("\\" + SEP);
       for (String file : files) {
         if (file.isEmpty()) {
@@ -136,7 +136,6 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
       }
       builder.append(n);
     }
-//    System.out.println("Writing Files String [" + builder.toString() + "]");
     _store.put(FILES, new BytesRef(builder.toString()));
   }
 
@@ -147,6 +146,9 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   @Override
   public IndexOutput createOutput(final String name, IOContext context) throws IOException {
+    if (fileExists(name)) {
+      deleteFile(name);
+    }
     return new FastHdfsKeyValueIndexOutput(name, _blockSize, this);
   }
 

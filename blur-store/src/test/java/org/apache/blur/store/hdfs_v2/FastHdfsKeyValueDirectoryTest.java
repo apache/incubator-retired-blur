@@ -20,7 +20,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -112,7 +111,7 @@ public class FastHdfsKeyValueDirectoryTest {
     System.out.println("Seed:" + seed);
     Random random = new Random(seed);
     int docCount = 0;
-    int passes = 100;
+    int passes = 50;
     for (int run = 0; run < passes; run++) {
       final FastHdfsKeyValueDirectory directory = new FastHdfsKeyValueDirectory(_timer, _configuration, new Path(_path,
           "test_multiple_commits_reopens"));
@@ -123,16 +122,18 @@ public class FastHdfsKeyValueDirectoryTest {
       for (int i = 0; i < numberOfCommits; i++) {
         assertFiles(fileSet, run, i, directory);
         addDocuments(writer, random.nextInt(100));
-        // System.out.println("Before Commit");
+        // Before Commit
         writer.commit();
-        // System.out.println("After Commit");
+        // After Commit
 
-        fileSet.clear();
-        List<IndexCommit> listCommits = DirectoryReader.listCommits(directory);
-        assertEquals(1, listCommits.size());
-        IndexCommit indexCommit = listCommits.get(0);
-        fileSet.addAll(indexCommit.getFileNames());
-        // System.out.println("Files after commit " + fileSet);
+        // Set files after commit
+        {
+          fileSet.clear();
+          List<IndexCommit> listCommits = DirectoryReader.listCommits(directory);
+          assertEquals(1, listCommits.size());
+          IndexCommit indexCommit = listCommits.get(0);
+          fileSet.addAll(indexCommit.getFileNames());
+        }
       }
       docCount = getDocumentCount(directory);
     }
@@ -164,18 +165,7 @@ public class FastHdfsKeyValueDirectoryTest {
     missing.removeAll(actual);
     Set<String> extra = new TreeSet<String>(actual);
     extra.removeAll(expected);
-    // System.out.println("Segment Files [" + getSegmentFiles(actual) + "]");
     assertEquals("Pass [" + run + "] Missing Files " + " Extra Files " + extra + "", expected, actual);
-  }
-
-  private Set<String> getSegmentFiles(Set<String> actual) {
-    Set<String> result = new HashSet<String>();
-    for (String s : actual) {
-      if (s.startsWith("segments_")) {
-        result.add(s);
-      }
-    }
-    return result;
   }
 
   private void addDocuments(IndexWriter writer, int numberOfDocs) throws IOException {

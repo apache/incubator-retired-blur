@@ -44,7 +44,7 @@ public class FastHdfsKeyValueIndexOutput extends IndexOutput {
 
   @Override
   public void close() throws IOException {
-    _closed=true;
+    _closed = true;
     long blockId;
     if (_bufferPosition == _blockSize) {
       blockId = (_position - 1) / _blockSize;

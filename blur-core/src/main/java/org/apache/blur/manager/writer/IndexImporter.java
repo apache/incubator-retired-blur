@@ -139,18 +139,22 @@ public class IndexImporter extends TimerTask implements Closeable {
             Path inuse = new Path(file.getParent(), rename(file.getName(), INUSE));
             if (fileSystem.rename(file, inuse)) {
               HdfsDirectory hdfsDirectory = new HdfsDirectory(configuration, inuse);
-              if (DirectoryReader.indexExists(hdfsDirectory)) {
-                IndexAction indexAction = getIndexAction(hdfsDirectory, fileSystem);
-                _blurIndex.process(indexAction);
-                return;
-              } else {
-                Path badindex = new Path(file.getParent(), rename(file.getName(), BADINDEX));
-                if (fileSystem.rename(inuse, badindex)) {
-                  LOG.error("Directory found at [{0}] is not a vaild index, renaming to [{1}].", inuse, badindex);
+              try {
+                if (DirectoryReader.indexExists(hdfsDirectory)) {
+                  IndexAction indexAction = getIndexAction(hdfsDirectory, fileSystem);
+                  _blurIndex.process(indexAction);
+                  return;
                 } else {
-                  LOG.fatal("Directory found at [{0}] is not a vaild index, could not rename to [{1}].", inuse,
-                      badindex);
+                  Path badindex = new Path(file.getParent(), rename(file.getName(), BADINDEX));
+                  if (fileSystem.rename(inuse, badindex)) {
+                    LOG.error("Directory found at [{0}] is not a vaild index, renaming to [{1}].", inuse, badindex);
+                  } else {
+                    LOG.fatal("Directory found at [{0}] is not a vaild index, could not rename to [{1}].", inuse,
+                        badindex);
+                  }
                 }
+              } finally {
+                hdfsDirectory.close();
               }
             } else {
               LOG.fatal("Could not rename [{0}] to inuse dir.", file);

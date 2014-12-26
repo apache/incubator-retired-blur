@@ -37,6 +37,9 @@ import com.spatial4j.core.shape.Shape;
 
 public abstract class BaseSpatialFieldTypeDefinition extends CustomFieldTypeDefinition {
 
+  public static final String QUAD = "Quad(";
+  public static final String END = ")";
+  public static final String GEO_HASH = "GeoHash(";
   public static final String GEOHASH_PREFIX_TREE = "GeohashPrefixTree";
   public static final String QUAD_PREFIX_TREE = "QuadPrefixTree";
   public static final String SPATIAL_PREFIX_TREE = "spatialPrefixTree";

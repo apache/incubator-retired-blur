@@ -258,7 +258,7 @@ public class BaseCache extends Cache implements Closeable {
   }
 
   @Override
-  public CacheValue get(CacheKey key) {
+  public CacheValue get(CacheDirectory directory, String fileName, CacheKey key) {
     CacheValue cacheValue = _cacheMap.get(key);
     if (cacheValue == null) {
       _misses.mark();
@@ -269,7 +269,7 @@ public class BaseCache extends Cache implements Closeable {
   }
 
   @Override
-  public CacheValue getQuietly(CacheKey key) {
+  public CacheValue getQuietly(CacheDirectory directory, String fileName, CacheKey key) {
     CacheValue cacheValue = _cacheMap.getQuietly(key);
     if (cacheValue != null) {
       _hits.mark();
@@ -278,7 +278,7 @@ public class BaseCache extends Cache implements Closeable {
   }
 
   @Override
-  public void put(CacheKey key, CacheValue value) {
+  public void put(CacheDirectory directory, String fileName, CacheKey key, CacheValue value) {
     CacheValue cacheValue = _cacheMap.put(key, value);
     if (cacheValue != null) {
       _evictions.mark();
@@ -286,13 +286,13 @@ public class BaseCache extends Cache implements Closeable {
   }
 
   @Override
-  public void releaseDirectory(String directoryName) {
+  public void releaseDirectory(CacheDirectory directory) {
     Set<Entry<FileIdKey, Long>> entrySet = _fileNameToId.entrySet();
     Iterator<Entry<FileIdKey, Long>> iterator = entrySet.iterator();
     while (iterator.hasNext()) {
       Entry<FileIdKey, Long> entry = iterator.next();
       FileIdKey fileIdKey = entry.getKey();
-      if (fileIdKey._directoryName.equals(directoryName)) {
+      if (fileIdKey._directoryName.equals(directory.getDirectoryName())) {
         iterator.remove();
       }
     }

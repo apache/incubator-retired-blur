@@ -45,8 +45,11 @@ import org.apache.blur.store.blockcache_v2.BaseCache;
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
 import org.apache.blur.store.blockcache_v2.Cache;
 import org.apache.blur.store.blockcache_v2.CacheDirectory;
+import org.apache.blur.store.blockcache_v2.CachePoolStrategy;
 import org.apache.blur.store.blockcache_v2.FileNameFilter;
+import org.apache.blur.store.blockcache_v2.PooledCache;
 import org.apache.blur.store.blockcache_v2.Quiet;
+import org.apache.blur.store.blockcache_v2.SingleCachePoolStrategy;
 import org.apache.blur.store.blockcache_v2.Size;
 import org.apache.lucene.store.Directory;
 
@@ -160,7 +163,9 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
       }
     };
 
-    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet, store);
+    BaseCache baseCache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet, store);
+    CachePoolStrategy cachePoolStrategy = new SingleCachePoolStrategy(baseCache);
+    _cache = new PooledCache(cachePoolStrategy);
   }
 
   private Set<String> getSet(String value) {

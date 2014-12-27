@@ -100,7 +100,7 @@ public class CacheIndexOutput extends IndexOutput {
       cacheValue.write(0, _buffer, 0, length);
       long blockId = (_position - length) / _cacheBlockSize;
       cacheValue = cacheValue.trim(length);
-      _cache.put(new CacheKey(_fileId, blockId), cacheValue);
+      _cache.put(_directory, _fileName, new CacheKey(_fileId, blockId), cacheValue);
     }
     _bufferPosition = 0;
     writeBufferToOutputStream(length);

@@ -121,7 +121,7 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
   }
 
   public void close() throws IOException {
-    _cache.releaseDirectory(getDirectoryName());
+    _cache.releaseDirectory(this);
     _internal.close();
   }
 

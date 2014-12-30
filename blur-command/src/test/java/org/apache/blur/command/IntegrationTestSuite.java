@@ -63,7 +63,7 @@ public class IntegrationTestSuite {
   };
 
   @After
-  public void tearDown() throws BlurException, TException {
+  public void tearDown() throws BlurException, TException, IOException {
     Iface client = SuiteCluster.getClient();
     List<String> tableList = client.tableList();
     for (String table : tableList) {

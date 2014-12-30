@@ -147,6 +147,7 @@ limitations under the License.
 <li><a href="#Fn_Blur_enqueueMutateBatch">&nbsp;&nbsp;enqueueMutateBatch</a></li>
 <li><a href="#Fn_Blur_bulkMutateStart">&nbsp;&nbsp;bulkMutateStart</a></li>
 <li><a href="#Fn_Blur_bulkMutateAdd">&nbsp;&nbsp;bulkMutateAdd</a></li>
+<li><a href="#Fn_Blur_bulkMutateAddMultiple">&nbsp;&nbsp;bulkMutateAddMultiple</a></li>
 <li><a href="#Fn_Blur_bulkMutateFinish">&nbsp;&nbsp;bulkMutateFinish</a></li>
 <li><a href="#Fn_Blur_cancelQuery">&nbsp;&nbsp;cancelQuery</a></li>
 <li><a href="#Fn_Blur_queryStatusIdList">&nbsp;&nbsp;queryStatusIdList</a></li>
@@ -979,13 +980,26 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 <code>string</code> bulkId,
 <code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> rowMutation)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>Adds to the specified transaction.  The
+</pre>Adds to the specified transaction.
 <br/><br/><h4 id="Parameters_Blur_bulkMutateAdd">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
 </td></tr>
 <tr><td>bulkId</td><td>The bulk id.
 </td></tr>
 <tr><td>rowMutation</td><td>The row mutation.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_bulkMutateAddMultiple">Function: Blur.bulkMutateAddMultiple</h4></div><p class="lead">
+<pre><code>void</code> bulkMutateAddMultiple(<code>string</code> table,
+<code>string</code> bulkId,
+<code>list&lt;<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code>&gt;</code> rowMutations)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Adds to the specified transaction.
+<br/><br/><h4 id="Parameters_Blur_bulkMutateAddMultiple">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
+</td></tr>
+<tr><td>bulkId</td><td>The bulk id.
+</td></tr>
+<tr><td>rowMutations</td><td>The row mutation.
 </td></tr>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_bulkMutateFinish">Function: Blur.bulkMutateFinish</h4></div><p class="lead">
 <pre><code>void</code> bulkMutateFinish(<code>string</code> table,

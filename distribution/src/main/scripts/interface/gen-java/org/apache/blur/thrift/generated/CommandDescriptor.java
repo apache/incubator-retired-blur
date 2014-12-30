@@ -793,7 +793,7 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
                 struct.requiredArguments = new HashMap<String,ArgumentDescriptor>(2*_map270.size);
                 for (int _i271 = 0; _i271 < _map270.size; ++_i271)
                 {
-                  String _key272; // optional
+                  String _key272; // required
                   ArgumentDescriptor _val273; // required
                   _key272 = iprot.readString();
                   _val273 = new ArgumentDescriptor();
@@ -814,7 +814,7 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
                 struct.optionalArguments = new HashMap<String,ArgumentDescriptor>(2*_map274.size);
                 for (int _i275 = 0; _i275 < _map274.size; ++_i275)
                 {
-                  String _key276; // optional
+                  String _key276; // required
                   ArgumentDescriptor _val277; // required
                   _key276 = iprot.readString();
                   _val277 = new ArgumentDescriptor();
@@ -994,7 +994,7 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
           struct.requiredArguments = new HashMap<String,ArgumentDescriptor>(2*_map282.size);
           for (int _i283 = 0; _i283 < _map282.size; ++_i283)
           {
-            String _key284; // optional
+            String _key284; // required
             ArgumentDescriptor _val285; // required
             _key284 = iprot.readString();
             _val285 = new ArgumentDescriptor();
@@ -1010,7 +1010,7 @@ public class CommandDescriptor implements org.apache.blur.thirdparty.thrift_0_9_
           struct.optionalArguments = new HashMap<String,ArgumentDescriptor>(2*_map286.size);
           for (int _i287 = 0; _i287 < _map286.size; ++_i287)
           {
-            String _key288; // optional
+            String _key288; // required
             ArgumentDescriptor _val289; // required
             _key288 = iprot.readString();
             _val289 = new ArgumentDescriptor();

@@ -367,7 +367,7 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
                 struct.values = new HashMap<String,ValueObject>(2*_map260.size);
                 for (int _i261 = 0; _i261 < _map260.size; ++_i261)
                 {
-                  String _key262; // optional
+                  String _key262; // required
                   ValueObject _val263; // required
                   _key262 = iprot.readString();
                   _val263 = new ValueObject();
@@ -453,7 +453,7 @@ public class Arguments implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<
           struct.values = new HashMap<String,ValueObject>(2*_map266.size);
           for (int _i267 = 0; _i267 < _map266.size; ++_i267)
           {
-            String _key268; // optional
+            String _key268; // required
             ValueObject _val269; // required
             _key268 = iprot.readString();
             _val269 = new ValueObject();

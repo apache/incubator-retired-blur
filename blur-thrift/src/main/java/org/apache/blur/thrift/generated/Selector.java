@@ -1304,7 +1304,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
                 struct.columnsToFetch = new HashMap<String,Set<String>>(2*_map29.size);
                 for (int _i30 = 0; _i30 < _map29.size; ++_i30)
                 {
-                  String _key31; // optional
+                  String _key31; // required
                   Set<String> _val32; // required
                   _key31 = iprot.readString();
                   {
@@ -1603,7 +1603,7 @@ public class Selector implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<S
           struct.columnsToFetch = new HashMap<String,Set<String>>(2*_map50.size);
           for (int _i51 = 0; _i51 < _map50.size; ++_i51)
           {
-            String _key52; // optional
+            String _key52; // required
             Set<String> _val53; // required
             _key52 = iprot.readString();
             {

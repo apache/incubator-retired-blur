@@ -76,6 +76,13 @@ public void bulkMutateAdd(java.lang.String arg0, java.lang.String arg1, org.apac
 }
 
 @Override
+public void bulkMutateAddMultiple(java.lang.String arg0, java.lang.String arg1, java.util.List arg2) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.bulkMutateAddMultiple(arg0, arg1, arg2);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public void bulkMutateFinish(java.lang.String arg0, java.lang.String arg1, boolean arg2, boolean arg3) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.bulkMutateFinish(arg0, arg1, arg2, arg3);
@@ -324,6 +331,13 @@ public boolean recv_addColumnDefinition() throws org.apache.blur.thrift.generate
 public void recv_bulkMutateAdd() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.recv_bulkMutateAdd();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void recv_bulkMutateAddMultiple() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_bulkMutateAddMultiple();
   } finally {_lock.unlock();}
 }
 
@@ -723,6 +737,13 @@ public void send_addColumnDefinition(java.lang.String arg0, org.apache.blur.thri
 public void send_bulkMutateAdd(java.lang.String arg0, java.lang.String arg1, org.apache.blur.thrift.generated.RowMutation arg2) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_bulkMutateAdd(arg0, arg1, arg2);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_bulkMutateAddMultiple(java.lang.String arg0, java.lang.String arg1, java.util.List arg2) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_bulkMutateAddMultiple(arg0, arg1, arg2);
   } finally {_lock.unlock();}
 }
 

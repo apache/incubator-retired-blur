@@ -509,6 +509,21 @@ module Blur
         return
       end
 
+      def bulkMutateAddMultiple(table, bulkId, rowMutations)
+        send_bulkMutateAddMultiple(table, bulkId, rowMutations)
+        recv_bulkMutateAddMultiple()
+      end
+
+      def send_bulkMutateAddMultiple(table, bulkId, rowMutations)
+        send_message('bulkMutateAddMultiple', BulkMutateAddMultiple_args, :table => table, :bulkId => bulkId, :rowMutations => rowMutations)
+      end
+
+      def recv_bulkMutateAddMultiple()
+        result = receive_message(BulkMutateAddMultiple_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
       def bulkMutateFinish(table, bulkId, apply, blockUntilComplete)
         send_bulkMutateFinish(table, bulkId, apply, blockUntilComplete)
         recv_bulkMutateFinish()
@@ -1205,6 +1220,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'bulkMutateAdd', seqid)
+      end
+
+      def process_bulkMutateAddMultiple(seqid, iprot, oprot)
+        args = read_args(iprot, BulkMutateAddMultiple_args)
+        result = BulkMutateAddMultiple_result.new()
+        begin
+          @handler.bulkMutateAddMultiple(args.table, args.bulkId, args.rowMutations)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'bulkMutateAddMultiple', seqid)
       end
 
       def process_bulkMutateFinish(seqid, iprot, oprot)
@@ -2584,6 +2610,45 @@ module Blur
     end
 
     class BulkMutateAdd_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateAddMultiple_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      BULKID = 2
+      ROWMUTATIONS = 3
+
+      FIELDS = {
+        # The table name.
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # The bulk id.
+        BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'},
+        # The row mutation.
+        ROWMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'rowMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::RowMutation}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateAddMultiple_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
       EX = 1
 

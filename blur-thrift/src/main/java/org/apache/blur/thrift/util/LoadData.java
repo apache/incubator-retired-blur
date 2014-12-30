@@ -128,7 +128,7 @@ public class LoadData {
     out.flush();
   }
 
-  private static void loadWords() throws IOException {
+  public static void loadWords() throws IOException {
     InputStream inputStream = LoadData.class.getResourceAsStream("words.txt");
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
     String word;
@@ -170,7 +170,7 @@ public class LoadData {
     return "fam" + random.nextInt(numberOfFamilies);
   }
 
-  private static String getWord() {
+  public static String getWord() {
     return makeUpperCaseRandomly(words.get(random.nextInt(words.size())), random);
   }
 

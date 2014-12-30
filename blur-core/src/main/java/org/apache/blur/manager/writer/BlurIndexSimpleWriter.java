@@ -51,18 +51,21 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
-import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.SequenceFile.Reader;
 import org.apache.hadoop.io.SequenceFile.Sorter;
 import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.DefaultCodec;
+import org.apache.hadoop.io.compress.SnappyCodec;
+import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.DirectoryReader;
@@ -417,7 +420,26 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       Path path = new Path(bulkInstance, _shardContext.getShard() + ".notsorted.seq");
       Configuration configuration = _tableContext.getConfiguration();
       FileSystem fileSystem = path.getFileSystem(configuration);
-      Writer writer = new SequenceFile.Writer(fileSystem, configuration, path, Text.class, BytesWritable.class);
+
+      Progressable progress = new Progressable() {
+        @Override
+        public void progress() {
+
+        }
+      };
+      final CompressionCodec codec;
+      final CompressionType type;
+      if (SnappyCodec.isNativeSnappyLoaded(configuration)) {
+        codec = new SnappyCodec();
+        type = CompressionType.BLOCK;
+      } else {
+        codec = new DefaultCodec();
+        type = CompressionType.NONE;
+      }
+
+      Writer writer = SequenceFile.createWriter(fileSystem, configuration, path, Text.class, RowMutationWritable.class,
+          type, codec, progress);
+
       _bulkWriters.put(bulkId, new BulkEntry(writer, path));
     } else {
       LOG.info("Bulk [{0}] mutate already started on shard [{1}] in table [{2}].", bulkId, _shardContext.getShard(),
@@ -454,7 +476,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
               public void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
                 Configuration configuration = _tableContext.getConfiguration();
 
-                SequenceFile.Sorter sorter = new Sorter(fileSystem, Text.class, BytesWritable.class, configuration);
+                SequenceFile.Sorter sorter = new Sorter(fileSystem, Text.class, RowMutationWritable.class,
+                    configuration);
 
                 _sorted = new Path(path.getParent(), shard + ".sorted.seq");
 
@@ -466,7 +489,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
                 Reader reader = new SequenceFile.Reader(fileSystem, _sorted, configuration);
 
                 Text key = new Text();
-                BytesWritable value = new BytesWritable();
+                RowMutationWritable value = new RowMutationWritable();
 
                 Text last = null;
                 List<RowMutation> list = new ArrayList<RowMutation>();
@@ -476,7 +499,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
                     last = new Text(key);
                     list.clear();
                   }
-                  list.add(fromBytesWritable(value));
+                  list.add(value.getRowMutation().deepCopy());
                 }
                 flushMutates(searcher, writer, list);
                 reader.close();
@@ -549,22 +572,15 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     if (bulkEntry == null) {
       throw new IOException("Bulk writer for [" + bulkId + "] not found.");
     }
-    bulkEntry._writer.append(getKey(mutation), toBytesWritable(mutation));
+    RowMutationWritable rowMutationWritable = new RowMutationWritable();
+    rowMutationWritable.setRowMutation(mutation);
+    synchronized (bulkEntry._writer) {
+      bulkEntry._writer.append(getKey(mutation), rowMutationWritable);
+    }
   }
 
   private Text getKey(RowMutation mutation) {
     return new Text(mutation.getRowId());
-  }
-
-  private BytesWritable toBytesWritable(RowMutation mutation) {
-    BytesWritable value = new BytesWritable();
-    byte[] bytes = BlurUtil.toBytes(mutation);
-    value.set(bytes, 0, bytes.length);
-    return value;
-  }
-
-  private RowMutation fromBytesWritable(BytesWritable value) {
-    return (RowMutation) BlurUtil.fromBytes(value.getBytes(), 0, value.getLength());
   }
 
   private static void removeParentIfLastFile(final FileSystem fileSystem, Path parent) throws IOException {

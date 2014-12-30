@@ -1313,4 +1313,10 @@ public class IndexManager {
     }
   }
 
+  public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException, IOException {
+    for (RowMutation mutation : rowMutations) {
+      bulkMutateAdd(table, bulkId, mutation);
+    }
+  }
+
 }

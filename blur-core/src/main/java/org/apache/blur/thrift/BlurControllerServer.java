@@ -1748,4 +1748,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
   }
 
+  @Override
+  public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException,
+      TException {
+    throw new RuntimeException("Not Implemented");
+  }
+
 }

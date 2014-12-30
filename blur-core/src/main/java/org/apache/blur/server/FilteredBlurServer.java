@@ -306,4 +306,10 @@ public class FilteredBlurServer implements Iface {
     _iface.bulkMutateFinish(table, bulkId, apply, blockUntilComplete);
   }
 
+  @Override
+  public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException,
+      TException {
+    _iface.bulkMutateAddMultiple(table, bulkId, rowMutations);
+  }
+
 }

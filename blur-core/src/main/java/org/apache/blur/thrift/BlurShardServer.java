@@ -734,4 +734,18 @@ public class BlurShardServer extends TableAdmin implements Iface {
     }
   }
 
+  @Override
+  public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException,
+      TException {
+    try {
+      _indexManager.bulkMutateAddMultiple(table, bulkId, rowMutations);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to add to a bulk mutate on table [" + table + "]", e);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
 }

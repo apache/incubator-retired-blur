@@ -90,7 +90,7 @@ public class BlurOutputFormatMiniClusterTest {
     System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
     testDirectory.delete();
     miniCluster = new MiniCluster();
-    miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
+    miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true, false);
 
     // System.setProperty("test.build.data",
     // "./target/BlurOutputFormatTest/data");
@@ -108,7 +108,7 @@ public class BlurOutputFormatMiniClusterTest {
     mr = (MiniMRYarnClusterAdapter) MiniMRClientClusterFactory.create(BlurOutputFormatTest.class, 1, conf);
     mr.start();
     conf = mr.getConfig();
-    
+
     BufferStore.initNewBuffer(128, 128 * 128);
   }
 
@@ -152,8 +152,8 @@ public class BlurOutputFormatMiniClusterTest {
     job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
-    String tableUri = new Path(TEST_ROOT_DIR + "/blur/" + tableName).makeQualified(fileSystem.getUri(), fileSystem.getWorkingDirectory())
-        .toString();
+    String tableUri = new Path(TEST_ROOT_DIR + "/blur/" + tableName).makeQualified(fileSystem.getUri(),
+        fileSystem.getWorkingDirectory()).toString();
     CsvBlurMapper.addColumns(job, "cf1", "col");
 
     TableDescriptor tableDescriptor = new TableDescriptor();
@@ -167,7 +167,7 @@ public class BlurOutputFormatMiniClusterTest {
     BlurOutputFormat.setupJob(job, tableDescriptor);
     Path output = new Path(TEST_ROOT_DIR + "/out");
     BlurOutputFormat.setOutputPath(job, output);
-    
+
     Path tablePath = new Path(tableUri);
     Path shardPath = new Path(tablePath, ShardUtil.getShardName(0));
     FileStatus[] listStatus = fileSystem.listStatus(shardPath);
@@ -180,7 +180,7 @@ public class BlurOutputFormatMiniClusterTest {
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();
     System.out.println("Counters: " + ctrs);
-    
+
     client.loadData(tableName, output.toString());
 
     while (true) {

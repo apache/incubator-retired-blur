@@ -34,6 +34,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -42,7 +45,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.blur.MiniCluster;
 import org.apache.blur.TestType;
 import org.apache.blur.analysis.FieldManager;
-import org.apache.blur.manager.IndexManager;
+import org.apache.blur.command.RunSlowForTesting;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
@@ -74,6 +77,7 @@ import org.apache.blur.user.UserContext;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
@@ -89,8 +93,10 @@ public class BlurClusterTest {
 
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClusterTest"));
   private static MiniCluster miniCluster;
+  private static boolean externalProcesses = true;
 
   private int numberOfDocs = 1000;
+  private String controllerConnectionStr;
 
   @BeforeClass
   public static void startCluster() throws IOException {
@@ -113,7 +119,7 @@ public class BlurClusterTest {
     System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
     testDirectory.delete();
     miniCluster = new MiniCluster();
-    miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
+    miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true, externalProcesses);
   }
 
   @AfterClass
@@ -132,7 +138,10 @@ public class BlurClusterTest {
   }
 
   private Iface getClient() {
-    return BlurClient.getClient(miniCluster.getControllerConnectionStr());
+    if (controllerConnectionStr == null) {
+      controllerConnectionStr = miniCluster.getControllerConnectionStr();
+    }
+    return BlurClient.getClient(controllerConnectionStr);
   }
 
   @Test
@@ -240,6 +249,7 @@ public class BlurClusterTest {
     tableDescriptor.setName("test_type");
     tableDescriptor.setShardCount(1);
     tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/test_type");
+    tableDescriptor.putToTableProperties("blur.fieldtype.customtype1", TestType.class.getName());
     client.createTable(tableDescriptor);
     List<String> tableList = client.tableList();
     assertTrue(tableList.contains("test_type"));
@@ -288,6 +298,7 @@ public class BlurClusterTest {
     columnDefinition.setFieldLessIndexed(true);
     columnDefinition.setFieldType("string");
     columnDefinition.setSortable(true);
+    columnDefinition.setProperties(new HashMap<String, String>());
     client.addColumnDefinition(tableName, columnDefinition);
     long s = System.nanoTime();
     client.mutateBatch(mutations);
@@ -466,7 +477,6 @@ public class BlurClusterTest {
 
   }
 
- 
   @Test
   public void testBatchFetch() throws BlurException, TException, InterruptedException, IOException {
     String tableName = "testBatchFetch";
@@ -508,9 +518,9 @@ public class BlurClusterTest {
     String uuid = "5678";
     blurQueryRow.setUuid(uuid);
     final User user = new User("testuser", new HashMap<String, String>());
-    
+
     try {
-      IndexManager.DEBUG_RUN_SLOW.set(true);
+      setDebugRunSlow(tableName, true);
       new Thread(new Runnable() {
         @Override
         public void run() {
@@ -519,7 +529,7 @@ public class BlurClusterTest {
             // This call will take several seconds to execute.
             client.query(tableName, blurQueryRow);
           } catch (BlurException e) {
-//            e.printStackTrace();
+            // e.printStackTrace();
           } catch (TException e) {
             e.printStackTrace();
           }
@@ -531,7 +541,7 @@ public class BlurClusterTest {
       assertEquals(queryStatusById.getState(), QueryState.RUNNING);
       client.cancelQuery(tableName, uuid);
     } finally {
-      IndexManager.DEBUG_RUN_SLOW.set(false);
+      setDebugRunSlow(tableName, false);
     }
   }
 
@@ -544,7 +554,7 @@ public class BlurClusterTest {
     try {
       // This will make each collect in the collectors pause 250 ms per collect
       // call
-      IndexManager.DEBUG_RUN_SLOW.set(true);
+      setDebugRunSlow(tableName, true);
       final BlurQuery blurQueryRow = new BlurQuery();
       Query queryRow = new Query();
       queryRow.setQuery("test.test:value");
@@ -579,7 +589,7 @@ public class BlurClusterTest {
       }
       assertEquals(blurException.getErrorType(), ErrorType.QUERY_CANCEL);
     } finally {
-      IndexManager.DEBUG_RUN_SLOW.set(false);
+      setDebugRunSlow(tableName, false);
     }
     // Tests that the exitable reader was reset.
     client.terms(tableName, "test", "facet", null, (short) 100);
@@ -593,15 +603,22 @@ public class BlurClusterTest {
     createTable(tableName);
     loadTable(tableName);
     try {
-      IndexManager.DEBUG_RUN_SLOW.set(true);
+      setDebugRunSlow(tableName, true);
       runBackPressureViaQuery(tableName);
       Thread.sleep(1000);
       System.gc();
       System.gc();
       Thread.sleep(1000);
     } finally {
-      IndexManager.DEBUG_RUN_SLOW.set(false);
+      setDebugRunSlow(tableName, false);
     }
+  }
+
+  private void setDebugRunSlow(String table, boolean flag) throws IOException {
+    RunSlowForTesting runSlowForTesting = new RunSlowForTesting();
+    runSlowForTesting.setRunSlow(flag);
+    runSlowForTesting.setTable(table);
+    runSlowForTesting.run(getClient());
   }
 
   private void runBackPressureViaQuery(final String tableName) throws InterruptedException {
@@ -735,14 +752,15 @@ public class BlurClusterTest {
 
     // This should block until shards have failed over
     client.shardServerLayout(tableName);
-    
+
     assertEquals("We should have lost a node.", 2, client.shardServerList(BlurConstants.DEFAULT).size());
     assertEquals(numberOfDocs, client.query(tableName, blurQuery).getTotalResults());
 
-    miniCluster.startShards(1, true);
+    miniCluster.startShards(1, true, externalProcesses);
     Thread.sleep(TimeUnit.SECONDS.toMillis(1));
-    
-    assertEquals("We should have the cluster back where we started.", 3, client.shardServerList(BlurConstants.DEFAULT).size());
+
+    assertEquals("We should have the cluster back where we started.", 3, client.shardServerList(BlurConstants.DEFAULT)
+        .size());
   }
 
   @Test
@@ -763,6 +781,106 @@ public class BlurClusterTest {
         BlurThriftHelper.newColumn("test", "value"), BlurThriftHelper.newColumn("facetFixed", "test"));
     RowMutation rowMutation = BlurThriftHelper.newRowMutation(tableName, rowId, mutation);
     client2.mutate(rowMutation);
+  }
+
+  @Test
+  public void testTableRemovalWithFieldDefsV1() throws BlurException, TException, IOException, InterruptedException {
+    String tableName = "testTableRemovalWithFieldDefsV1";
+    createTable(tableName);
+    loadTable(tableName);
+
+    String family = "testTableRemovalWithFieldDefs-fam";
+
+    List<Connection> connections = BlurClientManager.getConnections(miniCluster.getControllerConnectionStr());
+    Iface client1 = BlurClient.getClient(connections.get(0));
+    ColumnDefinition columnDefinition = new ColumnDefinition();
+    columnDefinition.setColumnName("col");
+    columnDefinition.setFamily(family);
+    columnDefinition.setFieldLessIndexed(false);
+    columnDefinition.setFieldType("string");
+    columnDefinition.setSortable(false);
+    columnDefinition.setSubColumnName(null);
+    assertTrue(client1.addColumnDefinition(tableName, columnDefinition));
+
+    client1.disableTable(tableName);
+    client1.removeTable(tableName, true);
+
+    createTable(tableName);
+
+    Iface client2 = BlurClient.getClient(connections.get(1));
+    assertFamilyIsNotPresent(tableName, client2, family);
+
+    List<String> shardClusterList = client2.shardClusterList();
+
+    for (String cluster : shardClusterList) {
+      List<String> shardServerList = client2.shardServerList(cluster);
+      for (String shardServer : shardServerList) {
+        Iface client = BlurClient.getClient(shardServer);
+        assertFamilyIsNotPresent(tableName, client, family);
+      }
+    }
+
+  }
+
+  @Test
+  public void testTableRemovalWithFieldDefsV2() throws BlurException, TException, IOException, InterruptedException {
+    String tableName = "testTableRemovalWithFieldDefsV2";
+    createTable(tableName);
+    loadTable(tableName);
+
+    Iface client = getClient();
+    Schema expectedSchema = client.schema(tableName);
+    Set<String> expectedFiles = new TreeSet<String>();
+    TableDescriptor describe = client.describe(tableName);
+
+    {
+      Path path = new Path(describe.getTableUri());
+      FileSystem fileSystem = path.getFileSystem(new Configuration());
+      FileStatus[] listStatus = fileSystem.listStatus(new Path(path, "types"));
+      for (FileStatus fileStatus : listStatus) {
+        System.out.println("Expected " + fileStatus.getPath());
+        expectedFiles.add(fileStatus.getPath().toString());
+      }
+    }
+
+    client.disableTable(tableName);
+    client.removeTable(tableName, true);
+
+    createTable(tableName);
+    loadTable(tableName);
+    Schema actualSchema = client.schema(tableName);
+
+    assertEquals(expectedSchema.getTable(), actualSchema.getTable());
+    Map<String, Map<String, ColumnDefinition>> expectedFamilies = expectedSchema.getFamilies();
+    Map<String, Map<String, ColumnDefinition>> actualFamilies = actualSchema.getFamilies();
+    assertEquals(new TreeSet<String>(expectedFamilies.keySet()), new TreeSet<String>(actualFamilies.keySet()));
+
+    for (String family : expectedFamilies.keySet()) {
+      Map<String, ColumnDefinition> expectedColDefMap = new TreeMap<String, ColumnDefinition>(
+          expectedFamilies.get(family));
+      Map<String, ColumnDefinition> actualColDefMap = new TreeMap<String, ColumnDefinition>(actualFamilies.get(family));
+      assertEquals(expectedColDefMap, actualColDefMap);
+    }
+
+    System.out.println(expectedSchema);
+
+    Set<String> actualFiles = new TreeSet<String>();
+    {
+      Path path = new Path(describe.getTableUri());
+      FileSystem fileSystem = path.getFileSystem(new Configuration());
+      FileStatus[] listStatus = fileSystem.listStatus(new Path(path, "types"));
+      for (FileStatus fileStatus : listStatus) {
+        System.out.println("Actual " + fileStatus.getPath());
+        actualFiles.add(fileStatus.getPath().toString());
+      }
+    }
+    assertEquals(expectedFiles, actualFiles);
+  }
+
+  private void assertFamilyIsNotPresent(String tableName, Iface client, String family) throws BlurException, TException {
+    Schema schema = client.schema(tableName);
+    Map<String, Map<String, ColumnDefinition>> families = schema.getFamilies();
+    assertNull(families.get(family));
   }
 
   private void assertRowResults(BlurResults results) {

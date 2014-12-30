@@ -48,7 +48,7 @@ public class SuiteCluster {
     testDirectory.delete();
     if (cluster == null) {
       cluster = new MiniCluster();
-      cluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
+      cluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true, false);
 
       System.out.println("MiniCluster started at " + cluster.getControllerConnectionStr());
 

@@ -36,6 +36,7 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TDeserializer;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TSerializer;
@@ -158,6 +159,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           watch.close();
         }
         _tableDescriptorCache.remove(table);
+        TableContext.clear(table);
       }
       for (final String table : newTables) {
         final String clusterTableKey = getClusterTableKey(_cluster, table);
@@ -167,6 +169,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           public void action(byte[] data) {
             runActions();
             _tableDescriptorCache.remove(table);
+            TableContext.clear(table);
           }
         });
         if (_enabledWatchNodeExistance.putIfAbsent(clusterTableKey, enabledWatcher) != null) {

@@ -57,7 +57,7 @@ public class BaseClusterTest {
 	    }
 	  }
 	  
-	  public Iface getClient() {
+	  public Iface getClient() throws IOException {
 	    return SuiteCluster.getClient();
 	  }
 }

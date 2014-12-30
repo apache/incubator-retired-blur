@@ -330,13 +330,7 @@ public class ThriftBlurShardServer extends ThriftServer {
   }
 
   protected static Closeable makeCloseable(final Timer timer) {
-    return new Closeable() {
-      @Override
-      public void close() throws IOException {
-        timer.cancel();
-        timer.purge();
-      }
-    };
+    return new CloseableTimer(timer);
   }
 
   @SuppressWarnings("unchecked")

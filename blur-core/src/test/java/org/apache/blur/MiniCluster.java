@@ -125,6 +125,10 @@ public class MiniCluster {
   public void startBlurCluster(String path, int controllerCount, int shardCount) {
     startBlurCluster(path, controllerCount, shardCount, false, false);
   }
+  
+  public void startBlurCluster(String path, int controllerCount, int shardCount, boolean randomPort) {
+    startBlurCluster(path, controllerCount, shardCount, randomPort, false);
+  }
 
   public void startBlurCluster(String path, int controllerCount, int shardCount, boolean randomPort,
       boolean externalProcesses) {

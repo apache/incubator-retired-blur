@@ -49,12 +49,12 @@ public class ThriftFieldManagerTest extends BaseFieldManagerTest {
     }
   }
 
-  public Iface getClient() {
+  public Iface getClient() throws IOException {
     return SuiteCluster.getClient();
   }
 
   @Before
-  public void setup() throws BlurException, TException {
+  public void setup() throws BlurException, TException, IOException {
     _tableDescriptor = new TableDescriptor();
     _tableDescriptor.setName("ThriftFieldManagerTest");
     _tableDescriptor.setShardCount(1);
@@ -65,7 +65,7 @@ public class ThriftFieldManagerTest extends BaseFieldManagerTest {
   }
 
   @After
-  public void teardown() throws BlurException, TException {
+  public void teardown() throws BlurException, TException, IOException {
     Iface client = getClient();
     String table = _tableDescriptor.getName();
     client.disableTable(table);

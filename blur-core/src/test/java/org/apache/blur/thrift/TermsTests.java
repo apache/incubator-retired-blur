@@ -92,7 +92,7 @@ public class TermsTests extends BaseClusterTest {
   }
   
   @Test(expected=BlurException.class)
-  public void termsShouldFailOnUnknownTable() throws BlurException, TException {
+  public void termsShouldFailOnUnknownTable() throws BlurException, TException, IOException {
     getClient().terms("termsShouldFailOnUnknownTable", "test","col1", null, (short)10);
   }
 

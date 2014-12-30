@@ -18,10 +18,11 @@ package org.apache.blur.hive;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.manager.BlurPartitioner;
 import org.apache.blur.mapreduce.lib.BlurColumn;
@@ -86,6 +87,9 @@ public class BlurHiveOutputFormat implements HiveOutputFormat<Text, BlurRecord> 
     return new org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter() {
 
       private BlurPartitioner _blurPartitioner = new BlurPartitioner();
+      private Map<String, List<RowMutation>> _serverBatches = new ConcurrentHashMap<String, List<RowMutation>>();
+      private int _capacity = 100;
+      private Map<String, String> _shardToServerLayout;
 
       @Override
       public void write(Writable w) throws IOException {
@@ -99,8 +103,13 @@ public class BlurHiveOutputFormat implements HiveOutputFormat<Text, BlurRecord> 
             toRecord(blurRecord)));
 
         try {
-          Iface client = getClient(rowId);
-          client.bulkMutateAdd(table, bulkId, rowMutation);
+          String server = getServer(rowId);
+          List<RowMutation> batch = _serverBatches.get(server);
+          if (batch == null) {
+            _serverBatches.put(server, batch = new ArrayList<RowMutation>(_capacity));
+          }
+          batch.add(rowMutation);
+          checkForFlush(_capacity);
         } catch (BlurException e) {
           throw new IOException(e);
         } catch (TException e) {
@@ -108,34 +117,42 @@ public class BlurHiveOutputFormat implements HiveOutputFormat<Text, BlurRecord> 
         }
       }
 
-      private Iface getClient(String rowId) throws BlurException, TException {
-        int shard = _blurPartitioner.getShard(rowId, numberOfShardsInTable);
-        String shardId = ShardUtil.getShardName(shard);
-        return getClientFromShardId(table, shardId);
+      @Override
+      public void close(boolean abort) throws IOException {
+        try {
+          checkForFlush(1);
+        } catch (BlurException e) {
+          throw new IOException(e);
+        } catch (TException e) {
+          throw new IOException(e);
+        }
       }
 
-      private Map<String, String> _shardToServerLayout;
-      private Map<String, Iface> _shardClients = new HashMap<String, Iface>();
+      private void checkForFlush(int max) throws BlurException, TException {
+        for (Entry<String, List<RowMutation>> e : _serverBatches.entrySet()) {
+          String server = e.getKey();
+          List<RowMutation> batch = e.getValue();
+          if (batch.size() >= max) {
+            Iface client = BlurClient.getClient(server);
+            client.bulkMutateAddMultiple(table, bulkId, batch);
+            batch.clear();
+          }
+        }
+      }
 
-      private Iface getClientFromShardId(String table, String shardId) throws BlurException, TException {
+      private String getServer(String rowId) throws BlurException, TException {
+        int shard = _blurPartitioner.getShard(rowId, numberOfShardsInTable);
+        String shardId = ShardUtil.getShardName(shard);
+        return getServerFromShardId(table, shardId);
+      }
+
+      private String getServerFromShardId(String table, String shardId) throws BlurException, TException {
         if (_shardToServerLayout == null) {
           _shardToServerLayout = controllerClient.shardServerLayout(table);
         }
-        return getClientFromConnectionStr(_shardToServerLayout.get(shardId));
+        return _shardToServerLayout.get(shardId);
       }
 
-      private Iface getClientFromConnectionStr(String connectionStr) {
-        Iface iface = _shardClients.get(connectionStr);
-        if (iface == null) {
-          _shardClients.put(connectionStr, iface = BlurClient.getClient(connectionStr));
-        }
-        return iface;
-      }
-
-      @Override
-      public void close(boolean abort) throws IOException {
-
-      }
     };
   }
 

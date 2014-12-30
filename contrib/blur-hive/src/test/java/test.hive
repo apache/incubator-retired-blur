@@ -16,8 +16,7 @@
 set mapred.job.tracker=localhost:9001;
 set hive.metastore.warehouse.dir=hdfs://localhost:9000/user/hive/warehouse;
 
--- add jar file:///Users/amccurry/Development/incubator-blur/contrib/blur-hive/target/blur-hive-0.2.4-incubating-SNAPSHOT-hadoop1-all.jar;
-add jar file:///Users/amccurry/Development/incubator-blur/contrib/blur-hive/target/all-mod.zip;
+add jar file:///Users/amccurry/Development/incubator-blur/contrib/blur-hive/target/blur-hive-0.2.4-incubating-SNAPSHOT-hadoop1.jar;
 
 create database if not exists test;
 use test;

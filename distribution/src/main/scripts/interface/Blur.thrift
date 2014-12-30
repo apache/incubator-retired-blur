@@ -1185,7 +1185,7 @@ service Blur {
   ) throws (1:BlurException ex)
 
   /**
-   * Adds to the specified transaction.  The 
+   * Adds to the specified transaction.
    */
   void bulkMutateAdd(
     /** The table name. */
@@ -1194,6 +1194,18 @@ service Blur {
     2:string bulkId, 
     /** The row mutation. */
     3:RowMutation rowMutation
+  ) throws (1:BlurException ex)
+
+  /**
+   * Adds to the specified transaction.
+   */
+  void bulkMutateAddMultiple(
+    /** The table name. */
+    1:string table,
+    /** The bulk id. */
+    2:string bulkId, 
+    /** The row mutation. */
+    3:list<RowMutation> rowMutations
   ) throws (1:BlurException ex)
 
   /**

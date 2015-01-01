@@ -38,6 +38,8 @@ public class GenerateDoc {
     printCommands("Table Commands", Main.tableCommands, commands, menu, body);
     printCommands("Data Commands", Main.dataCommands, commands, menu, body);
     printCommands("Cluster Commands", Main.clusterCommands, commands, menu, body);
+    printCommands("Server Commands", Main.serverCommands, commands, menu, body);
+    printCommands("Platform Commands", Main.platformCommands, commands, menu, body);
     printCommands("Shell Commands", Main.shellCommands, commands, menu, body);
     menu.close();
     body.close();

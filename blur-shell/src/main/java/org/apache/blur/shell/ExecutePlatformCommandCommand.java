@@ -190,12 +190,12 @@ public class ExecutePlatformCommandCommand extends Command implements CommandFir
 
   @Override
   public String description() {
-    return "Execute a platform command.";
+    return "Execute a platform command.  Run -h for full argument list.";
   }
 
   @Override
   public String usage() {
-    return "";
+    return "<command name> ...";
   }
 
   @Override

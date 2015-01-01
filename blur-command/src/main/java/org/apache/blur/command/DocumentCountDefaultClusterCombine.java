@@ -38,8 +38,7 @@ public class DocumentCountDefaultClusterCombine extends ClusterServerReadCommand
   }
 
   @Override
-  public Long combine(CombiningContext context, Map<? extends Location<?>, Long> results) throws IOException,
-      InterruptedException {
+  public Long combine(CombiningContext context, Map<? extends Location<?>, Long> results) throws IOException {
     long total = 0;
     for (Long l : results.values()) {
       total += l;

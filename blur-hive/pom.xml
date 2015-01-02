@@ -192,6 +192,29 @@
 					<version>${hadoop.version}</version>
 					<scope>test</scope>
 				</dependency>
+				<dependency>
+					<groupId>org.apache.blur</groupId>
+					<artifactId>blur-mapred-hadoop1</artifactId>
+					<version>${project.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.apache.blur</groupId>
+							<artifactId>blur-store</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.blur</groupId>
+							<artifactId>blur-query</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.blur</groupId>
+							<artifactId>blur-gui</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.eclipse.jetty</groupId>
+							<artifactId>jetty-webapp</artifactId>
+						</exclusion>
+					</exclusions>
+				</dependency>
 			</dependencies>
 		</profile>
 		<profile>
@@ -213,6 +236,29 @@
 					<artifactId>hadoop-minicluster</artifactId>
 					<version>${hadoop.version}</version>
 					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.blur</groupId>
+					<artifactId>blur-mapred-hadoop2</artifactId>
+					<version>${project.version}</version>
+					<exclusions>
+						<exclusion>
+							<groupId>org.apache.blur</groupId>
+							<artifactId>blur-store</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.blur</groupId>
+							<artifactId>blur-query</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.apache.blur</groupId>
+							<artifactId>blur-gui</artifactId>
+						</exclusion>
+						<exclusion>
+							<groupId>org.eclipse.jetty</groupId>
+							<artifactId>jetty-webapp</artifactId>
+						</exclusion>
+					</exclusions>
 				</dependency>
 			</dependencies>
 		</profile>

@@ -429,13 +429,13 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       };
       final CompressionCodec codec;
       final CompressionType type;
-      if (SnappyCodec.isNativeSnappyLoaded(configuration)) {
-        codec = new SnappyCodec();
-        type = CompressionType.BLOCK;
-      } else {
+//      if (SnappyCodec.isNativeSnappyLoaded(configuration)) {
+//        codec = new SnappyCodec();
+//        type = CompressionType.BLOCK;
+//      } else {
         codec = new DefaultCodec();
         type = CompressionType.NONE;
-      }
+//      }
 
       Writer writer = SequenceFile.createWriter(fileSystem, configuration, path, Text.class, RowMutationWritable.class,
           type, codec, progress);

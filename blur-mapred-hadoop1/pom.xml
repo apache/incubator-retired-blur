@@ -148,9 +148,6 @@ under the License.
 					<name>hadoop1</name>
 				</property>
 			</activation>
-			<properties>
-				<projectVersion>${project.parent.version}-hadoop1</projectVersion>
-			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -174,9 +171,6 @@ under the License.
 					<name>hadoop2-mr1</name>
 				</property>
 			</activation>
-			<properties>
-				<projectVersion>${project.parent.version}-hadoop2-mr1</projectVersion>
-			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>

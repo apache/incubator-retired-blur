@@ -476,7 +476,7 @@ under the License.
 			</activation>
 			<properties>
 				<hadoop.version>1.2.1</hadoop.version>
-                <projectVersion>${project.parent.version}-hadoop1</projectVersion>
+                <projectVersion>hadoop1-${hadoop.version}-${project.parent.version}</projectVersion>
 			</properties>
 			<modules>
 				<module>blur-command</module>
@@ -501,7 +501,7 @@ under the License.
 			</activation>
 			<properties>
 				<hadoop.version>2.0.0-mr1-cdh4.6.0</hadoop.version>
-                <projectVersion>${project.parent.version}-hadoop2-mr1</projectVersion>
+                <projectVersion>hadoop2-mr1-${hadoop.version}-${project.parent.version}</projectVersion>
 			</properties>
 			<modules>
 				<module>blur-command</module>
@@ -526,7 +526,7 @@ under the License.
 			</activation>
 			<properties>
 				<hadoop.version>2.2.0</hadoop.version>
-                <projectVersion>${project.parent.version}-hadoop2</projectVersion>
+                <projectVersion>hadoop2-${hadoop.version}-${project.parent.version}</projectVersion>
 			</properties>
 			<modules>
 				<module>blur-command</module>

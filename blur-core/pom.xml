@@ -74,15 +74,9 @@ under the License.
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-gui</artifactId>
+			<artifactId>blur-status</artifactId>
 			<version>${project.version}</version>
 			<type>jar</type>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-gui</artifactId>
-			<version>${project.version}</version>
-			<type>war</type>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.zookeeper</groupId>

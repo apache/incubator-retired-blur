@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.concurrent.Executors;
+import org.apache.blur.index.AtomicReaderUtil;
 import org.apache.blur.index.ExitableReader;
 import org.apache.blur.index.ExitableReader.ExitingReaderException;
 import org.apache.blur.log.Log;
@@ -848,7 +849,7 @@ public class IndexManager {
       int readerBase = BaseCompositeReaderUtil.readerBase(indexReader, readerIndex);
       int docId = notAdjustedDocId - readerBase;
       IndexReader orgReader = sequentialSubReaders.get(readerIndex);
-      SegmentReader sReader = BlurUtil.getSegmentReader(orgReader);
+      SegmentReader sReader = AtomicReaderUtil.getSegmentReader(orgReader);
       if (sReader != null) {
         SegmentReader segmentReader = (SegmentReader) sReader;
         DocIdSet docIdSet = filter.getDocIdSet(segmentReader.getContext(), segmentReader.getLiveDocs());

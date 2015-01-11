@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.blur.index.ExitableReader.ExitableFilterAtomicReader;
+import org.apache.blur.index.AtomicReaderUtil;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.lucene.index.AtomicReader;
@@ -45,7 +45,7 @@ public class PrimeDocCache {
    * this method is not synced.
    */
   public static OpenBitSet getPrimeDocBitSet(Term primeDocTerm, AtomicReader providedReader) throws IOException {
-    AtomicReader reader = getRealReader(providedReader);
+    AtomicReader reader = AtomicReaderUtil.getSegmentReader(providedReader);
     final Object key = reader.getCoreCacheKey();
     final Map<Object, OpenBitSet> primeDocMap = getPrimeDocMap(primeDocTerm);
     OpenBitSet bitSet = primeDocMap.get(key);
@@ -88,14 +88,6 @@ public class PrimeDocCache {
       }
     }
     return bitSet;
-  }
-
-  private static AtomicReader getRealReader(AtomicReader providedReader) {
-    if (providedReader instanceof ExitableFilterAtomicReader) {
-      ExitableFilterAtomicReader exitableFilterAtomicReader = (ExitableFilterAtomicReader) providedReader;
-      return exitableFilterAtomicReader.getOriginalReader();
-    }
-    return providedReader;
   }
 
   private static Map<Object, OpenBitSet> getPrimeDocMap(Term primeDocTerm) {

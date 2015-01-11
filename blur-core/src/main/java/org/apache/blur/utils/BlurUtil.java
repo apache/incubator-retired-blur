@@ -63,7 +63,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.index.ExitableReader.ExitableFilterAtomicReader;
+import org.apache.blur.index.AtomicReaderUtil;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.PrimeDocCache;
@@ -891,7 +891,7 @@ public class BlurUtil {
       int readerBase = BaseCompositeReaderUtil.readerBase(indexReader, readerIndex);
       int primeDocId = notAdjustedPrimeDocId - readerBase;
       IndexReader orgReader = sequentialSubReaders.get(readerIndex);
-      SegmentReader sReader = getSegmentReader(orgReader);
+      SegmentReader sReader = AtomicReaderUtil.getSegmentReader(orgReader);
       if (sReader != null) {
         SegmentReader segmentReader = (SegmentReader) sReader;
         Bits liveDocs = segmentReader.getLiveDocs();
@@ -993,18 +993,6 @@ public class BlurUtil {
       }
     }
     return ordering;
-  }
-
-  public static SegmentReader getSegmentReader(IndexReader indexReader) {
-    if (indexReader instanceof SegmentReader) {
-      return (SegmentReader) indexReader;
-    }
-    if (indexReader instanceof ExitableFilterAtomicReader) {
-      ExitableFilterAtomicReader exitableFilterAtomicReader = (ExitableFilterAtomicReader) indexReader;
-      AtomicReader originalReader = exitableFilterAtomicReader.getOriginalReader();
-      return getSegmentReader(originalReader);
-    }
-    return null;
   }
 
   private static int getStartingPosition(OpenBitSet docsInRowSpanToFetch, int start) {

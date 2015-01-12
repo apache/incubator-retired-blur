@@ -22,24 +22,21 @@ import org.apache.spark.HashPartitioner;
 
 public class BlurSparkPartitioner extends HashPartitioner {
 
-	private static final long serialVersionUID = 9853263327838L;
+  private static final long serialVersionUID = 9853263327838L;
 
-	int totalShard;
+  private final int _totalShard;
 
-	public BlurSparkPartitioner(int partitions) {
+  public BlurSparkPartitioner(int partitions) {
+    super(partitions);
+    _totalShard = partitions;
+  }
 
-		super(partitions);
-		totalShard = partitions;
-	}
-
-	@Override
-	public int getPartition(Object key) {
-
-		if (key instanceof Text) {
-
-			return (key.hashCode() & Integer.MAX_VALUE) % totalShard;
-		} else {
-			return super.getPartition(key);
-		}
-	}
+  @Override
+  public int getPartition(Object key) {
+    if (key instanceof Text) {
+      return (key.hashCode() & Integer.MAX_VALUE) % _totalShard;
+    } else {
+      return super.getPartition(key);
+    }
+  }
 }

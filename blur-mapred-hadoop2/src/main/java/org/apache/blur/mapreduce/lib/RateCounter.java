@@ -27,19 +27,13 @@ public class RateCounter {
 
   private final Counter _counter;
   private final long _reportTime;
-  private final long _rateTime;
   private long _lastReport;
   private long _count = 0;
 
   public RateCounter(Counter counter) {
-    this(counter, TimeUnit.SECONDS, 1);
-  }
-
-  public RateCounter(Counter counter, TimeUnit unit, long reportTime) {
     _counter = counter;
     _lastReport = System.nanoTime();
-    _reportTime = unit.toNanos(reportTime);
-    _rateTime = unit.toSeconds(reportTime);
+    _reportTime = TimeUnit.SECONDS.toNanos(5);
   }
 
   public void mark() {
@@ -49,7 +43,8 @@ public class RateCounter {
   public void mark(long n) {
     long now = System.nanoTime();
     if (_lastReport + _reportTime < now) {
-      long rate = _count / _rateTime;
+      long seconds = TimeUnit.NANOSECONDS.toSeconds(now - _lastReport);
+      long rate = _count / seconds;
       _counter.setValue(rate);
       _lastReport = System.nanoTime();
       _count = 0;

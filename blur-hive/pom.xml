@@ -156,7 +156,7 @@
 						</exclusion>
 						<exclusion>
 							<groupId>org.apache.blur</groupId>
-							<artifactId>blur-gui</artifactId>
+							<artifactId>blur-status</artifactId>
 						</exclusion>
 						<exclusion>
 							<groupId>org.eclipse.jetty</groupId>
@@ -207,7 +207,7 @@
 						</exclusion>
 						<exclusion>
 							<groupId>org.apache.blur</groupId>
-							<artifactId>blur-gui</artifactId>
+							<artifactId>blur-status</artifactId>
 						</exclusion>
 						<exclusion>
 							<groupId>org.eclipse.jetty</groupId>
@@ -252,7 +252,7 @@
 						</exclusion>
 						<exclusion>
 							<groupId>org.apache.blur</groupId>
-							<artifactId>blur-gui</artifactId>
+							<artifactId>blur-status</artifactId>
 						</exclusion>
 						<exclusion>
 							<groupId>org.eclipse.jetty</groupId>

@@ -43,7 +43,6 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Column;
-import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.FetchRecordResult;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.FetchRowResult;
@@ -91,10 +90,6 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     if (commandLine.hasOption(QueryCommandHelper.WIDTH)) {
       _width = Integer.parseInt(commandLine.getOptionValue(QueryCommandHelper.WIDTH));
     }
-    ConsoleReader reader = getConsoleReader();
-    if (reader == null) {
-      throw new BlurException("This command can only be run with a proper jline environment.", null, ErrorType.UNKNOWN);
-    }
 
     long s = System.nanoTime();
     BlurResults blurResults = client.query(tablename, blurQuery);
@@ -102,6 +97,18 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     long timeInNanos = e - s;
     if (blurResults.getTotalResults() == 0) {
       out.println("No results found in [" + timeInNanos / 1000000.0 + " ms].");
+      return;
+    }
+
+    ConsoleReader reader = getConsoleReader();
+    if (reader == null) {
+      String description = blurResults.getTotalResults() + " results found in [" + timeInNanos / 1000000.0 + " ms].  "
+          + getFetchMetaData(blurResults);
+      out.println(description);
+      List<BlurResult> results = blurResults.getResults();
+      for (BlurResult result : results) {
+        print(out, result);
+      }
       return;
     }
 
@@ -174,6 +181,57 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
       out.flush();
       reader.setPrompt(prompt);
     }
+  }
+
+  private void print(PrintWriter out, BlurResult result) {
+    FetchResult fetchResult = result.getFetchResult();
+    FetchRowResult rowResult = fetchResult.getRowResult();
+    if (rowResult != null) {
+      print(out, rowResult);
+    } else {
+      FetchRecordResult recordResult = fetchResult.getRecordResult();
+      print(out, recordResult);
+    }
+  }
+
+  private void print(PrintWriter out, FetchRowResult rowResult) {
+    Row row = rowResult.getRow();
+    int totalRecords = rowResult.getTotalRecords();
+    String id = row.getId();
+    List<Record> records = row.getRecords();
+    int index = 0;
+    for (Record record : records) {
+      print(out, id, index + 1, totalRecords, record);
+      index++;
+    }
+  }
+
+  private void print(PrintWriter out, String rowId, int index, int totalRecords, Record record) {
+    String recordId = record.getRecordId();
+    String family = record.getFamily();
+    out.print(rowId + "\t" + index + " of " + totalRecords + "\t" + recordId + "\t" + family);
+    print(out, record.getColumns());
+    out.println();
+  }
+
+  private void print(PrintWriter out, List<Column> columns) {
+    Collections.sort(columns, new Comparator<Column>() {
+      @Override
+      public int compare(Column o1, Column o2) {
+        String name1 = o1.getName();
+        String name2 = o2.getName();
+        return name1.compareTo(name2);
+      }
+    });
+    for (Column column : columns) {
+      out.print("\t" + column.getName() + ":" + column.getValue());
+    }
+  }
+
+  private void print(PrintWriter out, FetchRecordResult recordResult) {
+    String rowid = recordResult.getRowid();
+    Record record = recordResult.getRecord();
+    print(out, rowid, 0, 1, record);
   }
 
   private String getFetchMetaData(BlurResults blurResults) {

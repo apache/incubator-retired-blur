@@ -25,9 +25,12 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.DocsEnum;
+import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReader.ReaderClosedListener;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.Terms;
+import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.util.OpenBitSet;
 
@@ -65,23 +68,31 @@ public class PrimeDocCache {
         LOG.debug("Prime Doc BitSet missing for segment [" + reader + "] current size [" + primeDocMap.size() + "]");
         final OpenBitSet bs = new OpenBitSet(reader.maxDoc());
 
-        DocsEnum termDocsEnum = reader.termDocsEnum(primeDocTerm);
-        if (termDocsEnum == null) {
-          return bs;
+        Fields fields = reader.fields();
+        if (fields == null) {
+          throw new IOException("Missing all fields.");
         }
+        Terms terms = fields.terms(primeDocTerm.field());
+        if (terms == null) {
+          throw new IOException("Missing prime doc field [" + primeDocTerm.field() + "].");
+        }
+        TermsEnum termsEnum = terms.iterator(null);
+        if (!termsEnum.seekExact(primeDocTerm.bytes(), true)) {
+          throw new IOException("Missing prime doc term [" + primeDocTerm + "].");
+        }
+
+        DocsEnum docsEnum = termsEnum.docs(null, null);
         int docFreq = reader.docFreq(primeDocTerm);
         int doc;
         int count = 0;
-        while ((doc = termDocsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+        while ((doc = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
           bs.fastSet(doc);
           count++;
         }
         if (count == docFreq) {
           primeDocMap.put(key, bs);
         } else {
-          // @TODO deal with deletes correctly... docFreq does not reflect
-          // deletes
-          LOG.info("PrimeDoc for reader [{0}] not stored, because count [{1}] and freq [{2}] do not match.", reader,
+          LOG.warn("PrimeDoc for reader [{0}] not stored, because count [{1}] and freq [{2}] do not match.", reader,
               count, docFreq);
         }
         return bs;

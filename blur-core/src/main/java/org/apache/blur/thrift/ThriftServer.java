@@ -128,7 +128,7 @@ public class ThriftServer {
     } else {
       tmp = new File(blurHomeDir, "tmp");
       LOG.info("Attempting to use configured tmp directory [{0}]", tmp);
-      if (!tmp.mkdirs()) {
+      if (!tmp.exists() && !tmp.mkdirs()) {
         tmp = getTmpDir();
         LOG.info("Attempting to use default tmp directory [{0}]", tmp);
       }

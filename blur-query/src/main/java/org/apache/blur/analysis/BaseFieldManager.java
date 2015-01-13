@@ -28,6 +28,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.blur.analysis.type.AclDiscoverFieldTypeDefinition;
+import org.apache.blur.analysis.type.AclReadFieldTypeDefinition;
 import org.apache.blur.analysis.type.DateFieldTypeDefinition;
 import org.apache.blur.analysis.type.DoubleFieldTypeDefinition;
 import org.apache.blur.analysis.type.FieldLessFieldTypeDefinition;
@@ -115,6 +117,8 @@ public abstract class BaseFieldManager extends FieldManager {
     registerType(SpatialPointVectorStrategyFieldTypeDefinition.class);
     registerType(SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition.class);
     registerType(SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.class);
+    registerType(AclReadFieldTypeDefinition.class);
+    registerType(AclDiscoverFieldTypeDefinition.class);
     _fieldLessField = fieldLessField;
     _strict = strict;
     _defaultMissingFieldLessIndexing = defaultMissingFieldLessIndexing;

@@ -1,5 +1,3 @@
-package org.apache.blur.analysis.type;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,9 +14,15 @@ package org.apache.blur.analysis.type;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.blur.analysis.type;
+
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import lucene.security.document.DocumentVisiblityField;
 
 import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.thrift.generated.Column;
@@ -27,50 +31,62 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.SortedDocValuesField;
-import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
 import org.apache.lucene.util.BytesRef;
 
-public class StringFieldTypeDefinition extends FieldTypeDefinition {
+public class AclDiscoverFieldTypeDefinition extends FieldTypeDefinition {
 
+  private static final String INTERNAL_FIELDNAME = "_discover_";
   private static final KeywordAnalyzer KEYWORD_ANALYZER = new KeywordAnalyzer();
-  public static final String NAME = "string";
+  private static final String ACL_DISCOVER = "acl-discover";
+  private static final Collection<String> ALT_FIELD_NAMES;
+
+  static {
+    ALT_FIELD_NAMES = new HashSet<String>();
+    ALT_FIELD_NAMES.add(INTERNAL_FIELDNAME);
+  }
 
   @Override
   public String getName() {
-    return NAME;
+    return ACL_DISCOVER;
   }
 
   @Override
   public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
+    
+  }
+
+  @Override
+  public Collection<String> getAlternateFieldNames() {
+    return ALT_FIELD_NAMES;
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForColumn(String family, Column column) {
-    String name = getName(family, column.getName());
-    Field field = new Field(name, column.getValue(), StringField.TYPE_STORED);
+    String fieldName = getFieldName();
+    String value = column.getValue();
+    List<Field> fields = new ArrayList<Field>();
+    fields.add(new DocumentVisiblityField(INTERNAL_FIELDNAME, value, Store.NO));
+    fields.add(new StoredField(fieldName, value));
     if (isSortEnable()) {
-      return addSort(column, name, field);
+      fields.add(new SortedDocValuesField(fieldName, new BytesRef(value)));
     }
-    return makeIterable(field);
+    return fields;
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
-    String name = getName(family, column.getName(), subName);
-    Field field = new Field(name, column.getValue(), StringField.TYPE_NOT_STORED);
+    String fieldName = getFieldName();
+    String value = column.getValue();
+    List<Field> fields = new ArrayList<Field>();
+    fields.add(new DocumentVisiblityField(INTERNAL_FIELDNAME, value, Store.NO));
     if (isSortEnable()) {
-      return addSort(column, name, field);
+      fields.add(new SortedDocValuesField(fieldName, new BytesRef(value)));
     }
-    return makeIterable(field);
-  }
-
-  private Iterable<? extends Field> addSort(Column column, String name, Field field) {
-    List<Field> list = new ArrayList<Field>();
-    list.add(field);
-    list.add(new SortedDocValuesField(name, new BytesRef(column.getValue())));
-    return list;
+    return fields;
   }
 
   @Override
@@ -100,6 +116,11 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
   }
 
   @Override
+  public boolean checkSupportForRegexQuery() {
+    return true;
+  }
+
+  @Override
   public boolean isNumeric() {
     return false;
   }
@@ -107,11 +128,6 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
   @Override
   public boolean checkSupportForCustomQuery() {
     return false;
-  }
-
-  @Override
-  public boolean checkSupportForRegexQuery() {
-    return true;
   }
 
   @Override
@@ -126,4 +142,5 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
     }
     return new SortField(getFieldName(), Type.STRING);
   }
+
 }

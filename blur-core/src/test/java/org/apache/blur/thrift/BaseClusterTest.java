@@ -1,4 +1,5 @@
 package org.apache.blur.thrift;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -23,41 +24,41 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 public class BaseClusterTest {
-	  protected static String TABLE_PATH = new File("./target/tmp/test-data/test-tables").getAbsolutePath();
-	  private static boolean _managing;
+  protected static String TABLE_PATH = new File("./target/tmp/test-data/test-tables").getAbsolutePath();
+  private static boolean _managing;
 
-	  @BeforeClass
-	  public static void startup() throws IOException {
-	    if (!SuiteCluster.isClusterSetup()) {
-	      SuiteCluster.setupMiniCluster();
-	      _managing = true;
-	    }
-	    File file = new File("test-data");
-	    if (file.exists()) {
-	      rmr(file);
-	    }
-	  }
+  @BeforeClass
+  public static void startup() throws IOException {
+    if (!SuiteCluster.isClusterSetup()) {
+      SuiteCluster.setupMiniCluster();
+      _managing = true;
+    }
+    File file = new File("test-data");
+    if (file.exists()) {
+      rmr(file);
+    }
+  }
 
-	  private static void rmr(File file) {
-	    if (!file.exists()) {
-	      return;
-	    }
-	    if (file.isDirectory()) {
-	      for (File f : file.listFiles()) {
-	        rmr(f);
-	      }
-	    }
-	    file.delete();
-	  }
+  private static void rmr(File file) {
+    if (!file.exists()) {
+      return;
+    }
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        rmr(f);
+      }
+    }
+    file.delete();
+  }
 
-	  @AfterClass
-	  public static void shutdown() throws IOException {
-	    if (_managing) {
-	      SuiteCluster.shutdownMiniCluster();
-	    }
-	  }
-	  
-	  public Iface getClient() throws IOException {
-	    return SuiteCluster.getClient();
-	  }
+  @AfterClass
+  public static void shutdown() throws IOException {
+    if (_managing) {
+      SuiteCluster.shutdownMiniCluster();
+    }
+  }
+
+  public Iface getClient() throws IOException {
+    return SuiteCluster.getClient();
+  }
 }

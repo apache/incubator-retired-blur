@@ -118,13 +118,11 @@ public class BlurObjectInspectorGenerator {
       return TypeInfoFactory.doubleTypeInfo;
     } else if (fieldType.equals(DATE)) {
       return TypeInfoFactory.dateTypeInfo;
-    } else if (fieldType.equals(GEO_POINTVECTOR)) {
-      return TypeInfoFactory.dateTypeInfo;
     } else if (fieldType.equals(GEO_POINTVECTOR) || fieldType.equals(GEO_RECURSIVEPREFIX)
         || fieldType.equals(GEO_TERMPREFIX)) {
       List<TypeInfo> typeInfos = Arrays.asList((TypeInfo) TypeInfoFactory.floatTypeInfo,
           (TypeInfo) TypeInfoFactory.floatTypeInfo);
-      TypeInfoFactory.getStructTypeInfo(Arrays.asList(LONGITUDE, LATITUDE), typeInfos);
+      return TypeInfoFactory.getStructTypeInfo(Arrays.asList(LATITUDE, LONGITUDE), typeInfos);
     }
     throw new SerDeException("Blur Field Type [" + fieldType + "] is not supported.");
   }

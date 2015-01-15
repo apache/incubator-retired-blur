@@ -16,41 +16,49 @@
  */
 package org.apache.blur.hive;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.lazy.LazyBoolean;
-import org.apache.hadoop.hive.serde2.lazy.LazyByte;
-import org.apache.hadoop.hive.serde2.lazy.LazyDate;
-import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
-import org.apache.hadoop.hive.serde2.lazy.LazyFloat;
-import org.apache.hadoop.hive.serde2.lazy.LazyHiveChar;
-import org.apache.hadoop.hive.serde2.lazy.LazyHiveDecimal;
-import org.apache.hadoop.hive.serde2.lazy.LazyHiveVarchar;
-import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
-import org.apache.hadoop.hive.serde2.lazy.LazyLong;
-import org.apache.hadoop.hive.serde2.lazy.LazyShort;
-import org.apache.hadoop.hive.serde2.lazy.LazyString;
-import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
-import org.apache.hadoop.hive.serde2.lazy.LazyVoid;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 public class BlurSerializer {
+
+  private static final String DATE_FORMAT = "dateFormat";
+  private static final String DATE = "date";
+  private Map<String, ThreadLocal<SimpleDateFormat>> _dateFormat = new HashMap<String, ThreadLocal<SimpleDateFormat>>();
+
+  public BlurSerializer(Map<String, ColumnDefinition> colDefs) {
+    Set<Entry<String, ColumnDefinition>> entrySet = colDefs.entrySet();
+    for (Entry<String, ColumnDefinition> e : entrySet) {
+      String columnName = e.getKey();
+      ColumnDefinition columnDefinition = e.getValue();
+      String fieldType = columnDefinition.getFieldType();
+      if (fieldType.equals(DATE)) {
+        Map<String, String> properties = columnDefinition.getProperties();
+        final String dateFormat = properties.get(DATE_FORMAT);
+        ThreadLocal<SimpleDateFormat> threadLocal = new ThreadLocal<SimpleDateFormat>() {
+          @Override
+          protected SimpleDateFormat initialValue() {
+            return new SimpleDateFormat(dateFormat);
+          }
+        };
+        _dateFormat.put(columnName, threadLocal);
+      }
+    }
+  }
 
   public Writable serialize(Object o, ObjectInspector objectInspector, List<String> columnNames,
       List<TypeInfo> columnTypes, Map<String, ColumnDefinition> schema, String family) throws SerDeException {
@@ -65,159 +73,88 @@ public class BlurSerializer {
       throw new SerDeException("Number of input columns was different than output columns (in = " + size + " vs out = "
           + outputFieldRefs.size());
     }
+
     List<Object> structFieldsDataAsList = soi.getStructFieldsDataAsList(o);
+
+    if (structFieldsDataAsList.size() != size) {
+      throw new SerDeException("Number of input columns was different than output columns (in = "
+          + structFieldsDataAsList.size() + " vs out = " + size);
+    }
+
     for (int i = 0; i < size; i++) {
-      // StructField structFieldRef = outputFieldRefs.get(i);
+      StructField structFieldRef = outputFieldRefs.get(i);
       Object structFieldData = structFieldsDataAsList.get(i);
       if (structFieldData == null) {
         continue;
       }
-      // ObjectInspector fieldOI = structFieldRef.getFieldObjectInspector();
+      ObjectInspector fieldOI = structFieldRef.getFieldObjectInspector();
       String columnName = columnNames.get(i);
-      String stringValue = toString(structFieldData);
-      if (stringValue == null) {
-        continue;
-      }
-      if (columnName.equals(BlurObjectInspectorGenerator.ROWID)) {
-        blurRecord.setRowId(stringValue);
-      } else if (columnName.equals(BlurObjectInspectorGenerator.RECORDID)) {
-        blurRecord.setRecordId(stringValue);
-      } else {
-        if (columnName.equals(BlurObjectInspectorGenerator.GEO_POINTVECTOR)
-            || columnName.equals(BlurObjectInspectorGenerator.GEO_RECURSIVEPREFIX)
-            || columnName.equals(BlurObjectInspectorGenerator.GEO_TERMPREFIX)) {
-          throw new SerDeException("Not supported yet.");
+      if (fieldOI instanceof PrimitiveObjectInspector) {
+        PrimitiveObjectInspector primitiveObjectInspector = (PrimitiveObjectInspector) fieldOI;
+        Object primitiveJavaObject = primitiveObjectInspector.getPrimitiveJavaObject(structFieldData);
+        String strValue = toString(columnName, primitiveJavaObject);
+        if (columnName.equals(BlurObjectInspectorGenerator.ROWID)) {
+          blurRecord.setRowId(strValue);
+        } else if (columnName.equals(BlurObjectInspectorGenerator.RECORDID)) {
+          blurRecord.setRecordId(strValue);
         } else {
-          blurRecord.addColumn(columnName, stringValue);
+          blurRecord.addColumn(columnName, strValue);
         }
+      } else if (fieldOI instanceof StructObjectInspector) {
+        StructObjectInspector structObjectInspector = (StructObjectInspector) fieldOI;
+        Map<String, StructField> allStructFieldRefs = toMap(structObjectInspector.getAllStructFieldRefs());
+        StructField latStructField = allStructFieldRefs.get(BlurObjectInspectorGenerator.LATITUDE);
+        StructField longStructField = allStructFieldRefs.get(BlurObjectInspectorGenerator.LONGITUDE);
+        Object latStructFieldData = structObjectInspector.getStructFieldData(structFieldData, latStructField);
+        Object longStructFieldData = structObjectInspector.getStructFieldData(structFieldData, longStructField);
+        blurRecord.addColumn(columnName, toLatLong(latStructFieldData, longStructFieldData));
+      } else {
+        throw new SerDeException("ObjectInspector [" + fieldOI + "] of type ["
+            + (fieldOI != null ? fieldOI.getClass() : null) + "] not supported.");
       }
     }
     return blurRecord;
   }
 
-  private String toString(Object o) {
+  private String toLatLong(Object latStructFieldData, Object longStructFieldData) throws SerDeException {
+    return toString(BlurObjectInspectorGenerator.LATITUDE, latStructFieldData) + ","
+        + toString(BlurObjectInspectorGenerator.LONGITUDE, longStructFieldData);
+  }
+
+  private Map<String, StructField> toMap(List<? extends StructField> allStructFieldRefs) {
+    Map<String, StructField> map = new HashMap<String, StructField>();
+    for (StructField structField : allStructFieldRefs) {
+      map.put(structField.getFieldName(), structField);
+    }
+    return map;
+  }
+
+  private String toString(String columnName, Object o) throws SerDeException {
     if (o == null) {
       return null;
+    } else if (o instanceof String) {
+      return o.toString();
+    } else if (o instanceof Long) {
+      return ((Long) o).toString();
+    } else if (o instanceof Integer) {
+      return ((Integer) o).toString();
+    } else if (o instanceof Float) {
+      return ((Float) o).toString();
+    } else if (o instanceof Double) {
+      return ((Double) o).toString();
+    } else if (o instanceof Date) {
+      SimpleDateFormat simpleDateFormat = getSimpleDateFormat(columnName);
+      return simpleDateFormat.format((Date) o);
+    } else {
+      throw new SerDeException("Unknown type [" + o + "]");
     }
-    if (o instanceof LazyBoolean) {
-      return lazyBoolean((LazyBoolean) o);
-    } else if (o instanceof LazyByte) {
-      return lazyByte((LazyByte) o);
-    } else if (o instanceof LazyDate) {
-      return lazyDate((LazyDate) o);
-    } else if (o instanceof LazyDouble) {
-      return lazyDouble((LazyDouble) o);
-    } else if (o instanceof LazyFloat) {
-      return lazyFloat((LazyFloat) o);
-    } else if (o instanceof LazyHiveChar) {
-      return lazyHiveChar((LazyHiveChar) o);
-    } else if (o instanceof LazyHiveDecimal) {
-      return lazyHiveDecimal((LazyHiveDecimal) o);
-    } else if (o instanceof LazyHiveVarchar) {
-      return lazyHiveVarchar((LazyHiveVarchar) o);
-    } else if (o instanceof LazyInteger) {
-      return lazyInteger((LazyInteger) o);
-    } else if (o instanceof LazyLong) {
-      return lazyLong((LazyLong) o);
-    } else if (o instanceof LazyShort) {
-      return lazyShort((LazyShort) o);
-    } else if (o instanceof LazyShort) {
-      return lazyString((LazyString) o);
-    } else if (o instanceof LazyTimestamp) {
-      return lazyTimestamp((LazyTimestamp) o);
-    } else if (o instanceof LazyVoid) {
-      return null;
+  }
+
+  private SimpleDateFormat getSimpleDateFormat(String columnName) throws SerDeException {
+    ThreadLocal<SimpleDateFormat> threadLocal = _dateFormat.get(columnName);
+    if (threadLocal == null) {
+      throw new SerDeException("Date format missing for column [" + columnName + "]");
     }
-    return o.toString();
-  }
-
-  private String lazyInteger(LazyInteger o) {
-    IntWritable writableObject = o.getWritableObject();
-    if (writableObject == null) {
-      return null;
-    }
-    int i = writableObject.get();
-    return Integer.toString(i);
-  }
-
-  private String lazyLong(LazyLong o) {
-    LongWritable writableObject = o.getWritableObject();
-    if (writableObject == null) {
-      return null;
-    }
-    long l = writableObject.get();
-    return Long.toString(l);
-  }
-
-  private String lazyShort(LazyShort o) {
-    ShortWritable writableObject = o.getWritableObject();
-    if (writableObject == null) {
-      return null;
-    }
-    short s = writableObject.get();
-    return Short.toString(s);
-  }
-
-  private String lazyString(LazyString o) {
-    Text writableObject = o.getWritableObject();
-    if (writableObject == null) {
-      return null;
-    }
-    return writableObject.toString();
-  }
-
-  private String lazyTimestamp(LazyTimestamp o) {
-    throw new RuntimeException("Not implemented.");
-  }
-
-  private String lazyHiveVarchar(LazyHiveVarchar o) {
-    throw new RuntimeException("Not implemented.");
-  }
-
-  private String lazyHiveDecimal(LazyHiveDecimal o) {
-    throw new RuntimeException("Not implemented.");
-  }
-
-  private String lazyHiveChar(LazyHiveChar o) {
-    throw new RuntimeException("Not implemented.");
-  }
-
-  private String lazyFloat(LazyFloat o) {
-    FloatWritable writableObject = o.getWritableObject();
-    if (writableObject == null) {
-      return null;
-    }
-    float f = writableObject.get();
-    return Float.toString(f);
-  }
-
-  private String lazyDouble(LazyDouble o) {
-    DoubleWritable writableObject = o.getWritableObject();
-    if (writableObject == null) {
-      return null;
-    }
-    double d = writableObject.get();
-    return Double.toString(d);
-  }
-
-  private String lazyDate(LazyDate o) {
-    throw new RuntimeException("Not implemented.");
-  }
-
-  private String lazyByte(LazyByte o) {
-    ByteWritable writableObject = o.getWritableObject();
-    if (writableObject == null) {
-      return null;
-    }
-    byte b = writableObject.get();
-    return Integer.toString(b);
-  }
-
-  private String lazyBoolean(LazyBoolean lazyBoolean) {
-    BooleanWritable writableObject = lazyBoolean.getWritableObject();
-    if (writableObject == null) {
-      return null;
-    }
-    return Boolean.toString(writableObject.get());
+    return threadLocal.get();
   }
 }

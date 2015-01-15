@@ -44,8 +44,9 @@ import org.apache.hadoop.io.Writable;
 public class BlurSerDe extends AbstractSerDe {
 
   public static final String BLUR_CONTROLLER_CONNECTION_STR = "BLUR_CONTROLLER_CONNECTION_STR";
-  private static final String FAMILY = "blur.family";
-  private static final String TABLE = "blur.table";
+  public static final String FAMILY = "blur.family";
+  public static final String TABLE = "blur.table";
+  public static final String ZK = BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
   private String _family;
   private Map<String, ColumnDefinition> _schema;
   private ObjectInspector _objectInspector;
@@ -56,12 +57,15 @@ public class BlurSerDe extends AbstractSerDe {
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
     String table = tbl.getProperty(TABLE);
+    nullCheck(TABLE, table);
     _family = tbl.getProperty(FAMILY);
+    nullCheck(FAMILY, _family);
     BlurConfiguration configuration;
     try {
       configuration = new BlurConfiguration();
-      configuration.set(BlurConstants.BLUR_ZOOKEEPER_CONNECTION,
-          tbl.getProperty(BlurConstants.BLUR_ZOOKEEPER_CONNECTION));
+      String zkConnectionStr = tbl.getProperty(ZK);
+      nullCheck(ZK, zkConnectionStr);
+      configuration.set(ZK, zkConnectionStr);
     } catch (IOException e) {
       throw new SerDeException(e);
     }
@@ -105,7 +109,13 @@ public class BlurSerDe extends AbstractSerDe {
     _columnNames = blurObjectInspectorGenerator.getColumnNames();
     _columnTypes = blurObjectInspectorGenerator.getColumnTypes();
 
-    _serializer = new BlurSerializer();
+    _serializer = new BlurSerializer(_schema);
+  }
+
+  private void nullCheck(String name, String value) throws SerDeException {
+    if (value == null) {
+      throw new SerDeException("Property [" + name + "] cannot be null.");
+    }
   }
 
   private String getControllerConnectionStr(Iface client) throws BlurException, TException {

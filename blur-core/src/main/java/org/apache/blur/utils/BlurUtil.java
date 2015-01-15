@@ -329,6 +329,10 @@ public class BlurUtil {
       }
     } else if (methodName.equals("mutateBatch")) {
       argsStr = "[\"Batch Mutate\"]";
+    } else if (methodName.equals("bulkMutateAdd")) {
+      argsStr = "[\"Bulk Mutate Add\"]";
+    } else if (methodName.equals("bulkMutateAddMultiple")) {
+      argsStr = "[\"Bulk Mutate Add Multiple\"]";
     } else {
       argsStr = getArgsStr(args, loggerArgsState);
     }

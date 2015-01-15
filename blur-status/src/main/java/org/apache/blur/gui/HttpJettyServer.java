@@ -18,16 +18,15 @@ package org.apache.blur.gui;
  */
 import java.io.File;
 import java.io.IOException;
-import java.util.Properties;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-
-import com.yammer.metrics.reporting.MetricsServlet;
-import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.webapp.WebAppContext;
+
+import com.yammer.metrics.reporting.MetricsServlet;
 
 /**
  * Starts up a Jetty server to run the utility gui.
@@ -98,23 +97,7 @@ public class HttpJettyServer {
     return context;
   }
 
-  private static String findBlurGuiInClassPath() {
-    Properties properties = System.getProperties();
-    String cp = (String) properties.get("java.class.path");
-    String[] split = cp.split(":");
-    for (String s : split) {
-      if (s.endsWith(".war")) {
-        return s;
-      }
-    }
-    return null;
-  }
-
   private String getWarFolder(Class<?> c) {
-    String findBlurGuiInClassPath = findBlurGuiInClassPath();
-    if (findBlurGuiInClassPath != null) {
-      return findBlurGuiInClassPath;
-    }
     String name = c.getName().replace('.', '/');
     String classResource = "/" + name + ".class";
     String pathToClassResource = c.getResource(classResource).toString();
@@ -124,10 +107,12 @@ public class HttpJettyServer {
       int index = pathToClassResource.indexOf(name);
       String pathToClasses = pathToClassResource.substring(0, index);
       int indexOfProjectName = pathToClasses.indexOf("/target/");
-      String str = pathToClasses.substring(0, indexOfProjectName) + "/src/main/webapp";
+      String str = pathToClasses.substring(0, indexOfProjectName) + "/src/main/resources/webapp";
       return str;
+    } else {
+      String path = pathToClassResource.substring(0, indexOfJar + 4) + "!/webapp";
+      return path;
     }
-    return null;
   }
 
   public void close() {

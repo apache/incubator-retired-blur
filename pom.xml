@@ -356,8 +356,8 @@ under the License.
 
 						<!-- These javascript libs are accounted for in the
 						LICENSE file in root of the project -->
-						<exclude>**/src/main/webapp/js/d3.v2.js</exclude>
-						<exclude>**/src/main/webapp/js/d3.v2.min.js</exclude>
+						<exclude>**/js/d3.v2.js</exclude>
+						<exclude>**/js/d3.v2.min.js</exclude>
 
 						<!-- License and Notice files for Blur -->
 						<exclude>**/src/main/resources*/license-notes.txt</exclude>

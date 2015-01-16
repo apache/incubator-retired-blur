@@ -3,9 +3,9 @@ package org.apache.blur.command;
 import java.io.IOException;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.server.TableContext;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.IndexSearcher;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -32,7 +32,7 @@ public abstract class IndexContext extends BaseContext {
 
   public abstract IndexReader getIndexReader();
 
-  public abstract IndexSearcher getIndexSearcher();
+  public abstract IndexSearcherCloseable getIndexSearcher();
 
   public abstract BlurConfiguration getBlurConfiguration() throws IOException;
 

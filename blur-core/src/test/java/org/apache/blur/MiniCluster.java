@@ -348,8 +348,8 @@ public class MiniCluster {
 
       List<String> command = new ArrayList<String>();
       command.add(javaHome + "/bin/java");
-      command.add("-Xmx256m");
-      command.add("-Xms256m");
+      command.add("-Xmx512m");
+      command.add("-Xms512m");
       command.add("-cp");
       command.add(classPath);
       command.add(ExternalThriftServer.class.getName());

@@ -86,14 +86,15 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.zookeeper.KeeperException;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class BlurClusterTest {
+public abstract class BlurClusterTestBase {
 
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClusterTest"));
   private static MiniCluster miniCluster;
-  private static boolean externalProcesses = true;
+  private static boolean externalProcesses = false;
 
   private int numberOfDocs = 1000;
   private String controllerConnectionStr;
@@ -127,6 +128,13 @@ public class BlurClusterTest {
     miniCluster.shutdownBlurCluster();
   }
 
+  @Before
+  public void setup() {
+    UserContext.setUser(getUser());
+  }
+
+  protected abstract User getUser();
+
   @After
   public void tearDown() throws BlurException, TException {
     Iface client = getClient();
@@ -157,7 +165,7 @@ public class BlurClusterTest {
       RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId,
           BlurThriftHelper.newColumn("test", "value"));
       RowMutation rowMutation = BlurThriftHelper.newRowMutation(tableName, rowId, mutation);
-      client.enqueueMutate(rowMutation);
+      client.enqueueMutate(mutate(rowMutation));
     }
     long e = System.currentTimeMillis();
     double seconds = (e - s) / 1000.0;
@@ -174,6 +182,8 @@ public class BlurClusterTest {
     }
     fail("Test failed to load all rows.");
   }
+
+  protected abstract RowMutation mutate(RowMutation rowMutation);
 
   @Test
   public void testBlurQueryWithRowId() throws BlurException, TException, InterruptedException, IOException {
@@ -223,7 +233,7 @@ public class BlurClusterTest {
   @Test
   public void testForEmptySchema() throws BlurException, TException, IOException, InterruptedException {
     String tableName = "testForEmptySchema";
-    createTable(tableName);
+    createTable(tableName, false);
     Blur.Iface client = getClient();
     Schema schema = client.schema(tableName);
     Map<String, Map<String, ColumnDefinition>> families = schema.getFamilies();
@@ -250,7 +260,9 @@ public class BlurClusterTest {
     tableDescriptor.setShardCount(1);
     tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/test_type");
     tableDescriptor.putToTableProperties("blur.fieldtype.customtype1", TestType.class.getName());
+    setupTableProperties(tableDescriptor);
     client.createTable(tableDescriptor);
+    postTableCreate(tableDescriptor, client);
     List<String> tableList = client.tableList();
     assertTrue(tableList.contains("test_type"));
 
@@ -264,15 +276,27 @@ public class BlurClusterTest {
   }
 
   public void createTable(String tableName) throws BlurException, TException, IOException {
+    createTable(tableName, true);
+  }
+
+  public void createTable(String tableName, boolean applyAcl) throws BlurException, TException, IOException {
     Blur.Iface client = getClient();
     TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.setName(tableName);
     tableDescriptor.setShardCount(5);
     tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/" + tableName);
+    setupTableProperties(tableDescriptor);
     client.createTable(tableDescriptor);
+    if (applyAcl) {
+      postTableCreate(tableDescriptor, client);
+    }
     List<String> tableList = client.tableList();
     assertTrue(tableList.contains(tableName));
   }
+
+  protected abstract void postTableCreate(TableDescriptor tableDescriptor, Iface client);
+
+  protected abstract void setupTableProperties(TableDescriptor tableDescriptor);
 
   public void loadTable(String tableName) throws BlurException, TException, InterruptedException {
     loadTable(tableName, 1);
@@ -301,7 +325,7 @@ public class BlurClusterTest {
     columnDefinition.setProperties(new HashMap<String, String>());
     client.addColumnDefinition(tableName, columnDefinition);
     long s = System.nanoTime();
-    client.mutateBatch(mutations);
+    client.mutateBatch(mutate(mutations));
     long e = System.nanoTime();
     System.out.println("mutateBatch took [" + (e - s) / 1000000.0 + "]");
     BlurQuery blurQueryRow = new BlurQuery();
@@ -325,6 +349,14 @@ public class BlurClusterTest {
 
     Schema schema = client.schema(tableName);
     assertFalse(schema.getFamilies().isEmpty());
+  }
+
+  protected List<RowMutation> mutate(List<RowMutation> mutations) {
+    List<RowMutation> rowMutations = new ArrayList<RowMutation>();
+    for (int i = 0; i < mutations.size(); i++) {
+      rowMutations.add(mutate(mutations.get(i)));
+    }
+    return rowMutations;
   }
 
   @Test
@@ -517,8 +549,7 @@ public class BlurClusterTest {
     blurQueryRow.setCacheResult(false);
     String uuid = "5678";
     blurQueryRow.setUuid(uuid);
-    final User user = new User("testuser", new HashMap<String, String>());
-
+    final User user = new User("testuser", getUserAttributes());
     try {
       setDebugRunSlow(tableName, true);
       new Thread(new Runnable() {
@@ -544,6 +575,8 @@ public class BlurClusterTest {
       setDebugRunSlow(tableName, false);
     }
   }
+  
+  protected abstract Map<String, String> getUserAttributes();
 
   @Test
   public void testQueryCancel() throws BlurException, TException, InterruptedException, IOException {
@@ -565,11 +598,12 @@ public class BlurClusterTest {
 
       final AtomicReference<BlurException> error = new AtomicReference<BlurException>();
       final AtomicBoolean fail = new AtomicBoolean();
-
+      final User user = UserContext.getUser();
       new Thread(new Runnable() {
         @Override
         public void run() {
           try {
+            UserContext.setUser(user);
             // This call will take several seconds to execute.
             client.query(tableName, blurQueryRow);
             fail.set(true);
@@ -650,9 +684,11 @@ public class BlurClusterTest {
         + "]");
 
     byte[] bufferToFillHeap = new byte[sizeToAllocate];
+    final User user = UserContext.getUser();
     new Thread(new Runnable() {
       @Override
       public void run() {
+        UserContext.setUser(user);
         try {
           // This call will take several seconds to execute.
           client.query(tableName, blurQueryRow);
@@ -772,15 +808,17 @@ public class BlurClusterTest {
     Iface client1 = BlurClient.getClient(connections.get(0));
     Iface client2 = BlurClient.getClient(connections.get(1));
     TableDescriptor describe = client1.describe(tableName);
+    setupTableProperties(describe);
     client1.disableTable(tableName);
     client1.removeTable(tableName, true);
     client1.createTable(describe);
+    postTableCreate(describe, client1);
 
     String rowId = UUID.randomUUID().toString();
     RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId,
         BlurThriftHelper.newColumn("test", "value"), BlurThriftHelper.newColumn("facetFixed", "test"));
     RowMutation rowMutation = BlurThriftHelper.newRowMutation(tableName, rowId, mutation);
-    client2.mutate(rowMutation);
+    client2.mutate(mutate(rowMutation));
   }
 
   @Test
@@ -913,9 +951,10 @@ public class BlurClusterTest {
     tableDescriptor.setName(tableName);
     tableDescriptor.setShardCount(5);
     tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/" + tableName);
-
+    setupTableProperties(tableDescriptor);
     for (int i = 0; i < 3; i++) {
       client.createTable(tableDescriptor);
+      postTableCreate(tableDescriptor, client);
       client.disableTable(tableName);
       client.removeTable(tableName, true);
     }

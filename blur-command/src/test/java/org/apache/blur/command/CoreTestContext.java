@@ -20,6 +20,8 @@ package org.apache.blur.command;
 import java.io.IOException;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.lucene.search.IndexSearcherCloseableUtil;
 import org.apache.blur.server.TableContext;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -88,8 +90,8 @@ public class CoreTestContext extends IndexContext {
   }
 
   @Override
-  public IndexSearcher getIndexSearcher() {
-    return new IndexSearcher(getIndexReader());
+  public IndexSearcherCloseable getIndexSearcher() {
+    return IndexSearcherCloseableUtil.wrap(new IndexSearcher(getIndexReader()));
   }
 
   @Override

@@ -49,6 +49,11 @@ public class BlurConstants {
   // public static final String BLUR_TABLE_INDEX_QUEUE_READER_MAX =
   // "blur.table.index.queue.reader.max";
 
+  public static final String BLUR_RECORD_SECURITY = "blur.record.security";
+  public static final String ACL_DISCOVER = "acl-discover";
+  public static final String ACL_READ = "acl-read";
+  
+
   public static final String FAST_DECOMPRESSION = "FAST_DECOMPRESSION";
   public static final String FAST = "FAST";
   public static final String HIGH_COMPRESSION = "HIGH_COMPRESSION";

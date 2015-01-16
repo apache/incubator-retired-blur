@@ -33,7 +33,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.Executors;
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.hdfs.BlurLockFactory;
@@ -56,9 +56,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.LockFactory;
-import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -157,7 +154,7 @@ public class BlurIndexSimpleWriterTest {
   public void testRollbackAndReopen() throws IOException {
     setupWriter(_configuration);
     {
-      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexSearcherCloseable searcher = _writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
       assertEquals(0, reader.numDocs());
       searcher.close();
@@ -172,7 +169,7 @@ public class BlurIndexSimpleWriterTest {
       // do nothing
     }
     {
-      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexSearcherCloseable searcher = _writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
       assertEquals(0, reader.numDocs());
       searcher.close();
@@ -182,7 +179,7 @@ public class BlurIndexSimpleWriterTest {
     _writer.process(action);
 
     {
-      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexSearcherCloseable searcher = _writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
       assertEquals(1, reader.numDocs());
       searcher.close();
@@ -215,7 +212,7 @@ public class BlurIndexSimpleWriterTest {
       MutatableAction action = new MutatableAction(_writer.getShardContext());
       action.replaceRow(genRow());
       _writer.process(action);
-      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexSearcherCloseable searcher = _writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
       assertEquals(i + 1, reader.numDocs());
       searcher.close();
@@ -226,7 +223,7 @@ public class BlurIndexSimpleWriterTest {
     double seconds = (e - s) / 1000000000.0;
     double rate = total / seconds;
     System.out.println("Rate " + rate);
-    IndexSearcherClosable searcher = _writer.getIndexSearcher();
+    IndexSearcherCloseable searcher = _writer.getIndexSearcher();
     IndexReader reader = searcher.getIndexReader();
     assertEquals(TEST_NUMBER_WAIT_VISIBLE, reader.numDocs());
     searcher.close();
@@ -236,7 +233,7 @@ public class BlurIndexSimpleWriterTest {
   @Test
   public void testBlurIndexWriterFaster() throws IOException, InterruptedException {
     setupWriter(_configuration);
-    IndexSearcherClosable searcher1 = _writer.getIndexSearcher();
+    IndexSearcherCloseable searcher1 = _writer.getIndexSearcher();
     IndexReader reader1 = searcher1.getIndexReader();
     assertEquals(0, reader1.numDocs());
     searcher1.close();
@@ -256,7 +253,7 @@ public class BlurIndexSimpleWriterTest {
     // refresh once every 25 ms
     Thread.sleep(1000);// Hack for now
     _writer.refresh();
-    IndexSearcherClosable searcher2 = _writer.getIndexSearcher();
+    IndexSearcherCloseable searcher2 = _writer.getIndexSearcher();
     IndexReader reader2 = searcher2.getIndexReader();
     assertEquals(TEST_NUMBER, reader2.numDocs());
     searcher2.close();

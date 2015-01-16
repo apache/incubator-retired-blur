@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
 
 /**
@@ -38,7 +39,7 @@ public class ShardServerContext extends BlurServerContext implements ServerConte
   private static final Log LOG = LogFactory.getLog(ShardServerContext.class);
 
   private final static Map<Thread, ShardServerContext> _threadsToContext = new ConcurrentHashMap<Thread, ShardServerContext>();
-  private final Map<String, IndexSearcherClosable> _indexSearcherMap = new ConcurrentHashMap<String, IndexSearcherClosable>();
+  private final Map<String, IndexSearcherCloseable> _indexSearcherMap = new ConcurrentHashMap<String, IndexSearcherCloseable>();
 
   public ShardServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
     super(localSocketAddress, remoteSocketAddress);
@@ -85,8 +86,8 @@ public class ShardServerContext extends BlurServerContext implements ServerConte
    * Resets the {@link ShardServerContext} by closing the searchers.
    */
   public void reset() {
-    Collection<IndexSearcherClosable> values = _indexSearcherMap.values();
-    for (IndexSearcherClosable indexSearcherClosable : values) {
+    Collection<IndexSearcherCloseable> values = _indexSearcherMap.values();
+    for (IndexSearcherCloseable indexSearcherClosable : values) {
       LOG.debug("Closing [{0}]", indexSearcherClosable);
       closeQuietly(indexSearcherClosable);
     }
@@ -104,17 +105,17 @@ public class ShardServerContext extends BlurServerContext implements ServerConte
   }
 
   /**
-   * Gets the cached {@link IndexSearcherClosable} (if any) for the given table
+   * Gets the cached {@link IndexSearcherCloseable} (if any) for the given table
    * and shard.
    * 
    * @param table
    *          the stable name.
    * @param shard
    *          the shard name.
-   * @return the {@link IndexSearcherClosable} or null if not present.
+   * @return the {@link IndexSearcherCloseable} or null if not present.
    */
-  public IndexSearcherClosable getIndexSearcherClosable(String table, String shard) {
-    IndexSearcherClosable indexSearcherClosable = _indexSearcherMap.get(getKey(table, shard));
+  public IndexSearcherCloseable getIndexSearcherClosable(String table, String shard) {
+    IndexSearcherCloseable indexSearcherClosable = _indexSearcherMap.get(getKey(table, shard));
     if (indexSearcherClosable != null) {
       LOG.debug("Using cached searcher [{0}] for table [{1}] shard [{2}]", indexSearcherClosable, table, shard);
     }
@@ -130,11 +131,11 @@ public class ShardServerContext extends BlurServerContext implements ServerConte
    * @param shard
    *          the shard name.
    * @param searcher
-   *          the {@link IndexSearcherClosable}.
+   *          the {@link IndexSearcherCloseable}.
    * @throws IOException
    */
-  public void setIndexSearcherClosable(String table, String shard, IndexSearcherClosable searcher) throws IOException {
-    IndexSearcherClosable indexSearcherClosable = _indexSearcherMap.put(getKey(table, shard), searcher);
+  public void setIndexSearcherClosable(String table, String shard, IndexSearcherCloseable searcher) throws IOException {
+    IndexSearcherCloseable indexSearcherClosable = _indexSearcherMap.put(getKey(table, shard), searcher);
     if (indexSearcherClosable != null && searcher != indexSearcherClosable) {
       indexSearcherClosable.close();
     }

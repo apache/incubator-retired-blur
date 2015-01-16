@@ -30,7 +30,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.analysis.FieldManager;
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.lucene.search.IndexSearcherCloseableUtil;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.buffer.BufferStore;
@@ -49,6 +50,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 import org.junit.After;
 import org.junit.Before;
@@ -139,18 +141,7 @@ public class IndexImporterTest {
       @Override
       public void process(IndexAction indexAction) throws IOException {
         final DirectoryReader reader = DirectoryReader.open(mainDirectory);
-        IndexSearcherClosable searcherClosable = new IndexSearcherClosable(reader, null) {
-
-          @Override
-          public Directory getDirectory() {
-            return mainDirectory;
-          }
-
-          @Override
-          public void close() throws IOException {
-            reader.close();
-          }
-        };
+        IndexSearcherCloseable searcherClosable = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
         try {
           indexAction.performMutate(searcherClosable, _mainWriter);
           indexAction.doPreCommit(searcherClosable, _mainWriter);
@@ -179,7 +170,7 @@ public class IndexImporterTest {
       }
 
       @Override
-      public IndexSearcherClosable getIndexSearcher() throws IOException {
+      public IndexSearcherCloseable getIndexSearcher() throws IOException {
         throw new RuntimeException("Not Implemented");
       }
 

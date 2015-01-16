@@ -46,6 +46,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import lucene.security.index.SecureDirectoryReader;
+
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.index.AtomicReaderUtil;
@@ -56,6 +58,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.DeepPagingCache;
 import org.apache.blur.lucene.search.FacetExecutor;
 import org.apache.blur.lucene.search.FacetQuery;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.lucene.search.StopExecutionCollector.StopExecutionCollectorException;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.results.BlurResultIterable;
@@ -65,7 +68,6 @@ import org.apache.blur.manager.status.QueryStatus;
 import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.MutatableAction;
-import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
@@ -105,6 +107,7 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.BaseCompositeReader;
 import org.apache.lucene.index.BaseCompositeReaderUtil;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
@@ -270,7 +273,7 @@ public class IndexManager {
     BlurIndex index = null;
     String shard = null;
     Tracer trace = Trace.trace("manager fetch", Trace.param("table", table));
-    IndexSearcherClosable searcher = null;
+    IndexSearcherCloseable searcher = null;
     try {
       if (selector.getLocationId() == null) {
         // Not looking up by location id so we should resetSearchers.
@@ -371,7 +374,7 @@ public class IndexManager {
         getScoreType(query.scoreType), context);
   }
 
-  public static void populateSelector(IndexSearcherClosable searcher, String shardName, String table, Selector selector)
+  public static void populateSelector(IndexSearcherCloseable searcher, String shardName, String table, Selector selector)
       throws IOException {
     Tracer trace = Trace.trace("populate selector");
     String rowId = selector.rowId;
@@ -944,7 +947,7 @@ public class IndexManager {
       @Override
       public Long call(Entry<String, BlurIndex> input) throws Exception {
         BlurIndex index = input.getValue();
-        IndexSearcherClosable searcher = index.getIndexSearcher();
+        IndexSearcherCloseable searcher = index.getIndexSearcher();
         try {
           return recordFrequency(searcher.getIndexReader(), columnFamily, columnName, value);
         } finally {
@@ -980,7 +983,7 @@ public class IndexManager {
           @Override
           public List<String> call(Entry<String, BlurIndex> input) throws Exception {
             BlurIndex index = input.getValue();
-            IndexSearcherClosable searcher = index.getIndexSearcher();
+            IndexSearcherCloseable searcher = index.getIndexSearcher();
             try {
               return terms(searcher.getIndexReader(), columnFamily, columnName, startWith, size);
             } finally {
@@ -1214,15 +1217,12 @@ public class IndexManager {
       String shard = entry.getKey();
       _status.attachThread(shard);
       BlurIndex index = entry.getValue();
-      IndexSearcherClosable searcher = index.getIndexSearcher();
+      IndexSearcherCloseable searcher = index.getIndexSearcher();
       Tracer trace2 = null;
       try {
         IndexReader indexReader = searcher.getIndexReader();
-        if (indexReader instanceof ExitableReader) {
-          ExitableReader er = (ExitableReader) indexReader;
-          er.setRunning(_running);
-        } else {
-          throw new IOException("IndexReader is not ExitableReader");
+        if (!resetExitableReader(indexReader, _running)) {
+          throw new IOException("Cannot find ExitableReader in stack.");
         }
         if (_shardServerContext != null) {
           _shardServerContext.setIndexSearcherClosable(_table, shard, searcher);
@@ -1264,6 +1264,21 @@ public class IndexManager {
         _status.deattachThread(shard);
       }
     }
+
+  }
+
+  private static boolean resetExitableReader(IndexReader indexReader, AtomicBoolean running) {
+    if (indexReader instanceof ExitableReader) {
+      ExitableReader exitableReader = (ExitableReader) indexReader;
+      exitableReader.setRunning(running);
+      return true;
+    }
+    if (indexReader instanceof SecureDirectoryReader) {
+      SecureDirectoryReader secureDirectoryReader = (SecureDirectoryReader) indexReader;
+      DirectoryReader original = secureDirectoryReader.getOriginal();
+      return resetExitableReader(original, running);
+    }
+    return false;
   }
 
   public void optimize(String table, int numberOfSegmentsPerShard) throws BException {
@@ -1307,14 +1322,16 @@ public class IndexManager {
     blurIndex.addBulkMutate(bulkId, mutation);
   }
 
-  public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, IOException {
+  public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete)
+      throws BlurException, IOException {
     Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
     for (BlurIndex index : indexes.values()) {
-      index.finishBulkMutate(bulkId, apply,blockUntilComplete);
+      index.finishBulkMutate(bulkId, apply, blockUntilComplete);
     }
   }
 
-  public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException, IOException {
+  public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException,
+      IOException {
     for (RowMutation mutation : rowMutations) {
       bulkMutateAdd(table, bulkId, mutation);
     }

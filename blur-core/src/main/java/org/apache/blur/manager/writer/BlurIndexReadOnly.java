@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.thrift.generated.RowMutation;
 
 public class BlurIndexReadOnly extends BlurIndex {
@@ -32,7 +32,7 @@ public class BlurIndexReadOnly extends BlurIndex {
     _blurIndex = blurIndex;
   }
 
-  public IndexSearcherClosable getIndexSearcher() throws IOException {
+  public IndexSearcherCloseable getIndexSearcher() throws IOException {
     return _blurIndex.getIndexSearcher();
   }
 

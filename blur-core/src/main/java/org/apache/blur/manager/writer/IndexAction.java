@@ -19,14 +19,14 @@ package org.apache.blur.manager.writer;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.lucene.index.IndexWriter;
 
 public abstract class IndexAction {
 
   private AtomicInteger _writesWaiting;
 
-  public abstract void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) throws IOException;
+  public abstract void doPreCommit(IndexSearcherCloseable indexSearcher, IndexWriter writer) throws IOException;
 
   public abstract void doPostCommit(IndexWriter writer) throws IOException;
 
@@ -34,7 +34,7 @@ public abstract class IndexAction {
 
   public abstract void doPostRollback(IndexWriter writer) throws IOException;
 
-  public abstract void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException;
+  public abstract void performMutate(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException;
 
   public void setWritesWaiting(AtomicInteger writesWaiting) {
     _writesWaiting = writesWaiting;

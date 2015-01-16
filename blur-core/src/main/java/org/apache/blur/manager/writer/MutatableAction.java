@@ -34,7 +34,7 @@ import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.analysis.FieldManager;
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.BException;
@@ -364,7 +364,7 @@ public class MutatableAction extends IndexAction {
     }
 
     @Override
-    void performAction(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+    void performAction(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
       IterableRow iterableRow = getIterableRow(_rowId, searcher);
       for (UpdateRowAction action : _actions) {
         iterableRow = action.performAction(iterableRow);
@@ -399,7 +399,7 @@ public class MutatableAction extends IndexAction {
       }
     }
 
-    private IterableRow getIterableRow(String rowId, IndexSearcherClosable searcher) throws IOException {
+    private IterableRow getIterableRow(String rowId, IndexSearcherCloseable searcher) throws IOException {
       IndexReader indexReader = searcher.getIndexReader();
       BytesRef rowIdRef = new BytesRef(rowId);
       List<AtomicReaderTermsEnum> possibleRowIds = new ArrayList<AtomicReaderTermsEnum>();
@@ -540,7 +540,7 @@ public class MutatableAction extends IndexAction {
   }
 
   static abstract class InternalAction {
-    abstract void performAction(IndexSearcherClosable searcher, IndexWriter writer) throws IOException;
+    abstract void performAction(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException;
   }
 
   private final List<InternalAction> _actions = new ArrayList<InternalAction>();
@@ -556,7 +556,7 @@ public class MutatableAction extends IndexAction {
   public void deleteRow(final String rowId) {
     _actions.add(new InternalAction() {
       @Override
-      void performAction(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+      void performAction(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
         writer.deleteDocuments(createRowId(rowId));
         _writeRowMeter.mark();
       }
@@ -566,7 +566,7 @@ public class MutatableAction extends IndexAction {
   public void replaceRow(final Row row) {
     _actions.add(new InternalAction() {
       @Override
-      void performAction(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+      void performAction(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
         List<List<Field>> docs = RowDocumentUtil.getDocs(row, _fieldManager);
         Term rowId = createRowId(row.getId());
         writer.updateDocuments(rowId, docs);
@@ -597,7 +597,7 @@ public class MutatableAction extends IndexAction {
   }
 
   @Override
-  public void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+  public void performMutate(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
     try {
       for (InternalAction internalAction : _actions) {
         internalAction.performAction(searcher, writer);
@@ -626,7 +626,7 @@ public class MutatableAction extends IndexAction {
   }
 
   @Override
-  public void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) {
+  public void doPreCommit(IndexSearcherCloseable indexSearcher, IndexWriter writer) {
 
   }
 

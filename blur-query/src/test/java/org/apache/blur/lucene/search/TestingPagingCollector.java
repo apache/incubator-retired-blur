@@ -58,7 +58,7 @@ public class TestingPagingCollector {
   @Test
   public void testSimpleSearchPaging() throws Exception {
     IndexReader reader = getReaderFlatScore(13245);
-    IndexSearcher searcher = new IndexSearcher(reader);
+    IndexSearcherCloseable searcher = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
 
     TotalHitsRef totalHitsRef = new TotalHitsRef();
     ProgressRef progressRef = new ProgressRef();
@@ -88,7 +88,7 @@ public class TestingPagingCollector {
   public void testSimpleSearchPagingThroughAll() throws Exception {
     int length = 13245;
     IndexReader reader = getReaderFlatScore(length);
-    IndexSearcher searcher = new IndexSearcher(reader);
+    IndexSearcherCloseable searcher = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
 
     TotalHitsRef totalHitsRef = new TotalHitsRef();
     ProgressRef progressRef = new ProgressRef();
@@ -124,7 +124,7 @@ public class TestingPagingCollector {
   @Test
   public void testSimpleSearchPagingWithSorting() throws Exception {
     IndexReader reader = getReaderFlatScore(13245);
-    IndexSearcher searcher = new IndexSearcher(reader);
+    IndexSearcherCloseable searcher = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
 
     TotalHitsRef totalHitsRef = new TotalHitsRef();
     ProgressRef progressRef = new ProgressRef();

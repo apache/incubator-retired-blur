@@ -33,8 +33,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.manager.BlurPartitioner;
-import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.hdfs.HdfsDirectory;
@@ -178,7 +178,7 @@ public class IndexImporter extends TimerTask implements Closeable {
     return new IndexAction() {
 
       @Override
-      public void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+      public void performMutate(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
         LOG.info("About to import [{0}] into [{1}/{2}]", directory, _shard, _table);
         boolean emitDeletes = searcher.getIndexReader().numDocs() != 0;
         applyDeletes(directory, writer, _shard, emitDeletes);
@@ -190,7 +190,7 @@ public class IndexImporter extends TimerTask implements Closeable {
       }
 
       @Override
-      public void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) throws IOException {
+      public void doPreCommit(IndexSearcherCloseable indexSearcher, IndexWriter writer) throws IOException {
 
       }
 

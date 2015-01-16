@@ -68,27 +68,32 @@ public class GCWatcherJdk7 {
         public void handleNotification(Notification notification, Object bean) {
           GarbageCollectorMXBean garbageCollectorMXBean = (GarbageCollectorMXBean) bean;
           GcInfo gcInfo = getGcInfo(garbageCollectorMXBean);
-          long startTime = gcInfo.getStartTime();
-          long endTime = gcInfo.getEndTime();
-          Map<String, MemoryUsage> usageBeforeGc = gcInfo.getMemoryUsageBeforeGc();
-          Map<String, MemoryUsage> usageAfterGc = gcInfo.getMemoryUsageAfterGc();
-          long usedBefore = getTotal(usageBeforeGc);
-          long usedAfter = getTotal(usageAfterGc);
-          long totalTime = endTime - startTime;
-          long totalSize = usedBefore - usedAfter;
-          if (totalTime >= _1_SECOND) {
-            LOG.info("GC event totalTime spent in GC [{0} ms] collected [{1} bytes]", totalTime, totalSize);
-          }
-          _gcTimes.update(totalTime, TimeUnit.MILLISECONDS);
+          if (gcInfo != null) {
+            long startTime = gcInfo.getStartTime();
+            long endTime = gcInfo.getEndTime();
+            Map<String, MemoryUsage> usageBeforeGc = gcInfo.getMemoryUsageBeforeGc();
+            Map<String, MemoryUsage> usageAfterGc = gcInfo.getMemoryUsageAfterGc();
+            long usedBefore = getTotal(usageBeforeGc);
+            long usedAfter = getTotal(usageAfterGc);
+            long totalTime = endTime - startTime;
+            long totalSize = usedBefore - usedAfter;
+            if (totalTime >= _1_SECOND) {
+              LOG.info("GC event totalTime spent in GC [{0} ms] collected [{1} bytes]", totalTime, totalSize);
+            }
+            _gcTimes.update(totalTime, TimeUnit.MILLISECONDS);
 
-          MemoryUsage heapMemoryUsage = _memoryMXBean.getHeapMemoryUsage();
-          long max = heapMemoryUsage.getMax();
-          long used = heapMemoryUsage.getUsed();
-          long upperLimit = (long) (max * _ratio);
-          if (used > upperLimit) {
-            LOG.error("----- WARNING !!!! - Heap used [{0}] over limit of [{1}], taking action to avoid an OOM error.",
-                used, upperLimit);
-            takeAction();
+            MemoryUsage heapMemoryUsage = _memoryMXBean.getHeapMemoryUsage();
+            long max = heapMemoryUsage.getMax();
+            long used = heapMemoryUsage.getUsed();
+            long upperLimit = (long) (max * _ratio);
+            if (used > upperLimit) {
+              LOG.error(
+                  "----- WARNING !!!! - Heap used [{0}] over limit of [{1}], taking action to avoid an OOM error.",
+                  used, upperLimit);
+              takeAction();
+            }
+          } else {
+            LOG.warn("GCInfo was null.  Cannot report on GC activity.");
           }
         }
 

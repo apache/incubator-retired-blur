@@ -18,6 +18,8 @@ package org.apache.blur.index;
 
 import java.io.IOException;
 
+import lucene.security.index.SecureAtomicReader;
+
 import org.apache.blur.index.ExitableReader.ExitableFilterAtomicReader;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.IndexReader;
@@ -31,6 +33,11 @@ public class AtomicReaderUtil {
     if (indexReader instanceof ExitableFilterAtomicReader) {
       ExitableFilterAtomicReader exitableFilterAtomicReader = (ExitableFilterAtomicReader) indexReader;
       AtomicReader originalReader = exitableFilterAtomicReader.getOriginalReader();
+      return getSegmentReader(originalReader);
+    }
+    if (indexReader instanceof SecureAtomicReader) {
+      SecureAtomicReader secureAtomicReader = (SecureAtomicReader) indexReader;
+      AtomicReader originalReader = secureAtomicReader.getOriginalReader();
       return getSegmentReader(originalReader);
     }
     throw new IOException("SegmentReader could not be found.");

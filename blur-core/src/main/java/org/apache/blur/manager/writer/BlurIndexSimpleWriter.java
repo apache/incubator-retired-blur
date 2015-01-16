@@ -1,5 +1,5 @@
 /**
- * Licensed to the Apache Software Foundation (ASF) under one or more
+s * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
@@ -17,12 +17,18 @@
 package org.apache.blur.manager.writer;
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
+import static org.apache.blur.utils.BlurConstants.ACL_DISCOVER;
+import static org.apache.blur.utils.BlurConstants.ACL_READ;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -37,6 +43,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import lucene.security.index.AccessControlFactory;
+
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.index.ExitableReader;
@@ -44,13 +52,20 @@ import org.apache.blur.index.IndexDeletionPolicyReader;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.codec.Blur024Codec;
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.server.IndexSearcherCloseableBase;
+import org.apache.blur.server.IndexSearcherCloseableSecureBase;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.user.User;
+import org.apache.blur.user.UserContext;
+import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -64,18 +79,24 @@ import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
-import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 
+import com.google.common.base.Splitter;
+
 public class BlurIndexSimpleWriter extends BlurIndex {
+
+  private static final String TRUE = "true";
 
   private static final Log LOG = LogFactory.getLog(BlurIndexSimpleWriter.class);
 
@@ -106,10 +127,15 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final MutationQueueProcessor _mutationQueueProcessor;
   private final Timer _indexImporterTimer;
   private final Map<String, BulkEntry> _bulkWriters;
+  private final boolean _security;
+  private final AccessControlFactory _accessControlFactory;
+  private final Set<String> _discoverableFields;
+  private final Splitter _commaSplitter;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       final ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer) throws IOException {
     super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexImporterTimer);
+    _commaSplitter = Splitter.on(',');
     _bulkWriters = new ConcurrentHashMap<String, BlurIndexSimpleWriter.BulkEntry>();
     _indexImporterTimer = indexImporterTimer;
     _searchThreadPool = searchExecutor;
@@ -117,6 +143,22 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _tableContext = _shardContext.getTableContext();
     _context = _tableContext.getTable() + "/" + shardContext.getShard();
     _fieldManager = _tableContext.getFieldManager();
+    _discoverableFields = _tableContext.getDiscoverableFields();
+    _accessControlFactory = _tableContext.getAccessControlFactory();
+    TableDescriptor descriptor = _tableContext.getDescriptor();
+    Map<String, String> tableProperties = descriptor.getTableProperties();
+    if (tableProperties != null) {
+      String value = tableProperties.get(BlurConstants.BLUR_RECORD_SECURITY);
+      if (value != null && value.equals(TRUE)) {
+        LOG.info("Record Level Security has been enabled for table [{0}] shard [{1}]", _tableContext.getTable(),
+            _shardContext.getShard());
+        _security = true;
+      } else {
+        _security = false;
+      }
+    } else {
+      _security = false;
+    }
     Analyzer analyzer = _fieldManager.getAnalyzerForIndex();
     _conf = new IndexWriterConfig(LUCENE_VERSION, analyzer);
     _conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
@@ -193,7 +235,11 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   }
 
   @Override
-  public IndexSearcherClosable getIndexSearcher() throws IOException {
+  public IndexSearcherCloseable getIndexSearcher() throws IOException {
+    return getIndexSearcher(_security);
+  }
+
+  public IndexSearcherCloseable getIndexSearcher(boolean security) throws IOException {
     final IndexReader indexReader;
     _indexRefreshReadLock.lock();
     try {
@@ -205,8 +251,65 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     if (indexReader instanceof ExitableReader) {
       ((ExitableReader) indexReader).reset();
     }
-    return new IndexSearcherClosable(indexReader, _searchThreadPool) {
+    if (security) {
+      return getSecureIndexSearcher(indexReader);
+    } else {
+      return getInsecureIndexSearcher(indexReader);
+    }
+  }
 
+  private IndexSearcherCloseable getSecureIndexSearcher(final IndexReader indexReader) throws IOException {
+    String readStr = null;
+    String discoverStr = null;
+    User user = UserContext.getUser();
+    if (user != null) {
+      Map<String, String> attributes = user.getAttributes();
+      if (attributes != null) {
+        readStr = attributes.get(ACL_READ);
+        discoverStr = attributes.get(ACL_DISCOVER);
+      }
+    }
+    Collection<String> readAuthorizations = toCollection(readStr);
+    Collection<String> discoverAuthorizations = toCollection(discoverStr);
+    return new IndexSearcherCloseableSecureBase(indexReader, _searchThreadPool, _accessControlFactory,
+        readAuthorizations, discoverAuthorizations, _discoverableFields) {
+      private boolean _closed;
+
+      @Override
+      public Directory getDirectory() {
+        return _directory;
+      }
+
+      @Override
+      public synchronized void close() throws IOException {
+        if (!_closed) {
+          indexReader.decRef();
+          _closed = true;
+        } else {
+          // Not really sure why some indexes get closed called twice on them.
+          // This is in place to log it.
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Searcher already closed [{0}].", new Throwable(), this);
+          }
+        }
+      }
+    };
+  }
+
+  @SuppressWarnings("unchecked")
+  private Collection<String> toCollection(String aclStr) {
+    if (aclStr == null) {
+      return Collections.EMPTY_LIST;
+    }
+    Set<String> result = new HashSet<String>();
+    for (String s : _commaSplitter.split(aclStr)) {
+      result.add(s);
+    }
+    return result;
+  }
+
+  private IndexSearcherCloseable getInsecureIndexSearcher(final IndexReader indexReader) {
+    return new IndexSearcherCloseableBase(indexReader, _searchThreadPool) {
       private boolean _closed;
 
       @Override
@@ -356,9 +459,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     indexAction.setWritesWaiting(_writesWaiting);
     waitUntilNotNull(_writer);
     BlurIndexWriter writer = _writer.get();
-    IndexSearcherClosable indexSearcher = null;
+    IndexSearcherCloseable indexSearcher = null;
     try {
-      indexSearcher = getIndexSearcher();
+      indexSearcher = getIndexSearcher(false);
       indexAction.performMutate(indexSearcher, writer);
       indexAction.doPreCommit(indexSearcher, writer);
       commit();
@@ -429,13 +532,13 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       };
       final CompressionCodec codec;
       final CompressionType type;
-//      if (SnappyCodec.isNativeSnappyLoaded(configuration)) {
-//        codec = new SnappyCodec();
-//        type = CompressionType.BLOCK;
-//      } else {
-        codec = new DefaultCodec();
-        type = CompressionType.NONE;
-//      }
+      // if (SnappyCodec.isNativeSnappyLoaded(configuration)) {
+      // codec = new SnappyCodec();
+      // type = CompressionType.BLOCK;
+      // } else {
+      codec = new DefaultCodec();
+      type = CompressionType.NONE;
+      // }
 
       Writer writer = SequenceFile.createWriter(fileSystem, configuration, path, Text.class, RowMutationWritable.class,
           type, codec, progress);
@@ -473,7 +576,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
               private Path _sorted;
 
               @Override
-              public void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+              public void performMutate(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
                 Configuration configuration = _tableContext.getConfiguration();
 
                 SequenceFile.Sorter sorter = new Sorter(fileSystem, Text.class, RowMutationWritable.class,
@@ -506,7 +609,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
                 LOG.info("Shard [{0}/{1}] Id [{2}] Finished applying mutates starting commit.", table, shard, bulkId);
               }
 
-              private void flushMutates(IndexSearcherClosable searcher, IndexWriter writer, List<RowMutation> list)
+              private void flushMutates(IndexSearcherCloseable searcher, IndexWriter writer, List<RowMutation> list)
                   throws IOException {
                 if (!list.isEmpty()) {
                   List<RowMutation> reduceMutates;
@@ -536,7 +639,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
               }
 
               @Override
-              public void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) throws IOException {
+              public void doPreCommit(IndexSearcherCloseable indexSearcher, IndexWriter writer) throws IOException {
 
               }
 
@@ -593,6 +696,52 @@ public class BlurIndexSimpleWriter extends BlurIndex {
           }
         }
       }
+    }
+  }
+
+  @Override
+  public long getRecordCount() throws IOException {
+    IndexSearcherCloseable searcher = getIndexSearcher(false);
+    try {
+      return searcher.getIndexReader().numDocs();
+    } finally {
+      if (searcher != null) {
+        searcher.close();
+      }
+    }
+  }
+
+  @Override
+  public long getRowCount() throws IOException {
+    IndexSearcherCloseable searcher = getIndexSearcher(false);
+    try {
+      return getRowCount(searcher);
+    } finally {
+      if (searcher != null) {
+        searcher.close();
+      }
+    }
+  }
+
+  protected long getRowCount(IndexSearcherCloseable searcher) throws IOException {
+    TopDocs topDocs = searcher.search(new TermQuery(BlurUtil.PRIME_DOC_TERM), 1);
+    return topDocs.totalHits;
+  }
+
+  @Override
+  public long getIndexMemoryUsage() throws IOException {
+    return 0;
+  }
+
+  @Override
+  public long getSegmentCount() throws IOException {
+    IndexSearcherCloseable indexSearcherClosable = getIndexSearcher(false);
+    try {
+      IndexReader indexReader = indexSearcherClosable.getIndexReader();
+      IndexReaderContext context = indexReader.getContext();
+      return context.leaves().size();
+    } finally {
+      indexSearcherClosable.close();
     }
   }
 

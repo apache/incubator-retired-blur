@@ -16,11 +16,11 @@ package org.apache.blur.server;
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
 import org.apache.lucene.index.AtomicReaderContext;
@@ -32,9 +32,9 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.store.Directory;
 
-public abstract class IndexSearcherClosable extends IndexSearcher implements Closeable {
+public abstract class IndexSearcherCloseableBase extends IndexSearcher implements IndexSearcherCloseable {
 
-  public IndexSearcherClosable(IndexReader r, ExecutorService executor) {
+  public IndexSearcherCloseableBase(IndexReader r, ExecutorService executor) {
     super(r, executor);
   }
 
@@ -44,7 +44,6 @@ public abstract class IndexSearcherClosable extends IndexSearcher implements Clo
   public abstract void close() throws IOException;
 
   protected void search(List<AtomicReaderContext> leaves, Weight weight, Collector collector) throws IOException {
-
     // TODO: should we make this
     // threaded...? the Collector could be sync'd?
     // always use single thread:

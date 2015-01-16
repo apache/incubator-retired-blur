@@ -28,7 +28,9 @@ import static org.apache.blur.utils.BlurConstants.SUPER;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -36,6 +38,9 @@ import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import lucene.security.index.AccessControlFactory;
+import lucene.security.index.FilterAccessControlFactory;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.FieldManager;
@@ -103,6 +108,8 @@ public class TableContext implements Cloneable {
   private FieldManager _fieldManager;
   private BlurConfiguration _blurConfiguration;
   private ReadInterceptor _readInterceptor;
+  private AccessControlFactory _accessControlFactory;
+  private Set<String> _discoverableFields;
 
   protected TableContext() {
 
@@ -163,6 +170,13 @@ public class TableContext implements Cloneable {
     tableContext._timeBetweenRefreshs = configuration.getLong(BLUR_SHARD_TIME_BETWEEN_REFRESHS, 5000);
     tableContext._defaultPrimeDocTerm = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
     tableContext._defaultScoreType = ScoreType.SUPER;
+
+    // TODO make configurable
+    tableContext._discoverableFields = new HashSet<String>(Arrays.asList(BlurConstants.ROW_ID, BlurConstants.RECORD_ID,
+        BlurConstants.FAMILY));
+
+    // TODO make configurable
+    tableContext._accessControlFactory = new FilterAccessControlFactory();
 
     boolean strict = tableDescriptor.isStrictTypes();
     String defaultMissingFieldType = tableDescriptor.getDefaultMissingFieldType();
@@ -464,5 +478,13 @@ public class TableContext implements Cloneable {
         throw new IOException("Could not move [" + src + "] to [" + dst + "].");
       }
     }
+  }
+
+  public Set<String> getDiscoverableFields() {
+    return _discoverableFields;
+  }
+
+  public AccessControlFactory getAccessControlFactory() {
+    return _accessControlFactory;
   }
 }

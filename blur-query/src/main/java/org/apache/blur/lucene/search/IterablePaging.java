@@ -34,7 +34,6 @@ import org.apache.blur.utils.BlurIterable;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.FieldDoc;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
@@ -53,7 +52,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   private static final boolean DISABLED = true;
 
   private final DeepPagingCache _deepPagingCache;
-  private final IndexSearcher _searcher;
+  private final IndexSearcherCloseable _searcher;
   private final Query _query;
   private final AtomicBoolean _running;
   private final int _numHitsToCollect;
@@ -66,7 +65,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   private int skipTo;
   private int gather = -1;
 
-  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
+  public IterablePaging(AtomicBoolean running, IndexSearcherCloseable searcher, Query query, int numHitsToCollect,
       TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow, Sort sort, DeepPagingCache deepPagingCache)
       throws BlurException {
     _deepPagingCache = deepPagingCache;

@@ -17,7 +17,15 @@ package org.apache.blur;
  * limitations under the License.
  */
 
-import static org.apache.blur.utils.BlurConstants.*;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 
 import java.io.BufferedReader;
 import java.io.Closeable;
@@ -82,9 +90,11 @@ public class MiniCluster {
 
   private static Log LOG = LogFactory.getLog(MiniCluster.class);
   private MiniDFSCluster cluster;
+  private final String id = UUID.randomUUID().toString();
   private ZkMiniCluster zkMiniCluster = new ZkMiniCluster();
   private List<MiniClusterServer> controllers = new ArrayList<MiniClusterServer>();
   private List<MiniClusterServer> shards = new ArrayList<MiniClusterServer>();
+  private ThreadGroup group = new ThreadGroup(id);
 
   public static void main(String[] args) throws IOException, InterruptedException, KeeperException, BlurException,
       TException {
@@ -125,26 +135,37 @@ public class MiniCluster {
   public void startBlurCluster(String path, int controllerCount, int shardCount) {
     startBlurCluster(path, controllerCount, shardCount, false, false);
   }
-  
+
   public void startBlurCluster(String path, int controllerCount, int shardCount, boolean randomPort) {
     startBlurCluster(path, controllerCount, shardCount, randomPort, false);
   }
 
-  public void startBlurCluster(String path, int controllerCount, int shardCount, boolean randomPort,
-      boolean externalProcesses) {
-    MemoryReporter.enable();
-    startDfs(path + "/hdfs");
-    startZooKeeper(path + "/zk", randomPort);
-    setupBuffers();
-    startControllers(controllerCount, randomPort, externalProcesses);
-    startShards(shardCount, randomPort, externalProcesses);
+  public void startBlurCluster(final String path, final int controllerCount, final int shardCount,
+      final boolean randomPort, final boolean externalProcesses) {
+    Thread thread = new Thread(group, new Runnable() {
+      @Override
+      public void run() {
+        MemoryReporter.enable();
+        startDfs(path + "/hdfs");
+        startZooKeeper(path + "/zk", randomPort);
+        setupBuffers();
+        startControllers(controllerCount, randomPort, externalProcesses);
+        startShards(shardCount, randomPort, externalProcesses);
+        try {
+          waitForSafeModeToExit();
+        } catch (BlurException e) {
+          throw new RuntimeException(e);
+        } catch (TException e) {
+          throw new RuntimeException(e);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+    });
+    thread.start();
     try {
-      waitForSafeModeToExit();
-    } catch (BlurException e) {
-      throw new RuntimeException(e);
-    } catch (TException e) {
-      throw new RuntimeException(e);
-    } catch (IOException e) {
+      thread.join();
+    } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
   }
@@ -681,7 +702,7 @@ public class MiniCluster {
       // This has got to be one of the worst hacks I have ever had to do.
       // This is needed to shutdown 2 thread pools that are not shutdown by
       // themselves.
-      ThreadGroup threadGroup = Thread.currentThread().getThreadGroup();
+      ThreadGroup threadGroup = group;
       Thread[] threads = new Thread[100];
       int enumerate = threadGroup.enumerate(threads);
       for (int i = 0; i < enumerate; i++) {

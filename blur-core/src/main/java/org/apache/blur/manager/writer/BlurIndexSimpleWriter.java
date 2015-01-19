@@ -111,14 +111,11 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final ShardContext _shardContext;
   private final AtomicReference<BlurIndexWriter> _writer = new AtomicReference<BlurIndexWriter>();
   private final boolean _makeReaderExitable = true;
-  private IndexImporter _indexImporter;
   private final ReentrantReadWriteLock _lock = new ReentrantReadWriteLock();
   private final WriteLock _writeLock = _lock.writeLock();
   private final ReadWriteLock _indexRefreshLock = new ReentrantReadWriteLock();
   private final Lock _indexRefreshWriteLock = _indexRefreshLock.writeLock();
   private final Lock _indexRefreshReadLock = _indexRefreshLock.readLock();
-  private Thread _optimizeThread;
-  private Thread _writerOpener;
   private final IndexDeletionPolicyReader _policy;
   private final SnapshotIndexDeletionPolicy _snapshotIndexDeletionPolicy;
   private final String _context;
@@ -131,6 +128,10 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final AccessControlFactory _accessControlFactory;
   private final Set<String> _discoverableFields;
   private final Splitter _commaSplitter;
+
+  private Thread _optimizeThread;
+  private Thread _writerOpener;
+  private IndexImporter _indexImporter;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       final ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer) throws IOException {

@@ -18,8 +18,7 @@ package org.apache.blur.manager.writer;
  */
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -285,6 +284,32 @@ public class IndexImporterTest {
     assertFalse(_fileSystem.exists(_path));
     assertTrue(_fileSystem.exists(_badRowIdsPath));
     assertFalse(_fileSystem.exists(_inUsePath));
+    validateIndex();
+  }
+
+  @Test
+  public void testIndexImporterWhenThereIsAFailureOnDuringImport() throws IOException {
+    List<Field> document = _fieldManager.getFields("1", genRecord("1"));
+    _commitWriter.addDocument(document);
+    _commitWriter.commit();
+    _commitWriter.close();
+    _indexImporter.setTestError(new Runnable() {
+      @Override
+      public void run() {
+        throw new RuntimeException("test");
+      }
+    });
+    try {
+      _indexImporter.run();
+    } catch (RuntimeException e) {
+      assertEquals("test", e.getMessage());
+    }
+    _indexImporter.cleanupOldDirs();
+    _indexImporter.setTestError(null);
+    _indexImporter.run();
+    assertFalse(_fileSystem.exists(_path));
+    assertFalse(_fileSystem.exists(_badRowIdsPath));
+    assertTrue(_fileSystem.exists(_inUsePath));
     validateIndex();
   }
 

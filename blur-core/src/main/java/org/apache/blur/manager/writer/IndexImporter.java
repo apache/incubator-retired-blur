@@ -19,6 +19,7 @@ package org.apache.blur.manager.writer;
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +61,7 @@ import org.apache.lucene.util.BytesRef;
 
 public class IndexImporter extends TimerTask implements Closeable {
 
+  private static final String INPROGRESS = ".inprogress";
   private static final String BADROWIDS = ".badrowids";
   private static final String COMMIT = ".commit";
   private static final String INUSE = ".inuse";
@@ -75,6 +77,7 @@ public class IndexImporter extends TimerTask implements Closeable {
   private final long _cleanupDelay;
 
   private long _lastCleanup;
+  private Runnable _testError;
 
   public IndexImporter(Timer indexImporterTimer, BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit,
       long refreshAmount) {
@@ -137,7 +140,11 @@ public class IndexImporter extends TimerTask implements Closeable {
           if (fileStatus.isDir() && file.getName().endsWith(COMMIT)) {
             // rename to inuse, if good continue else rename to badindex
             Path inuse = new Path(file.getParent(), rename(file.getName(), INUSE));
+            touch(fileSystem, new Path(file, INPROGRESS));
             if (fileSystem.rename(file, inuse)) {
+              if (_testError != null) {
+                _testError.run();
+              }
               HdfsDirectory hdfsDirectory = new HdfsDirectory(configuration, inuse);
               try {
                 if (DirectoryReader.indexExists(hdfsDirectory)) {
@@ -169,6 +176,10 @@ public class IndexImporter extends TimerTask implements Closeable {
     }
   }
 
+  private void touch(FileSystem fileSystem, Path path) throws IOException {
+    fileSystem.create(path, true).close();
+  }
+
   private String rename(String name, String newSuffix) {
     int lastIndexOf = name.lastIndexOf('.');
     return name.substring(0, lastIndexOf) + newSuffix;
@@ -196,6 +207,8 @@ public class IndexImporter extends TimerTask implements Closeable {
 
       @Override
       public void doPostCommit(IndexWriter writer) throws IOException {
+        Path path = directory.getPath();
+        fileSystem.delete(new Path(path, INPROGRESS), false);
         LOG.info("Import complete on [{0}/{1}]", _shard, _table);
         writer.maybeMerge();
       }
@@ -285,6 +298,18 @@ public class IndexImporter extends TimerTask implements Closeable {
       inuseDirs.remove(inuseDir);
     }
 
+    // Check if any inuse dirs have inprogress files.
+    // If they do, rename inuse to commit to retry import.
+    for (Path inuse : new HashSet<Path>(inuseDirs)) {
+      Path path = new Path(inuse, INPROGRESS);
+      if (fileSystem.exists(path)) {
+        LOG.info("Path [{0}] is not imported but has inprogress file, retrying import.", path);
+        inuseDirs.remove(inuse);
+        Path commit = new Path(inuse.getParent(), rename(inuse.getName(), COMMIT));
+        fileSystem.rename(inuse, commit);
+      }
+    }
+
     for (Path p : inuseDirs) {
       LOG.info("Deleteing path [{0}] no longer in use.", p);
       fileSystem.delete(p, true);
@@ -311,4 +336,13 @@ public class IndexImporter extends TimerTask implements Closeable {
     }
     return result;
   }
+
+  public Runnable getTestError() {
+    return _testError;
+  }
+
+  public void setTestError(Runnable testError) {
+    _testError = testError;
+  }
+
 }

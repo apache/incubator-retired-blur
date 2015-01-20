@@ -134,7 +134,7 @@ public class BlurHiveOutputFormat implements HiveOutputFormat<Text, BlurRecord> 
           List<RowMutation> batch = e.getValue();
           if (batch.size() >= max) {
             Iface client = BlurClient.getClient(server);
-            client.bulkMutateAddMultiple(table, bulkId, batch);
+            client.bulkMutateAddMultiple(bulkId, batch);
             batch.clear();
           }
         }

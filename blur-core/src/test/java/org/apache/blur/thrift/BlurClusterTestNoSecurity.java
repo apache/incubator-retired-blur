@@ -16,13 +16,26 @@
  */
 package org.apache.blur.thrift;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
+
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.RecordMutation;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.thrift.generated.TableStats;
+import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.user.User;
+import org.junit.Test;
 
 public class BlurClusterTestNoSecurity extends BlurClusterTestBase {
 

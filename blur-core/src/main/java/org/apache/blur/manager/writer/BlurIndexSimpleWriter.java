@@ -22,6 +22,7 @@ import static org.apache.blur.utils.BlurConstants.ACL_READ;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -79,6 +80,7 @@ import org.apache.hadoop.io.SequenceFile.Writer;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
+import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.BlurIndexWriter;
@@ -514,8 +516,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     }
   }
 
-  @Override
-  public void startBulkMutate(String bulkId) throws IOException {
+  public BulkEntry startBulkMutate(String bulkId) throws IOException {
     BulkEntry bulkEntry = _bulkWriters.get(bulkId);
     if (bulkEntry == null) {
       Path tablePath = _tableContext.getTablePath();
@@ -533,21 +534,69 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       };
       final CompressionCodec codec;
       final CompressionType type;
-      // if (SnappyCodec.isNativeSnappyLoaded(configuration)) {
-      // codec = new SnappyCodec();
-      // type = CompressionType.BLOCK;
-      // } else {
-      codec = new DefaultCodec();
-      type = CompressionType.NONE;
-      // }
+
+      if (isSnappyCodecLoaded(configuration)) {
+        codec = new SnappyCodec();
+        type = CompressionType.BLOCK;
+      } else {
+        codec = new DefaultCodec();
+        type = CompressionType.NONE;
+      }
 
       Writer writer = SequenceFile.createWriter(fileSystem, configuration, path, Text.class, RowMutationWritable.class,
           type, codec, progress);
 
-      _bulkWriters.put(bulkId, new BulkEntry(writer, path));
+      bulkEntry = new BulkEntry(writer, path);
+      _bulkWriters.put(bulkId, bulkEntry);
     } else {
       LOG.info("Bulk [{0}] mutate already started on shard [{1}] in table [{2}].", bulkId, _shardContext.getShard(),
           _tableContext.getTable());
+    }
+    return bulkEntry;
+  }
+
+  private boolean isSnappyCodecLoaded(Configuration configuration) {
+    try {
+      Method methodHadoop1 = SnappyCodec.class.getMethod("isNativeSnappyLoaded", new Class[] { Configuration.class });
+      Boolean loaded = (Boolean) methodHadoop1.invoke(null, new Object[] { configuration });
+      if (loaded != null && loaded) {
+        LOG.info("Using SnappyCodec");
+        return true;
+      } else {
+        LOG.info("Not using SnappyCodec");
+        return false;
+      }
+    } catch (NoSuchMethodException e) {
+      Method methodHadoop2;
+      try {
+        methodHadoop2 = SnappyCodec.class.getMethod("isNativeCodeLoaded", new Class[] {});
+      } catch (NoSuchMethodException ex) {
+        LOG.info("Can not determine if SnappyCodec is loaded.");
+        return false;
+      } catch (SecurityException ex) {
+        LOG.error("Not allowed.", ex);
+        return false;
+      }
+      Boolean loaded;
+      try {
+        loaded = (Boolean) methodHadoop2.invoke(null);
+        if (loaded != null && loaded) {
+          LOG.info("Using SnappyCodec");
+          return true;
+        } else {
+          LOG.info("Not using SnappyCodec");
+          return false;
+        }
+      } catch (Exception ex) {
+        LOG.info("Unknown error while trying to determine if SnappyCodec is loaded.", ex);
+        return false;
+      }
+    } catch (SecurityException e) {
+      LOG.error("Not allowed.", e);
+      return false;
+    } catch (Exception e) {
+      LOG.info("Unknown error while trying to determine if SnappyCodec is loaded.", e);
+      return false;
     }
   }
 
@@ -674,7 +723,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   public void addBulkMutate(String bulkId, RowMutation mutation) throws IOException {
     BulkEntry bulkEntry = _bulkWriters.get(bulkId);
     if (bulkEntry == null) {
-      throw new IOException("Bulk writer for [" + bulkId + "] not found.");
+      bulkEntry = startBulkMutate(bulkId);
     }
     RowMutationWritable rowMutationWritable = new RowMutationWritable();
     rowMutationWritable.setRowMutation(mutation);

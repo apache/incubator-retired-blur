@@ -292,24 +292,24 @@ public class FilteredBlurServer implements Iface {
   }
 
   @Override
-  public void bulkMutateStart(String table, String bulkId) throws BlurException, TException {
-    _iface.bulkMutateStart(table, bulkId);
+  public void bulkMutateStart(String bulkId) throws BlurException, TException {
+    _iface.bulkMutateStart(bulkId);
   }
 
   @Override
-  public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation) throws BlurException, TException {
-    _iface.bulkMutateAdd(table, bulkId, rowMutation);
+  public void bulkMutateAdd(String bulkId, RowMutation rowMutation) throws BlurException, TException {
+    _iface.bulkMutateAdd(bulkId, rowMutation);
   }
 
   @Override
-  public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, TException {
-    _iface.bulkMutateFinish(table, bulkId, apply, blockUntilComplete);
-  }
-
-  @Override
-  public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException,
+  public void bulkMutateFinish(String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException,
       TException {
-    _iface.bulkMutateAddMultiple(table, bulkId, rowMutations);
+    _iface.bulkMutateFinish(bulkId, apply, blockUntilComplete);
+  }
+
+  @Override
+  public void bulkMutateAddMultiple(String bulkId, List<RowMutation> rowMutations) throws BlurException, TException {
+    _iface.bulkMutateAddMultiple(bulkId, rowMutations);
   }
 
 }

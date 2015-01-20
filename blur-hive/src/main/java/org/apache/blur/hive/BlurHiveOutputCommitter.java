@@ -18,12 +18,10 @@ package org.apache.blur.hive;
 
 import java.io.IOException;
 
-import org.apache.blur.mapreduce.lib.BlurOutputFormat;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputCommitter;
@@ -72,10 +70,9 @@ public class BlurHiveOutputCommitter extends OutputCommitter {
     Configuration configuration = context.getConfiguration();
     String connectionStr = configuration.get(BlurSerDe.BLUR_CONTROLLER_CONNECTION_STR);
     Iface client = BlurClient.getClient(connectionStr);
-    TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
     String bulkId = BlurHiveOutputFormat.getBulkId(configuration);
     try {
-      client.bulkMutateFinish(tableDescriptor.getName(), bulkId, apply, false);
+      client.bulkMutateFinish(bulkId, apply, false);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {

@@ -145,7 +145,7 @@ public abstract class BlurClusterTestBase {
     }
   }
 
-  private Iface getClient() {
+  protected Iface getClient() {
     if (controllerConnectionStr == null) {
       controllerConnectionStr = miniCluster.getControllerConnectionStr();
     }
@@ -575,7 +575,7 @@ public abstract class BlurClusterTestBase {
       setDebugRunSlow(tableName, false);
     }
   }
-  
+
   protected abstract Map<String, String> getUserAttributes();
 
   @Test
@@ -962,4 +962,41 @@ public abstract class BlurClusterTestBase {
     assertFalse(client.tableList().contains(tableName));
 
   }
+
+  @Test
+  public void testBulkMutate() throws BlurException, TException, IOException {
+    String tableName = "testBulkMutate";
+    createTable(tableName);
+
+    String bulkId = UUID.randomUUID().toString();
+    Iface client = getClient();
+    client.bulkMutateStart(bulkId);
+    int batchSize = 10;
+    int total = 10000;
+    int maxFacetValue = 100;
+    List<RowMutation> mutations = new ArrayList<RowMutation>();
+    Random random = new Random(1);
+    for (int i = 0; i < total; i++) {
+      String rowId = UUID.randomUUID().toString();
+      RecordMutation mutation = BlurThriftHelper.newRecordMutation("test", rowId,
+          BlurThriftHelper.newColumn("test", "value"),
+          BlurThriftHelper.newColumn("facet", Integer.toString(random.nextInt(maxFacetValue))),
+          BlurThriftHelper.newColumn("facetFixed", "test"));
+      RowMutation rowMutation = BlurThriftHelper.newRowMutation(tableName, rowId, mutation);
+      mutations.add(rowMutation);
+      if (mutations.size() >= batchSize) {
+        client.bulkMutateAddMultiple(bulkId, mutations);
+        mutations.clear();
+      }
+    }
+    if (mutations.size() > 0) {
+      client.bulkMutateAddMultiple(bulkId, mutations);
+      mutations.clear();
+    }
+    client.bulkMutateFinish(bulkId, true, true);
+
+    TableStats tableStats = client.tableStats(tableName);
+    assertEquals(total, tableStats.getRecordCount());
+  }
+
 }

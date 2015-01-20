@@ -189,11 +189,6 @@ public class IndexImporterTest {
       }
 
       @Override
-      public void startBulkMutate(String bulkId) throws IOException {
-        throw new RuntimeException("Not implemented.");
-      }
-
-      @Override
       public void finishBulkMutate(String bulkId, boolean apply, boolean blockUntilComplete) throws IOException {
         throw new RuntimeException("Not implemented.");
       }

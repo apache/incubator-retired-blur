@@ -48,6 +48,7 @@ import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.CommandDescriptor;
 import org.apache.blur.thrift.generated.Level;
 import org.apache.blur.thrift.generated.Metric;
+import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
@@ -705,5 +706,16 @@ public abstract class TableAdmin implements Iface {
       throw new BException(e.getMessage(), e);
     }
   }
+
+  @Override
+  public void bulkMutateStart(String bulkId) throws BlurException, TException {
+    // TODO Start transaction here...
+  }
+
+//  @Override
+//  public void bulkMutateFinish(String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException,
+//      TException {
+//    throw new RuntimeException("Not implemented.");
+//  }
 
 }

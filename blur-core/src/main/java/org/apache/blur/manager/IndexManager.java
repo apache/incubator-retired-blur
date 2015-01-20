@@ -1305,13 +1305,6 @@ public class IndexManager {
     enqueue(Arrays.asList(mutation));
   }
 
-  public void bulkMutateStart(String table, String bulkId) throws BlurException, IOException {
-    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
-    for (BlurIndex index : indexes.values()) {
-      index.startBulkMutate(bulkId);
-    }
-  }
-
   public void bulkMutateAdd(String table, String bulkId, RowMutation mutation) throws BlurException, IOException {
     String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), _blurPartitioner);
     Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
@@ -1322,11 +1315,13 @@ public class IndexManager {
     blurIndex.addBulkMutate(bulkId, mutation);
   }
 
-  public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete)
+  public void bulkMutateFinish(Set<String> potentialTables, String bulkId, boolean apply, boolean blockUntilComplete)
       throws BlurException, IOException {
-    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
-    for (BlurIndex index : indexes.values()) {
-      index.finishBulkMutate(bulkId, apply, blockUntilComplete);
+    for (String table : potentialTables) {
+      Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+      for (BlurIndex index : indexes.values()) {
+        index.finishBulkMutate(bulkId, apply, blockUntilComplete);
+      }
     }
   }
 

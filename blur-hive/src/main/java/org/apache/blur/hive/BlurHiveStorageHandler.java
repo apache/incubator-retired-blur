@@ -16,16 +16,13 @@
  */
 package org.apache.blur.hive;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.blur.mapreduce.lib.BlurOutputFormat;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -57,12 +54,9 @@ public class BlurHiveStorageHandler extends DefaultStorageHandler {
       String bulkId = UUID.randomUUID().toString();
       String connectionStr = jobConf.get(BlurSerDe.BLUR_CONTROLLER_CONNECTION_STR);
       Iface client = BlurClient.getClient(connectionStr);
-      TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(jobConf);
-      client.bulkMutateStart(tableDescriptor.getName(), bulkId);
+      client.bulkMutateStart(bulkId);
       BlurHiveOutputFormat.setBulkId(jobConf, bulkId);
       jobConf.setOutputCommitter(BlurHiveOutputCommitter.class);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
     } catch (BlurException e) {
       throw new RuntimeException(e);
     } catch (TException e) {

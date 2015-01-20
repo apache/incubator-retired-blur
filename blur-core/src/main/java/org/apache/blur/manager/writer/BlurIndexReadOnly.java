@@ -75,11 +75,6 @@ public class BlurIndexReadOnly extends BlurIndex {
   }
 
   @Override
-  public void startBulkMutate(String bulkId) {
-    throw new RuntimeException("Read-only shard");
-  }
-
-  @Override
   public void finishBulkMutate(String bulkId, boolean apply, boolean blockUntilComplete) {
     throw new RuntimeException("Read-only shard");
   }

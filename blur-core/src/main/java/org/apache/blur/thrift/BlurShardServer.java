@@ -23,6 +23,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DATA_FETCH_THREAD_C
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -696,20 +697,11 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public void bulkMutateStart(String table, String bulkId) throws BlurException, TException {
-    try {
-      _indexManager.bulkMutateStart(table, bulkId);
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to start a bulk mutate on table [" + table + "]", e);
-      if (e instanceof BlurException) {
-        throw (BlurException) e;
-      }
-      throw new BException(e.getMessage(), e);
-    }
-  }
-
-  @Override
-  public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation) throws BlurException, TException {
+  public void bulkMutateAdd(String bulkId, RowMutation rowMutation) throws BlurException, TException {
+    String table = rowMutation.getTable();
+    checkTable(table);
+    checkForUpdates(table);
+    MutationHelper.validateMutation(rowMutation);
     try {
       _indexManager.bulkMutateAdd(table, bulkId, rowMutation);
     } catch (Exception e) {
@@ -722,11 +714,13 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, TException {
+  public void bulkMutateFinish(String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException,
+      TException {
     try {
-      _indexManager.bulkMutateFinish(table, bulkId, apply,blockUntilComplete);
+      List<String> tableListByCluster = tableListByCluster(_cluster);
+      _indexManager.bulkMutateFinish(new HashSet<String>(tableListByCluster), bulkId, apply, blockUntilComplete);
     } catch (Exception e) {
-      LOG.error("Unknown error while trying to finsh a bulk mutate on table [" + table + "]", e);
+      LOG.error("Unknown error while trying to finsh a bulk mutate [" + bulkId + "]", e);
       if (e instanceof BlurException) {
         throw (BlurException) e;
       }
@@ -735,17 +729,37 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException,
-      TException {
-    try {
-      _indexManager.bulkMutateAddMultiple(table, bulkId, rowMutations);
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to add to a bulk mutate on table [" + table + "]", e);
-      if (e instanceof BlurException) {
-        throw (BlurException) e;
+  public void bulkMutateAddMultiple(String bulkId, List<RowMutation> rowMutations) throws BlurException, TException {
+    Map<String, List<RowMutation>> batches = batchByTable(rowMutations);
+    for (Entry<String, List<RowMutation>> entry : batches.entrySet()) {
+      String table = entry.getKey();
+      List<RowMutation> batch = entry.getValue();
+      try {
+        _indexManager.bulkMutateAddMultiple(table, bulkId, batch);
+      } catch (Exception e) {
+        LOG.error("Unknown error while trying to add to a bulk mutate on table [" + table + "]", e);
+        if (e instanceof BlurException) {
+          throw (BlurException) e;
+        }
+        throw new BException(e.getMessage(), e);
       }
-      throw new BException(e.getMessage(), e);
     }
+  }
+
+  private Map<String, List<RowMutation>> batchByTable(List<RowMutation> rowMutations) throws BlurException {
+    Map<String, List<RowMutation>> result = new HashMap<String, List<RowMutation>>();
+    for (RowMutation rowMutation : rowMutations) {
+      String table = rowMutation.getTable();
+      checkTable(table);
+      checkForUpdates(table);
+      List<RowMutation> list = result.get(table);
+      if (list == null) {
+        result.put(table, list = new ArrayList<RowMutation>());
+      }
+      MutationHelper.validateMutation(rowMutation);
+      list.add(rowMutation);
+    }
+    return result;
   }
 
 }

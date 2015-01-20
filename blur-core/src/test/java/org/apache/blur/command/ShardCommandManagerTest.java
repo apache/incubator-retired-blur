@@ -272,7 +272,7 @@ public class ShardCommandManagerTest {
             return;
           } catch (IOException e) {
             if (e.getCause() instanceof CancellationException) {
-              return;  
+              return;
             }
             e.printStackTrace();
             fail.set(true);
@@ -420,11 +420,6 @@ public class ShardCommandManagerTest {
 
       @Override
       public void close() throws IOException {
-        throw new RuntimeException("Not implemented.");
-      }
-
-      @Override
-      public void startBulkMutate(String bulkId) throws IOException {
         throw new RuntimeException("Not implemented.");
       }
 

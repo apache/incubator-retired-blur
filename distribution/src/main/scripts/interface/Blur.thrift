@@ -1178,48 +1178,40 @@ service Blur {
    * Starts a transaction for update (e.g. Mutate).  Returns a transaction id.
    */
   void bulkMutateStart(
-    /** The table name. */
-    1:string table, 
     /** The bulk id. */
-    2:string bulkId
+    1:string bulkId
   ) throws (1:BlurException ex)
 
   /**
    * Adds to the specified transaction.
    */
   void bulkMutateAdd(
-    /** The table name. */
-    1:string table,
     /** The bulk id. */
-    2:string bulkId, 
+    1:string bulkId, 
     /** The row mutation. */
-    3:RowMutation rowMutation
+    2:RowMutation rowMutation
   ) throws (1:BlurException ex)
 
   /**
    * Adds to the specified transaction.
    */
   void bulkMutateAddMultiple(
-    /** The table name. */
-    1:string table,
     /** The bulk id. */
-    2:string bulkId, 
+    1:string bulkId, 
     /** The row mutation. */
-    3:list<RowMutation> rowMutations
+    2:list<RowMutation> rowMutations
   ) throws (1:BlurException ex)
 
   /**
    * Finishes the bulk mutate.  If apply is true the mutations are applied and committed.  If false the bulk mutate is deleted and not applied.
    */
   void bulkMutateFinish(
-    /** The table name. */
-    1:string table,
     /** The bulk id. */
-    2:string bulkId,
+    1:string bulkId,
     /** Apply the bulk mutate flag. */
-    3:bool apply,
+    2:bool apply,
     /** If true this call will not block on bulk completion.  This may be required for loader bulk loads. */
-    4:bool blockUntilComplete
+    3:bool blockUntilComplete
   ) throws (1:BlurException ex)
 
   /**

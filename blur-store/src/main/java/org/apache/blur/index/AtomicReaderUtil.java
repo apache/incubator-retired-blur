@@ -26,6 +26,15 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.SegmentReader;
 
 public class AtomicReaderUtil {
+
+  /**
+   * WARNING!!! This method can bypass access control. Use only when you are
+   * sure you know what you are doing!
+   * 
+   * @param indexReader
+   * @return
+   * @throws IOException
+   */
   public static SegmentReader getSegmentReader(IndexReader indexReader) throws IOException {
     if (indexReader instanceof SegmentReader) {
       return (SegmentReader) indexReader;

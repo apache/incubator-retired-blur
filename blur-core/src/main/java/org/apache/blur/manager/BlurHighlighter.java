@@ -23,7 +23,7 @@ import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.utils.HighlightHelper;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.SegmentReader;
+import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 
@@ -86,10 +86,10 @@ public class BlurHighlighter {
     return _fieldManager;
   }
 
-  public Document highlight(int docID, Document document, SegmentReader segmentReader) throws IOException {
+  public Document highlight(int docID, Document document, AtomicReader atomicReader) throws IOException {
     Document highlight;
     try {
-      highlight = HighlightHelper.highlight(docID, document, _highlightQuery, _fieldManager, segmentReader, _preTag,
+      highlight = HighlightHelper.highlight(docID, document, _highlightQuery, _fieldManager, atomicReader, _preTag,
           _postTag);
     } catch (InvalidTokenOffsetsException e) {
       throw new IOException(e);

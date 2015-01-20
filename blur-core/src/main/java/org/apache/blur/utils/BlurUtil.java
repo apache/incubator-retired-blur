@@ -63,7 +63,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.index.AtomicReaderUtil;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.PrimeDocCache;
@@ -115,7 +114,6 @@ import org.apache.lucene.index.BaseCompositeReaderUtil;
 import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
@@ -895,20 +893,19 @@ public class BlurUtil {
       int readerBase = BaseCompositeReaderUtil.readerBase(indexReader, readerIndex);
       int primeDocId = notAdjustedPrimeDocId - readerBase;
       IndexReader orgReader = sequentialSubReaders.get(readerIndex);
-      SegmentReader sReader = AtomicReaderUtil.getSegmentReader(orgReader);
-      if (sReader != null) {
-        SegmentReader segmentReader = (SegmentReader) sReader;
-        Bits liveDocs = segmentReader.getLiveDocs();
+      if (orgReader != null && orgReader instanceof AtomicReader) {
+        AtomicReader atomicReader = (AtomicReader) orgReader;
+        Bits liveDocs = atomicReader.getLiveDocs();
 
-        OpenBitSet bitSet = PrimeDocCache.getPrimeDocBitSet(primeDocTerm, segmentReader);
+        OpenBitSet bitSet = PrimeDocCache.getPrimeDocBitSet(primeDocTerm, atomicReader);
         int nextPrimeDoc = bitSet.nextSetBit(primeDocId + 1);
         int numberOfDocsInRow;
         if (nextPrimeDoc == -1) {
-          numberOfDocsInRow = segmentReader.maxDoc() - primeDocId;
+          numberOfDocsInRow = atomicReader.maxDoc() - primeDocId;
         } else {
           numberOfDocsInRow = nextPrimeDoc - primeDocId;
         }
-        OpenBitSet docsInRowSpanToFetch = getDocsToFetch(segmentReader, selector, primeDocId, numberOfDocsInRow,
+        OpenBitSet docsInRowSpanToFetch = getDocsToFetch(atomicReader, selector, primeDocId, numberOfDocsInRow,
             liveDocs, filter, totalRecords);
         int start = selector.getStartRecord();
         int maxDocsToFetch = selector.getMaxRecordsToFetch();
@@ -934,10 +931,10 @@ public class BlurUtil {
             if (docsInRowSpanToFetch.fastGet(cursor)) {
               maxDocsToFetch--;
               int docID = primeDocId + cursor;
-              segmentReader.document(docID, fieldSelector);
+              atomicReader.document(docID, fieldSelector);
               Document document = fieldSelector.getDocument();
               if (highlighter.shouldHighlight()) {
-                docs.add(highlighter.highlight(docID, document, segmentReader));
+                docs.add(highlighter.highlight(docID, document, atomicReader));
               } else {
                 docs.add(document);
               }
@@ -953,7 +950,7 @@ public class BlurUtil {
         }
         return orderDocsBasedOnFamilyOrder(docs, selector);
       } else {
-        throw new IOException("Expecting a segment reader got a [" + orgReader + "]");
+        throw new IOException("Expecting a atomic reader got a [" + orgReader + "]");
       }
     }
     throw new IOException("IndexReader [" + reader + "] is not a basecompsitereader");
@@ -1009,26 +1006,26 @@ public class BlurUtil {
     return docStartingPosition;
   }
 
-  private static OpenBitSet getDocsToFetch(SegmentReader segmentReader, Selector selector, int primeDocRowId,
+  private static OpenBitSet getDocsToFetch(AtomicReader atomicReader, Selector selector, int primeDocRowId,
       int numberOfDocsInRow, Bits liveDocs, Filter filter, AtomicInteger totalRecords) throws IOException {
     Set<String> alreadyProcessed = new HashSet<String>();
     OpenBitSet bits = new OpenBitSet(numberOfDocsInRow);
     OpenBitSet mask = null;
     if (filter != null) {
-      DocIdSet docIdSet = filter.getDocIdSet(segmentReader.getContext(), liveDocs);
+      DocIdSet docIdSet = filter.getDocIdSet(atomicReader.getContext(), liveDocs);
       mask = getMask(docIdSet, primeDocRowId, numberOfDocsInRow);
     }
     Set<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch();
     boolean fetchAll = true;
     if (columnFamiliesToFetch != null) {
       fetchAll = false;
-      applyFamilies(alreadyProcessed, bits, columnFamiliesToFetch, segmentReader, primeDocRowId, numberOfDocsInRow,
+      applyFamilies(alreadyProcessed, bits, columnFamiliesToFetch, atomicReader, primeDocRowId, numberOfDocsInRow,
           liveDocs);
     }
     Map<String, Set<String>> columnsToFetch = selector.getColumnsToFetch();
     if (columnsToFetch != null) {
       fetchAll = false;
-      applyColumns(alreadyProcessed, bits, columnsToFetch, segmentReader, primeDocRowId, numberOfDocsInRow, liveDocs);
+      applyColumns(alreadyProcessed, bits, columnsToFetch, atomicReader, primeDocRowId, numberOfDocsInRow, liveDocs);
     }
     if (fetchAll) {
       bits.set(0, numberOfDocsInRow);
@@ -1056,18 +1053,18 @@ public class BlurUtil {
   }
 
   private static void applyColumns(Set<String> alreadyProcessed, OpenBitSet bits,
-      Map<String, Set<String>> columnsToFetch, SegmentReader segmentReader, int primeDocRowId, int numberOfDocsInRow,
+      Map<String, Set<String>> columnsToFetch, AtomicReader atomicReader, int primeDocRowId, int numberOfDocsInRow,
       Bits liveDocs) throws IOException {
     for (String family : columnsToFetch.keySet()) {
       if (!alreadyProcessed.contains(family)) {
-        applyFamily(bits, family, segmentReader, primeDocRowId, numberOfDocsInRow, liveDocs);
+        applyFamily(bits, family, atomicReader, primeDocRowId, numberOfDocsInRow, liveDocs);
         alreadyProcessed.add(family);
       }
     }
   }
 
   private static void applyFamilies(Set<String> alreadyProcessed, OpenBitSet bits, Set<String> columnFamiliesToFetch,
-      SegmentReader segmentReader, int primeDocRowId, int numberOfDocsInRow, Bits liveDocs) throws IOException {
+      AtomicReader segmentReader, int primeDocRowId, int numberOfDocsInRow, Bits liveDocs) throws IOException {
     for (String family : columnFamiliesToFetch) {
       if (!alreadyProcessed.contains(family)) {
         applyFamily(bits, family, segmentReader, primeDocRowId, numberOfDocsInRow, liveDocs);
@@ -1076,9 +1073,9 @@ public class BlurUtil {
     }
   }
 
-  private static void applyFamily(OpenBitSet bits, String family, SegmentReader segmentReader, int primeDocRowId,
+  private static void applyFamily(OpenBitSet bits, String family, AtomicReader atomicReader, int primeDocRowId,
       int numberOfDocsInRow, Bits liveDocs) throws IOException {
-    Fields fields = segmentReader.fields();
+    Fields fields = atomicReader.fields();
     Terms terms = fields.terms(BlurConstants.FAMILY);
     TermsEnum iterator = terms.iterator(null);
     BytesRef text = new BytesRef(family);

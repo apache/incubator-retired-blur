@@ -309,38 +309,30 @@ public class Blur {
     /**
      * Starts a transaction for update (e.g. Mutate).  Returns a transaction id.
      * 
-     * @param table The table name.
-     * 
      * @param bulkId The bulk id.
      */
-    public void bulkMutateStart(String table, String bulkId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void bulkMutateStart(String bulkId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Adds to the specified transaction.
-     * 
-     * @param table The table name.
      * 
      * @param bulkId The bulk id.
      * 
      * @param rowMutation The row mutation.
      */
-    public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void bulkMutateAdd(String bulkId, RowMutation rowMutation) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Adds to the specified transaction.
-     * 
-     * @param table The table name.
      * 
      * @param bulkId The bulk id.
      * 
      * @param rowMutations The row mutation.
      */
-    public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void bulkMutateAddMultiple(String bulkId, List<RowMutation> rowMutations) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Finishes the bulk mutate.  If apply is true the mutations are applied and committed.  If false the bulk mutate is deleted and not applied.
-     * 
-     * @param table The table name.
      * 
      * @param bulkId The bulk id.
      * 
@@ -348,7 +340,7 @@ public class Blur {
      * 
      * @param blockUntilComplete If true this call will not block on bulk completion.  This may be required for loader bulk loads.
      */
-    public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void bulkMutateFinish(String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
      * Cancels a query that is executing against the given table with the given uuid.  Note, the
@@ -609,13 +601,13 @@ public class Blur {
 
     public void enqueueMutateBatch(List<RowMutation> mutations, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.enqueueMutateBatch_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void bulkMutateStart(String table, String bulkId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateStart_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void bulkMutateStart(String bulkId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateStart_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateAdd_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void bulkMutateAdd(String bulkId, RowMutation rowMutation, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateAdd_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateAddMultiple_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void bulkMutateAddMultiple(String bulkId, List<RowMutation> rowMutations, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateAddMultiple_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
-    public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateFinish_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+    public void bulkMutateFinish(String bulkId, boolean apply, boolean blockUntilComplete, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.bulkMutateFinish_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void cancelQuery(String table, String uuid, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.cancelQuery_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
@@ -1436,16 +1428,15 @@ public class Blur {
       return;
     }
 
-    public void bulkMutateStart(String table, String bulkId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void bulkMutateStart(String bulkId) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_bulkMutateStart(table, bulkId);
+      send_bulkMutateStart(bulkId);
       recv_bulkMutateStart();
     }
 
-    public void send_bulkMutateStart(String table, String bulkId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_bulkMutateStart(String bulkId) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       bulkMutateStart_args args = new bulkMutateStart_args();
-      args.setTable(table);
       args.setBulkId(bulkId);
       sendBase("bulkMutateStart", args);
     }
@@ -1460,16 +1451,15 @@ public class Blur {
       return;
     }
 
-    public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void bulkMutateAdd(String bulkId, RowMutation rowMutation) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_bulkMutateAdd(table, bulkId, rowMutation);
+      send_bulkMutateAdd(bulkId, rowMutation);
       recv_bulkMutateAdd();
     }
 
-    public void send_bulkMutateAdd(String table, String bulkId, RowMutation rowMutation) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_bulkMutateAdd(String bulkId, RowMutation rowMutation) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       bulkMutateAdd_args args = new bulkMutateAdd_args();
-      args.setTable(table);
       args.setBulkId(bulkId);
       args.setRowMutation(rowMutation);
       sendBase("bulkMutateAdd", args);
@@ -1485,16 +1475,15 @@ public class Blur {
       return;
     }
 
-    public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void bulkMutateAddMultiple(String bulkId, List<RowMutation> rowMutations) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_bulkMutateAddMultiple(table, bulkId, rowMutations);
+      send_bulkMutateAddMultiple(bulkId, rowMutations);
       recv_bulkMutateAddMultiple();
     }
 
-    public void send_bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_bulkMutateAddMultiple(String bulkId, List<RowMutation> rowMutations) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       bulkMutateAddMultiple_args args = new bulkMutateAddMultiple_args();
-      args.setTable(table);
       args.setBulkId(bulkId);
       args.setRowMutations(rowMutations);
       sendBase("bulkMutateAddMultiple", args);
@@ -1510,16 +1499,15 @@ public class Blur {
       return;
     }
 
-    public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void bulkMutateFinish(String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
-      send_bulkMutateFinish(table, bulkId, apply, blockUntilComplete);
+      send_bulkMutateFinish(bulkId, apply, blockUntilComplete);
       recv_bulkMutateFinish();
     }
 
-    public void send_bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    public void send_bulkMutateFinish(String bulkId, boolean apply, boolean blockUntilComplete) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
     {
       bulkMutateFinish_args args = new bulkMutateFinish_args();
-      args.setTable(table);
       args.setBulkId(bulkId);
       args.setApply(apply);
       args.setBlockUntilComplete(blockUntilComplete);
@@ -3094,26 +3082,23 @@ public class Blur {
       }
     }
 
-    public void bulkMutateStart(String table, String bulkId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateStart_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void bulkMutateStart(String bulkId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateStart_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      bulkMutateStart_call method_call = new bulkMutateStart_call(table, bulkId, resultHandler, this, ___protocolFactory, ___transport);
+      bulkMutateStart_call method_call = new bulkMutateStart_call(bulkId, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class bulkMutateStart_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
-      private String table;
       private String bulkId;
-      public bulkMutateStart_call(String table, String bulkId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateStart_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      public bulkMutateStart_call(String bulkId, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateStart_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
         this.bulkId = bulkId;
       }
 
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("bulkMutateStart", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         bulkMutateStart_args args = new bulkMutateStart_args();
-        args.setTable(table);
         args.setBulkId(bulkId);
         args.write(prot);
         prot.writeMessageEnd();
@@ -3129,20 +3114,18 @@ public class Blur {
       }
     }
 
-    public void bulkMutateAdd(String table, String bulkId, RowMutation rowMutation, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateAdd_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void bulkMutateAdd(String bulkId, RowMutation rowMutation, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateAdd_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      bulkMutateAdd_call method_call = new bulkMutateAdd_call(table, bulkId, rowMutation, resultHandler, this, ___protocolFactory, ___transport);
+      bulkMutateAdd_call method_call = new bulkMutateAdd_call(bulkId, rowMutation, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class bulkMutateAdd_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
-      private String table;
       private String bulkId;
       private RowMutation rowMutation;
-      public bulkMutateAdd_call(String table, String bulkId, RowMutation rowMutation, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateAdd_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      public bulkMutateAdd_call(String bulkId, RowMutation rowMutation, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateAdd_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
         this.bulkId = bulkId;
         this.rowMutation = rowMutation;
       }
@@ -3150,7 +3133,6 @@ public class Blur {
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("bulkMutateAdd", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         bulkMutateAdd_args args = new bulkMutateAdd_args();
-        args.setTable(table);
         args.setBulkId(bulkId);
         args.setRowMutation(rowMutation);
         args.write(prot);
@@ -3167,20 +3149,18 @@ public class Blur {
       }
     }
 
-    public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateAddMultiple_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void bulkMutateAddMultiple(String bulkId, List<RowMutation> rowMutations, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateAddMultiple_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      bulkMutateAddMultiple_call method_call = new bulkMutateAddMultiple_call(table, bulkId, rowMutations, resultHandler, this, ___protocolFactory, ___transport);
+      bulkMutateAddMultiple_call method_call = new bulkMutateAddMultiple_call(bulkId, rowMutations, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class bulkMutateAddMultiple_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
-      private String table;
       private String bulkId;
       private List<RowMutation> rowMutations;
-      public bulkMutateAddMultiple_call(String table, String bulkId, List<RowMutation> rowMutations, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateAddMultiple_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      public bulkMutateAddMultiple_call(String bulkId, List<RowMutation> rowMutations, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateAddMultiple_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
         this.bulkId = bulkId;
         this.rowMutations = rowMutations;
       }
@@ -3188,7 +3168,6 @@ public class Blur {
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("bulkMutateAddMultiple", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         bulkMutateAddMultiple_args args = new bulkMutateAddMultiple_args();
-        args.setTable(table);
         args.setBulkId(bulkId);
         args.setRowMutations(rowMutations);
         args.write(prot);
@@ -3205,21 +3184,19 @@ public class Blur {
       }
     }
 
-    public void bulkMutateFinish(String table, String bulkId, boolean apply, boolean blockUntilComplete, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateFinish_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void bulkMutateFinish(String bulkId, boolean apply, boolean blockUntilComplete, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateFinish_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
-      bulkMutateFinish_call method_call = new bulkMutateFinish_call(table, bulkId, apply, blockUntilComplete, resultHandler, this, ___protocolFactory, ___transport);
+      bulkMutateFinish_call method_call = new bulkMutateFinish_call(bulkId, apply, blockUntilComplete, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class bulkMutateFinish_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
-      private String table;
       private String bulkId;
       private boolean apply;
       private boolean blockUntilComplete;
-      public bulkMutateFinish_call(String table, String bulkId, boolean apply, boolean blockUntilComplete, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateFinish_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      public bulkMutateFinish_call(String bulkId, boolean apply, boolean blockUntilComplete, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<bulkMutateFinish_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
         this.bulkId = bulkId;
         this.apply = apply;
         this.blockUntilComplete = blockUntilComplete;
@@ -3228,7 +3205,6 @@ public class Blur {
       public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("bulkMutateFinish", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
         bulkMutateFinish_args args = new bulkMutateFinish_args();
-        args.setTable(table);
         args.setBulkId(bulkId);
         args.setApply(apply);
         args.setBlockUntilComplete(blockUntilComplete);
@@ -4762,7 +4738,7 @@ public class Blur {
       public bulkMutateStart_result getResult(I iface, bulkMutateStart_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         bulkMutateStart_result result = new bulkMutateStart_result();
         try {
-          iface.bulkMutateStart(args.table, args.bulkId);
+          iface.bulkMutateStart(args.bulkId);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -4786,7 +4762,7 @@ public class Blur {
       public bulkMutateAdd_result getResult(I iface, bulkMutateAdd_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         bulkMutateAdd_result result = new bulkMutateAdd_result();
         try {
-          iface.bulkMutateAdd(args.table, args.bulkId, args.rowMutation);
+          iface.bulkMutateAdd(args.bulkId, args.rowMutation);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -4810,7 +4786,7 @@ public class Blur {
       public bulkMutateAddMultiple_result getResult(I iface, bulkMutateAddMultiple_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         bulkMutateAddMultiple_result result = new bulkMutateAddMultiple_result();
         try {
-          iface.bulkMutateAddMultiple(args.table, args.bulkId, args.rowMutations);
+          iface.bulkMutateAddMultiple(args.bulkId, args.rowMutations);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -4834,7 +4810,7 @@ public class Blur {
       public bulkMutateFinish_result getResult(I iface, bulkMutateFinish_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         bulkMutateFinish_result result = new bulkMutateFinish_result();
         try {
-          iface.bulkMutateFinish(args.table, args.bulkId, args.apply, args.blockUntilComplete);
+          iface.bulkMutateFinish(args.bulkId, args.apply, args.blockUntilComplete);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -23064,7 +23040,7 @@ public class Blur {
                   struct.success = new HashMap<String,List<String>>(2*_map322.size);
                   for (int _i323 = 0; _i323 < _map322.size; ++_i323)
                   {
-                    String _key324; // required
+                    String _key324; // optional
                     List<String> _val325; // required
                     _key324 = iprot.readString();
                     {
@@ -23192,7 +23168,7 @@ public class Blur {
             struct.success = new HashMap<String,List<String>>(2*_map333.size);
             for (int _i334 = 0; _i334 < _map333.size; ++_i334)
             {
-              String _key335; // required
+              String _key335; // optional
               List<String> _val336; // required
               _key335 = iprot.readString();
               {
@@ -30364,8 +30340,7 @@ public class Blur {
   public static class bulkMutateStart_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<bulkMutateStart_args, bulkMutateStart_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("bulkMutateStart_args");
 
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -30374,10 +30349,6 @@ public class Blur {
     }
 
     /**
-     * The table name.
-     */
-    public String table; // required
-    /**
      * The bulk id.
      */
     public String bulkId; // required
@@ -30385,13 +30356,9 @@ public class Blur {
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
       /**
-       * The table name.
-       */
-      TABLE((short)1, "table"),
-      /**
        * The bulk id.
        */
-      BULK_ID((short)2, "bulkId");
+      BULK_ID((short)1, "bulkId");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -30406,9 +30373,7 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // BULK_ID
+          case 1: // BULK_ID
             return BULK_ID;
           default:
             return null;
@@ -30453,8 +30418,6 @@ public class Blur {
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.BULK_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -30465,11 +30428,9 @@ public class Blur {
     }
 
     public bulkMutateStart_args(
-      String table,
       String bulkId)
     {
       this();
-      this.table = table;
       this.bulkId = bulkId;
     }
 
@@ -30477,9 +30438,6 @@ public class Blur {
      * Performs a deep copy on <i>other</i>.
      */
     public bulkMutateStart_args(bulkMutateStart_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
       if (other.isSetBulkId()) {
         this.bulkId = other.bulkId;
       }
@@ -30491,38 +30449,7 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.table = null;
       this.bulkId = null;
-    }
-
-    /**
-     * The table name.
-     */
-    public String getTable() {
-      return this.table;
-    }
-
-    /**
-     * The table name.
-     */
-    public bulkMutateStart_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
     }
 
     /**
@@ -30557,14 +30484,6 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
       case BULK_ID:
         if (value == null) {
           unsetBulkId();
@@ -30578,9 +30497,6 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
-
       case BULK_ID:
         return getBulkId();
 
@@ -30595,8 +30511,6 @@ public class Blur {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
       case BULK_ID:
         return isSetBulkId();
       }
@@ -30615,15 +30529,6 @@ public class Blur {
     public boolean equals(bulkMutateStart_args that) {
       if (that == null)
         return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
 
       boolean this_present_bulkId = true && this.isSetBulkId();
       boolean that_present_bulkId = true && that.isSetBulkId();
@@ -30650,16 +30555,6 @@ public class Blur {
       int lastComparison = 0;
       bulkMutateStart_args typedOther = (bulkMutateStart_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {
-        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetBulkId()).compareTo(typedOther.isSetBulkId());
       if (lastComparison != 0) {
         return lastComparison;
@@ -30690,14 +30585,6 @@ public class Blur {
       StringBuilder sb = new StringBuilder("bulkMutateStart_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("bulkId:");
       if (this.bulkId == null) {
         sb.append("null");
@@ -30748,15 +30635,7 @@ public class Blur {
             break;
           }
           switch (schemeField.id) {
-            case 1: // TABLE
-              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-                struct.table = iprot.readString();
-                struct.setTableIsSet(true);
-              } else { 
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            case 2: // BULK_ID
+            case 1: // BULK_ID
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
                 struct.bulkId = iprot.readString();
                 struct.setBulkIdIsSet(true);
@@ -30779,11 +30658,6 @@ public class Blur {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.table != null) {
-          oprot.writeFieldBegin(TABLE_FIELD_DESC);
-          oprot.writeString(struct.table);
-          oprot.writeFieldEnd();
-        }
         if (struct.bulkId != null) {
           oprot.writeFieldBegin(BULK_ID_FIELD_DESC);
           oprot.writeString(struct.bulkId);
@@ -30807,16 +30681,10 @@ public class Blur {
       public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateStart_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetTable()) {
+        if (struct.isSetBulkId()) {
           optionals.set(0);
         }
-        if (struct.isSetBulkId()) {
-          optionals.set(1);
-        }
-        oprot.writeBitSet(optionals, 2);
-        if (struct.isSetTable()) {
-          oprot.writeString(struct.table);
-        }
+        oprot.writeBitSet(optionals, 1);
         if (struct.isSetBulkId()) {
           oprot.writeString(struct.bulkId);
         }
@@ -30825,12 +30693,8 @@ public class Blur {
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateStart_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(2);
+        BitSet incoming = iprot.readBitSet(1);
         if (incoming.get(0)) {
-          struct.table = iprot.readString();
-          struct.setTableIsSet(true);
-        }
-        if (incoming.get(1)) {
           struct.bulkId = iprot.readString();
           struct.setBulkIdIsSet(true);
         }
@@ -31198,9 +31062,8 @@ public class Blur {
   public static class bulkMutateAdd_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<bulkMutateAdd_args, bulkMutateAdd_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("bulkMutateAdd_args");
 
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_MUTATION_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowMutation", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)3);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_MUTATION_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowMutation", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -31208,10 +31071,6 @@ public class Blur {
       schemes.put(TupleScheme.class, new bulkMutateAdd_argsTupleSchemeFactory());
     }
 
-    /**
-     * The table name.
-     */
-    public String table; // required
     /**
      * The bulk id.
      */
@@ -31224,17 +31083,13 @@ public class Blur {
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
       /**
-       * The table name.
-       */
-      TABLE((short)1, "table"),
-      /**
        * The bulk id.
        */
-      BULK_ID((short)2, "bulkId"),
+      BULK_ID((short)1, "bulkId"),
       /**
        * The row mutation.
        */
-      ROW_MUTATION((short)3, "rowMutation");
+      ROW_MUTATION((short)2, "rowMutation");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -31249,11 +31104,9 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // BULK_ID
+          case 1: // BULK_ID
             return BULK_ID;
-          case 3: // ROW_MUTATION
+          case 2: // ROW_MUTATION
             return ROW_MUTATION;
           default:
             return null;
@@ -31298,8 +31151,6 @@ public class Blur {
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.BULK_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.ROW_MUTATION, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowMutation", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -31312,12 +31163,10 @@ public class Blur {
     }
 
     public bulkMutateAdd_args(
-      String table,
       String bulkId,
       RowMutation rowMutation)
     {
       this();
-      this.table = table;
       this.bulkId = bulkId;
       this.rowMutation = rowMutation;
     }
@@ -31326,9 +31175,6 @@ public class Blur {
      * Performs a deep copy on <i>other</i>.
      */
     public bulkMutateAdd_args(bulkMutateAdd_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
       if (other.isSetBulkId()) {
         this.bulkId = other.bulkId;
       }
@@ -31343,39 +31189,8 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.table = null;
       this.bulkId = null;
       this.rowMutation = null;
-    }
-
-    /**
-     * The table name.
-     */
-    public String getTable() {
-      return this.table;
-    }
-
-    /**
-     * The table name.
-     */
-    public bulkMutateAdd_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
     }
 
     /**
@@ -31440,14 +31255,6 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
       case BULK_ID:
         if (value == null) {
           unsetBulkId();
@@ -31469,9 +31276,6 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
-
       case BULK_ID:
         return getBulkId();
 
@@ -31489,8 +31293,6 @@ public class Blur {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
       case BULK_ID:
         return isSetBulkId();
       case ROW_MUTATION:
@@ -31511,15 +31313,6 @@ public class Blur {
     public boolean equals(bulkMutateAdd_args that) {
       if (that == null)
         return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
 
       boolean this_present_bulkId = true && this.isSetBulkId();
       boolean that_present_bulkId = true && that.isSetBulkId();
@@ -31555,16 +31348,6 @@ public class Blur {
       int lastComparison = 0;
       bulkMutateAdd_args typedOther = (bulkMutateAdd_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {
-        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetBulkId()).compareTo(typedOther.isSetBulkId());
       if (lastComparison != 0) {
         return lastComparison;
@@ -31605,14 +31388,6 @@ public class Blur {
       StringBuilder sb = new StringBuilder("bulkMutateAdd_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("bulkId:");
       if (this.bulkId == null) {
         sb.append("null");
@@ -31674,15 +31449,7 @@ public class Blur {
             break;
           }
           switch (schemeField.id) {
-            case 1: // TABLE
-              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-                struct.table = iprot.readString();
-                struct.setTableIsSet(true);
-              } else { 
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            case 2: // BULK_ID
+            case 1: // BULK_ID
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
                 struct.bulkId = iprot.readString();
                 struct.setBulkIdIsSet(true);
@@ -31690,7 +31457,7 @@ public class Blur {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // ROW_MUTATION
+            case 2: // ROW_MUTATION
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
                 struct.rowMutation = new RowMutation();
                 struct.rowMutation.read(iprot);
@@ -31714,11 +31481,6 @@ public class Blur {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.table != null) {
-          oprot.writeFieldBegin(TABLE_FIELD_DESC);
-          oprot.writeString(struct.table);
-          oprot.writeFieldEnd();
-        }
         if (struct.bulkId != null) {
           oprot.writeFieldBegin(BULK_ID_FIELD_DESC);
           oprot.writeString(struct.bulkId);
@@ -31747,19 +31509,13 @@ public class Blur {
       public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateAdd_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetTable()) {
+        if (struct.isSetBulkId()) {
           optionals.set(0);
         }
-        if (struct.isSetBulkId()) {
+        if (struct.isSetRowMutation()) {
           optionals.set(1);
         }
-        if (struct.isSetRowMutation()) {
-          optionals.set(2);
-        }
-        oprot.writeBitSet(optionals, 3);
-        if (struct.isSetTable()) {
-          oprot.writeString(struct.table);
-        }
+        oprot.writeBitSet(optionals, 2);
         if (struct.isSetBulkId()) {
           oprot.writeString(struct.bulkId);
         }
@@ -31771,16 +31527,12 @@ public class Blur {
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateAdd_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(3);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
-          struct.table = iprot.readString();
-          struct.setTableIsSet(true);
-        }
-        if (incoming.get(1)) {
           struct.bulkId = iprot.readString();
           struct.setBulkIdIsSet(true);
         }
-        if (incoming.get(2)) {
+        if (incoming.get(1)) {
           struct.rowMutation = new RowMutation();
           struct.rowMutation.read(iprot);
           struct.setRowMutationIsSet(true);
@@ -32149,9 +31901,8 @@ public class Blur {
   public static class bulkMutateAddMultiple_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<bulkMutateAddMultiple_args, bulkMutateAddMultiple_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("bulkMutateAddMultiple_args");
 
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_MUTATIONS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowMutations", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)3);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_MUTATIONS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowMutations", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST, (short)2);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -32159,10 +31910,6 @@ public class Blur {
       schemes.put(TupleScheme.class, new bulkMutateAddMultiple_argsTupleSchemeFactory());
     }
 
-    /**
-     * The table name.
-     */
-    public String table; // required
     /**
      * The bulk id.
      */
@@ -32175,17 +31922,13 @@ public class Blur {
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
       /**
-       * The table name.
-       */
-      TABLE((short)1, "table"),
-      /**
        * The bulk id.
        */
-      BULK_ID((short)2, "bulkId"),
+      BULK_ID((short)1, "bulkId"),
       /**
        * The row mutation.
        */
-      ROW_MUTATIONS((short)3, "rowMutations");
+      ROW_MUTATIONS((short)2, "rowMutations");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -32200,11 +31943,9 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // BULK_ID
+          case 1: // BULK_ID
             return BULK_ID;
-          case 3: // ROW_MUTATIONS
+          case 2: // ROW_MUTATIONS
             return ROW_MUTATIONS;
           default:
             return null;
@@ -32249,8 +31990,6 @@ public class Blur {
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.BULK_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.ROW_MUTATIONS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowMutations", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -32264,12 +32003,10 @@ public class Blur {
     }
 
     public bulkMutateAddMultiple_args(
-      String table,
       String bulkId,
       List<RowMutation> rowMutations)
     {
       this();
-      this.table = table;
       this.bulkId = bulkId;
       this.rowMutations = rowMutations;
     }
@@ -32278,9 +32015,6 @@ public class Blur {
      * Performs a deep copy on <i>other</i>.
      */
     public bulkMutateAddMultiple_args(bulkMutateAddMultiple_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
       if (other.isSetBulkId()) {
         this.bulkId = other.bulkId;
       }
@@ -32299,39 +32033,8 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.table = null;
       this.bulkId = null;
       this.rowMutations = null;
-    }
-
-    /**
-     * The table name.
-     */
-    public String getTable() {
-      return this.table;
-    }
-
-    /**
-     * The table name.
-     */
-    public bulkMutateAddMultiple_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
     }
 
     /**
@@ -32411,14 +32114,6 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
       case BULK_ID:
         if (value == null) {
           unsetBulkId();
@@ -32440,9 +32135,6 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
-
       case BULK_ID:
         return getBulkId();
 
@@ -32460,8 +32152,6 @@ public class Blur {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
       case BULK_ID:
         return isSetBulkId();
       case ROW_MUTATIONS:
@@ -32482,15 +32172,6 @@ public class Blur {
     public boolean equals(bulkMutateAddMultiple_args that) {
       if (that == null)
         return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
 
       boolean this_present_bulkId = true && this.isSetBulkId();
       boolean that_present_bulkId = true && that.isSetBulkId();
@@ -32526,16 +32207,6 @@ public class Blur {
       int lastComparison = 0;
       bulkMutateAddMultiple_args typedOther = (bulkMutateAddMultiple_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {
-        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetBulkId()).compareTo(typedOther.isSetBulkId());
       if (lastComparison != 0) {
         return lastComparison;
@@ -32576,14 +32247,6 @@ public class Blur {
       StringBuilder sb = new StringBuilder("bulkMutateAddMultiple_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("bulkId:");
       if (this.bulkId == null) {
         sb.append("null");
@@ -32642,15 +32305,7 @@ public class Blur {
             break;
           }
           switch (schemeField.id) {
-            case 1: // TABLE
-              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-                struct.table = iprot.readString();
-                struct.setTableIsSet(true);
-              } else { 
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            case 2: // BULK_ID
+            case 1: // BULK_ID
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
                 struct.bulkId = iprot.readString();
                 struct.setBulkIdIsSet(true);
@@ -32658,7 +32313,7 @@ public class Blur {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // ROW_MUTATIONS
+            case 2: // ROW_MUTATIONS
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.LIST) {
                 {
                   org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list372 = iprot.readListBegin();
@@ -32692,11 +32347,6 @@ public class Blur {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.table != null) {
-          oprot.writeFieldBegin(TABLE_FIELD_DESC);
-          oprot.writeString(struct.table);
-          oprot.writeFieldEnd();
-        }
         if (struct.bulkId != null) {
           oprot.writeFieldBegin(BULK_ID_FIELD_DESC);
           oprot.writeString(struct.bulkId);
@@ -32732,19 +32382,13 @@ public class Blur {
       public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateAddMultiple_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetTable()) {
+        if (struct.isSetBulkId()) {
           optionals.set(0);
         }
-        if (struct.isSetBulkId()) {
+        if (struct.isSetRowMutations()) {
           optionals.set(1);
         }
-        if (struct.isSetRowMutations()) {
-          optionals.set(2);
-        }
-        oprot.writeBitSet(optionals, 3);
-        if (struct.isSetTable()) {
-          oprot.writeString(struct.table);
-        }
+        oprot.writeBitSet(optionals, 2);
         if (struct.isSetBulkId()) {
           oprot.writeString(struct.bulkId);
         }
@@ -32762,16 +32406,12 @@ public class Blur {
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateAddMultiple_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(3);
+        BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
-          struct.table = iprot.readString();
-          struct.setTableIsSet(true);
-        }
-        if (incoming.get(1)) {
           struct.bulkId = iprot.readString();
           struct.setBulkIdIsSet(true);
         }
-        if (incoming.get(2)) {
+        if (incoming.get(1)) {
           {
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList _list377 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TList(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, iprot.readI32());
             struct.rowMutations = new ArrayList<RowMutation>(_list377.size);
@@ -33149,10 +32789,9 @@ public class Blur {
   public static class bulkMutateFinish_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<bulkMutateFinish_args, bulkMutateFinish_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("bulkMutateFinish_args");
 
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField APPLY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("apply", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)3);
-    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BLOCK_UNTIL_COMPLETE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("blockUntilComplete", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)4);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BULK_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField APPLY_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("apply", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)2);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BLOCK_UNTIL_COMPLETE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("blockUntilComplete", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)3);
 
     private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
     static {
@@ -33160,10 +32799,6 @@ public class Blur {
       schemes.put(TupleScheme.class, new bulkMutateFinish_argsTupleSchemeFactory());
     }
 
-    /**
-     * The table name.
-     */
-    public String table; // required
     /**
      * The bulk id.
      */
@@ -33180,21 +32815,17 @@ public class Blur {
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
       /**
-       * The table name.
-       */
-      TABLE((short)1, "table"),
-      /**
        * The bulk id.
        */
-      BULK_ID((short)2, "bulkId"),
+      BULK_ID((short)1, "bulkId"),
       /**
        * Apply the bulk mutate flag.
        */
-      APPLY((short)3, "apply"),
+      APPLY((short)2, "apply"),
       /**
        * If true this call will not block on bulk completion.  This may be required for loader bulk loads.
        */
-      BLOCK_UNTIL_COMPLETE((short)4, "blockUntilComplete");
+      BLOCK_UNTIL_COMPLETE((short)3, "blockUntilComplete");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -33209,13 +32840,11 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // BULK_ID
+          case 1: // BULK_ID
             return BULK_ID;
-          case 3: // APPLY
+          case 2: // APPLY
             return APPLY;
-          case 4: // BLOCK_UNTIL_COMPLETE
+          case 3: // BLOCK_UNTIL_COMPLETE
             return BLOCK_UNTIL_COMPLETE;
           default:
             return null;
@@ -33263,8 +32892,6 @@ public class Blur {
     public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.BULK_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("bulkId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
           new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
       tmpMap.put(_Fields.APPLY, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("apply", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
@@ -33279,13 +32906,11 @@ public class Blur {
     }
 
     public bulkMutateFinish_args(
-      String table,
       String bulkId,
       boolean apply,
       boolean blockUntilComplete)
     {
       this();
-      this.table = table;
       this.bulkId = bulkId;
       this.apply = apply;
       setApplyIsSet(true);
@@ -33298,9 +32923,6 @@ public class Blur {
      */
     public bulkMutateFinish_args(bulkMutateFinish_args other) {
       __isset_bitfield = other.__isset_bitfield;
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
       if (other.isSetBulkId()) {
         this.bulkId = other.bulkId;
       }
@@ -33314,42 +32936,11 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.table = null;
       this.bulkId = null;
       setApplyIsSet(false);
       this.apply = false;
       setBlockUntilCompleteIsSet(false);
       this.blockUntilComplete = false;
-    }
-
-    /**
-     * The table name.
-     */
-    public String getTable() {
-      return this.table;
-    }
-
-    /**
-     * The table name.
-     */
-    public bulkMutateFinish_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
     }
 
     /**
@@ -33442,14 +33033,6 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
       case BULK_ID:
         if (value == null) {
           unsetBulkId();
@@ -33479,9 +33062,6 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
-
       case BULK_ID:
         return getBulkId();
 
@@ -33502,8 +33082,6 @@ public class Blur {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
       case BULK_ID:
         return isSetBulkId();
       case APPLY:
@@ -33526,15 +33104,6 @@ public class Blur {
     public boolean equals(bulkMutateFinish_args that) {
       if (that == null)
         return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
 
       boolean this_present_bulkId = true && this.isSetBulkId();
       boolean that_present_bulkId = true && that.isSetBulkId();
@@ -33579,16 +33148,6 @@ public class Blur {
       int lastComparison = 0;
       bulkMutateFinish_args typedOther = (bulkMutateFinish_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {
-        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetBulkId()).compareTo(typedOther.isSetBulkId());
       if (lastComparison != 0) {
         return lastComparison;
@@ -33639,14 +33198,6 @@ public class Blur {
       StringBuilder sb = new StringBuilder("bulkMutateFinish_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("bulkId:");
       if (this.bulkId == null) {
         sb.append("null");
@@ -33707,15 +33258,7 @@ public class Blur {
             break;
           }
           switch (schemeField.id) {
-            case 1: // TABLE
-              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-                struct.table = iprot.readString();
-                struct.setTableIsSet(true);
-              } else { 
-                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-              }
-              break;
-            case 2: // BULK_ID
+            case 1: // BULK_ID
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
                 struct.bulkId = iprot.readString();
                 struct.setBulkIdIsSet(true);
@@ -33723,7 +33266,7 @@ public class Blur {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 3: // APPLY
+            case 2: // APPLY
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
                 struct.apply = iprot.readBool();
                 struct.setApplyIsSet(true);
@@ -33731,7 +33274,7 @@ public class Blur {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
               }
               break;
-            case 4: // BLOCK_UNTIL_COMPLETE
+            case 3: // BLOCK_UNTIL_COMPLETE
               if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
                 struct.blockUntilComplete = iprot.readBool();
                 struct.setBlockUntilCompleteIsSet(true);
@@ -33754,11 +33297,6 @@ public class Blur {
         struct.validate();
 
         oprot.writeStructBegin(STRUCT_DESC);
-        if (struct.table != null) {
-          oprot.writeFieldBegin(TABLE_FIELD_DESC);
-          oprot.writeString(struct.table);
-          oprot.writeFieldEnd();
-        }
         if (struct.bulkId != null) {
           oprot.writeFieldBegin(BULK_ID_FIELD_DESC);
           oprot.writeString(struct.bulkId);
@@ -33788,22 +33326,16 @@ public class Blur {
       public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateFinish_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol oprot = (TTupleProtocol) prot;
         BitSet optionals = new BitSet();
-        if (struct.isSetTable()) {
+        if (struct.isSetBulkId()) {
           optionals.set(0);
         }
-        if (struct.isSetBulkId()) {
+        if (struct.isSetApply()) {
           optionals.set(1);
         }
-        if (struct.isSetApply()) {
+        if (struct.isSetBlockUntilComplete()) {
           optionals.set(2);
         }
-        if (struct.isSetBlockUntilComplete()) {
-          optionals.set(3);
-        }
-        oprot.writeBitSet(optionals, 4);
-        if (struct.isSetTable()) {
-          oprot.writeString(struct.table);
-        }
+        oprot.writeBitSet(optionals, 3);
         if (struct.isSetBulkId()) {
           oprot.writeString(struct.bulkId);
         }
@@ -33818,20 +33350,16 @@ public class Blur {
       @Override
       public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, bulkMutateFinish_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
         TTupleProtocol iprot = (TTupleProtocol) prot;
-        BitSet incoming = iprot.readBitSet(4);
+        BitSet incoming = iprot.readBitSet(3);
         if (incoming.get(0)) {
-          struct.table = iprot.readString();
-          struct.setTableIsSet(true);
-        }
-        if (incoming.get(1)) {
           struct.bulkId = iprot.readString();
           struct.setBulkIdIsSet(true);
         }
-        if (incoming.get(2)) {
+        if (incoming.get(1)) {
           struct.apply = iprot.readBool();
           struct.setApplyIsSet(true);
         }
-        if (incoming.get(3)) {
+        if (incoming.get(2)) {
           struct.blockUntilComplete = iprot.readBool();
           struct.setBlockUntilCompleteIsSet(true);
         }
@@ -42464,7 +41992,7 @@ public class Blur {
                   struct.success = new HashMap<String,String>(2*_map420.size);
                   for (int _i421 = 0; _i421 < _map420.size; ++_i421)
                   {
-                    String _key422; // required
+                    String _key422; // optional
                     String _val423; // required
                     _key422 = iprot.readString();
                     _val423 = iprot.readString();
@@ -42569,7 +42097,7 @@ public class Blur {
             struct.success = new HashMap<String,String>(2*_map426.size);
             for (int _i427 = 0; _i427 < _map426.size; ++_i427)
             {
-              String _key428; // required
+              String _key428; // optional
               String _val429; // required
               _key428 = iprot.readString();
               _val429 = iprot.readString();
@@ -43362,7 +42890,7 @@ public class Blur {
                   struct.success = new HashMap<String,Map<String,ShardState>>(2*_map430.size);
                   for (int _i431 = 0; _i431 < _map430.size; ++_i431)
                   {
-                    String _key432; // required
+                    String _key432; // optional
                     Map<String,ShardState> _val433; // required
                     _key432 = iprot.readString();
                     {
@@ -43370,7 +42898,7 @@ public class Blur {
                       _val433 = new HashMap<String,ShardState>(2*_map434.size);
                       for (int _i435 = 0; _i435 < _map434.size; ++_i435)
                       {
-                        String _key436; // required
+                        String _key436; // optional
                         ShardState _val437; // required
                         _key436 = iprot.readString();
                         _val437 = ShardState.findByValue(iprot.readI32());
@@ -43494,7 +43022,7 @@ public class Blur {
             struct.success = new HashMap<String,Map<String,ShardState>>(2*_map442.size);
             for (int _i443 = 0; _i443 < _map442.size; ++_i443)
             {
-              String _key444; // required
+              String _key444; // optional
               Map<String,ShardState> _val445; // required
               _key444 = iprot.readString();
               {
@@ -43502,7 +43030,7 @@ public class Blur {
                 _val445 = new HashMap<String,ShardState>(2*_map446.size);
                 for (int _i447 = 0; _i447 < _map446.size; ++_i447)
                 {
-                  String _key448; // required
+                  String _key448; // optional
                   ShardState _val449; // required
                   _key448 = iprot.readString();
                   _val449 = ShardState.findByValue(iprot.readI32());
@@ -44987,7 +44515,7 @@ public class Blur {
                   struct.success = new HashMap<String,String>(2*_map450.size);
                   for (int _i451 = 0; _i451 < _map450.size; ++_i451)
                   {
-                    String _key452; // required
+                    String _key452; // optional
                     String _val453; // required
                     _key452 = iprot.readString();
                     _val453 = iprot.readString();
@@ -45092,7 +44620,7 @@ public class Blur {
             struct.success = new HashMap<String,String>(2*_map456.size);
             for (int _i457 = 0; _i457 < _map456.size; ++_i457)
             {
-              String _key458; // required
+              String _key458; // optional
               String _val459; // required
               _key458 = iprot.readString();
               _val459 = iprot.readString();
@@ -45924,7 +45452,7 @@ public class Blur {
                   struct.success = new HashMap<String,Metric>(2*_map468.size);
                   for (int _i469 = 0; _i469 < _map468.size; ++_i469)
                   {
-                    String _key470; // required
+                    String _key470; // optional
                     Metric _val471; // required
                     _key470 = iprot.readString();
                     _val471 = new Metric();
@@ -46030,7 +45558,7 @@ public class Blur {
             struct.success = new HashMap<String,Metric>(2*_map474.size);
             for (int _i475 = 0; _i475 < _map474.size; ++_i475)
             {
-              String _key476; // required
+              String _key476; // optional
               Metric _val477; // required
               _key476 = iprot.readString();
               _val477 = new Metric();

@@ -1050,7 +1050,7 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
                 struct.cpuTimes = new HashMap<String,CpuTime>(2*_map126.size);
                 for (int _i127 = 0; _i127 < _map126.size; ++_i127)
                 {
-                  String _key128; // required
+                  String _key128; // optional
                   CpuTime _val129; // required
                   _key128 = iprot.readString();
                   _val129 = new CpuTime();
@@ -1263,7 +1263,7 @@ public class BlurQueryStatus implements org.apache.blur.thirdparty.thrift_0_9_0.
           struct.cpuTimes = new HashMap<String,CpuTime>(2*_map132.size);
           for (int _i133 = 0; _i133 < _map132.size; ++_i133)
           {
-            String _key134; // required
+            String _key134; // optional
             CpuTime _val135; // required
             _key134 = iprot.readString();
             _val135 = new CpuTime();

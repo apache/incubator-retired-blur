@@ -69,30 +69,30 @@ public boolean addColumnDefinition(java.lang.String arg0, org.apache.blur.thrift
 }
 
 @Override
-public void bulkMutateAdd(java.lang.String arg0, java.lang.String arg1, org.apache.blur.thrift.generated.RowMutation arg2) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void bulkMutateAdd(java.lang.String arg0, org.apache.blur.thrift.generated.RowMutation arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.bulkMutateAdd(arg0, arg1, arg2);
+    super.bulkMutateAdd(arg0, arg1);
   } finally {_lock.unlock();}
 }
 
 @Override
-public void bulkMutateAddMultiple(java.lang.String arg0, java.lang.String arg1, java.util.List arg2) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void bulkMutateAddMultiple(java.lang.String arg0, java.util.List arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.bulkMutateAddMultiple(arg0, arg1, arg2);
+    super.bulkMutateAddMultiple(arg0, arg1);
   } finally {_lock.unlock();}
 }
 
 @Override
-public void bulkMutateFinish(java.lang.String arg0, java.lang.String arg1, boolean arg2, boolean arg3) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void bulkMutateFinish(java.lang.String arg0, boolean arg1, boolean arg2) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.bulkMutateFinish(arg0, arg1, arg2, arg3);
+    super.bulkMutateFinish(arg0, arg1, arg2);
   } finally {_lock.unlock();}
 }
 
 @Override
-public void bulkMutateStart(java.lang.String arg0, java.lang.String arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void bulkMutateStart(java.lang.String arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.bulkMutateStart(arg0, arg1);
+    super.bulkMutateStart(arg0);
   } finally {_lock.unlock();}
 }
 
@@ -734,30 +734,30 @@ public void send_addColumnDefinition(java.lang.String arg0, org.apache.blur.thri
 }
 
 @Override
-public void send_bulkMutateAdd(java.lang.String arg0, java.lang.String arg1, org.apache.blur.thrift.generated.RowMutation arg2) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void send_bulkMutateAdd(java.lang.String arg0, org.apache.blur.thrift.generated.RowMutation arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.send_bulkMutateAdd(arg0, arg1, arg2);
+    super.send_bulkMutateAdd(arg0, arg1);
   } finally {_lock.unlock();}
 }
 
 @Override
-public void send_bulkMutateAddMultiple(java.lang.String arg0, java.lang.String arg1, java.util.List arg2) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void send_bulkMutateAddMultiple(java.lang.String arg0, java.util.List arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.send_bulkMutateAddMultiple(arg0, arg1, arg2);
+    super.send_bulkMutateAddMultiple(arg0, arg1);
   } finally {_lock.unlock();}
 }
 
 @Override
-public void send_bulkMutateFinish(java.lang.String arg0, java.lang.String arg1, boolean arg2, boolean arg3) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void send_bulkMutateFinish(java.lang.String arg0, boolean arg1, boolean arg2) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.send_bulkMutateFinish(arg0, arg1, arg2, arg3);
+    super.send_bulkMutateFinish(arg0, arg1, arg2);
   } finally {_lock.unlock();}
 }
 
 @Override
-public void send_bulkMutateStart(java.lang.String arg0, java.lang.String arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void send_bulkMutateStart(java.lang.String arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.send_bulkMutateStart(arg0, arg1);
+    super.send_bulkMutateStart(arg0);
   } finally {_lock.unlock();}
 }
 

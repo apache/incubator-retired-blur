@@ -4624,18 +4624,14 @@ sub write {
 
 package Blur::Blur_bulkMutateStart_args;
 use base qw(Class::Accessor);
-Blur::Blur_bulkMutateStart_args->mk_accessors( qw( table bulkId ) );
+Blur::Blur_bulkMutateStart_args->mk_accessors( qw( bulkId ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{table} = undef;
   $self->{bulkId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{table}) {
-      $self->{table} = $vals->{table};
-    }
     if (defined $vals->{bulkId}) {
       $self->{bulkId} = $vals->{bulkId};
     }
@@ -4663,12 +4659,6 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{table});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::STRING) {
         $xfer += $input->readString(\$self->{bulkId});
       } else {
         $xfer += $input->skip($ftype);
@@ -4686,13 +4676,8 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_bulkMutateStart_args');
-  if (defined $self->{table}) {
-    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
-    $xfer += $output->writeString($self->{table});
-    $xfer += $output->writeFieldEnd();
-  }
   if (defined $self->{bulkId}) {
-    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 2);
+    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 1);
     $xfer += $output->writeString($self->{bulkId});
     $xfer += $output->writeFieldEnd();
   }
@@ -4768,19 +4753,15 @@ sub write {
 
 package Blur::Blur_bulkMutateAdd_args;
 use base qw(Class::Accessor);
-Blur::Blur_bulkMutateAdd_args->mk_accessors( qw( table bulkId rowMutation ) );
+Blur::Blur_bulkMutateAdd_args->mk_accessors( qw( bulkId rowMutation ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{table} = undef;
   $self->{bulkId} = undef;
   $self->{rowMutation} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{table}) {
-      $self->{table} = $vals->{table};
-    }
     if (defined $vals->{bulkId}) {
       $self->{bulkId} = $vals->{bulkId};
     }
@@ -4811,18 +4792,12 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{table});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::STRING) {
         $xfer += $input->readString(\$self->{bulkId});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^3$/ && do{      if ($ftype == TType::STRUCT) {
+      /^2$/ && do{      if ($ftype == TType::STRUCT) {
         $self->{rowMutation} = new Blur::RowMutation();
         $xfer += $self->{rowMutation}->read($input);
       } else {
@@ -4841,18 +4816,13 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_bulkMutateAdd_args');
-  if (defined $self->{table}) {
-    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
-    $xfer += $output->writeString($self->{table});
-    $xfer += $output->writeFieldEnd();
-  }
   if (defined $self->{bulkId}) {
-    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 2);
+    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 1);
     $xfer += $output->writeString($self->{bulkId});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{rowMutation}) {
-    $xfer += $output->writeFieldBegin('rowMutation', TType::STRUCT, 3);
+    $xfer += $output->writeFieldBegin('rowMutation', TType::STRUCT, 2);
     $xfer += $self->{rowMutation}->write($output);
     $xfer += $output->writeFieldEnd();
   }
@@ -4928,19 +4898,15 @@ sub write {
 
 package Blur::Blur_bulkMutateAddMultiple_args;
 use base qw(Class::Accessor);
-Blur::Blur_bulkMutateAddMultiple_args->mk_accessors( qw( table bulkId rowMutations ) );
+Blur::Blur_bulkMutateAddMultiple_args->mk_accessors( qw( bulkId rowMutations ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{table} = undef;
   $self->{bulkId} = undef;
   $self->{rowMutations} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{table}) {
-      $self->{table} = $vals->{table};
-    }
     if (defined $vals->{bulkId}) {
       $self->{bulkId} = $vals->{bulkId};
     }
@@ -4971,18 +4937,12 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{table});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::STRING) {
         $xfer += $input->readString(\$self->{bulkId});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^3$/ && do{      if ($ftype == TType::LIST) {
+      /^2$/ && do{      if ($ftype == TType::LIST) {
         {
           my $_size330 = 0;
           $self->{rowMutations} = [];
@@ -5013,18 +4973,13 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_bulkMutateAddMultiple_args');
-  if (defined $self->{table}) {
-    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
-    $xfer += $output->writeString($self->{table});
-    $xfer += $output->writeFieldEnd();
-  }
   if (defined $self->{bulkId}) {
-    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 2);
+    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 1);
     $xfer += $output->writeString($self->{bulkId});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{rowMutations}) {
-    $xfer += $output->writeFieldBegin('rowMutations', TType::LIST, 3);
+    $xfer += $output->writeFieldBegin('rowMutations', TType::LIST, 2);
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{rowMutations}}));
       {
@@ -5109,20 +5064,16 @@ sub write {
 
 package Blur::Blur_bulkMutateFinish_args;
 use base qw(Class::Accessor);
-Blur::Blur_bulkMutateFinish_args->mk_accessors( qw( table bulkId apply blockUntilComplete ) );
+Blur::Blur_bulkMutateFinish_args->mk_accessors( qw( bulkId apply blockUntilComplete ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{table} = undef;
   $self->{bulkId} = undef;
   $self->{apply} = undef;
   $self->{blockUntilComplete} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{table}) {
-      $self->{table} = $vals->{table};
-    }
     if (defined $vals->{bulkId}) {
       $self->{bulkId} = $vals->{bulkId};
     }
@@ -5156,24 +5107,18 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{table});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::STRING) {
         $xfer += $input->readString(\$self->{bulkId});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^3$/ && do{      if ($ftype == TType::BOOL) {
+      /^2$/ && do{      if ($ftype == TType::BOOL) {
         $xfer += $input->readBool(\$self->{apply});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^4$/ && do{      if ($ftype == TType::BOOL) {
+      /^3$/ && do{      if ($ftype == TType::BOOL) {
         $xfer += $input->readBool(\$self->{blockUntilComplete});
       } else {
         $xfer += $input->skip($ftype);
@@ -5191,23 +5136,18 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_bulkMutateFinish_args');
-  if (defined $self->{table}) {
-    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
-    $xfer += $output->writeString($self->{table});
-    $xfer += $output->writeFieldEnd();
-  }
   if (defined $self->{bulkId}) {
-    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 2);
+    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 1);
     $xfer += $output->writeString($self->{bulkId});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{apply}) {
-    $xfer += $output->writeFieldBegin('apply', TType::BOOL, 3);
+    $xfer += $output->writeFieldBegin('apply', TType::BOOL, 2);
     $xfer += $output->writeBool($self->{apply});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{blockUntilComplete}) {
-    $xfer += $output->writeFieldBegin('blockUntilComplete', TType::BOOL, 4);
+    $xfer += $output->writeFieldBegin('blockUntilComplete', TType::BOOL, 3);
     $xfer += $output->writeBool($self->{blockUntilComplete});
     $xfer += $output->writeFieldEnd();
   }
@@ -8778,7 +8718,6 @@ sub enqueueMutateBatch{
 
 sub bulkMutateStart{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
 
   die 'implement interface';
@@ -8786,7 +8725,6 @@ sub bulkMutateStart{
 
 sub bulkMutateAdd{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
   my $rowMutation = shift;
 
@@ -8795,7 +8733,6 @@ sub bulkMutateAdd{
 
 sub bulkMutateAddMultiple{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
   my $rowMutations = shift;
 
@@ -8804,7 +8741,6 @@ sub bulkMutateAddMultiple{
 
 sub bulkMutateFinish{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
   my $apply = shift;
   my $blockUntilComplete = shift;
@@ -9207,37 +9143,33 @@ sub enqueueMutateBatch{
 sub bulkMutateStart{
   my ($self, $request) = @_;
 
-  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
   my $bulkId = ($request->{'bulkId'}) ? $request->{'bulkId'} : undef;
-  return $self->{impl}->bulkMutateStart($table, $bulkId);
+  return $self->{impl}->bulkMutateStart($bulkId);
 }
 
 sub bulkMutateAdd{
   my ($self, $request) = @_;
 
-  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
   my $bulkId = ($request->{'bulkId'}) ? $request->{'bulkId'} : undef;
   my $rowMutation = ($request->{'rowMutation'}) ? $request->{'rowMutation'} : undef;
-  return $self->{impl}->bulkMutateAdd($table, $bulkId, $rowMutation);
+  return $self->{impl}->bulkMutateAdd($bulkId, $rowMutation);
 }
 
 sub bulkMutateAddMultiple{
   my ($self, $request) = @_;
 
-  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
   my $bulkId = ($request->{'bulkId'}) ? $request->{'bulkId'} : undef;
   my $rowMutations = ($request->{'rowMutations'}) ? $request->{'rowMutations'} : undef;
-  return $self->{impl}->bulkMutateAddMultiple($table, $bulkId, $rowMutations);
+  return $self->{impl}->bulkMutateAddMultiple($bulkId, $rowMutations);
 }
 
 sub bulkMutateFinish{
   my ($self, $request) = @_;
 
-  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
   my $bulkId = ($request->{'bulkId'}) ? $request->{'bulkId'} : undef;
   my $apply = ($request->{'apply'}) ? $request->{'apply'} : undef;
   my $blockUntilComplete = ($request->{'blockUntilComplete'}) ? $request->{'blockUntilComplete'} : undef;
-  return $self->{impl}->bulkMutateFinish($table, $bulkId, $apply, $blockUntilComplete);
+  return $self->{impl}->bulkMutateFinish($bulkId, $apply, $blockUntilComplete);
 }
 
 sub cancelQuery{
@@ -10775,21 +10707,18 @@ sub recv_enqueueMutateBatch{
 }
 sub bulkMutateStart{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
 
-    $self->send_bulkMutateStart($table, $bulkId);
+    $self->send_bulkMutateStart($bulkId);
   $self->recv_bulkMutateStart();
 }
 
 sub send_bulkMutateStart{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
 
   $self->{output}->writeMessageBegin('bulkMutateStart', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_bulkMutateStart_args();
-  $args->{table} = $table;
   $args->{bulkId} = $bulkId;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
@@ -10821,23 +10750,20 @@ sub recv_bulkMutateStart{
 }
 sub bulkMutateAdd{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
   my $rowMutation = shift;
 
-    $self->send_bulkMutateAdd($table, $bulkId, $rowMutation);
+    $self->send_bulkMutateAdd($bulkId, $rowMutation);
   $self->recv_bulkMutateAdd();
 }
 
 sub send_bulkMutateAdd{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
   my $rowMutation = shift;
 
   $self->{output}->writeMessageBegin('bulkMutateAdd', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_bulkMutateAdd_args();
-  $args->{table} = $table;
   $args->{bulkId} = $bulkId;
   $args->{rowMutation} = $rowMutation;
   $args->write($self->{output});
@@ -10870,23 +10796,20 @@ sub recv_bulkMutateAdd{
 }
 sub bulkMutateAddMultiple{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
   my $rowMutations = shift;
 
-    $self->send_bulkMutateAddMultiple($table, $bulkId, $rowMutations);
+    $self->send_bulkMutateAddMultiple($bulkId, $rowMutations);
   $self->recv_bulkMutateAddMultiple();
 }
 
 sub send_bulkMutateAddMultiple{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
   my $rowMutations = shift;
 
   $self->{output}->writeMessageBegin('bulkMutateAddMultiple', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_bulkMutateAddMultiple_args();
-  $args->{table} = $table;
   $args->{bulkId} = $bulkId;
   $args->{rowMutations} = $rowMutations;
   $args->write($self->{output});
@@ -10919,25 +10842,22 @@ sub recv_bulkMutateAddMultiple{
 }
 sub bulkMutateFinish{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
   my $apply = shift;
   my $blockUntilComplete = shift;
 
-    $self->send_bulkMutateFinish($table, $bulkId, $apply, $blockUntilComplete);
+    $self->send_bulkMutateFinish($bulkId, $apply, $blockUntilComplete);
   $self->recv_bulkMutateFinish();
 }
 
 sub send_bulkMutateFinish{
   my $self = shift;
-  my $table = shift;
   my $bulkId = shift;
   my $apply = shift;
   my $blockUntilComplete = shift;
 
   $self->{output}->writeMessageBegin('bulkMutateFinish', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_bulkMutateFinish_args();
-  $args->{table} = $table;
   $args->{bulkId} = $bulkId;
   $args->{apply} = $apply;
   $args->{blockUntilComplete} = $blockUntilComplete;
@@ -12461,7 +12381,7 @@ sub process_bulkMutateStart {
     $input->readMessageEnd();
     my $result = new Blur::Blur_bulkMutateStart_result();
     eval {
-      $self->{handler}->bulkMutateStart($args->table, $args->bulkId);
+      $self->{handler}->bulkMutateStart($args->bulkId);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }
@@ -12478,7 +12398,7 @@ sub process_bulkMutateAdd {
     $input->readMessageEnd();
     my $result = new Blur::Blur_bulkMutateAdd_result();
     eval {
-      $self->{handler}->bulkMutateAdd($args->table, $args->bulkId, $args->rowMutation);
+      $self->{handler}->bulkMutateAdd($args->bulkId, $args->rowMutation);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }
@@ -12495,7 +12415,7 @@ sub process_bulkMutateAddMultiple {
     $input->readMessageEnd();
     my $result = new Blur::Blur_bulkMutateAddMultiple_result();
     eval {
-      $self->{handler}->bulkMutateAddMultiple($args->table, $args->bulkId, $args->rowMutations);
+      $self->{handler}->bulkMutateAddMultiple($args->bulkId, $args->rowMutations);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }
@@ -12512,7 +12432,7 @@ sub process_bulkMutateFinish {
     $input->readMessageEnd();
     my $result = new Blur::Blur_bulkMutateFinish_result();
     eval {
-      $self->{handler}->bulkMutateFinish($args->table, $args->bulkId, $args->apply, $args->blockUntilComplete);
+      $self->{handler}->bulkMutateFinish($args->bulkId, $args->apply, $args->blockUntilComplete);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }

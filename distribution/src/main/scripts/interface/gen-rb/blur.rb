@@ -479,13 +479,13 @@ module Blur
         return
       end
 
-      def bulkMutateStart(table, bulkId)
-        send_bulkMutateStart(table, bulkId)
+      def bulkMutateStart(bulkId)
+        send_bulkMutateStart(bulkId)
         recv_bulkMutateStart()
       end
 
-      def send_bulkMutateStart(table, bulkId)
-        send_message('bulkMutateStart', BulkMutateStart_args, :table => table, :bulkId => bulkId)
+      def send_bulkMutateStart(bulkId)
+        send_message('bulkMutateStart', BulkMutateStart_args, :bulkId => bulkId)
       end
 
       def recv_bulkMutateStart()
@@ -494,13 +494,13 @@ module Blur
         return
       end
 
-      def bulkMutateAdd(table, bulkId, rowMutation)
-        send_bulkMutateAdd(table, bulkId, rowMutation)
+      def bulkMutateAdd(bulkId, rowMutation)
+        send_bulkMutateAdd(bulkId, rowMutation)
         recv_bulkMutateAdd()
       end
 
-      def send_bulkMutateAdd(table, bulkId, rowMutation)
-        send_message('bulkMutateAdd', BulkMutateAdd_args, :table => table, :bulkId => bulkId, :rowMutation => rowMutation)
+      def send_bulkMutateAdd(bulkId, rowMutation)
+        send_message('bulkMutateAdd', BulkMutateAdd_args, :bulkId => bulkId, :rowMutation => rowMutation)
       end
 
       def recv_bulkMutateAdd()
@@ -509,13 +509,13 @@ module Blur
         return
       end
 
-      def bulkMutateAddMultiple(table, bulkId, rowMutations)
-        send_bulkMutateAddMultiple(table, bulkId, rowMutations)
+      def bulkMutateAddMultiple(bulkId, rowMutations)
+        send_bulkMutateAddMultiple(bulkId, rowMutations)
         recv_bulkMutateAddMultiple()
       end
 
-      def send_bulkMutateAddMultiple(table, bulkId, rowMutations)
-        send_message('bulkMutateAddMultiple', BulkMutateAddMultiple_args, :table => table, :bulkId => bulkId, :rowMutations => rowMutations)
+      def send_bulkMutateAddMultiple(bulkId, rowMutations)
+        send_message('bulkMutateAddMultiple', BulkMutateAddMultiple_args, :bulkId => bulkId, :rowMutations => rowMutations)
       end
 
       def recv_bulkMutateAddMultiple()
@@ -524,13 +524,13 @@ module Blur
         return
       end
 
-      def bulkMutateFinish(table, bulkId, apply, blockUntilComplete)
-        send_bulkMutateFinish(table, bulkId, apply, blockUntilComplete)
+      def bulkMutateFinish(bulkId, apply, blockUntilComplete)
+        send_bulkMutateFinish(bulkId, apply, blockUntilComplete)
         recv_bulkMutateFinish()
       end
 
-      def send_bulkMutateFinish(table, bulkId, apply, blockUntilComplete)
-        send_message('bulkMutateFinish', BulkMutateFinish_args, :table => table, :bulkId => bulkId, :apply => apply, :blockUntilComplete => blockUntilComplete)
+      def send_bulkMutateFinish(bulkId, apply, blockUntilComplete)
+        send_message('bulkMutateFinish', BulkMutateFinish_args, :bulkId => bulkId, :apply => apply, :blockUntilComplete => blockUntilComplete)
       end
 
       def recv_bulkMutateFinish()
@@ -1204,7 +1204,7 @@ module Blur
         args = read_args(iprot, BulkMutateStart_args)
         result = BulkMutateStart_result.new()
         begin
-          @handler.bulkMutateStart(args.table, args.bulkId)
+          @handler.bulkMutateStart(args.bulkId)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -1215,7 +1215,7 @@ module Blur
         args = read_args(iprot, BulkMutateAdd_args)
         result = BulkMutateAdd_result.new()
         begin
-          @handler.bulkMutateAdd(args.table, args.bulkId, args.rowMutation)
+          @handler.bulkMutateAdd(args.bulkId, args.rowMutation)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -1226,7 +1226,7 @@ module Blur
         args = read_args(iprot, BulkMutateAddMultiple_args)
         result = BulkMutateAddMultiple_result.new()
         begin
-          @handler.bulkMutateAddMultiple(args.table, args.bulkId, args.rowMutations)
+          @handler.bulkMutateAddMultiple(args.bulkId, args.rowMutations)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -1237,7 +1237,7 @@ module Blur
         args = read_args(iprot, BulkMutateFinish_args)
         result = BulkMutateFinish_result.new()
         begin
-          @handler.bulkMutateFinish(args.table, args.bulkId, args.apply, args.blockUntilComplete)
+          @handler.bulkMutateFinish(args.bulkId, args.apply, args.blockUntilComplete)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -2552,12 +2552,9 @@ module Blur
 
     class BulkMutateStart_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      TABLE = 1
-      BULKID = 2
+      BULKID = 1
 
       FIELDS = {
-        # The table name.
-        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         # The bulk id.
         BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'}
       }
@@ -2588,13 +2585,10 @@ module Blur
 
     class BulkMutateAdd_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      TABLE = 1
-      BULKID = 2
-      ROWMUTATION = 3
+      BULKID = 1
+      ROWMUTATION = 2
 
       FIELDS = {
-        # The table name.
-        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         # The bulk id.
         BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'},
         # The row mutation.
@@ -2627,13 +2621,10 @@ module Blur
 
     class BulkMutateAddMultiple_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      TABLE = 1
-      BULKID = 2
-      ROWMUTATIONS = 3
+      BULKID = 1
+      ROWMUTATIONS = 2
 
       FIELDS = {
-        # The table name.
-        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         # The bulk id.
         BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'},
         # The row mutation.
@@ -2666,14 +2657,11 @@ module Blur
 
     class BulkMutateFinish_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      TABLE = 1
-      BULKID = 2
-      APPLY = 3
-      BLOCKUNTILCOMPLETE = 4
+      BULKID = 1
+      APPLY = 2
+      BLOCKUNTILCOMPLETE = 3
 
       FIELDS = {
-        # The table name.
-        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         # The bulk id.
         BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'},
         # Apply the bulk mutate flag.

@@ -206,7 +206,7 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
               shardToValue = new HashMap<Shard,ValueObject>(2*_map240.size);
               for (int _i241 = 0; _i241 < _map240.size; ++_i241)
               {
-                Shard _key242; // required
+                Shard _key242; // optional
                 ValueObject _val243; // required
                 _key242 = new Shard();
                 _key242.read(iprot);
@@ -229,7 +229,7 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
               serverToValue = new HashMap<Server,ValueObject>(2*_map244.size);
               for (int _i245 = 0; _i245 < _map244.size; ++_i245)
               {
-                Server _key246; // required
+                Server _key246; // optional
                 ValueObject _val247; // required
                 _key246 = new Server();
                 _key246.read(iprot);
@@ -310,7 +310,7 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
             shardToValue = new HashMap<Shard,ValueObject>(2*_map250.size);
             for (int _i251 = 0; _i251 < _map250.size; ++_i251)
             {
-              Shard _key252; // required
+              Shard _key252; // optional
               ValueObject _val253; // required
               _key252 = new Shard();
               _key252.read(iprot);
@@ -328,7 +328,7 @@ public class Response extends org.apache.blur.thirdparty.thrift_0_9_0.TUnion<Res
             serverToValue = new HashMap<Server,ValueObject>(2*_map254.size);
             for (int _i255 = 0; _i255 < _map254.size; ++_i255)
             {
-              Server _key256; // required
+              Server _key256; // optional
               ValueObject _val257; // required
               _key256 = new Server();
               _key256.read(iprot);

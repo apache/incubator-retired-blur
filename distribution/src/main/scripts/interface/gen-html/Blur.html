@@ -906,52 +906,40 @@ the shard server, if any.
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutations</td><td>the batch of RowMutations.
 </td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_bulkMutateStart">Function: Blur.bulkMutateStart</h4>
-<pre><code>void</code> bulkMutateStart(<code>string</code> table,
-                     <code>string</code> bulkId)
+<pre><code>void</code> bulkMutateStart(<code>string</code> bulkId)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Starts a transaction for update (e.g. Mutate).  Returns a transaction id.
 <br/><br/><h4 id="Parameters_Blur_bulkMutateStart">Parameters</h4>
-<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
-</td></tr>
-<tr><td>bulkId</td><td>The bulk id.
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>bulkId</td><td>The bulk id.
 </td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_bulkMutateAdd">Function: Blur.bulkMutateAdd</h4>
-<pre><code>void</code> bulkMutateAdd(<code>string</code> table,
-                   <code>string</code> bulkId,
+<pre><code>void</code> bulkMutateAdd(<code>string</code> bulkId,
                    <code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> rowMutation)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Adds to the specified transaction.
 <br/><br/><h4 id="Parameters_Blur_bulkMutateAdd">Parameters</h4>
-<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
-</td></tr>
-<tr><td>bulkId</td><td>The bulk id.
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>bulkId</td><td>The bulk id.
 </td></tr>
 <tr><td>rowMutation</td><td>The row mutation.
 </td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_bulkMutateAddMultiple">Function: Blur.bulkMutateAddMultiple</h4>
-<pre><code>void</code> bulkMutateAddMultiple(<code>string</code> table,
-                           <code>string</code> bulkId,
+<pre><code>void</code> bulkMutateAddMultiple(<code>string</code> bulkId,
                            <code>list&lt;<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code>&gt;</code> rowMutations)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Adds to the specified transaction.
 <br/><br/><h4 id="Parameters_Blur_bulkMutateAddMultiple">Parameters</h4>
-<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
-</td></tr>
-<tr><td>bulkId</td><td>The bulk id.
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>bulkId</td><td>The bulk id.
 </td></tr>
 <tr><td>rowMutations</td><td>The row mutation.
 </td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_bulkMutateFinish">Function: Blur.bulkMutateFinish</h4>
-<pre><code>void</code> bulkMutateFinish(<code>string</code> table,
-                      <code>string</code> bulkId,
+<pre><code>void</code> bulkMutateFinish(<code>string</code> bulkId,
                       <code>bool</code> apply,
                       <code>bool</code> blockUntilComplete)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Finishes the bulk mutate.  If apply is true the mutations are applied and committed.  If false the bulk mutate is deleted and not applied.
 <br/><br/><h4 id="Parameters_Blur_bulkMutateFinish">Parameters</h4>
-<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
-</td></tr>
-<tr><td>bulkId</td><td>The bulk id.
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>bulkId</td><td>The bulk id.
 </td></tr>
 <tr><td>apply</td><td>Apply the bulk mutate flag.
 </td></tr>

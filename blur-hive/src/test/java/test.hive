@@ -49,7 +49,7 @@ create table if not exists input_data (
 
 select * from input_data;
 
-insert overwrite table test select * from input_data;
+insert table test select * from input_data;
 
 
 

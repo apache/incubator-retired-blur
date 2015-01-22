@@ -62,8 +62,11 @@ public class BlurObjectInspectorGenerator {
   private ObjectInspector _objectInspector;
   private List<String> _columnNames = new ArrayList<String>();
   private List<TypeInfo> _columnTypes = new ArrayList<TypeInfo>();
+  private BlurColumnNameResolver _columnNameResolver;
 
-  public BlurObjectInspectorGenerator(Collection<ColumnDefinition> colDefs) throws SerDeException {
+  public BlurObjectInspectorGenerator(Collection<ColumnDefinition> colDefs, BlurColumnNameResolver columnNameResolver)
+      throws SerDeException {
+    _columnNameResolver = columnNameResolver;
     List<ColumnDefinition> colDefList = new ArrayList<ColumnDefinition>(colDefs);
     Collections.sort(colDefList, COMPARATOR);
 
@@ -74,7 +77,8 @@ public class BlurObjectInspectorGenerator {
     _columnTypes.add(TypeInfoFactory.stringTypeInfo);
 
     for (ColumnDefinition columnDefinition : colDefList) {
-      _columnNames.add(columnDefinition.getColumnName());
+      String hiveColumnName = _columnNameResolver.fromBlurToHive(columnDefinition.getColumnName());
+      _columnNames.add(hiveColumnName);
       _columnTypes.add(getTypeInfo(columnDefinition));
     }
     _objectInspector = createObjectInspector();

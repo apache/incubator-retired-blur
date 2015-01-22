@@ -605,8 +605,13 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     final String table = _tableContext.getTable();
     final String shard = _shardContext.getShard();
 
-    LOG.info("Shard [{2}/{3}] Id [{0}] Finishing bulk mutate apply [{1}]", bulkId, apply, table, shard);
+    
     final BulkEntry bulkEntry = _bulkWriters.get(bulkId);
+    if (bulkEntry == null) {
+      LOG.info("Shard [{2}/{3}] Id [{0}] Nothing to apply.", bulkId, apply, table, shard);
+      return;
+    }
+    LOG.info("Shard [{2}/{3}] Id [{0}] Finishing bulk mutate apply [{1}]", bulkId, apply, table, shard);
     bulkEntry._writer.close();
 
     Configuration configuration = _tableContext.getConfiguration();

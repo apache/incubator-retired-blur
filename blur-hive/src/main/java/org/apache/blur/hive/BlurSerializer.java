@@ -40,8 +40,10 @@ public class BlurSerializer {
   private static final String DATE_FORMAT = "dateFormat";
   private static final String DATE = "date";
   private Map<String, ThreadLocal<SimpleDateFormat>> _dateFormat = new HashMap<String, ThreadLocal<SimpleDateFormat>>();
+  private BlurColumnNameResolver _columnNameResolver;
 
-  public BlurSerializer(Map<String, ColumnDefinition> colDefs) {
+  public BlurSerializer(Map<String, ColumnDefinition> colDefs, BlurColumnNameResolver columnNameResolver) {
+    _columnNameResolver = columnNameResolver;
     Set<Entry<String, ColumnDefinition>> entrySet = colDefs.entrySet();
     for (Entry<String, ColumnDefinition> e : entrySet) {
       String columnName = e.getKey();
@@ -83,7 +85,7 @@ public class BlurSerializer {
     }
 
     for (int i = 0; i < size; i++) {
-      String columnName = columnNames.get(i);
+      String columnName = _columnNameResolver.fromHiveToBlur(columnNames.get(i));
       StructField structFieldRef = outputFieldRefs.get(i);
       ObjectInspector fieldOI = structFieldRef.getFieldObjectInspector();
       Object structFieldData = structFieldsDataAsList.get(i);
@@ -99,8 +101,7 @@ public class BlurSerializer {
     }
     if (objectInspector instanceof PrimitiveObjectInspector) {
       PrimitiveObjectInspector primitiveObjectInspector = (PrimitiveObjectInspector) objectInspector;
-      Object primitiveJavaObject = primitiveObjectInspector.getPrimitiveJavaObject(data);
-      String strValue = toString(columnName, primitiveJavaObject);
+      String strValue = toString(columnName, data, primitiveObjectInspector);
       if (columnName.equals(BlurObjectInspectorGenerator.ROWID)) {
         blurRecord.setRowId(strValue);
       } else if (columnName.equals(BlurObjectInspectorGenerator.RECORDID)) {
@@ -111,11 +112,11 @@ public class BlurSerializer {
     } else if (objectInspector instanceof StructObjectInspector) {
       StructObjectInspector structObjectInspector = (StructObjectInspector) objectInspector;
       Map<String, StructField> allStructFieldRefs = toMap(structObjectInspector.getAllStructFieldRefs());
-      StructField latStructField = allStructFieldRefs.get(BlurObjectInspectorGenerator.LATITUDE);
-      StructField longStructField = allStructFieldRefs.get(BlurObjectInspectorGenerator.LONGITUDE);
-      Object latStructFieldData = structObjectInspector.getStructFieldData(data, latStructField);
-      Object longStructFieldData = structObjectInspector.getStructFieldData(data, longStructField);
-      blurRecord.addColumn(columnName, toLatLong(latStructFieldData, longStructFieldData));
+      String latitude = getFieldData(columnName, data, structObjectInspector, allStructFieldRefs,
+          BlurObjectInspectorGenerator.LATITUDE);
+      String longitude = getFieldData(columnName, data, structObjectInspector, allStructFieldRefs,
+          BlurObjectInspectorGenerator.LONGITUDE);
+      blurRecord.addColumn(columnName, toLatLong(latitude, longitude));
     } else if (objectInspector instanceof ListObjectInspector) {
       ListObjectInspector listObjectInspector = (ListObjectInspector) objectInspector;
       List<?> list = listObjectInspector.getList(data);
@@ -129,9 +130,28 @@ public class BlurSerializer {
     }
   }
 
-  private String toLatLong(Object latStructFieldData, Object longStructFieldData) throws SerDeException {
-    return toString(BlurObjectInspectorGenerator.LATITUDE, latStructFieldData) + ","
-        + toString(BlurObjectInspectorGenerator.LONGITUDE, longStructFieldData);
+  private String getFieldData(String columnName, Object data, StructObjectInspector structObjectInspector,
+      Map<String, StructField> allStructFieldRefs, String name) throws SerDeException {
+    StructField structField = allStructFieldRefs.get(name);
+    ObjectInspector fieldObjectInspector = structField.getFieldObjectInspector();
+    Object structFieldData = structObjectInspector.getStructFieldData(data, structField);
+    if (fieldObjectInspector instanceof PrimitiveObjectInspector) {
+      return toString(columnName, structFieldData, (PrimitiveObjectInspector) fieldObjectInspector);
+    } else {
+      throw new SerDeException("Embedded non-primitive type is not supported columnName [" + columnName
+          + "] objectInspector [" + fieldObjectInspector + "].");
+    }
+  }
+
+  private String toString(String columnName, Object data, PrimitiveObjectInspector primitiveObjectInspector)
+      throws SerDeException {
+    Object primitiveJavaObject = primitiveObjectInspector.getPrimitiveJavaObject(data);
+    return toString(columnName, primitiveJavaObject);
+  }
+
+  private String toLatLong(String latitude, String longitude) throws SerDeException {
+    return toString(BlurObjectInspectorGenerator.LATITUDE, latitude) + ","
+        + toString(BlurObjectInspectorGenerator.LONGITUDE, longitude);
   }
 
   private Map<String, StructField> toMap(List<? extends StructField> allStructFieldRefs) {
@@ -159,7 +179,7 @@ public class BlurSerializer {
       SimpleDateFormat simpleDateFormat = getSimpleDateFormat(columnName);
       return simpleDateFormat.format((Date) o);
     } else {
-      throw new SerDeException("Unknown type [" + o + "]");
+      throw new SerDeException("Unknown type [" + o + "] with class [" + o == null ? "unknown" : o.getClass() + "]");
     }
   }
 

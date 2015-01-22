@@ -16,11 +16,19 @@
  */
 package org.apache.blur.hive;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.sql.Connection;
 import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +43,10 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.BlurQuery;
+import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.hadoop.conf.Configuration;
@@ -46,6 +57,9 @@ import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.mapred.MiniMRCluster;
+import org.apache.hive.jdbc.HiveDriver;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,14 +67,21 @@ import org.junit.Test;
 
 public class BlurSerDeTest {
 
+  private static final File METASTORE_DB_FILE = new File("metastore_db");
+  private static final String FAM = "fam0";
   private static final String YYYYMMDD = "yyyyMMdd";
+  private static final String YYYY_MM_DD = "yyyy-MM-dd";
   private static final String TEST = "test";
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurSerDeTest"));
   private static MiniCluster miniCluster;
   private static boolean externalProcesses = true;
+  private static final File WAREHOUSE = new File("./target/tmp/warehouse");
+  private static final String COLUMN_SEP = new String(new char[] { 1 });
+  private static final String ITEM_SEP = new String(new char[] { 2 });
 
   @BeforeClass
   public static void startCluster() throws IOException {
+    System.setProperty("hadoop.log.dir", "./target/tmp_BlurSerDeTest_hadoop_log");
     GCWatcher.init(0.60);
     LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
     File testDirectory = new File(TMPDIR, "blur-SerDe-test").getAbsoluteFile();
@@ -88,6 +109,8 @@ public class BlurSerDeTest {
     miniCluster.shutdownBlurCluster();
   }
 
+  private Object mrMiniCluster;
+
   @Before
   public void setup() throws BlurException, TException, IOException {
     String controllerConnectionStr = miniCluster.getControllerConnectionStr();
@@ -103,26 +126,45 @@ public class BlurSerDeTest {
       Map<String, String> props = new HashMap<String, String>();
       props.put("dateFormat", YYYYMMDD);
 
-      client.addColumnDefinition(TEST, cd(false, "fam0", "string-col-single", "string"));
-      client.addColumnDefinition(TEST, cd(false, "fam0", "text-col-single", "text"));
-      client.addColumnDefinition(TEST, cd(false, "fam0", "stored-col-single", "stored"));
-      client.addColumnDefinition(TEST, cd(false, "fam0", "double-col-single", "double"));
-      client.addColumnDefinition(TEST, cd(false, "fam0", "float-col-single", "float"));
-      client.addColumnDefinition(TEST, cd(false, "fam0", "long-col-single", "long"));
-      client.addColumnDefinition(TEST, cd(false, "fam0", "int-col-single", "int"));
-      client.addColumnDefinition(TEST, cd(false, "fam0", "date-col-single", "date", props));
+      client.addColumnDefinition(TEST, cd(false, FAM, "string-col-single", "string"));
+      client.addColumnDefinition(TEST, cd(false, FAM, "text-col-single", "text"));
+      client.addColumnDefinition(TEST, cd(false, FAM, "stored-col-single", "stored"));
+      client.addColumnDefinition(TEST, cd(false, FAM, "double-col-single", "double"));
+      client.addColumnDefinition(TEST, cd(false, FAM, "float-col-single", "float"));
+      client.addColumnDefinition(TEST, cd(false, FAM, "long-col-single", "long"));
+      client.addColumnDefinition(TEST, cd(false, FAM, "int-col-single", "int"));
+      client.addColumnDefinition(TEST, cd(false, FAM, "date-col-single", "date", props));
 
-      client.addColumnDefinition(TEST, cd(false, "fam0", "geo-col-single", "geo-pointvector"));
+      client.addColumnDefinition(TEST, cd(false, FAM, "geo-col-single", "geo-pointvector"));
 
-      client.addColumnDefinition(TEST, cd(true, "fam0", "string-col-multi", "string"));
-      client.addColumnDefinition(TEST, cd(true, "fam0", "text-col-multi", "text"));
-      client.addColumnDefinition(TEST, cd(true, "fam0", "stored-col-multi", "stored"));
-      client.addColumnDefinition(TEST, cd(true, "fam0", "double-col-multi", "double"));
-      client.addColumnDefinition(TEST, cd(true, "fam0", "float-col-multi", "float"));
-      client.addColumnDefinition(TEST, cd(true, "fam0", "long-col-multi", "long"));
-      client.addColumnDefinition(TEST, cd(true, "fam0", "int-col-multi", "int"));
-      client.addColumnDefinition(TEST, cd(true, "fam0", "date-col-multi", "date", props));
+      client.addColumnDefinition(TEST, cd(true, FAM, "string-col-multi", "string"));
+      client.addColumnDefinition(TEST, cd(true, FAM, "text-col-multi", "text"));
+      client.addColumnDefinition(TEST, cd(true, FAM, "stored-col-multi", "stored"));
+      client.addColumnDefinition(TEST, cd(true, FAM, "double-col-multi", "double"));
+      client.addColumnDefinition(TEST, cd(true, FAM, "float-col-multi", "float"));
+      client.addColumnDefinition(TEST, cd(true, FAM, "long-col-multi", "long"));
+      client.addColumnDefinition(TEST, cd(true, FAM, "int-col-multi", "int"));
+      client.addColumnDefinition(TEST, cd(true, FAM, "date-col-multi", "date", props));
     }
+    rmr(WAREHOUSE);
+    rmr(METASTORE_DB_FILE);
+  }
+
+  @After
+  public void teardown() {
+    rmr(METASTORE_DB_FILE);
+  }
+
+  private void rmr(File file) {
+    if (!file.exists()) {
+      return;
+    }
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        rmr(f);
+      }
+    }
+    file.delete();
   }
 
   private ColumnDefinition cd(boolean multiValue, String family, String columnName, String type) {
@@ -146,7 +188,7 @@ public class BlurSerDeTest {
     Configuration conf = new Configuration();
     Properties tbl = new Properties();
     tbl.put(BlurSerDe.TABLE, TEST);
-    tbl.put(BlurSerDe.FAMILY, "fam0");
+    tbl.put(BlurSerDe.FAMILY, FAM);
     tbl.put(BlurSerDe.ZK, miniCluster.getZkConnectionString());
 
     blurSerDe.initialize(conf, tbl);
@@ -205,6 +247,213 @@ public class BlurSerDeTest {
     assertEquals(list(simpleDateFormat.format(date), simpleDateFormat.format(date)), columns.get("date-col-multi"));
 
     assertEquals(list("1.0,2.0"), columns.get("geo-col-single"));
+  }
+
+  @Test
+  public void test2() throws SQLException, ClassNotFoundException, IOException, BlurException, TException {
+    Class.forName(HiveDriver.class.getName());
+    Connection connection = DriverManager.getConnection("jdbc:hive2://");
+
+    run(connection, "set hive.metastore.warehouse.dir=" + WAREHOUSE.toURI().toString());
+    run(connection, "create database if not exists testdb");
+    run(connection, "use testdb");
+
+    run(connection, "CREATE TABLE if not exists testtable ROW FORMAT SERDE 'org.apache.blur.hive.BlurSerDe' "
+        + "WITH SERDEPROPERTIES ( 'blur.zookeeper.connection'='" + miniCluster.getZkConnectionString() + "', "
+        + "'blur.table'='" + TEST + "', 'blur.family'='" + FAM + "' ) "
+        + "STORED BY 'org.apache.blur.hive.BlurHiveStorageHandler'");
+
+    run(connection, "desc testtable");
+
+    String createLoadTable = buildCreateLoadTable(connection);
+    run(connection, createLoadTable);
+    File dbDir = new File(WAREHOUSE, "testdb.db");
+    File tableDir = new File(dbDir, "loadtable");
+    int totalRecords = 100;
+    generateData(tableDir, totalRecords);
+
+    run(connection, "select * from loadtable");
+
+    Configuration configuration = startMrMiniCluster();
+    run(connection, "set mapred.job.tracker=" + configuration.get("mapred.job.tracker"));
+    run(connection, "insert into table testtable select * from loadtable");
+    stopMrMiniCluster();
+    connection.close();
+
+    Iface client = BlurClient.getClientFromZooKeeperConnectionStr(miniCluster.getZkConnectionString());
+    BlurQuery blurQuery = new BlurQuery();
+    Query query = new Query();
+    query.setQuery("*");
+    blurQuery.setQuery(query);
+    BlurResults results = client.query(TEST, blurQuery);
+    assertEquals(totalRecords, results.getTotalResults());
+  }
+
+  private void stopMrMiniCluster() {
+    callMethod(mrMiniCluster, "shutdown");
+  }
+
+  private Object callMethod(Object o, String methodName, Class<?>... classes) {
+    Class<? extends Object> clazz = o.getClass();
+    try {
+      Method method = clazz.getDeclaredMethod(methodName, classes);
+      return method.invoke(o, new Object[] {});
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Configuration startMrMiniCluster() throws IOException {
+    mrMiniCluster = new MiniMRCluster(1, miniCluster.getFileSystemUri().toString(), 1);
+    return (Configuration) callMethod(mrMiniCluster, "createJobConf");
+  }
+
+  private void generateData(File file, int totalRecords) throws IOException {
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(YYYY_MM_DD);
+    PrintWriter print = new PrintWriter(new File(file, "data"));
+    Date date = new Date(System.currentTimeMillis());
+    for (int i = 0; i < totalRecords; i++) {
+      // rowid
+      print.print("rowid" + i);
+      print.print(COLUMN_SEP);
+      // recordid
+      print.print("recordid" + i);
+      print.print(COLUMN_SEP);
+      {
+        // date_col_multi
+        print.print(simpleDateFormat.format(date));
+        print.print(ITEM_SEP);
+        print.print(simpleDateFormat.format(date));
+      }
+      print.print(COLUMN_SEP);
+      // date_col_single
+      print.print(simpleDateFormat.format(date));
+      print.print(COLUMN_SEP);
+      {
+        // double_col_multi
+        print.print("1.0");
+        print.print(ITEM_SEP);
+        print.print("2.0");
+      }
+      print.print(COLUMN_SEP);
+      // double_col_single
+      print.print("3.0");
+      print.print(COLUMN_SEP);
+
+      {
+        // float_col_multi
+        print.print("4.0");
+        print.print(ITEM_SEP);
+        print.print("5.0");
+      }
+      print.print(COLUMN_SEP);
+      // float_col_single
+      print.print("6.0");
+      print.print(COLUMN_SEP);
+
+      // geo_col_single
+      print.print("10.0");
+      print.print(ITEM_SEP);
+      print.print("10.0");
+      print.print(COLUMN_SEP);
+
+      {
+        // int_col_multi
+        print.print("1");
+        print.print(ITEM_SEP);
+        print.print("2");
+      }
+      print.print(COLUMN_SEP);
+      // int_col_single
+      print.print("3");
+      print.print(COLUMN_SEP);
+
+      {
+        // long_col_multi
+        print.print("4");
+        print.print(ITEM_SEP);
+        print.print("5");
+      }
+      print.print(COLUMN_SEP);
+      // long_col_single
+      print.print("6");
+      print.print(COLUMN_SEP);
+
+      {
+        // stored_col_multi
+        print.print("stored_1");
+        print.print(ITEM_SEP);
+        print.print("stored_2");
+      }
+      print.print(COLUMN_SEP);
+      // stored_col_single
+      print.print("stored_3");
+      print.print(COLUMN_SEP);
+
+      {
+        // string_col_multi
+        print.print("string_1");
+        print.print(ITEM_SEP);
+        print.print("string_2");
+      }
+      print.print(COLUMN_SEP);
+      // string_col_single
+      print.print("string_3");
+      print.print(COLUMN_SEP);
+
+      {
+        // text_col_multi
+        print.print("text_1");
+        print.print(ITEM_SEP);
+        print.print("text_2");
+      }
+      print.print(COLUMN_SEP);
+      // text_col_single
+      print.print("text_3");
+      print.println();
+    }
+    print.close();
+
+  }
+
+  private String buildCreateLoadTable(Connection connection) throws SQLException {
+    StringBuilder builder = new StringBuilder("create TABLE if not exists loadtable (");
+    Statement statement = connection.createStatement();
+    if (statement.execute("desc testtable")) {
+      ResultSet resultSet = statement.getResultSet();
+      boolean first = true;
+      while (resultSet.next()) {
+        if (!first) {
+          builder.append(", ");
+        }
+        Object name = resultSet.getObject(1);
+        Object type = resultSet.getObject(2);
+        builder.append(name.toString());
+        builder.append(' ');
+        builder.append(type.toString());
+        first = false;
+      }
+      builder.append(")");
+      return builder.toString();
+    }
+    throw new RuntimeException("Can't build create table script.");
+  }
+
+  private void run(Connection connection, String sql) throws SQLException {
+    System.out.println("Running:" + sql);
+    Statement statement = connection.createStatement();
+    if (statement.execute(sql)) {
+      ResultSet resultSet = statement.getResultSet();
+      while (resultSet.next()) {
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int columnCount = metaData.getColumnCount();
+        for (int i = 1; i <= columnCount; i++) {
+          System.out.print(resultSet.getObject(i) + "\t");
+        }
+        System.out.println();
+      }
+    }
+    statement.close();
   }
 
   private List<String> list(String... sarray) {

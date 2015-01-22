@@ -53,6 +53,7 @@ public class BlurSerDe extends AbstractSerDe {
   private List<String> _columnNames;
   private List<TypeInfo> _columnTypes;
   private BlurSerializer _serializer;
+  private BlurColumnNameResolver _columnNameResolver;
 
   @Override
   public void initialize(Configuration conf, Properties tbl) throws SerDeException {
@@ -104,12 +105,15 @@ public class BlurSerDe extends AbstractSerDe {
       }
     }
 
-    BlurObjectInspectorGenerator blurObjectInspectorGenerator = new BlurObjectInspectorGenerator(_schema.values());
+    _columnNameResolver = new BlurColumnNameResolver(_schema.values());
+
+    BlurObjectInspectorGenerator blurObjectInspectorGenerator = new BlurObjectInspectorGenerator(_schema.values(),
+        _columnNameResolver);
     _objectInspector = blurObjectInspectorGenerator.getObjectInspector();
     _columnNames = blurObjectInspectorGenerator.getColumnNames();
     _columnTypes = blurObjectInspectorGenerator.getColumnTypes();
 
-    _serializer = new BlurSerializer(_schema);
+    _serializer = new BlurSerializer(_schema, _columnNameResolver);
   }
 
   private void nullCheck(String name, String value) throws SerDeException {

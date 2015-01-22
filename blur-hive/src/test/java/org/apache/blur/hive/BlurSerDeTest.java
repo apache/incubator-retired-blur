@@ -67,6 +67,7 @@ import org.junit.Test;
 
 public class BlurSerDeTest {
 
+  private static final File DERBY_FILE = new File("derby.log");
   private static final File METASTORE_DB_FILE = new File("metastore_db");
   private static final String FAM = "fam0";
   private static final String YYYYMMDD = "yyyyMMdd";
@@ -148,11 +149,14 @@ public class BlurSerDeTest {
     }
     rmr(WAREHOUSE);
     rmr(METASTORE_DB_FILE);
+    rmr(DERBY_FILE);
   }
 
   @After
   public void teardown() {
+    rmr(WAREHOUSE);
     rmr(METASTORE_DB_FILE);
+    rmr(DERBY_FILE);
   }
 
   private void rmr(File file) {

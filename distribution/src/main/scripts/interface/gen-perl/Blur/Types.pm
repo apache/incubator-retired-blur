@@ -3037,7 +3037,7 @@ sub write {
 
 package Blur::ColumnDefinition;
 use base qw(Class::Accessor);
-Blur::ColumnDefinition->mk_accessors( qw( family columnName subColumnName fieldLessIndexed fieldType properties sortable ) );
+Blur::ColumnDefinition->mk_accessors( qw( family columnName subColumnName fieldLessIndexed fieldType properties sortable multiValueField ) );
 
 sub new {
   my $classname = shift;
@@ -3050,6 +3050,7 @@ sub new {
   $self->{fieldType} = undef;
   $self->{properties} = undef;
   $self->{sortable} = undef;
+  $self->{multiValueField} = 1;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{family}) {
       $self->{family} = $vals->{family};
@@ -3071,6 +3072,9 @@ sub new {
     }
     if (defined $vals->{sortable}) {
       $self->{sortable} = $vals->{sortable};
+    }
+    if (defined $vals->{multiValueField}) {
+      $self->{multiValueField} = $vals->{multiValueField};
     }
   }
   return bless ($self, $classname);
@@ -3152,6 +3156,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^8$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{multiValueField});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -3207,6 +3217,11 @@ sub write {
   if (defined $self->{sortable}) {
     $xfer += $output->writeFieldBegin('sortable', TType::BOOL, 7);
     $xfer += $output->writeBool($self->{sortable});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{multiValueField}) {
+    $xfer += $output->writeFieldBegin('multiValueField', TType::BOOL, 8);
+    $xfer += $output->writeBool($self->{multiValueField});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

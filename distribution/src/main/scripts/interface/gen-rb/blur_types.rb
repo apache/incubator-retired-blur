@@ -825,6 +825,7 @@ module Blur
     FIELDTYPE = 5
     PROPERTIES = 6
     SORTABLE = 7
+    MULTIVALUEFIELD = 8
 
     FIELDS = {
       # Required. The family that this column exists within.
@@ -850,7 +851,9 @@ module Blur
       # For any custom field types, you can pass in configuration properties.
       PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
       # This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
-      SORTABLE => {:type => ::Thrift::Types::BOOL, :name => 'sortable'}
+      SORTABLE => {:type => ::Thrift::Types::BOOL, :name => 'sortable'},
+      # This will attempt to enable the ability for multiple values per column name in a single Record.
+      MULTIVALUEFIELD => {:type => ::Thrift::Types::BOOL, :name => 'multiValueField', :default => true, :optional => true}
     }
 
     def struct_fields; FIELDS; end

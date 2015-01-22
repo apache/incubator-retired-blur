@@ -2845,6 +2845,7 @@ ColumnDefinition = function(args) {
   this.fieldType = null;
   this.properties = null;
   this.sortable = null;
+  this.multiValueField = true;
   if (args) {
     if (args.family !== undefined) {
       this.family = args.family;
@@ -2866,6 +2867,9 @@ ColumnDefinition = function(args) {
     }
     if (args.sortable !== undefined) {
       this.sortable = args.sortable;
+    }
+    if (args.multiValueField !== undefined) {
+      this.multiValueField = args.multiValueField;
     }
   }
 };
@@ -2954,6 +2958,13 @@ ColumnDefinition.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 8:
+      if (ftype == Thrift.Type.BOOL) {
+        this.multiValueField = input.readBool().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -3008,6 +3019,11 @@ ColumnDefinition.prototype.write = function(output) {
   if (this.sortable !== null && this.sortable !== undefined) {
     output.writeFieldBegin('sortable', Thrift.Type.BOOL, 7);
     output.writeBool(this.sortable);
+    output.writeFieldEnd();
+  }
+  if (this.multiValueField !== null && this.multiValueField !== undefined) {
+    output.writeFieldBegin('multiValueField', Thrift.Type.BOOL, 8);
+    output.writeBool(this.multiValueField);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

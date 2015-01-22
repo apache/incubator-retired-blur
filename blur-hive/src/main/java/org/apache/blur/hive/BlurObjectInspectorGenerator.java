@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -94,11 +95,15 @@ public class BlurObjectInspectorGenerator {
       return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(pti);
     case STRUCT:
       StructTypeInfo sti = (StructTypeInfo) ti;
-      ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>(sti.getAllStructFieldTypeInfos().size());
+      List<ObjectInspector> ois = new ArrayList<ObjectInspector>(sti.getAllStructFieldTypeInfos().size());
       for (TypeInfo typeInfo : sti.getAllStructFieldTypeInfos()) {
         ois.add(createObjectInspectorWorker(typeInfo));
       }
       return ObjectInspectorFactory.getStandardStructObjectInspector(sti.getAllStructFieldNames(), ois);
+    case LIST:
+      ListTypeInfo lti = (ListTypeInfo) ti;
+      TypeInfo listElementTypeInfo = lti.getListElementTypeInfo();
+      return ObjectInspectorFactory.getStandardListObjectInspector(createObjectInspectorWorker(listElementTypeInfo));
     default:
       throw new SerDeException("No Hive categories matched for [" + ti + "]");
     }
@@ -106,6 +111,14 @@ public class BlurObjectInspectorGenerator {
 
   private TypeInfo getTypeInfo(ColumnDefinition columnDefinition) throws SerDeException {
     String fieldType = columnDefinition.getFieldType();
+    TypeInfo typeInfo = getTypeInfo(fieldType);
+    if (columnDefinition.isMultiValueField()) {
+      return TypeInfoFactory.getListTypeInfo(typeInfo);
+    }
+    return typeInfo;
+  }
+
+  private TypeInfo getTypeInfo(String fieldType) {
     if (fieldType.equals(TEXT) || fieldType.equals(STRING) || fieldType.equals(STORED)) {
       return TypeInfoFactory.stringTypeInfo;
     } else if (fieldType.equals(LONG)) {
@@ -124,7 +137,8 @@ public class BlurObjectInspectorGenerator {
           (TypeInfo) TypeInfoFactory.floatTypeInfo);
       return TypeInfoFactory.getStructTypeInfo(Arrays.asList(LATITUDE, LONGITUDE), typeInfos);
     }
-    throw new SerDeException("Blur Field Type [" + fieldType + "] is not supported.");
+    // Return string for anything that is not a built in type.
+    return TypeInfoFactory.stringTypeInfo;
   }
 
   public ObjectInspector getObjectInspector() {

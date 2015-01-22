@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -82,38 +83,50 @@ public class BlurSerializer {
     }
 
     for (int i = 0; i < size; i++) {
-      StructField structFieldRef = outputFieldRefs.get(i);
-      Object structFieldData = structFieldsDataAsList.get(i);
-      if (structFieldData == null) {
-        continue;
-      }
-      ObjectInspector fieldOI = structFieldRef.getFieldObjectInspector();
       String columnName = columnNames.get(i);
-      if (fieldOI instanceof PrimitiveObjectInspector) {
-        PrimitiveObjectInspector primitiveObjectInspector = (PrimitiveObjectInspector) fieldOI;
-        Object primitiveJavaObject = primitiveObjectInspector.getPrimitiveJavaObject(structFieldData);
-        String strValue = toString(columnName, primitiveJavaObject);
-        if (columnName.equals(BlurObjectInspectorGenerator.ROWID)) {
-          blurRecord.setRowId(strValue);
-        } else if (columnName.equals(BlurObjectInspectorGenerator.RECORDID)) {
-          blurRecord.setRecordId(strValue);
-        } else {
-          blurRecord.addColumn(columnName, strValue);
-        }
-      } else if (fieldOI instanceof StructObjectInspector) {
-        StructObjectInspector structObjectInspector = (StructObjectInspector) fieldOI;
-        Map<String, StructField> allStructFieldRefs = toMap(structObjectInspector.getAllStructFieldRefs());
-        StructField latStructField = allStructFieldRefs.get(BlurObjectInspectorGenerator.LATITUDE);
-        StructField longStructField = allStructFieldRefs.get(BlurObjectInspectorGenerator.LONGITUDE);
-        Object latStructFieldData = structObjectInspector.getStructFieldData(structFieldData, latStructField);
-        Object longStructFieldData = structObjectInspector.getStructFieldData(structFieldData, longStructField);
-        blurRecord.addColumn(columnName, toLatLong(latStructFieldData, longStructFieldData));
-      } else {
-        throw new SerDeException("ObjectInspector [" + fieldOI + "] of type ["
-            + (fieldOI != null ? fieldOI.getClass() : null) + "] not supported.");
-      }
+      StructField structFieldRef = outputFieldRefs.get(i);
+      ObjectInspector fieldOI = structFieldRef.getFieldObjectInspector();
+      Object structFieldData = structFieldsDataAsList.get(i);
+      add(blurRecord, columnName, fieldOI, structFieldData);
     }
     return blurRecord;
+  }
+
+  private void add(BlurRecord blurRecord, String columnName, ObjectInspector objectInspector, Object data)
+      throws SerDeException {
+    if (data == null) {
+      return;
+    }
+    if (objectInspector instanceof PrimitiveObjectInspector) {
+      PrimitiveObjectInspector primitiveObjectInspector = (PrimitiveObjectInspector) objectInspector;
+      Object primitiveJavaObject = primitiveObjectInspector.getPrimitiveJavaObject(data);
+      String strValue = toString(columnName, primitiveJavaObject);
+      if (columnName.equals(BlurObjectInspectorGenerator.ROWID)) {
+        blurRecord.setRowId(strValue);
+      } else if (columnName.equals(BlurObjectInspectorGenerator.RECORDID)) {
+        blurRecord.setRecordId(strValue);
+      } else {
+        blurRecord.addColumn(columnName, strValue);
+      }
+    } else if (objectInspector instanceof StructObjectInspector) {
+      StructObjectInspector structObjectInspector = (StructObjectInspector) objectInspector;
+      Map<String, StructField> allStructFieldRefs = toMap(structObjectInspector.getAllStructFieldRefs());
+      StructField latStructField = allStructFieldRefs.get(BlurObjectInspectorGenerator.LATITUDE);
+      StructField longStructField = allStructFieldRefs.get(BlurObjectInspectorGenerator.LONGITUDE);
+      Object latStructFieldData = structObjectInspector.getStructFieldData(data, latStructField);
+      Object longStructFieldData = structObjectInspector.getStructFieldData(data, longStructField);
+      blurRecord.addColumn(columnName, toLatLong(latStructFieldData, longStructFieldData));
+    } else if (objectInspector instanceof ListObjectInspector) {
+      ListObjectInspector listObjectInspector = (ListObjectInspector) objectInspector;
+      List<?> list = listObjectInspector.getList(data);
+      ObjectInspector listElementObjectInspector = listObjectInspector.getListElementObjectInspector();
+      for (Object obj : list) {
+        add(blurRecord, columnName, listElementObjectInspector, obj);
+      }
+    } else {
+      throw new SerDeException("ObjectInspector [" + objectInspector + "] of type ["
+          + (objectInspector != null ? objectInspector.getClass() : null) + "] not supported.");
+    }
   }
 
   private String toLatLong(Object latStructFieldData, Object longStructFieldData) throws SerDeException {

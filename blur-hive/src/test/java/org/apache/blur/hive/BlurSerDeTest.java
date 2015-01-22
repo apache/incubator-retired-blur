@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,26 +99,48 @@ public class BlurSerDeTest {
       tableDescriptor.setShardCount(1);
       tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/tables/test");
       client.createTable(tableDescriptor);
-      client.addColumnDefinition(TEST, new ColumnDefinition("fam0", "string-col", null, false, "string", null, false));
-      client.addColumnDefinition(TEST, new ColumnDefinition("fam0", "text-col", null, false, "text", null, false));
-      client.addColumnDefinition(TEST, new ColumnDefinition("fam0", "stored-col", null, false, "stored", null, false));
-      client.addColumnDefinition(TEST, new ColumnDefinition("fam0", "double-col", null, false, "double", null, false));
-      client.addColumnDefinition(TEST, new ColumnDefinition("fam0", "float-col", null, false, "float", null, false));
-      client.addColumnDefinition(TEST, new ColumnDefinition("fam0", "long-col", null, false, "long", null, false));
-      client.addColumnDefinition(TEST, new ColumnDefinition("fam0", "int-col", null, false, "int", null, false));
+
       Map<String, String> props = new HashMap<String, String>();
       props.put("dateFormat", YYYYMMDD);
-      client.addColumnDefinition(TEST, new ColumnDefinition("fam0", "date-col", null, false, "date", props, false));
-      client.addColumnDefinition(TEST, new ColumnDefinition("fam0", "geo-col", null, false, "geo-pointvector", null,
-          false));
 
+      client.addColumnDefinition(TEST, cd(false, "fam0", "string-col-single", "string"));
+      client.addColumnDefinition(TEST, cd(false, "fam0", "text-col-single", "text"));
+      client.addColumnDefinition(TEST, cd(false, "fam0", "stored-col-single", "stored"));
+      client.addColumnDefinition(TEST, cd(false, "fam0", "double-col-single", "double"));
+      client.addColumnDefinition(TEST, cd(false, "fam0", "float-col-single", "float"));
+      client.addColumnDefinition(TEST, cd(false, "fam0", "long-col-single", "long"));
+      client.addColumnDefinition(TEST, cd(false, "fam0", "int-col-single", "int"));
+      client.addColumnDefinition(TEST, cd(false, "fam0", "date-col-single", "date", props));
+
+      client.addColumnDefinition(TEST, cd(false, "fam0", "geo-col-single", "geo-pointvector"));
+
+      client.addColumnDefinition(TEST, cd(true, "fam0", "string-col-multi", "string"));
+      client.addColumnDefinition(TEST, cd(true, "fam0", "text-col-multi", "text"));
+      client.addColumnDefinition(TEST, cd(true, "fam0", "stored-col-multi", "stored"));
+      client.addColumnDefinition(TEST, cd(true, "fam0", "double-col-multi", "double"));
+      client.addColumnDefinition(TEST, cd(true, "fam0", "float-col-multi", "float"));
+      client.addColumnDefinition(TEST, cd(true, "fam0", "long-col-multi", "long"));
+      client.addColumnDefinition(TEST, cd(true, "fam0", "int-col-multi", "int"));
+      client.addColumnDefinition(TEST, cd(true, "fam0", "date-col-multi", "date", props));
     }
+  }
+
+  private ColumnDefinition cd(boolean multiValue, String family, String columnName, String type) {
+    return cd(multiValue, family, columnName, type, null);
+  }
+
+  private ColumnDefinition cd(boolean multiValue, String family, String columnName, String type,
+      Map<String, String> props) {
+    ColumnDefinition columnDefinition = new ColumnDefinition(family, columnName, null, false, type, props, false);
+    columnDefinition.setMultiValueField(multiValue);
+    return columnDefinition;
   }
 
   @Test
   public void test1() throws SerDeException {
     long now = System.currentTimeMillis();
     Date date = new Date(now);
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(YYYYMMDD);
     BlurSerDe blurSerDe = new BlurSerDe();
 
     Configuration conf = new Configuration();
@@ -129,43 +152,79 @@ public class BlurSerDeTest {
     blurSerDe.initialize(conf, tbl);
 
     ObjectInspector objectInspector = blurSerDe.getObjectInspector();
-    Object[] row = new Object[11];
+    Object[] row = new Object[19];
     int c = 0;
     row[c++] = "rowid";
     row[c++] = "recordid";
+    row[c++] = new Object[] { date, date };
     row[c++] = date;
+    row[c++] = new Object[] { 1234.5678, 4321.5678 };
     row[c++] = 1234.5678;
+    row[c++] = new Object[] { 1234.567f, 4321.567f };
     row[c++] = 1234.567f;
-    row[c++] = new Object[] { 1.0f, 2.0 };
+    row[c++] = new Object[] { 1.0f, 2.0f };
+    row[c++] = new Object[] { 12345678, 87654321 };
     row[c++] = 12345678;
+    row[c++] = new Object[] { 12345678l, 87654321l };
     row[c++] = 12345678l;
+    row[c++] = new Object[] { "stored input1", "stored input2" };
     row[c++] = "stored input";
+    row[c++] = new Object[] { "string input1", "string input2" };
     row[c++] = "string input";
+    row[c++] = new Object[] { "text input1", "text input2" };
     row[c++] = "text input";
 
     BlurRecord blurRecord = (BlurRecord) blurSerDe.serialize(row, objectInspector);
     assertEquals("rowid", blurRecord.getRowId());
     assertEquals("recordid", blurRecord.getRecordId());
 
-    Map<String, String> columns = toMap(blurRecord.getColumns());
-    assertEquals("string input", columns.get("string-col"));
-    assertEquals("text input", columns.get("text-col"));
-    assertEquals("stored input", columns.get("stored-col"));
-    assertEquals("1234.5678", columns.get("double-col"));
-    assertEquals("1234.567", columns.get("float-col"));
-    assertEquals("12345678", columns.get("long-col"));
-    assertEquals("12345678", columns.get("int-col"));
-    assertEquals("1.0,2.0", columns.get("geo-col"));
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(YYYYMMDD);
-    assertEquals(simpleDateFormat.format(date), columns.get("date-col"));
+    Map<String, List<String>> columns = toMap(blurRecord.getColumns());
+
+    assertEquals(list("string input"), columns.get("string-col-single"));
+    assertEquals(list("string input1", "string input2"), columns.get("string-col-multi"));
+
+    assertEquals(list("text input"), columns.get("text-col-single"));
+    assertEquals(list("text input1", "text input2"), columns.get("text-col-multi"));
+
+    assertEquals(list("stored input"), columns.get("stored-col-single"));
+    assertEquals(list("stored input1", "stored input2"), columns.get("stored-col-multi"));
+
+    assertEquals(list("1234.5678"), columns.get("double-col-single"));
+    assertEquals(list("1234.5678", "4321.5678"), columns.get("double-col-multi"));
+
+    assertEquals(list("1234.567"), columns.get("float-col-single"));
+    assertEquals(list("1234.567", "4321.567"), columns.get("float-col-multi"));
+
+    assertEquals(list("12345678"), columns.get("long-col-single"));
+    assertEquals(list("12345678", "87654321"), columns.get("long-col-multi"));
+
+    assertEquals(list("12345678"), columns.get("int-col-single"));
+    assertEquals(list("12345678", "87654321"), columns.get("int-col-multi"));
+
+    assertEquals(list(simpleDateFormat.format(date)), columns.get("date-col-single"));
+    assertEquals(list(simpleDateFormat.format(date), simpleDateFormat.format(date)), columns.get("date-col-multi"));
+
+    assertEquals(list("1.0,2.0"), columns.get("geo-col-single"));
   }
 
-  private Map<String, String> toMap(List<BlurColumn> columns) {
-    Map<String, String> map = new HashMap<String, String>();
+  private List<String> list(String... sarray) {
+    List<String> list = new ArrayList<String>();
+    for (String s : sarray) {
+      list.add(s);
+    }
+    return list;
+  }
+
+  private Map<String, List<String>> toMap(List<BlurColumn> columns) {
+    Map<String, List<String>> map = new HashMap<String, List<String>>();
     for (BlurColumn blurColumn : columns) {
-      map.put(blurColumn.getName(), blurColumn.getValue());
+      String name = blurColumn.getName();
+      List<String> list = map.get(name);
+      if (list == null) {
+        map.put(name, list = new ArrayList<String>());
+      }
+      list.add(blurColumn.getValue());
     }
     return map;
   }
-
 }

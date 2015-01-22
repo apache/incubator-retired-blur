@@ -725,7 +725,11 @@ struct ColumnDefinition {
   /**
    * This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
    */
-  7:bool sortable
+  7:bool sortable,
+  /**
+   * This will attempt to enable the ability for multiple values per column name in a single Record.
+   */
+  8:optional bool multiValueField = 1
 }
 
 /**

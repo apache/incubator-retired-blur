@@ -242,7 +242,8 @@ public abstract class BlurClusterTestBase {
     TableContext tableContext = TableContext.create(client.describe(tableName));
     FieldManager fieldManager = tableContext.getFieldManager();
 
-    assertTrue(fieldManager.addColumnDefinition("test-family", "test-column", null, false, "string", false, null));
+    assertTrue(fieldManager
+        .addColumnDefinition("test-family", "test-column", null, false, "string", false, false, null));
 
     TableContext.clear();
     Schema newschema = client.schema(tableName);

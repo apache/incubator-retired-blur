@@ -35,7 +35,7 @@ public class SpatialTermQueryPrefixTreeStrategyFieldTypeDefinitionQuadPrefixTest
     Map<String, String> props = new HashMap<String, String>();
     props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.QUAD_PREFIX_TREE);
     fieldManager.addColumnDefinition("fam", "geo", null, false,
-        SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition.NAME, false, props);
+        SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition.NAME, false, false, props);
   }
 
 }

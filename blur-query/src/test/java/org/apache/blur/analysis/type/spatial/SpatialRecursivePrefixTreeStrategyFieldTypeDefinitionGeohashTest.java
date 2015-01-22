@@ -24,7 +24,8 @@ import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.junit.Test;
 
-public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinitionGeohashTest extends BaseSpatialFieldTypeDefinitionTest {
+public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinitionGeohashTest extends
+    BaseSpatialFieldTypeDefinitionTest {
 
   @Test
   public void testRecursivePrefixTreeWithGeohash() throws IOException, ParseException {
@@ -35,7 +36,7 @@ public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinitionGeohashTest ex
     Map<String, String> props = new HashMap<String, String>();
     props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.GEOHASH_PREFIX_TREE);
     fieldManager.addColumnDefinition("fam", "geo", null, false,
-        SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME, false, props);
+        SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME, false, false, props);
   }
 
 }

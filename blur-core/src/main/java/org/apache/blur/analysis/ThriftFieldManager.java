@@ -55,6 +55,7 @@ public class ThriftFieldManager extends BaseFieldManager {
     columnDefinition.setProperties(fieldTypeDefinition.getProperties());
     columnDefinition.setSortable(fieldTypeDefinition.isSortEnable());
     columnDefinition.setSubColumnName(fieldTypeDefinition.getSubColumnName());
+    columnDefinition.setMultiValueField(fieldTypeDefinition.isMultiValueField());
 
     try {
       return _client.addColumnDefinition(_table, columnDefinition);
@@ -82,11 +83,12 @@ public class ThriftFieldManager extends BaseFieldManager {
           if (field.equals(fieldName)) {
             boolean fieldLessIndexing = columnDefinition.isFieldLessIndexed();
             boolean sortenabled = columnDefinition.isSortable();
+            boolean multiValueField = columnDefinition.isMultiValueField();
             Map<String, String> props = columnDefinition.getProperties();
 
             String fieldType = columnDefinition.getFieldType();
             FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType,
-                sortenabled, props);
+                sortenabled, multiValueField, props);
             fieldTypeDefinition.setFamily(columnDefinition.getFamily());
             fieldTypeDefinition.setColumnName(columnDefinition.getColumnName());
             fieldTypeDefinition.setSubColumnName(columnDefinition.getSubColumnName());

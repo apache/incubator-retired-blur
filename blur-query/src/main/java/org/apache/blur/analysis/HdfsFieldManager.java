@@ -50,12 +50,13 @@ public class HdfsFieldManager extends BaseFieldManager {
   private static final String FIELD_TYPE = "_fieldType_";
   private static final String FIELD_LESS_INDEXING = "_fieldLessIndexing_";
   private static final String SORTENABLED = "_sortEnabled_";
+  private static final String MULTI_VALUE_FIELD = "_multiValueField_";
   private static final String FAMILY = "_family_";
   private static final String COLUMN_NAME = "_columnName_";
   private static final String SUB_COLUMN_NAME = "_subColumnName_";
   private static final String TYPE_FILE_EXT = ".type";
 
-  private static final Lock _lock =  new ReentrantReadWriteLock().writeLock();
+  private static final Lock _lock = new ReentrantReadWriteLock().writeLock();
 
   private final Configuration _configuration;
   private final Path _storagePath;
@@ -119,6 +120,7 @@ public class HdfsFieldManager extends BaseFieldManager {
         String fieldType = fieldTypeDefinition.getFieldType();
         boolean fieldLessIndexed = fieldTypeDefinition.isFieldLessIndexed();
         boolean sortEnable = fieldTypeDefinition.isSortEnable();
+        boolean multiValueField = fieldTypeDefinition.isMultiValueField();
         LOG.info(
             "Attempting to store new field [{0}] with fieldLessIndexing [{1}] with type [{2}] and properties [{3}]",
             fieldName, fieldLessIndexed, fieldType, fieldTypeDefinition.getProperties());
@@ -129,6 +131,7 @@ public class HdfsFieldManager extends BaseFieldManager {
         setProperty(properties, SUB_COLUMN_NAME, fieldTypeDefinition.getSubColumnName());
         setProperty(properties, FIELD_LESS_INDEXING, Boolean.toString(fieldLessIndexed));
         setProperty(properties, SORTENABLED, Boolean.toString(sortEnable));
+        setProperty(properties, MULTI_VALUE_FIELD, Boolean.toString(multiValueField));
 
         setProperty(properties, FIELD_TYPE, fieldType);
         Map<String, String> props = fieldTypeDefinition.getProperties();
@@ -192,15 +195,18 @@ public class HdfsFieldManager extends BaseFieldManager {
       inputStream.close();
       boolean fieldLessIndexing = Boolean.parseBoolean(properties.getProperty(FIELD_LESS_INDEXING));
       boolean sortenabled = Boolean.parseBoolean(properties.getProperty(SORTENABLED));
+      boolean multiValueField = Boolean.parseBoolean(properties.getProperty(MULTI_VALUE_FIELD));
       String fieldType = properties.getProperty(FIELD_TYPE);
       Map<String, String> props = toMap(properties);
       FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType,
-          sortenabled, props);
+          sortenabled, multiValueField, props);
       fieldTypeDefinition.setFamily(properties.getProperty(FAMILY));
       fieldTypeDefinition.setColumnName(properties.getProperty(COLUMN_NAME));
       fieldTypeDefinition.setSubColumnName(properties.getProperty(SUB_COLUMN_NAME));
       fieldTypeDefinition.setFieldLessIndexed(fieldLessIndexing);
       fieldTypeDefinition.setFieldType(properties.getProperty(FIELD_TYPE));
+      fieldTypeDefinition.setSortEnable(sortenabled);
+      fieldTypeDefinition.setMultiValueField(multiValueField);
       fieldTypeDefinition.setProperties(props);
       registerFieldTypeDefinition(fieldName, fieldTypeDefinition);
     } finally {
@@ -219,6 +225,7 @@ public class HdfsFieldManager extends BaseFieldManager {
     result.remove(FIELD_TYPE);
     result.remove(FIELD_LESS_INDEXING);
     result.remove(SORTENABLED);
+    result.remove(MULTI_VALUE_FIELD);
     return result;
   }
 

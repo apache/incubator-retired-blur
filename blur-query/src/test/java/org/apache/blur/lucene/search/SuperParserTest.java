@@ -90,7 +90,7 @@ public class SuperParserTest {
       }
     };
 
-    fieldManager.addColumnDefinition(null, "bin", null, false, "string", true, null);
+    fieldManager.addColumnDefinition(null, "bin", null, false, "string", true, false, null);
     fieldManager.addColumnDefinitionInt("a", "id_i");
     fieldManager.addColumnDefinitionDouble("a", "id_d");
     fieldManager.addColumnDefinitionFloat("a", "id_f");

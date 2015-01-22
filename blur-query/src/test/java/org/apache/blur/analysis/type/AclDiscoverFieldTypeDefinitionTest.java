@@ -145,8 +145,8 @@ public class AclDiscoverFieldTypeDefinitionTest {
   }
 
   private void setupFieldManager(BaseFieldManager fieldManager) throws IOException {
-    fieldManager.addColumnDefinition(FAM, "string", null, false, "string", false, null);
-    fieldManager.addColumnDefinition(FAM, "discover", null, false, "acl-discover", false, null);
+    fieldManager.addColumnDefinition(FAM, "string", null, false, "string", false, false, null);
+    fieldManager.addColumnDefinition(FAM, "discover", null, false, "acl-discover", false, false, null);
   }
 
   protected BaseFieldManager getFieldManager(Analyzer a) throws IOException {

@@ -447,9 +447,10 @@ public abstract class TableAdmin implements Iface {
     }
     boolean sortable = columnDefinition.isSortable();
     Map<String, String> props = columnDefinition.getProperties();
+    boolean multiValueField = columnDefinition.isMultiValueField();
     try {
       return fieldManager.addColumnDefinition(family, columnName, subColumnName, fieldLessIndexed, fieldType, sortable,
-          props);
+          multiValueField, props);
     } catch (IOException e) {
       throw new BException(
           "Unknown error while trying to addColumnDefinition on table [{0}] with columnDefinition [{1}]", e, table,
@@ -583,6 +584,7 @@ public abstract class TableAdmin implements Iface {
     columnDefinition.setFieldType(fieldTypeDefinition.getFieldType());
     columnDefinition.setSortable(fieldTypeDefinition.isSortEnable());
     columnDefinition.setProperties(fieldTypeDefinition.getProperties());
+    columnDefinition.setMultiValueField(fieldTypeDefinition.isMultiValueField());
     return columnDefinition;
   }
 
@@ -712,10 +714,11 @@ public abstract class TableAdmin implements Iface {
     // TODO Start transaction here...
   }
 
-//  @Override
-//  public void bulkMutateFinish(String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException,
-//      TException {
-//    throw new RuntimeException("Not implemented.");
-//  }
+  // @Override
+  // public void bulkMutateFinish(String bulkId, boolean apply, boolean
+  // blockUntilComplete) throws BlurException,
+  // TException {
+  // throw new RuntimeException("Not implemented.");
+  // }
 
 }

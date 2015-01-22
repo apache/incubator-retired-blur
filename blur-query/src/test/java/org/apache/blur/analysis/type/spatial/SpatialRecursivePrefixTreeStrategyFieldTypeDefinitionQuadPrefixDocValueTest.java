@@ -38,7 +38,7 @@ public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinitionQuadPrefixDocV
     props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.QUAD_PREFIX_TREE);
     props.put(SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.DOC_VALUE, "true");
     fieldManager.addColumnDefinition("fam", "geo", null, false,
-        SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME, false, props);
+        SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME, false, false, props);
   }
 
 }

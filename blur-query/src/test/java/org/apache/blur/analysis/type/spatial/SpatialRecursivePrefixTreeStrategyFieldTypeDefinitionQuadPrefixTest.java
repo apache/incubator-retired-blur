@@ -36,7 +36,7 @@ public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinitionQuadPrefixTest
     Map<String, String> props = new HashMap<String, String>();
     props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.QUAD_PREFIX_TREE);
     fieldManager.addColumnDefinition("fam", "geo", null, false,
-        SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME, false, props);
+        SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME, false, false, props);
   }
 
 }

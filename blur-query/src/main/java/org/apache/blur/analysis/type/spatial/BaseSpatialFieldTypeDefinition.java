@@ -92,7 +92,7 @@ public abstract class BaseSpatialFieldTypeDefinition extends CustomFieldTypeDefi
     SpatialArgs args = SpatialArgsParser.parse(text, _shapeReadWriter);
     checkSpatialArgs(args);
     synchronized (_strategy) {
-      return _strategy.makeQuery(args);  
+      return _strategy.makeQuery(args);
     }
   }
 
@@ -172,4 +172,14 @@ public abstract class BaseSpatialFieldTypeDefinition extends CustomFieldTypeDefi
     }
     _supportedIndexedShapes.add(c);
   }
+
+  @Override
+  public void setMultiValueField(boolean multiValueField) {
+    if (!multiValueField) {
+      super.setMultiValueField(multiValueField);
+    } else {
+      throw new RuntimeException("Field type [" + getName() + "] can not multi valued.");
+    }
+  }
+
 }

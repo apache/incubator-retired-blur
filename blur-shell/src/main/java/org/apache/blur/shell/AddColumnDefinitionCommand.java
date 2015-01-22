@@ -65,6 +65,12 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
         }
       }
     }
+    if (cmd.hasOption('M')) {
+      columnDefinition.setMultiValueField(true);
+    } else {
+      columnDefinition.setMultiValueField(false);
+    }
+
     if (!client.addColumnDefinition(args[1], columnDefinition)) {
       out.println("Column Definition was not added, check to see if the column has already been added to the table.");
     }
@@ -72,12 +78,12 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
 
   @Override
   public String description() {
-    return "Defines a new column in the named table. '-F' option is for fieldless searching and the '-S' is for sortability.";
+    return "Defines a new column in the named table. '-F' option is for fieldless searching, the '-S' is for sortability and '-M' is for allowing multiple values per column.";
   }
 
   @Override
   public String usage() {
-    return "<table name> <family> <column name> <type> [-s <sub column name>] [-F] [-S] [-p name value]*";
+    return "<table name> <family> <column name> <type> [-s <sub column name>] [-F] [-S] [-M] [-p name value]*";
   }
 
   @Override
@@ -96,6 +102,8 @@ public class AddColumnDefinitionCommand extends Command implements TableFirstArg
         .withDescription("Sets the properties for this column definition.").create("p"));
     options.addOption(OptionBuilder.withDescription(
         "Should the column definition be definied as a sortable column definition.").create("S"));
+    options.addOption(OptionBuilder.withDescription(
+        "Should the column definition be definied as a multi value column definition.").create("M"));
 
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;

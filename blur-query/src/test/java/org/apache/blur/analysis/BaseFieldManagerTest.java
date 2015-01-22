@@ -41,7 +41,7 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManager() throws IOException {
     FieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, true, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, true, "text", false, false, null);
 
     Record record = new Record();
     record.setFamily("fam1");
@@ -64,7 +64,7 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManagerWithNullFamily() throws IOException {
     FieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition(null, "col1", null, true, "text", false, null);
+    memoryFieldManager.addColumnDefinition(null, "col1", null, true, "text", false, false, null);
 
     Record record = new Record();
     record.setRecordId("1213");
@@ -82,7 +82,7 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManagerMultipleColumnsSameName() throws IOException {
     FieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, true, null);
 
     Record record = new Record();
     record.setFamily("fam1");
@@ -96,17 +96,36 @@ public class BaseFieldManagerTest {
 
     int c = 0;
     for (Field field : memoryFieldManager.getFields("1", record)) {
-//      assertFieldEquals(fields.get(c++), field);
+      // assertFieldEquals(fields.get(c++), field);
       System.out.println("Should be [" + fields.get(c++) + "] was [" + field + "]");
     }
 
   }
 
   @Test
+  public void testFieldManagerMultipleColumnsSameNameWhenNotAllowed() throws IOException {
+    FieldManager memoryFieldManager = newFieldManager(true);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, false, null);
+
+    Record record = new Record();
+    record.setFamily("fam1");
+    record.setRecordId("1213");
+    record.addToColumns(new Column("col1", "value1"));
+    record.addToColumns(new Column("col1", "value2"));
+
+    try {
+      memoryFieldManager.getFields("1", record);
+      fail();
+    } catch (IOException ex) {
+      assertEquals("Field [fam1.col1] does not allow more than one column value.", ex.getMessage());
+    }
+  }
+
+  @Test
   public void testFieldManagerMultipleColumnsDifferentNames() throws IOException {
     FieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, null);
-    memoryFieldManager.addColumnDefinition("fam1", "col2", null, true, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col2", null, true, "text", false, false, null);
 
     Record record = new Record();
     record.setFamily("fam1");
@@ -128,8 +147,8 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManagerMultipleColumnsDifferentNamesDifferentFamilies() throws IOException {
     FieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, null);
-    memoryFieldManager.addColumnDefinition("fam2", "col2", null, false, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, false, null);
+    memoryFieldManager.addColumnDefinition("fam2", "col2", null, false, "text", false, false, null);
 
     Record record1 = new Record();
     record1.setFamily("fam1");
@@ -159,8 +178,8 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManagerMultipleColumnsDifferentNamesNullFamilies() throws IOException {
     FieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition(null, "col1", null, false, "text", false, null);
-    memoryFieldManager.addColumnDefinition(null, "col2", null, false, "text", false, null);
+    memoryFieldManager.addColumnDefinition(null, "col1", null, false, "text", false, false, null);
+    memoryFieldManager.addColumnDefinition(null, "col2", null, false, "text", false, false, null);
 
     Record record1 = new Record();
     record1.setRecordId("1213");
@@ -191,7 +210,7 @@ public class BaseFieldManagerTest {
   public void testFieldManagerSubNameWithMainColumnNameNoParent() throws IOException {
     FieldManager memoryFieldManager = newFieldManager(true);
     try {
-      memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", false, "text", false, null);
+      memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", false, "text", false, false, null);
       fail("Should throw IllegalArgumentException");
     } catch (IllegalArgumentException e) {
     }
@@ -200,9 +219,9 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManagerSubNameWithMainColumnNameNoFieldLess() throws IOException {
     FieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, false, null);
     try {
-      memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", true, "text", false, null);
+      memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", true, "text", false, false, null);
       fail("Should throw IllegalArgumentException");
     } catch (IllegalArgumentException e) {
     }
@@ -211,8 +230,8 @@ public class BaseFieldManagerTest {
   @Test
   public void testFieldManagerSubName() throws IOException {
     FieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, null);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", false, "text", false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, false, "text", false, false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", "sub1", false, "text", false, false, null);
 
     Record record = new Record();
     record.setRecordId("1213");

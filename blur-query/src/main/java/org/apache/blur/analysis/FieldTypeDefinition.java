@@ -38,6 +38,7 @@ public abstract class FieldTypeDefinition {
   private String _subColumnName;
   private String _fieldType;
   private Map<String, String> _properties;
+  private boolean _multiValueField;
 
   /**
    * Gets the name of the field type.
@@ -192,6 +193,9 @@ public abstract class FieldTypeDefinition {
     if (sortEnable && !checkSupportForSorting()) {
       throw new RuntimeException("Field type [" + getName() + "] is not sortable.");
     }
+    if (sortEnable && isMultiValueField()) {
+      throw new RuntimeException("Field type [" + getName() + "] can not be sortable and multi valued.");
+    }
     _sortEnable = sortEnable;
   }
 
@@ -240,5 +244,16 @@ public abstract class FieldTypeDefinition {
   }
 
   public abstract SortField getSortField(boolean reverse);
+
+  public void setMultiValueField(boolean multiValueField) {
+    if (multiValueField && isSortEnable()) {
+      throw new RuntimeException("Field type [" + getName() + "] can not be sortable and multi valued.");
+    }
+    _multiValueField = multiValueField;
+  }
+
+  public boolean isMultiValueField() {
+    return _multiValueField;
+  }
 
 }

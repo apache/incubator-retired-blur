@@ -141,8 +141,8 @@ public class AclReadFieldTypeDefinitionTest {
   }
 
   private void setupFieldManager(BaseFieldManager fieldManager) throws IOException {
-    fieldManager.addColumnDefinition(FAM, "string", null, false, "string", false, null);
-    fieldManager.addColumnDefinition(FAM, "read", null, false, "acl-read", false, null);
+    fieldManager.addColumnDefinition(FAM, "string", null, false, "string", false, false, null);
+    fieldManager.addColumnDefinition(FAM, "read", null, false, "acl-read", false, false, null);
   }
 
   protected BaseFieldManager getFieldManager(Analyzer a) throws IOException {

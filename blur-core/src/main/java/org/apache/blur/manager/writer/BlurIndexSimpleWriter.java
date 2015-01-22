@@ -605,7 +605,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     final String table = _tableContext.getTable();
     final String shard = _shardContext.getShard();
 
-    
     final BulkEntry bulkEntry = _bulkWriters.get(bulkId);
     if (bulkEntry == null) {
       LOG.info("Shard [{2}/{3}] Id [{0}] Nothing to apply.", bulkId, apply, table, shard);
@@ -710,7 +709,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
             });
           } catch (IOException e) {
             LOG.error("Shard [{0}/{1}] Id [{2}] Unknown error while trying to finish the bulk updates.", table, shard,
-                bulkId);
+                bulkId, e);
           }
         }
       };

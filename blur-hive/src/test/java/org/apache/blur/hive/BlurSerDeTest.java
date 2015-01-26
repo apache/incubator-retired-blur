@@ -21,7 +21,8 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
+import java.net.ServerSocket;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.DriverManager;
@@ -55,10 +56,12 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.mapred.MiniMRCluster;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.jdbc.HiveDriver;
+import org.apache.hive.service.server.HiveServer2;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -67,8 +70,12 @@ import org.junit.Test;
 
 public class BlurSerDeTest {
 
-  private static final File DERBY_FILE = new File("derby.log");
-  private static final File METASTORE_DB_FILE = new File("metastore_db");
+  public static final File WAREHOUSE = new File("./target/tmp/warehouse");
+  public static final String COLUMN_SEP = new String(new char[] { 1 });
+  public static final String ITEM_SEP = new String(new char[] { 2 });
+  public static final File DERBY_FILE = new File("derby.log");
+  public static final File METASTORE_DB_FILE = new File("metastore_db");
+
   private static final String FAM = "fam0";
   private static final String YYYYMMDD = "yyyyMMdd";
   private static final String YYYY_MM_DD = "yyyy-MM-dd";
@@ -76,9 +83,6 @@ public class BlurSerDeTest {
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurSerDeTest"));
   private static MiniCluster miniCluster;
   private static boolean externalProcesses = true;
-  private static final File WAREHOUSE = new File("./target/tmp/warehouse");
-  private static final String COLUMN_SEP = new String(new char[] { 1 });
-  private static final String ITEM_SEP = new String(new char[] { 2 });
 
   @BeforeClass
   public static void startCluster() throws IOException {
@@ -109,8 +113,6 @@ public class BlurSerDeTest {
   public static void shutdownCluster() {
     miniCluster.shutdownBlurCluster();
   }
-
-  private Object mrMiniCluster;
 
   @Before
   public void setup() throws BlurException, TException, IOException {
@@ -159,7 +161,7 @@ public class BlurSerDeTest {
     rmr(DERBY_FILE);
   }
 
-  private void rmr(File file) {
+  public static void rmr(File file) {
     if (!file.exists()) {
       return;
     }
@@ -254,9 +256,20 @@ public class BlurSerDeTest {
   }
 
   @Test
-  public void test2() throws SQLException, ClassNotFoundException, IOException, BlurException, TException {
+  public void test2() throws SQLException, ClassNotFoundException, IOException, BlurException, TException, InterruptedException {
+    miniCluster.startMrMiniCluster();
+    Configuration configuration = miniCluster.getMRConfiguration();
+    HiveConf hiveConf = new HiveConf(configuration, getClass());
+    hiveConf.set("hive.server2.thrift.port", "0");
+    HiveServer2 hiveServer2 = new HiveServer2();
+    hiveServer2.init(hiveConf);
+    hiveServer2.start();
+
+    int port = waitForStartupAndGetPort(hiveServer2);
+
     Class.forName(HiveDriver.class.getName());
-    Connection connection = DriverManager.getConnection("jdbc:hive2://");
+    String userName = UserGroupInformation.getCurrentUser().getShortUserName();
+    Connection connection = DriverManager.getConnection("jdbc:hive2://localhost:" + port, userName, "");
 
     run(connection, "set hive.metastore.warehouse.dir=" + WAREHOUSE.toURI().toString());
     run(connection, "create database if not exists testdb");
@@ -277,11 +290,8 @@ public class BlurSerDeTest {
     generateData(tableDir, totalRecords);
 
     run(connection, "select * from loadtable");
-
-    Configuration configuration = startMrMiniCluster();
-    run(connection, "set mapred.job.tracker=" + configuration.get("mapred.job.tracker"));
     run(connection, "insert into table testtable select * from loadtable");
-    stopMrMiniCluster();
+    miniCluster.stopMrMiniCluster();
     connection.close();
 
     Iface client = BlurClient.getClientFromZooKeeperConnectionStr(miniCluster.getZkConnectionString());
@@ -291,25 +301,6 @@ public class BlurSerDeTest {
     blurQuery.setQuery(query);
     BlurResults results = client.query(TEST, blurQuery);
     assertEquals(totalRecords, results.getTotalResults());
-  }
-
-  private void stopMrMiniCluster() {
-    callMethod(mrMiniCluster, "shutdown");
-  }
-
-  private Object callMethod(Object o, String methodName, Class<?>... classes) {
-    Class<? extends Object> clazz = o.getClass();
-    try {
-      Method method = clazz.getDeclaredMethod(methodName, classes);
-      return method.invoke(o, new Object[] {});
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private Configuration startMrMiniCluster() throws IOException {
-    mrMiniCluster = new MiniMRCluster(1, miniCluster.getFileSystemUri().toString(), 1);
-    return (Configuration) callMethod(mrMiniCluster, "createJobConf");
   }
 
   private void generateData(File file, int totalRecords) throws IOException {
@@ -443,7 +434,7 @@ public class BlurSerDeTest {
     throw new RuntimeException("Can't build create table script.");
   }
 
-  private void run(Connection connection, String sql) throws SQLException {
+  public static void run(Connection connection, String sql) throws SQLException {
     System.out.println("Running:" + sql);
     Statement statement = connection.createStatement();
     if (statement.execute(sql)) {
@@ -479,5 +470,55 @@ public class BlurSerDeTest {
       list.add(blurColumn.getValue());
     }
     return map;
+  }
+
+  @SuppressWarnings("resource")
+  private int waitForStartupAndGetPort(HiveServer2 hiveServer2) throws InterruptedException {
+    while (true) {
+      // thriftCLIService->server->serverTransport_->serverSocket_
+      Thread.sleep(100);
+      Object o1 = getObject(hiveServer2, "thriftCLIService");
+      if (o1 == null) {
+        continue;
+      }
+      Object o2 = getObject(o1, "server");
+      if (o2 == null) {
+        continue;
+      }
+      Object o3 = getObject(o2, "serverTransport_");
+      if (o3 == null) {
+        continue;
+      }
+      Object o4 = getObject(o3, "serverSocket_");
+      if (o4 == null) {
+        continue;
+      }
+      ServerSocket socket = (ServerSocket) o4;
+      return socket.getLocalPort();
+    }
+  }
+
+  private Object getObject(Object o, String field) {
+    return getObject(o, field, o.getClass());
+  }
+
+  private Object getObject(Object o, String field, Class<? extends Object> clazz) {
+    try {
+      Field declaredField = clazz.getDeclaredField(field);
+      return getObject(o, declaredField);
+    } catch (NoSuchFieldException e) {
+      return getObject(o, field, clazz.getSuperclass());
+    } catch (SecurityException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Object getObject(Object o, Field field) {
+    field.setAccessible(true);
+    try {
+      return field.get(o);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

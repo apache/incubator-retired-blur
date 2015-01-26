@@ -18,8 +18,7 @@ package org.apache.blur.hive;
 
 import java.io.IOException;
 
-import groovy.lang.Writable;
-
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;

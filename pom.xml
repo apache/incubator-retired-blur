@@ -397,13 +397,16 @@ under the License.
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<configuration>
-						<argLine>-XX:+UseConcMarkSweepGC -Xmx1g -Xms1g</argLine>
+						<argLine>-XX:+UseConcMarkSweepGC -Xmx1g -Xms1g -XX:MaxPermSize=256m</argLine>
 						<forkCount>2</forkCount>
 						<forkMode>always</forkMode>
 						<reuseForks>false</reuseForks>
 						<systemPropertyVariables>
 							<blur.tmp.dir>${project.build.directory}/target/tmp</blur.tmp.dir>
 						</systemPropertyVariables>
+						<environmentVariables>
+							<JAVA_HOME>${java.home}</JAVA_HOME>
+						</environmentVariables>
 					</configuration>
 				</plugin>
 				<!-- Ignore/Execute plugin execution -->
@@ -528,7 +531,7 @@ under the License.
 				</property>
 			</activation>
 			<properties>
-				<hadoop.version>2.2.0</hadoop.version>
+				<hadoop.version>2.6.0</hadoop.version>
                 <projectVersion>hadoop2-${hadoop.version}-${project.parent.version}</projectVersion>
 			</properties>
 			<modules>

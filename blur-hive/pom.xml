@@ -38,30 +38,7 @@
 			<version>${slf4j.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.hive</groupId>
-			<artifactId>hive-serde</artifactId>
-			<version>${hive.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hive</groupId>
-			<artifactId>hive-exec</artifactId>
-			<version>${hive.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hive</groupId>
-			<artifactId>hive-cli</artifactId>
-			<version>${hive.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.hive</groupId>
-			<artifactId>hive-jdbc</artifactId>
-			<version>${hive.version}</version>
-			<scope>test</scope>
-		</dependency>
+
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
@@ -196,6 +173,30 @@
 					<version>${hadoop.version}</version>
 					<scope>test</scope>
 				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-exec</artifactId>
+					<version>${hive.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-serde</artifactId>
+					<version>${hive.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-cli</artifactId>
+					<version>${hive.version}</version>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-jdbc</artifactId>
+					<version>${hive.version}</version>
+					<scope>test</scope>
+				</dependency>
 			</dependencies>
 		</profile>
 		<profile>
@@ -241,6 +242,30 @@
 						</exclusion>
 					</exclusions>
 				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-exec</artifactId>
+					<version>${hive.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-serde</artifactId>
+					<version>${hive.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-cli</artifactId>
+					<version>${hive.version}</version>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-jdbc</artifactId>
+					<version>${hive.version}</version>
+					<scope>test</scope>
+				</dependency>
 			</dependencies>
 		</profile>
 		<profile>
@@ -253,13 +278,23 @@
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-common</artifactId>
+					<version>${hadoop.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-client</artifactId>
 					<version>${hadoop.version}</version>
-					<scope>provided</scope>
 				</dependency>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-minicluster</artifactId>
+					<version>${hadoop.version}</version>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hadoop</groupId>
+					<artifactId>hadoop-hdfs</artifactId>
 					<version>${hadoop.version}</version>
 					<scope>test</scope>
 				</dependency>
@@ -285,6 +320,30 @@
 							<artifactId>jetty-webapp</artifactId>
 						</exclusion>
 					</exclusions>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-exec</artifactId>
+					<version>${hive.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-serde</artifactId>
+					<version>${hive.version}</version>
+					<scope>provided</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-cli</artifactId>
+					<version>${hive.version}</version>
+					<scope>test</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.apache.hive</groupId>
+					<artifactId>hive-jdbc</artifactId>
+					<version>${hive.version}</version>
+					<scope>test</scope>
 				</dependency>
 			</dependencies>
 		</profile>

@@ -37,7 +37,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -49,6 +51,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.script.Bindings;
+import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -81,6 +89,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.util.VersionInfo;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -95,6 +104,9 @@ public class MiniCluster {
   private List<MiniClusterServer> controllers = new ArrayList<MiniClusterServer>();
   private List<MiniClusterServer> shards = new ArrayList<MiniClusterServer>();
   private ThreadGroup group = new ThreadGroup(id);
+  private Configuration _conf;
+  private Object mrMiniCluster;
+  private Configuration _mrConf;
 
   public static void main(String[] args) throws IOException, InterruptedException, KeeperException, BlurException,
       TException {
@@ -168,6 +180,111 @@ public class MiniCluster {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public void stopMrMiniCluster() throws IOException {
+    ScriptEngineManager manager = new ScriptEngineManager();
+    ScriptEngine engine = manager.getEngineByName("js");
+    if (useYarn()) {
+      engine.put("mrMiniCluster", mrMiniCluster);
+      try {
+        engine.eval("mrMiniCluster.stop();");
+      } catch (ScriptException e) {
+        throw new IOException(e);
+      }
+    } else {
+      engine.put("mrMiniCluster", mrMiniCluster);
+      try {
+        engine.eval("mrMiniCluster.shutdown();");
+      } catch (ScriptException e) {
+        throw new IOException(e);
+      }
+    }
+  }
+
+  public void startMrMiniCluster() throws IOException {
+    _mrConf = startMrMiniClusterInternal();
+  }
+
+  public Configuration getMRConfiguration() {
+    return _mrConf;
+  }
+
+  private Configuration startMrMiniClusterInternal() throws IOException {
+    String fileSystemUri = getFileSystemUri().toString();
+    ScriptEngineManager manager = new ScriptEngineManager();
+    ScriptEngine engine = manager.getEngineByName("js");
+
+    if (useYarn()) {
+      int nodeManagers = 1;
+      Class<?> c = getClass();
+      engine.put("c", c);
+      engine.put("nodeManagers", nodeManagers);
+      engine.put("fileSystemUri", fileSystemUri);
+      try {
+        engine.eval("conf = new org.apache.hadoop.yarn.conf.YarnConfiguration()");
+        engine.eval("org.apache.hadoop.fs.FileSystem.setDefaultUri(conf, fileSystemUri);");
+        engine
+            .eval("mrMiniCluster = org.apache.hadoop.mapred.MiniMRClientClusterFactory.create(c, nodeManagers, conf);");
+        engine.eval("mrMiniCluster.start();");
+        engine.eval("configuration = mrMiniCluster.getConfig();");
+      } catch (ScriptException e) {
+        throw new IOException(e);
+      }
+
+      Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+      mrMiniCluster = bindings.get("mrMiniCluster");
+      return (Configuration) bindings.get("configuration");
+    } else {
+      int numTaskTrackers = 1;
+      int numDir = 1;
+      engine.put("fileSystemUri", fileSystemUri);
+      engine.put("numTaskTrackers", numTaskTrackers);
+      engine.put("numDir", numDir);
+
+      try {
+        engine
+            .eval("mrMiniCluster = new org.apache.hadoop.mapred.MiniMRCluster(numTaskTrackers, fileSystemUri, numDir);");
+        engine.eval("configuration = mrMiniCluster.createJobConf();");
+      } catch (ScriptException e) {
+        throw new IOException(e);
+      }
+      Bindings bindings = engine.getBindings(ScriptContext.ENGINE_SCOPE);
+      mrMiniCluster = bindings.get("mrMiniCluster");
+      return (Configuration) bindings.get("configuration");
+    }
+  }
+
+  private boolean useYarn() {
+    String version = VersionInfo.getVersion();
+    if (version.startsWith("0.20.") || version.startsWith("1.")) {
+      return false;
+    }
+    // Check for mr1 hadoop2
+    if (isMr1Hadoop2()) {
+      return false;
+    }
+    return true;
+  }
+
+  private boolean isMr1Hadoop2() {
+    try {
+      Enumeration<URL> e = ClassLoader.getSystemClassLoader().getResources(
+          "META-INF/maven/org.apache.hadoop/hadoop-client/pom.properties");
+      while (e.hasMoreElements()) {
+        URL url = e.nextElement();
+        InputStream stream = url.openStream();
+        Properties properties = new Properties();
+        properties.load(stream);
+        Object object = properties.get("version");
+        if (object.toString().contains("mr1")) {
+          return true;
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return false;
   }
 
   private void waitForSafeModeToExit() throws BlurException, TException, IOException {
@@ -597,6 +714,10 @@ public class MiniCluster {
     server.waitUntilOnline();
   }
 
+  public Configuration getConfiguration() {
+    return _conf;
+  }
+
   public String getZkConnectionString() {
     return zkMiniCluster.getZkConnectionString();
   }
@@ -646,6 +767,7 @@ public class MiniCluster {
   }
 
   public void startDfs(Configuration conf, boolean format, String path) {
+    _conf = conf;
     String perm;
     Path p = new Path(new File(path).getAbsolutePath());
     try {

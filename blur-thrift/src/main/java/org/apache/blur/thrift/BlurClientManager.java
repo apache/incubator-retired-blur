@@ -279,7 +279,7 @@ public class BlurClientManager {
       long maxBackOffTime) {
     if (client.get() != null) {
       if (e != null) {
-        LOG.debug("Error", e);
+        LOG.debug("Error [{0}]", e, e.getMessage());
       }
       trashConnections(connection, client);
       markBadConnection(connection);

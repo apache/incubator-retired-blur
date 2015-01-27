@@ -20,7 +20,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur-hive</artifactId>
-	<version>${projectVersion}</version>
+	<version>${projectHiveVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Hive</name>
 	<description>The Blur hive module contains a storage handler and serde for Hive so that it can integrate with Hive.</description>
@@ -42,21 +42,21 @@
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-core</artifactId>
-			<version>${project.version}</version>
+			<version>${projectVersion}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
-			<version>${project.version}</version>
+			<version>${projectVersion}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
-			<version>${project.version}</version>
+			<version>${projectVersion}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.httpcomponents</groupId>
@@ -73,7 +73,7 @@
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
-			<version>${project.version}</version>
+			<version>${projectVersion}</version>
 		</dependency>
 		<dependency>
 			<groupId>log4j</groupId>
@@ -105,14 +105,6 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>2.2</version>
 				<executions>
@@ -127,6 +119,48 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-help-plugin</artifactId>
+				<version>2.1.1</version>
+				<executions>
+					<execution>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>effective-pom</goal>
+						</goals>
+						<configuration>
+							<output>${project.build.directory}/effective-pom.xml</output>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.3.1</version>
+				<executions>
+					<execution>
+						<phase>install</phase>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<configuration>
+							<file>${project.build.directory}/${artifactId}-${project.version}.jar</file>
+							<pomFile>${project.build.directory}/effective-pom.xml</pomFile>
+							<!-- sources></sources -->
+							<!-- javadoc></javadoc -->
+							<groupId>${project.groupId}</groupId>
+							<artifactId>${project.artifactId}</artifactId>
+							<version>${project.version}</version>
+							<packaging>jar</packaging>
+							<!--classifier></classifier -->
+							<generatePom>true</generatePom>
+							<createChecksum>true</createChecksum>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<profiles>
@@ -137,6 +171,9 @@
 					<name>hadoop1</name>
 				</property>
 			</activation>
+			<properties>
+                <projectHiveVersion>hadoop1-${hadoop.version}-${hive.version}-${project.parent.version}</projectHiveVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -147,7 +184,7 @@
 				<dependency>
 					<groupId>org.apache.blur</groupId>
 					<artifactId>blur-mapred-hadoop1</artifactId>
-					<version>${project.version}</version>
+					<version>${projectVersion}</version>
 					<exclusions>
 						<exclusion>
 							<groupId>org.apache.blur</groupId>
@@ -206,6 +243,9 @@
 					<name>hadoop2-mr1</name>
 				</property>
 			</activation>
+			<properties>
+                <projectHiveVersion>hadoop2-mr1-${hadoop.version}-${hive.version}-${project.parent.version}</projectHiveVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -222,7 +262,7 @@
 				<dependency>
 					<groupId>org.apache.blur</groupId>
 					<artifactId>blur-mapred-hadoop1</artifactId>
-					<version>${project.version}</version>
+					<version>${projectVersion}</version>
 					<exclusions>
 						<exclusion>
 							<groupId>org.apache.blur</groupId>
@@ -275,6 +315,9 @@
 					<name>hadoop2</name>
 				</property>
 			</activation>
+			<properties>
+                <projectHiveVersion>hadoop2-${hadoop.version}-${hive.version}-${project.parent.version}</projectHiveVersion>
+			</properties>
 			<dependencies>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
@@ -301,7 +344,7 @@
 				<dependency>
 					<groupId>org.apache.blur</groupId>
 					<artifactId>blur-mapred-hadoop2</artifactId>
-					<version>${project.version}</version>
+					<version>${projectVersion}</version>
 					<exclusions>
 						<exclusion>
 							<groupId>org.apache.blur</groupId>

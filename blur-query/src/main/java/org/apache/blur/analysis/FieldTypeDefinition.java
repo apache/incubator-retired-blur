@@ -247,7 +247,8 @@ public abstract class FieldTypeDefinition {
 
   public void setMultiValueField(boolean multiValueField) {
     if (multiValueField && isSortEnable()) {
-      throw new RuntimeException("Field type [" + getName() + "] can not be sortable and multi valued.");
+      throw new RuntimeException("Field [" + getFieldName() + "] with type [" + getName()
+          + "] can not be sortable and multi valued.");
     }
     _multiValueField = multiValueField;
   }

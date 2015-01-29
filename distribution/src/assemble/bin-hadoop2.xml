@@ -49,6 +49,7 @@ under the License.
         <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
         <include>jline:jline</include>
         <include>com.fasterxml.jackson.core:*</include>
+        <include>com.github.amccurry:lucene-document-security</include>
       </includes>
     </dependencySet>
     <dependencySet>

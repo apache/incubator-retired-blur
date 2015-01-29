@@ -63,6 +63,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.concurrent.ThreadWatcher;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.PrimeDocCache;
@@ -698,17 +699,14 @@ public class BlurUtil {
   }
 
   public static void setupFileSystem(String uri, int shardCount, Configuration configuration) throws IOException {
+    ThreadWatcher.status("creating shard dirs", 0.0f);
     Path tablePath = new Path(uri);
     FileSystem fileSystem = tablePath.getFileSystem(configuration);
     if (createPath(fileSystem, tablePath)) {
       LOG.info("Table uri existed.");
       validateShardCount(shardCount, fileSystem, tablePath);
     }
-    for (int i = 0; i < shardCount; i++) {
-      String shardName = ShardUtil.getShardName(SHARD_PREFIX, i);
-      Path shardPath = new Path(tablePath, shardName);
-      createPath(fileSystem, shardPath);
-    }
+    ThreadWatcher.resetStatus();
   }
 
   public static void validateShardCount(int shardCount, FileSystem fileSystem, Path tablePath) throws IOException {

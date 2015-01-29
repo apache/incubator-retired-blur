@@ -323,6 +323,7 @@ public abstract class BlurClusterTestBase {
     columnDefinition.setFieldLessIndexed(true);
     columnDefinition.setFieldType("string");
     columnDefinition.setSortable(true);
+    columnDefinition.setMultiValueField(false);
     columnDefinition.setProperties(new HashMap<String, String>());
     client.addColumnDefinition(tableName, columnDefinition);
     long s = System.nanoTime();

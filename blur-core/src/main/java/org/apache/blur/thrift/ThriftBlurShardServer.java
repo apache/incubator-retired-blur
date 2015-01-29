@@ -58,7 +58,6 @@ import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import java.io.Closeable;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Map.Entry;
 import java.util.Set;

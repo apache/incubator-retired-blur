@@ -342,11 +342,6 @@ public class ShardCommandManagerTest {
       }
 
       @Override
-      public List<String> getShardList(String table) {
-        throw new RuntimeException("Not implemented.");
-      }
-
-      @Override
       public long getRowCount(String table) throws IOException {
         throw new RuntimeException("Not implemented.");
       }

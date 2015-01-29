@@ -15,22 +15,15 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResults;
-import org.apache.blur.thrift.generated.Facet;
-import org.apache.blur.thrift.generated.Query;
-import org.apache.blur.thrift.generated.Selector;
-import org.apache.blur.thrift.generated.Blur.Iface;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class FacetTests extends BaseClusterTest {

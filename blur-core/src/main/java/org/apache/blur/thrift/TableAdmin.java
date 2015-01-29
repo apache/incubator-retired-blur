@@ -48,7 +48,6 @@ import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.CommandDescriptor;
 import org.apache.blur.thrift.generated.Level;
 import org.apache.blur.thrift.generated.Metric;
-import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.Schema;
 import org.apache.blur.thrift.generated.Selector;
 import org.apache.blur.thrift.generated.ShardState;
@@ -117,10 +116,23 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
     try {
-      TableContext.clear(tableDescriptor.getName());
       ShardUtil.validateTableName(tableDescriptor.getName());
       assignClusterIfNull(tableDescriptor);
-      _clusterStatus.createTable(tableDescriptor);
+      List<String> tableList = _clusterStatus.getTableList(false, tableDescriptor.getCluster());
+      if (!tableList.contains(tableDescriptor.getName())) {
+        TableContext.clear(tableDescriptor.getName());
+        _clusterStatus.createTable(tableDescriptor);
+      } else {
+        TableDescriptor existing = _clusterStatus.getTableDescriptor(false, tableDescriptor.getCluster(),
+            tableDescriptor.getName());
+        if (existing.equals(tableDescriptor)) {
+          LOG.warn("Table [{0}] has already exists, but tried to create same table a second time.",
+              tableDescriptor.getName());
+        } else {
+          LOG.warn("Table [{0}] has already exists.", tableDescriptor.getName());
+          throw new BException("Table [{0}] has already exists.", tableDescriptor.getName());
+        }
+      }
     } catch (Exception e) {
       LOG.error("Unknown error during create of [table={0}, tableDescriptor={1}]", e, tableDescriptor.name,
           tableDescriptor);

@@ -57,15 +57,6 @@ public interface IndexServer extends Closeable {
   // Table Meta Data
 
   /**
-   * The shard list for a given table.
-   * 
-   * @param table
-   *          the table name.
-   * @return the list of shards.
-   */
-  List<String> getShardList(String table);
-
-  /**
    * Gets the current nodes name.
    * 
    * @return

@@ -23,8 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -170,25 +168,6 @@ public class LocalIndexServer extends AbstractIndexServer {
     BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(shardContext, dir, _mergeScheduler, _searchExecutor,
         _indexCloser, _timer);
     return index;
-  }
-
-  @Override
-  public List<String> getShardList(String table) {
-    try {
-      List<String> result = new ArrayList<String>();
-      Path tablePath = _tableContext.getTablePath();
-      File tableFile = new File(new File(tablePath.toUri()), table);
-      if (tableFile.isDirectory()) {
-        for (File f : tableFile.listFiles()) {
-          if (f.isDirectory()) {
-            result.add(f.getName());
-          }
-        }
-      }
-      return result;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @Override

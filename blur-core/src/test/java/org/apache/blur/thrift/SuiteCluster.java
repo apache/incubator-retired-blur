@@ -42,7 +42,6 @@ public class SuiteCluster {
     }
   }
 
-  @SuppressWarnings({ "unchecked", "rawtypes" })
   public static void setupMiniCluster() throws IOException {
     File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
     testDirectory.mkdirs();

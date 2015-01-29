@@ -57,6 +57,7 @@ import org.apache.blur.store.hdfs_v2.JoinDirectory;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.ZookeeperPathConstants;
@@ -602,7 +603,8 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       throw new RuntimeException("Table [" + table + "] is not found.");
     }
     List<String> onlineShardServerList = _clusterStatus.getOnlineShardServers(false, cluster);
-    List<String> shardList = getShardList(table);
+    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(false, cluster, table);
+    List<String> shardList = generateShardList(tableDescriptor);
 
     String shutdownPath = ZookeeperPathConstants.getShutdownPath(cluster);
     if (isShuttingDown(shutdownPath)) {
@@ -623,6 +625,15 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
     _layout.put(table, new LayoutEntry(layoutManager, shardsToServeCache));
     return shardsToServeCache;
+  }
+
+  private List<String> generateShardList(TableDescriptor tableDescriptor) {
+    int shardCount = tableDescriptor.getShardCount();
+    List<String> list = new ArrayList<String>();
+    for (int i = 0; i < shardCount; i++) {
+      list.add(ShardUtil.getShardName(i));
+    }
+    return list;
   }
 
   private boolean isShuttingDown(String shutdownPath) {

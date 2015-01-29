@@ -237,6 +237,10 @@ public class ThreadWatcher {
   }
 
   public static void status(String task, float complete) {
+    if (_instance == null) {
+      LOG.warn("Call to resetStatus on thread no being watched.");
+      return;
+    }
     Watch watch = _instance._threads.get(Thread.currentThread());
     if (watch == null) {
       return;
@@ -245,6 +249,10 @@ public class ThreadWatcher {
   }
 
   public static void resetStatus() {
+    if (_instance == null) {
+      LOG.warn("Call to resetStatus on thread no being watched.");
+      return;
+    }
     Watch watch = _instance._threads.get(Thread.currentThread());
     if (watch == null) {
       return;

@@ -278,6 +278,9 @@ public class BlurClientManager {
       AtomicInteger retries, AbstractCommand<CLIENT, T> command, Exception e, int maxRetries, long backOffTime,
       long maxBackOffTime) {
     if (client.get() != null) {
+      if (e != null) {
+        LOG.debug("Error [{0}]", e, e.getMessage());
+      }
       trashConnections(connection, client);
       markBadConnection(connection);
       client.set(null);

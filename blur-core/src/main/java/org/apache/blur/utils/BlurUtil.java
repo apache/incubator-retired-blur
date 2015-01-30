@@ -704,7 +704,7 @@ public class BlurUtil {
     FileSystem fileSystem = tablePath.getFileSystem(configuration);
     if (createPath(fileSystem, tablePath)) {
       LOG.info("Table uri existed.");
-      validateShardCount(shardCount, fileSystem, tablePath);
+//      validateShardCount(shardCount, fileSystem, tablePath);
     }
     ThreadWatcher.resetStatus();
   }

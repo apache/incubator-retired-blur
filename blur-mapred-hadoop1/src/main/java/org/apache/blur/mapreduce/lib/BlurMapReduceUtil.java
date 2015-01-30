@@ -27,6 +27,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import lucene.security.DocumentVisibility;
+
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -52,7 +54,7 @@ public class BlurMapReduceUtil {
     try {
       addDependencyJars(job.getConfiguration(), org.apache.zookeeper.ZooKeeper.class, job.getMapOutputKeyClass(),
           job.getMapOutputValueClass(), job.getInputFormatClass(), job.getOutputKeyClass(), job.getOutputValueClass(),
-          job.getOutputFormatClass(), job.getPartitionerClass(), job.getCombinerClass());
+          job.getOutputFormatClass(), job.getPartitionerClass(), job.getCombinerClass(), DocumentVisibility.class);
       addAllJarsInBlurLib(job.getConfiguration());
     } catch (ClassNotFoundException e) {
       throw new IOException(e);
@@ -61,6 +63,7 @@ public class BlurMapReduceUtil {
 
   /**
    * Adds all the jars in the same path as the blur jar files.
+   * 
    * @param conf
    * @throws IOException
    */

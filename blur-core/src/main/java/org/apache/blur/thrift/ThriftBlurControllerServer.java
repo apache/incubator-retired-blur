@@ -67,7 +67,7 @@ import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ControllerServerEventHandler;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerTransport;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.trace.Trace;
@@ -109,11 +109,9 @@ public class ThriftBlurControllerServer extends ThriftServer {
     if (configBindPort == 0) {
       instanceBindPort = 0;
     }
-    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress,
-        instanceBindPort);
-    if (configBindPort == 0) {
-      instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
-    }
+    TServerTransport serverTransport = ThriftServer.getTServerTransport(bindAddress, instanceBindPort,
+        configuration);
+    instanceBindPort = ThriftServer.getBindingPort(serverTransport);
 
     LOG.info("Controller Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":"
         + instanceBindPort);
@@ -197,7 +195,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     final ThriftBlurControllerServer server = new ThriftBlurControllerServer();
     server.setNodeName(nodeName);
-    server.setServerTransport(tNonblockingServerSocket);
+    server.setServerTransport(serverTransport);
     server.setThreadCount(threadCount);
     server.setEventHandler(eventHandler);
     server.setIface(iface);
@@ -205,6 +203,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setMaxReadBufferBytes(configuration.getLong(BLUR_CONTROLLER_THRIFT_MAX_READ_BUFFER_BYTES, Long.MAX_VALUE));
     server.setSelectorThreads(configuration.getInt(BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS, 2));
     server.setMaxFrameSize(configuration.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE));
+    server.setConfiguration(configuration);
 
     int configGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));
     int instanceGuiPort = configGuiPort + serverIndex;

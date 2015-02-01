@@ -18,8 +18,8 @@ package org.apache.blur.thrift;
  */
 
 import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY;
-import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_STALE_THRESHOLD;
 import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_MAX_CONNECTIONS_PER_HOST;
+import static org.apache.blur.utils.BlurConstants.BLUR_CLIENTPOOL_CLIENT_STALE_THRESHOLD;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 
 import java.io.IOException;
@@ -42,12 +42,15 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TBinaryProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.SafeClientGen;
+import org.apache.blur.thrift.sasl.SaslHelper;
 
 public class ClientPool {
 
@@ -59,24 +62,32 @@ public class ClientPool {
   private static final long _idleTimeBeforeClosingClient;
   private static final long _clientPoolCleanFrequency;
   private static final Timer _master;
+  private static final BlurConfiguration _configurationFromClassPath;
+  private BlurConfiguration _configuration = _configurationFromClassPath;
 
   static {
     try {
-      BlurConfiguration config = new BlurConfiguration();
-      int maxConnectionsPerHost = config.getInt(BLUR_CLIENTPOOL_CLIENT_MAX_CONNECTIONS_PER_HOST, 64);
+      _configurationFromClassPath = new BlurConfiguration();
+      int maxConnectionsPerHost = _configurationFromClassPath.getInt(BLUR_CLIENTPOOL_CLIENT_MAX_CONNECTIONS_PER_HOST,
+          64);
       if (maxConnectionsPerHost < 1) {
         LOG.fatal("Max connections per host cannot be less than 1 current value [{0}] using 1.", maxConnectionsPerHost);
         maxConnectionsPerHost = 1;
       }
       _maxConnectionsPerHost = maxConnectionsPerHost;
-      _idleTimeBeforeClosingClient = TimeUnit.SECONDS.toNanos(config
-          .getLong(BLUR_CLIENTPOOL_CLIENT_STALE_THRESHOLD, 30));
-      _clientPoolCleanFrequency = TimeUnit.SECONDS.toMillis(config.getLong(BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY, 10));
-      _maxFrameSize = config.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, 16384000);
+      _idleTimeBeforeClosingClient = TimeUnit.SECONDS.toNanos(_configurationFromClassPath.getLong(
+          BLUR_CLIENTPOOL_CLIENT_STALE_THRESHOLD, 30));
+      _clientPoolCleanFrequency = TimeUnit.SECONDS.toMillis(_configurationFromClassPath.getLong(
+          BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY, 10));
+      _maxFrameSize = _configurationFromClassPath.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, 16384000);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
     _master = checkAndRemoveStaleClients();
+  }
+
+  public void setBlurConfiguration(BlurConfiguration configuration) {
+    _configuration = configuration;
   }
 
   public static void close() {
@@ -246,21 +257,32 @@ public class ClientPool {
   public Client newClient(Connection connection) throws TTransportException, IOException {
     String host = connection.getHost();
     int port = connection.getPort();
-    TSocket trans;
-    Socket socket;
-    if (connection.isProxy()) {
-      Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress(connection.getProxyHost(), connection.getProxyPort()));
-      socket = new Socket(proxy);
-    } else {
-      socket = new Socket();
-    }
-    int timeout = connection.getTimeout();
-    socket.setTcpNoDelay(true);
-    socket.setSoTimeout(timeout);
-    socket.connect(new InetSocketAddress(host, port), timeout);
-    trans = new TSocket(socket);
 
-    TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans, _maxFrameSize));
+    TProtocol proto;
+    Socket socket;
+    int timeout = connection.getTimeout();
+    if (SaslHelper.isSaslEnabled(_configuration)) {
+      if (connection.isProxy()) {
+        throw new IOException("Proxy connections are not allowed when SASL is enabled.");
+      }
+      TSocket transport = new TSocket(host, port, timeout);
+      TTransport tSaslClientTransport = SaslHelper.getTSaslClientTransport(_configuration, transport);
+      tSaslClientTransport.open();
+      socket = transport.getSocket();
+      proto = new TCompactProtocol(tSaslClientTransport);
+    } else {
+      if (connection.isProxy()) {
+        Proxy proxy = new Proxy(Type.SOCKS, new InetSocketAddress(connection.getProxyHost(), connection.getProxyPort()));
+        socket = new Socket(proxy);
+      } else {
+        socket = new Socket();
+      }
+      socket.setTcpNoDelay(true);
+      socket.setSoTimeout(timeout);
+      socket.connect(new InetSocketAddress(host, port), timeout);
+      TSocket trans = new TSocket(socket);
+      proto = new TBinaryProtocol(new TFramedTransport(trans, _maxFrameSize));
+    }
     return new WeightedClient(proto, getIdentifer(socket));
   }
 
@@ -291,4 +313,5 @@ public class ClientPool {
       LOG.error("Error during closing of client [{0}].", client);
     }
   }
+
 }

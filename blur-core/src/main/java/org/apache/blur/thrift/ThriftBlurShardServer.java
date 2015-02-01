@@ -93,7 +93,7 @@ import org.apache.blur.store.BlockCacheDirectoryFactoryV2;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerTransport;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.trace.Trace;
@@ -112,7 +112,6 @@ import sun.misc.VM;
 
 public class ThriftBlurShardServer extends ThriftServer {
 
-  
   private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
   private static final boolean enableJsonReporter = false;
   private static final long _64MB = 64 * 1024 * 1024;
@@ -148,11 +147,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     if (configBindPort == 0) {
       instanceBindPort = 0;
     }
-    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress,
-        instanceBindPort);
-    if (configBindPort == 0) {
-      instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
-    }
+    TServerTransport serverTransport = ThriftServer.getTServerTransport(bindAddress, instanceBindPort, configuration);
+    instanceBindPort = ThriftServer.getBindingPort(serverTransport);
 
     Set<Entry<String, String>> set = configuration.getProperties().entrySet();
     for (Entry<String, String> e : set) {
@@ -304,7 +300,7 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     final ThriftBlurShardServer server = new ThriftBlurShardServer();
     server.setNodeName(nodeName);
-    server.setServerTransport(tNonblockingServerSocket);
+    server.setServerTransport(serverTransport);
     server.setThreadCount(threadCount);
     server.setIface(iface);
     server.setEventHandler(eventHandler);
@@ -312,6 +308,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setMaxReadBufferBytes(configuration.getLong(BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES, Long.MAX_VALUE));
     server.setSelectorThreads(configuration.getInt(BLUR_SHARD_THRIFT_SELECTOR_THREADS, 2));
     server.setMaxFrameSize(configuration.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE));
+    server.setConfiguration(configuration);
 
     // This will shutdown the server when the correct path is set in zk
     BlurShutdown shutdown = new BlurShutdown() {
@@ -319,8 +316,8 @@ public class ThriftBlurShardServer extends ThriftServer {
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
         quietClose(makeCloseable(hdfsKeyValueTimer), makeCloseable(indexImporterTimer), blockCacheDirectoryFactory,
-            commandManager, traceStorage, server, shardServer, indexManager, indexServer, threadWatcher,
-            clusterStatus, zooKeeper, httpServer);
+            commandManager, traceStorage, server, shardServer, indexManager, indexServer, threadWatcher, clusterStatus,
+            zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);

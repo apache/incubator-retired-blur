@@ -31,6 +31,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServerEventHandler;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TSocket;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
 
 import com.yammer.metrics.Metrics;
@@ -39,7 +40,8 @@ import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
 /**
- * {@link ConrtollerServerContext} is the session manager for the controller servers.
+ * {@link ConrtollerServerContext} is the session manager for the controller
+ * servers.
  */
 public class ControllerServerEventHandler implements TServerEventHandler {
 
@@ -64,13 +66,24 @@ public class ControllerServerEventHandler implements TServerEventHandler {
   }
 
   @Override
-  public ServerContext createContext(TProtocol input, TProtocol output, Object selectionKeyObject) {
+  public ServerContext createContext(TProtocol input, TProtocol output, Object remoteInstance) {
     LOG.debug("Client connected");
-    SelectionKey selectionKey = (SelectionKey) selectionKeyObject;
-    SocketChannel channel = (SocketChannel) selectionKey.channel();
-    Socket socket = channel.socket();
-    SocketAddress remoteSocketAddress = socket.getRemoteSocketAddress();
-    SocketAddress localSocketAddress = socket.getLocalSocketAddress();
+    SocketAddress remoteSocketAddress;
+    SocketAddress localSocketAddress;
+    if (remoteInstance instanceof SelectionKey) {
+      SelectionKey selectionKey = (SelectionKey) remoteInstance;
+      SocketChannel channel = (SocketChannel) selectionKey.channel();
+      Socket socket = channel.socket();
+      remoteSocketAddress = socket.getRemoteSocketAddress();
+      localSocketAddress = socket.getLocalSocketAddress();
+    } else if (remoteInstance instanceof TSocket) {
+      TSocket tSocket = (TSocket) remoteInstance;
+      Socket socket = tSocket.getSocket();
+      remoteSocketAddress = socket.getRemoteSocketAddress();
+      localSocketAddress = socket.getLocalSocketAddress();
+    } else {
+      throw new RuntimeException("Cannot track remote connection off [" + remoteInstance + "]");
+    }
     _connectionMeter.mark();
     _connections.incrementAndGet();
     return new ControllerServerContext(localSocketAddress, remoteSocketAddress);

@@ -587,7 +587,7 @@ public class MiniCluster {
       public void kill() {
         ZooKeeper zk = null;
         try {
-          int shardPort = thriftServer.getServerTransport().getServerSocket().getLocalPort();
+          int shardPort = ThriftServer.getBindingPort(thriftServer.getServerTransport());
           String nodeNameHostname = ThriftServer.getNodeName(configuration, BLUR_SHARD_HOSTNAME);
           String nodeName = nodeNameHostname + ":" + shardPort;
           zk = new ZooKeeperClient(getZkConnectionString(), 30000, new Watcher() {
@@ -621,6 +621,8 @@ public class MiniCluster {
         } catch (TTransportException e) {
           LOG.error(e);
           throw new RuntimeException(e);
+        } catch (IOException e) {
+          throw new RuntimeException(e);
         }
       }
 
@@ -632,7 +634,7 @@ public class MiniCluster {
           } catch (InterruptedException e) {
             return;
           }
-          int localPort = thriftServer.getLocalPort();
+          int localPort = ThriftServer.getBindingPort(thriftServer.getServerTransport());
           if (localPort == 0) {
             continue;
           } else {

@@ -296,4 +296,9 @@ public class BlurClient {
     return getClient(blurConfiguration);
   }
 
+  public static void init(BlurConfiguration configuration) {
+    _defaultBlurConfiguration = configuration;
+    ClientPool clientPool = BlurClientManager.getClientPool();
+    clientPool.setBlurConfiguration(_defaultBlurConfiguration);
+  }
 }

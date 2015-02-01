@@ -24,6 +24,7 @@ import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.metrics.MetricsConstants.SYSTEM;
 import static org.apache.blur.utils.BlurConstants.BLUR_HDFS_TRACE_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_HOME;
+import static org.apache.blur.utils.BlurConstants.BLUR_SECURITY_SASL_ENABLED;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TRACE_PATH;
 
 import java.io.BufferedReader;
@@ -38,7 +39,6 @@ import java.lang.management.OperatingSystemMXBean;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -49,13 +49,21 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TBinaryProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServer;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServerEventHandler;
+import org.apache.blur.thirdparty.thrift_0_9_0.server.TThreadPoolServer;
+import org.apache.blur.thirdparty.thrift_0_9_0.server.TThreadPoolServer.Args;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerTransport;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.sasl.SaslHelper;
+import org.apache.blur.thrift.sasl.TSaslServerTransport;
 import org.apache.blur.thrift.server.TThreadedSelectorServer;
 import org.apache.blur.thrift.server.TThreadedSelectorServer.Args.AcceptPolicy;
 import org.apache.blur.trace.LogTraceStorage;
@@ -80,11 +88,12 @@ public class ThriftServer {
   private ExecutorService _queryExexutorService;
   private ExecutorService _mutateExecutorService;
   private TServerEventHandler _eventHandler;
-  private TNonblockingServerSocket _serverTransport;
+  private TServerTransport _serverTransport;
   private int _acceptQueueSizePerThread = 4;
   private long _maxReadBufferBytes = Long.MAX_VALUE;
   private int _selectorThreads = 2;
   private int _maxFrameSize = 16384000;
+  private BlurConfiguration _configuration;
 
   public int getMaxFrameSize() {
     return _maxFrameSize;
@@ -94,11 +103,11 @@ public class ThriftServer {
     _maxFrameSize = maxFrameSize;
   }
 
-  public TNonblockingServerSocket getServerTransport() {
+  public TServerTransport getServerTransport() {
     return _serverTransport;
   }
 
-  public void setServerTransport(TNonblockingServerSocket serverTransport) {
+  public void setServerTransport(TServerTransport serverTransport) {
     _serverTransport = serverTransport;
   }
 
@@ -267,38 +276,38 @@ public class ThriftServer {
     return 0;
   }
 
-  public void start() throws TTransportException {
+  public void start() throws TTransportException, IOException {
     _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
     Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(_iface);
 
-    TThreadedSelectorServer.Args args = new TThreadedSelectorServer.Args(_serverTransport);
-    args.processor(processor);
-    args.executorService(_executorService);
-    args.transportFactory(new TFramedTransport.Factory(_maxFrameSize));
-    args.protocolFactory(new TBinaryProtocol.Factory(true, true));
-    args.selectorThreads = _selectorThreads;
-    args.maxReadBufferBytes = _maxReadBufferBytes;
-    args.acceptQueueSizePerThread(_acceptQueueSizePerThread);
-    args.acceptPolicy(AcceptPolicy.FAIR_ACCEPT);
+    if (SaslHelper.isSaslEnabled(_configuration)) {
+      TSaslServerTransport.Factory saslTransportFactory = SaslHelper.getTSaslServerTransportFactory(_configuration);
+      Args args = new TThreadPoolServer.Args(_serverTransport);
+      args.executorService(_executorService);
+      args.processor(processor);
+      args.protocolFactory(new TCompactProtocol.Factory());
+      args.transportFactory(saslTransportFactory);
 
-    _server = new TThreadedSelectorServer(args);
-    _server.setServerEventHandler(_eventHandler);
+      _server = new TThreadPoolServer(args);
+      _server.setServerEventHandler(_eventHandler);
+    } else {
+      TThreadedSelectorServer.Args args = new TThreadedSelectorServer.Args(
+          (TNonblockingServerTransport) _serverTransport);
+      args.processor(processor);
+      args.executorService(_executorService);
+      args.transportFactory(new TFramedTransport.Factory(_maxFrameSize));
+      args.protocolFactory(new TBinaryProtocol.Factory(true, true));
+      args.selectorThreads = _selectorThreads;
+      args.maxReadBufferBytes = _maxReadBufferBytes;
+      args.acceptQueueSizePerThread(_acceptQueueSizePerThread);
+      args.acceptPolicy(AcceptPolicy.FAIR_ACCEPT);
+
+      _server = new TThreadedSelectorServer(args);
+      _server.setServerEventHandler(_eventHandler);
+    }
+
     LOG.info("Starting server [{0}]", _nodeName);
     _server.serve();
-  }
-
-  public static TNonblockingServerSocket getTNonblockingServerSocket(String bindAddress, int bindPort)
-      throws TTransportException {
-    InetSocketAddress bindInetSocketAddress = getBindInetSocketAddress(bindAddress, bindPort);
-    return new TNonblockingServerSocket(bindInetSocketAddress);
-  }
-
-  public int getLocalPort() {
-    ServerSocket serverSocket = _serverTransport.getServerSocket();
-    if (serverSocket == null) {
-      return 0;
-    }
-    return serverSocket.getLocalPort();
   }
 
   public static InetSocketAddress getBindInetSocketAddress(String bindAddress, int bindPort) {
@@ -395,4 +404,35 @@ public class ThriftServer {
   public void setSelectorThreads(int selectorThreads) {
     _selectorThreads = selectorThreads;
   }
+
+  public BlurConfiguration getConfiguration() {
+    return _configuration;
+  }
+
+  public void setConfiguration(BlurConfiguration configuration) {
+    this._configuration = configuration;
+  }
+
+  public static TServerTransport getTServerTransport(String bindAddress, int bindPort, BlurConfiguration configuration)
+      throws TTransportException {
+    InetSocketAddress bindInetSocketAddress = getBindInetSocketAddress(bindAddress, bindPort);
+    if (SaslHelper.isSaslEnabled(configuration)) {
+      return new TServerSocket(bindInetSocketAddress);
+    } else {
+      return new TNonblockingServerSocket(bindInetSocketAddress);
+    }
+  }
+
+  public static int getBindingPort(TServerTransport serverTransport) {
+    if (serverTransport instanceof TNonblockingServerSocket) {
+      TNonblockingServerSocket nonblockingServerSocket = (TNonblockingServerSocket) serverTransport;
+      return nonblockingServerSocket.getServerSocket().getLocalPort();
+    } else if (serverTransport instanceof TServerSocket) {
+      TServerSocket serverSocket = (TServerSocket) serverTransport;
+      return serverSocket.getServerSocket().getLocalPort();
+    } else {
+      throw new RuntimeException("Server Transport [" + serverTransport + "] not supported.");
+    }
+  }
+
 }

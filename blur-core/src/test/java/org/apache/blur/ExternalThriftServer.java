@@ -17,6 +17,7 @@
 package org.apache.blur;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -69,6 +70,8 @@ public class ExternalThriftServer {
           thriftServer.start();
         } catch (TTransportException e) {
           e.printStackTrace();
+        } catch (IOException e) {
+          e.printStackTrace();
         }
       }
     }).start();
@@ -78,7 +81,7 @@ public class ExternalThriftServer {
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }
-      int localPort = thriftServer.getLocalPort();
+      int localPort = ThriftServer.getBindingPort(thriftServer.getServerTransport());
       if (localPort == 0) {
         continue;
       } else {

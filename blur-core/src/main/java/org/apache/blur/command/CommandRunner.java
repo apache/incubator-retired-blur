@@ -46,6 +46,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.Response;
 import org.apache.blur.thrift.generated.TimeoutException;
+import org.apache.blur.trace.Tracer;
 
 public class CommandRunner {
   public static Connection[] getConnection(Iface client) {
@@ -212,6 +213,7 @@ public class CommandRunner {
         Long executionId = null;
         Response response;
         INNER: while (true) {
+          Tracer tracer = BlurClientManager.setupClientPreCall(client);
           try {
             if (executionId == null) {
               response = client.execute(name, arguments);
@@ -221,6 +223,10 @@ public class CommandRunner {
             break INNER;
           } catch (TimeoutException te) {
             executionId = te.getInstanceExecutionId();
+          } finally {
+            if (tracer != null) {
+              tracer.done();
+            }
           }
         }
         return CommandUtil.fromThriftResponseToObject(response);

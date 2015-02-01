@@ -352,4 +352,29 @@ public class BlurObject {
     return _valueMap.containsKey(key);
   }
 
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((_valueMap == null) ? 0 : _valueMap.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    BlurObject other = (BlurObject) obj;
+    if (_valueMap == null) {
+      if (other._valueMap != null)
+        return false;
+    } else if (!_valueMap.equals(other._valueMap))
+      return false;
+    return true;
+  }
+
 }

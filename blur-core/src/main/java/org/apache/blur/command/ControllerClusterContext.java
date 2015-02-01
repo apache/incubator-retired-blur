@@ -27,6 +27,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Response;
 import org.apache.blur.thrift.generated.TimeoutException;
 import org.apache.blur.thrift.generated.ValueObject;
+import org.apache.blur.trace.Tracer;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -151,6 +152,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     // the status of commands.
     Long executionId = null;
     while (true) {
+      Tracer tracer = BlurClientManager.setupClientPreCall(client);
       try {
         if (executionId == null) {
           return client.execute(command.getName(), arguments);
@@ -164,6 +166,10 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
         LOG.info("Execution fetch timed out, reconnecting using [{0}].", executionId);
       } catch (TException e) {
         throw e;
+      } finally {
+        if (tracer != null) {
+          tracer.done();
+        }
       }
     }
   }

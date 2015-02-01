@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
@@ -45,7 +46,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.blur.MiniCluster;
 import org.apache.blur.TestType;
 import org.apache.blur.analysis.FieldManager;
+import org.apache.blur.command.BlurObject;
 import org.apache.blur.command.RunSlowForTesting;
+import org.apache.blur.command.Shard;
+import org.apache.blur.command.UserCurrentUser;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
@@ -999,6 +1003,30 @@ public abstract class BlurClusterTestBase {
 
     TableStats tableStats = client.tableStats(tableName);
     assertEquals(total, tableStats.getRecordCount());
+  }
+
+  @Test
+  public void testCommandUserProgation() throws IOException, BlurException, TException {
+    String table = "testCommandUserProgation";
+    createTable(table);
+    Iface client = getClient();
+    Map<String, String> attributes = new HashMap<String, String>();
+    attributes.put("att1", "value");
+    User user = new User(table, attributes);
+    UserContext.setUser(user);
+    UserCurrentUser userCurrentUser = new UserCurrentUser();
+    userCurrentUser.setTable(table);
+    Map<Shard, BlurObject> currentUser = userCurrentUser.run(client);
+
+    BlurObject blurObject = new BlurObject();
+    blurObject.put("username", table);
+    BlurObject attributesBlurObject = new BlurObject();
+    attributesBlurObject.put("att1", "value");
+    blurObject.put("attributes", attributesBlurObject);
+
+    for (Entry<Shard, BlurObject> e : currentUser.entrySet()) {
+      assertEquals(blurObject, e.getValue());
+    }
   }
 
 }

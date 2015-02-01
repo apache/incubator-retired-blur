@@ -187,13 +187,7 @@ public class BlurClientManager {
         }
         Tracer trace = null;
         try {
-          User user = UserConverter.toThriftUser(UserContext.getUser());
-          client.get().setUser(user);
-          TraceId traceId = Trace.getTraceId();
-          if (traceId != null) {
-            client.get().startTrace(traceId.getRootId(), traceId.getRequestId());
-            trace = Trace.trace("thrift client", Trace.param("connection", getConnectionStr(client.get())));
-          }
+          trace = setupClientPreCall(client.get());
           T result = command.call((CLIENT) client.get(), connection);
           allBad = false;
           if (command.isDetachClient()) {
@@ -247,6 +241,17 @@ public class BlurClientManager {
         }
       }
     }
+  }
+
+  public static Tracer setupClientPreCall(Client client) throws TException {
+    User user = UserConverter.toThriftUser(UserContext.getUser());
+    client.setUser(user);
+    TraceId traceId = Trace.getTraceId();
+    if (traceId != null) {
+      client.startTrace(traceId.getRootId(), traceId.getRequestId());
+      return Trace.trace("thrift client", Trace.param("connection", getConnectionStr(client)));
+    }
+    return null;
   }
 
   private static String getConnectionStr(Client client) {

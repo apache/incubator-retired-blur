@@ -22,9 +22,10 @@ import static org.apache.blur.metrics.MetricsConstants.JVM;
 import static org.apache.blur.metrics.MetricsConstants.LOAD_AVERAGE;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.metrics.MetricsConstants.SYSTEM;
+import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_SECURITY_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_HDFS_TRACE_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_HOME;
-import static org.apache.blur.utils.BlurConstants.BLUR_SECURITY_SASL_ENABLED;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_SECURITY_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TRACE_PATH;
 
 import java.io.BufferedReader;
@@ -36,6 +37,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.management.OperatingSystemMXBean;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -48,6 +50,7 @@ import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
+import org.apache.blur.server.ServerSecurity;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TBinaryProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServer;
@@ -435,4 +438,23 @@ public class ThriftServer {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  public static ServerSecurity getServerSecurity(BlurConfiguration configuration, boolean shardServer) {
+    String className;
+    if (shardServer) {
+      className = configuration.get(BLUR_SHARD_SERVER_SECURITY_CLASS);
+    } else {
+      className = configuration.get(BLUR_CONTROLLER_SERVER_SECURITY_CLASS);
+    }
+    if (className == null) {
+      return null;
+    }
+    try {
+      Class<? extends ServerSecurity> clazz = (Class<? extends ServerSecurity>) Class.forName(className);
+      Constructor<? extends ServerSecurity> constructor = clazz.getConstructor(new Class[] { BlurConfiguration.class });
+      return constructor.newInstance(configuration);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

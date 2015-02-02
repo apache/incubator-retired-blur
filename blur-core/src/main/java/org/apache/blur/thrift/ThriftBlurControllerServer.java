@@ -64,6 +64,8 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ControllerServerEventHandler;
+import org.apache.blur.server.ServerSecurity;
+import org.apache.blur.server.ServerSecurityUtil;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerTransport;
@@ -108,8 +110,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     if (configBindPort == 0) {
       instanceBindPort = 0;
     }
-    TServerTransport serverTransport = ThriftServer.getTServerTransport(bindAddress, instanceBindPort,
-        configuration);
+    TServerTransport serverTransport = ThriftServer.getTServerTransport(bindAddress, instanceBindPort, configuration);
     instanceBindPort = ThriftServer.getBindingPort(serverTransport);
 
     LOG.info("Controller Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":"
@@ -183,7 +184,10 @@ public class ThriftBlurControllerServer extends ThriftServer {
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
+    ServerSecurity serverSecurity = getServerSecurity(configuration, false);
+
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
+    iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, false);
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, true);
     iface = BlurUtil.runWithUser(iface, true);
     iface = BlurUtil.runTrace(iface, true);

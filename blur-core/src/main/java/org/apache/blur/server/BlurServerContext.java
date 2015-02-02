@@ -77,7 +77,7 @@ public class BlurServerContext implements ServerContext, ThriftTrace {
     _traceRequestId = traceRequestId;
   }
 
-  public SocketAddress getRocalSocketAddress() {
+  public SocketAddress getLocalSocketAddress() {
     return _localSocketAddress;
   }
 

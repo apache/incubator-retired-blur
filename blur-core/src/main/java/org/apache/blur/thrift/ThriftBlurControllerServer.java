@@ -56,7 +56,6 @@ import org.apache.blur.command.ControllerCommandManager;
 import org.apache.blur.concurrent.SimpleUncaughtExceptionHandler;
 import org.apache.blur.concurrent.ThreadWatcher;
 import org.apache.blur.gui.HttpJettyServer;
-import org.apache.blur.gui.JSONReporterServlet;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurQueryChecker;
@@ -225,7 +224,6 @@ public class ThriftBlurControllerServer extends ThriftServer {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),
           new TJSONProtocol.Factory())), "/blur");
-      context.addServlet(new ServletHolder(new JSONReporterServlet()), "/livemetrics");
     }
 
     // This will shutdown the server when the correct path is set in zk

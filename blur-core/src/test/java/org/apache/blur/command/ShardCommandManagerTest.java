@@ -95,10 +95,11 @@ public class ShardCommandManagerTest {
   @Test
   public void testGetCommands() {
     Map<String, BigInteger> commands = _manager.getCommands();
-    assertEquals(3, commands.size());
+    assertEquals(4, commands.size());
     assertTrue(commands.containsKey("wait"));
     assertTrue(commands.containsKey("error"));
     assertTrue(commands.containsKey("RunSlowForTesting"));
+    assertTrue(commands.containsKey("currentUser"));
     assertEquals(BigInteger.ZERO, commands.get("wait"));
   }
 

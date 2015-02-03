@@ -85,8 +85,8 @@ import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
 import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.ReporterSetup;
-import org.apache.blur.server.ServerSecurity;
-import org.apache.blur.server.ServerSecurityFactory;
+import org.apache.blur.server.ServerSecurityFilter;
+import org.apache.blur.server.ServerSecurityFilterFactory;
 import org.apache.blur.server.ServerSecurityUtil;
 import org.apache.blur.server.ShardServerEventHandler;
 import org.apache.blur.server.TableContext;
@@ -156,6 +156,10 @@ public class ThriftBlurShardServer extends ThriftServer {
     Set<Entry<String, String>> set = configuration.getProperties().entrySet();
     for (Entry<String, String> e : set) {
       String key = e.getKey();
+      String value = e.getValue();
+      if (value == null || value.isEmpty()) {
+        continue;
+      }
       if (key.startsWith("blur.shard.buffercache.")) {
         int index = key.lastIndexOf('.');
         int bufferSize = Integer.parseInt(key.substring(index + 1));
@@ -266,7 +270,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
-    List<ServerSecurity> serverSecurity = getServerSecurityList(configuration, ServerSecurityFactory.ServerType.SHARD);
+    List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration, ServerSecurityFilterFactory.ServerType.SHARD);
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, shardServer, true);
     iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, true);

@@ -235,6 +235,10 @@ public class TableContext implements Cloneable {
     TableDescriptor descriptor = tableContext._descriptor;
     for (Entry<String, String> entry : entrySet) {
       String key = entry.getKey();
+      String value = entry.getValue();
+      if (value == null || value.isEmpty()) {
+        continue;
+      }
       if (key.startsWith(BLUR_FIELDTYPE)) {
         String className = entry.getValue();
         descriptor.putToTableProperties(key, className);

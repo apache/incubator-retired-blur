@@ -43,16 +43,16 @@ public abstract class ByteArrayFactory {
         throw new RuntimeException();
       }
     }
-    ByteArrayFactory factory = new ByteArrayPrimitiveFactory(configuration);
+    ByteArrayFactory factory;
     try {
-      String className = configuration.get(BLUR_LUCENE_FST_BYTEARRAY_FACTORY);
-      if (!(className == null || className.isEmpty())) {
-        Class<?> clazz = Class.forName(className);
-        Constructor<?> constructor = clazz.getConstructor(new Class[] { BlurConfiguration.class });
-        factory = (ByteArrayFactory) constructor.newInstance(new Object[] { configuration });
-      }
+      String className = configuration
+          .get(BLUR_LUCENE_FST_BYTEARRAY_FACTORY, ByteArrayPrimitiveFactory.class.getName());
+      Class<?> clazz = Class.forName(className);
+      Constructor<?> constructor = clazz.getConstructor(new Class[] { BlurConfiguration.class });
+      factory = (ByteArrayFactory) constructor.newInstance(new Object[] { configuration });
     } catch (Exception e) {
       LOG.error("Error while trying create new bytearray factory for lucene bytestore.", e);
+      throw new RuntimeException(e);
     }
     _factory = factory;
   }

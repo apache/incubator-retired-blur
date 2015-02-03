@@ -65,8 +65,8 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ControllerServerEventHandler;
-import org.apache.blur.server.ServerSecurity;
-import org.apache.blur.server.ServerSecurityFactory;
+import org.apache.blur.server.ServerSecurityFilter;
+import org.apache.blur.server.ServerSecurityFilterFactory;
 import org.apache.blur.server.ServerSecurityUtil;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
@@ -186,7 +186,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
-    List<ServerSecurity> serverSecurity = getServerSecurityList(configuration, ServerSecurityFactory.ServerType.CONTROLLER);
+    List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration, ServerSecurityFilterFactory.ServerType.CONTROLLER);
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
     iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, false);

@@ -20,16 +20,16 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.server.ServerSecurity;
-import org.apache.blur.server.ServerSecurityFactory;
+import org.apache.blur.server.ServerSecurityFilter;
+import org.apache.blur.server.ServerSecurityFilterFactory;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.user.User;
 
-public class SimpleExampleServerSecurity extends ServerSecurityFactory {
+public class SimpleExampleServerSecurity extends ServerSecurityFilterFactory {
 
   @Override
-  public ServerSecurity getServerSecurity(ServerType server, BlurConfiguration configuration) {
-    return new ServerSecurity() {
+  public ServerSecurityFilter getServerSecurity(ServerType server, BlurConfiguration configuration) {
+    return new ServerSecurityFilter() {
       @Override
       public boolean canAccess(Method method, Object[] args, User user, InetAddress address, int port) throws BlurException {
         if (method.getName().equals("createTable")) {

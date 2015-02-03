@@ -104,6 +104,10 @@ public class AliasBlurFilterCache extends BlurFilterCache {
     Map<String, String> properties = configuration.getProperties();
     for (Entry<String, String> entry : properties.entrySet()) {
       if (isFilterAlias(entry.getKey())) {
+        String value = entry.getValue();
+        if (value == null || value.isEmpty()) {
+          continue;
+        }
         String name = getFilterAlias(entry.getKey());
         int index = name.indexOf('.');
         String table = name.substring(0, index);
@@ -113,7 +117,8 @@ public class AliasBlurFilterCache extends BlurFilterCache {
           aliasFilterMap = new ConcurrentHashMap<String, String>();
           _tableAliasFilterMap.put(table, aliasFilterMap);
         }
-        aliasFilterMap.put(alias, entry.getValue());
+
+        aliasFilterMap.put(alias, value);
       }
     }
   }
@@ -160,8 +165,13 @@ public class AliasBlurFilterCache extends BlurFilterCache {
     Map<String, String> properties = _configuration.getProperties();
     for (Entry<String, String> entry : properties.entrySet()) {
       if (isFilterAlias(entry.getKey())) {
+        String value = entry.getValue();
+        if (value == null || value.isEmpty()) {
+          continue;
+        }
         String filterAlias = getFilterAlias(entry.getKey());
-        String filterQuery = entry.getValue();
+        String filterQuery = value;
+
         Map<String, String> map = getThisTablesMap(table);
         LOG.info("Loading filter alias [{0}] with query [{1}] for table [{2}]", filterAlias, filterQuery, table);
         map.put(filterAlias, filterQuery);

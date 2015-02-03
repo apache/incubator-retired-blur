@@ -70,8 +70,11 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     Map<String, String> properties = configuration.getProperties();
     for (Entry<String, String> prop : properties.entrySet()) {
       String key = prop.getKey();
+      String value = prop.getValue();
+      if (value == null || value.isEmpty()) {
+        continue;
+      }
       if (key.startsWith(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX)) {
-        String value = prop.getValue();
         int cacheBlockSizeForFile = Integer.parseInt(value);
         String fieldType = key.substring(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX.length());
         

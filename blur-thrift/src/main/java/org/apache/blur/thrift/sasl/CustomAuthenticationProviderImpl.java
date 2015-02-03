@@ -16,6 +16,8 @@
  */
 package org.apache.blur.thrift.sasl;
 
+import static org.apache.blur.utils.BlurConstants.BLUR_SECUTIRY_SASL_CUSTOM_CLASS;
+
 import java.lang.reflect.Constructor;
 import java.net.InetSocketAddress;
 
@@ -25,11 +27,13 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 
+/**
+ * The basis for this code originated in the Apache Hive Project.
+ */
 public class CustomAuthenticationProviderImpl extends PasswordAuthenticationProvider {
 
   private static final Log LOG = LogFactory.getLog(CustomAuthenticationProviderImpl.class);
-  private static final String BLUR_SECUTIRY_SASL_CUSTOM_CLASS = "blur.security.sasl.CUSTOM.class";
-  
+
   private final PasswordAuthenticationProvider _provider;
 
   @SuppressWarnings("unchecked")

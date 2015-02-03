@@ -28,6 +28,7 @@ public abstract class PasswordAuthenticationProvider {
 
   }
 
-  public abstract void authenticate(String username, String password, InetSocketAddress address) throws AuthenticationException;
+  public abstract void authenticate(String username, String password, InetSocketAddress address)
+      throws AuthenticationException;
 
 }

@@ -37,6 +37,9 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
 
+/**
+ * The basis for this code originated in the Apache Hive Project.
+ */
 public class SaslHelper {
 
   private static final Log LOG = LogFactory.getLog(SaslHelper.class);
@@ -55,6 +58,7 @@ public class SaslHelper {
     AuthenticationType type = getValueOf(configuration.get(BLUR_SECURITY_SASL_TYPE));
     switch (type) {
     case ANONYMOUS:
+    case LDAP:
     case CUSTOM:
       return getPlainTSaslClientTransport(type, configuration, transport);
     default:
@@ -72,6 +76,7 @@ public class SaslHelper {
       password = "anonymous";
       break;
     }
+    case LDAP:
     case CUSTOM: {
       username = configuration.get(BLUR_SECURITY_SASL_PLAIN_USERNAME);
       password = configuration.get(BLUR_SECURITY_SASL_PLAIN_PASSWORD);
@@ -117,6 +122,7 @@ public class SaslHelper {
     LOG.info("Setting SASL Server with authentication type [{0}]", type);
     switch (type) {
     case ANONYMOUS:
+    case LDAP:
     case CUSTOM:
       return getPlainTSaslServerTransportFactory(type, configuration);
     default:
@@ -184,6 +190,8 @@ public class SaslHelper {
       return new AnonymousAuthenticationProviderImpl(configuration);
     case CUSTOM:
       return new CustomAuthenticationProviderImpl(configuration);
+    case LDAP:
+      return new LdapAuthenticationProviderImpl(configuration);
     default:
       throw new IOException("Unsupported authentication method [" + type + "]");
     }

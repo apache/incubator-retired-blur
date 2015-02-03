@@ -17,5 +17,5 @@
 package org.apache.blur.thrift.sasl;
 
 public enum AuthenticationType {
-  ANONYMOUS, CUSTOM
+  ANONYMOUS, CUSTOM, LDAP
 }

@@ -30,7 +30,7 @@ public class AnonymousAuthenticationProviderImpl extends PasswordAuthenticationP
 
   @Override
   public void authenticate(String username, String password, InetSocketAddress address) throws AuthenticationException {
-    System.out.println("Username [" + username + "] Password [" + password + "]");
+
   }
 
 }

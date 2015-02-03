@@ -18,16 +18,16 @@ package org.apache.blur.server;
 
 import org.apache.blur.BlurConfiguration;
 
-public abstract class ServerSecurityFactory {
+public abstract class ServerSecurityFilterFactory {
 
   public enum ServerType {
     CONTROLLER, SHARD
   }
   
-  public ServerSecurityFactory() {
+  public ServerSecurityFilterFactory() {
     
   }
 
-  public abstract ServerSecurity getServerSecurity(ServerType server, BlurConfiguration configuration);
+  public abstract ServerSecurityFilter getServerSecurity(ServerType server, BlurConfiguration configuration);
 
 }

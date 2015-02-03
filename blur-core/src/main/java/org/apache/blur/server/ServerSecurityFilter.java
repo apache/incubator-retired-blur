@@ -22,7 +22,7 @@ import java.net.InetAddress;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.user.User;
 
-public abstract class ServerSecurity {
+public abstract class ServerSecurityFilter {
 
   public abstract boolean canAccess(Method method, Object[] args, User user, InetAddress address, int port)
       throws BlurException;

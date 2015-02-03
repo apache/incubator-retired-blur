@@ -35,13 +35,13 @@ public class ServerSecurityUtil {
 
   private static final Log LOG = LogFactory.getLog(ServerSecurityUtil.class);
 
-  public static Iface applySecurity(final Iface iface, final List<ServerSecurity> serverSecurityList,
+  public static Iface applySecurity(final Iface iface, final List<ServerSecurityFilter> serverSecurityList,
       final boolean shardServer) {
     if (serverSecurityList == null || serverSecurityList.isEmpty()) {
       LOG.info("No server security configured.");
       return iface;
     }
-    for (ServerSecurity serverSecurity : serverSecurityList) {
+    for (ServerSecurityFilter serverSecurity : serverSecurityList) {
       LOG.info("Server security configured with [{0}] class [{1}].", serverSecurity, serverSecurity.getClass());
     }
     InvocationHandler handler = new InvocationHandler() {
@@ -57,7 +57,7 @@ public class ServerSecurityUtil {
         InetAddress address = remoteSocketAddress.getAddress();
         int port = remoteSocketAddress.getPort();
         User user = UserContext.getUser();
-        for (ServerSecurity serverSecurity : serverSecurityList) {
+        for (ServerSecurityFilter serverSecurity : serverSecurityList) {
           if (!serverSecurity.canAccess(method, args, user, address, port)) {
             throw new BException("ACCESS DENIED for User [{0}] method [{1}].", user, method.getName());
           }

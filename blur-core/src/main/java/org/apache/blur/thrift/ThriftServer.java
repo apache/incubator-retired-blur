@@ -24,8 +24,7 @@ import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.metrics.MetricsConstants.SYSTEM;
 import static org.apache.blur.utils.BlurConstants.BLUR_HDFS_TRACE_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_HOME;
-import static org.apache.blur.utils.BlurConstants.BLUR_SERVER_SECURITY_CLASS;
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TRACE_PATH;
+import static org.apache.blur.utils.BlurConstants.BLUR_SERVER_SECURITY_FILTER_CLASS;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -53,8 +52,8 @@ import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
-import org.apache.blur.server.ServerSecurity;
-import org.apache.blur.server.ServerSecurityFactory;
+import org.apache.blur.server.ServerSecurityFilter;
+import org.apache.blur.server.ServerSecurityFilterFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TBinaryProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServer;
@@ -166,12 +165,7 @@ public class ThriftServer {
   }
 
   public static TraceStorage setupTraceStorage(BlurConfiguration configuration) throws IOException {
-    String zKpath = configuration.get(BLUR_ZOOKEEPER_TRACE_PATH);
     String hdfsPath = configuration.get(BLUR_HDFS_TRACE_PATH);
-    if (zKpath != null && hdfsPath != null) {
-      throw new RuntimeException("Cannot have both [" + BLUR_ZOOKEEPER_TRACE_PATH + "] and [" + BLUR_HDFS_TRACE_PATH
-          + "] set.");
-    }
     if (hdfsPath != null) {
       return new HdfsTraceStorage(configuration);
     } else {
@@ -443,8 +437,8 @@ public class ThriftServer {
   }
 
   @SuppressWarnings("unchecked")
-  public static List<ServerSecurity> getServerSecurityList(BlurConfiguration configuration,
-      ServerSecurityFactory.ServerType type) {
+  public static List<ServerSecurityFilter> getServerSecurityList(BlurConfiguration configuration,
+      ServerSecurityFilterFactory.ServerType type) {
     Map<String, String> properties = configuration.getProperties();
     Map<String, String> classMap = new TreeMap<String, String>();
     for (Entry<String, String> e : properties.entrySet()) {
@@ -453,21 +447,21 @@ public class ThriftServer {
       if (value == null || value.isEmpty()) {
         continue;
       }
-      if (property.startsWith(BLUR_SERVER_SECURITY_CLASS)) {
+      if (property.startsWith(BLUR_SERVER_SECURITY_FILTER_CLASS)) {
         classMap.put(property, value);
       }
     }
     if (classMap.isEmpty()) {
       return null;
     }
-    List<ServerSecurity> result = new ArrayList<ServerSecurity>();
+    List<ServerSecurityFilter> result = new ArrayList<ServerSecurityFilter>();
     for (Entry<String, String> entry : classMap.entrySet()) {
       String className = entry.getValue();
       try {
         LOG.info("Loading factory class [{0}]", className);
-        Class<? extends ServerSecurityFactory> clazz = (Class<? extends ServerSecurityFactory>) Class
+        Class<? extends ServerSecurityFilterFactory> clazz = (Class<? extends ServerSecurityFilterFactory>) Class
             .forName(className);
-        ServerSecurityFactory serverSecurityFactory = clazz.newInstance();
+        ServerSecurityFilterFactory serverSecurityFactory = clazz.newInstance();
         result.add(serverSecurityFactory.getServerSecurity(type, configuration));
       } catch (Exception e) {
         throw new RuntimeException(e);

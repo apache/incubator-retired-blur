@@ -16,15 +16,18 @@
  */
 package org.apache.blur.server;
 
-import java.lang.reflect.Method;
-import java.net.InetAddress;
+import org.apache.blur.BlurConfiguration;
 
-import org.apache.blur.thrift.generated.BlurException;
-import org.apache.blur.user.User;
+public abstract class ServerSecurityFactory {
 
-public abstract class ServerSecurity {
+  public enum ServerType {
+    CONTROLLER, SHARD
+  }
+  
+  public ServerSecurityFactory() {
+    
+  }
 
-  public abstract boolean canAccess(Method method, Object[] args, User user, InetAddress address, int port)
-      throws BlurException;
+  public abstract ServerSecurity getServerSecurity(ServerType server, BlurConfiguration configuration);
 
 }

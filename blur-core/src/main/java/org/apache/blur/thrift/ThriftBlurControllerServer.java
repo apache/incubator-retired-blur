@@ -50,6 +50,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import java.io.File;
+import java.util.List;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.command.ControllerCommandManager;
@@ -65,6 +66,7 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ControllerServerEventHandler;
 import org.apache.blur.server.ServerSecurity;
+import org.apache.blur.server.ServerSecurityFactory;
 import org.apache.blur.server.ServerSecurityUtil;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
@@ -184,7 +186,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
-    ServerSecurity serverSecurity = getServerSecurity(configuration, false);
+    List<ServerSecurity> serverSecurity = getServerSecurityList(configuration, ServerSecurityFactory.ServerType.CONTROLLER);
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
     iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, false);

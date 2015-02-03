@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.List;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -34,12 +35,15 @@ public class ServerSecurityUtil {
 
   private static final Log LOG = LogFactory.getLog(ServerSecurityUtil.class);
 
-  public static Iface applySecurity(final Iface iface, final ServerSecurity serverSecurity, final boolean shardServer) {
-    if (serverSecurity == null) {
+  public static Iface applySecurity(final Iface iface, final List<ServerSecurity> serverSecurityList,
+      final boolean shardServer) {
+    if (serverSecurityList == null || serverSecurityList.isEmpty()) {
       LOG.info("No server security configured.");
       return iface;
     }
-    LOG.info("Server security configured with [{0}] class [{1}].", serverSecurity, serverSecurity.getClass());
+    for (ServerSecurity serverSecurity : serverSecurityList) {
+      LOG.info("Server security configured with [{0}] class [{1}].", serverSecurity, serverSecurity.getClass());
+    }
     InvocationHandler handler = new InvocationHandler() {
       @Override
       public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -53,14 +57,16 @@ public class ServerSecurityUtil {
         InetAddress address = remoteSocketAddress.getAddress();
         int port = remoteSocketAddress.getPort();
         User user = UserContext.getUser();
-        if (serverSecurity.canAccess(method, args, user, address, port)) {
-          try {
-            return method.invoke(iface, args);
-          } catch (InvocationTargetException e) {
-            throw e.getTargetException();
+        for (ServerSecurity serverSecurity : serverSecurityList) {
+          if (!serverSecurity.canAccess(method, args, user, address, port)) {
+            throw new BException("ACCESS DENIED for User [{0}] method [{1}].", user, method.getName());
           }
         }
-        throw new BException("ACCESS DENIED for User [{0}] method [{1}].", user, method.getName());
+        try {
+          return method.invoke(iface, args);
+        } catch (InvocationTargetException e) {
+          throw e.getTargetException();
+        }
       }
     };
     return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class }, handler);

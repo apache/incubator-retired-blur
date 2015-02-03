@@ -59,6 +59,7 @@ import static org.apache.blur.utils.BlurUtil.quietClose;
 import java.io.Closeable;
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
@@ -85,6 +86,7 @@ import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
 import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ServerSecurity;
+import org.apache.blur.server.ServerSecurityFactory;
 import org.apache.blur.server.ServerSecurityUtil;
 import org.apache.blur.server.ShardServerEventHandler;
 import org.apache.blur.server.TableContext;
@@ -264,7 +266,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
-    ServerSecurity serverSecurity = getServerSecurity(configuration, true);
+    List<ServerSecurity> serverSecurity = getServerSecurityList(configuration, ServerSecurityFactory.ServerType.SHARD);
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, shardServer, true);
     iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, true);

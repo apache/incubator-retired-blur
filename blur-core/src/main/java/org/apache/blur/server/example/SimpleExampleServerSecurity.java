@@ -21,24 +21,26 @@ import java.net.InetAddress;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.server.ServerSecurity;
+import org.apache.blur.server.ServerSecurityFactory;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.user.User;
 
-public class SimpleExampleServerSecurity extends ServerSecurity {
-
-  public SimpleExampleServerSecurity(BlurConfiguration configuration) {
-    super(configuration);
-  }
+public class SimpleExampleServerSecurity extends ServerSecurityFactory {
 
   @Override
-  public boolean canAccess(Method method, Object[] args, User user, InetAddress address, int port) throws BlurException {
-    if (method.getName().equals("createTable")) {
-      if (user != null && user.getUsername().equals("admin")) {
+  public ServerSecurity getServerSecurity(ServerType server, BlurConfiguration configuration) {
+    return new ServerSecurity() {
+      @Override
+      public boolean canAccess(Method method, Object[] args, User user, InetAddress address, int port) throws BlurException {
+        if (method.getName().equals("createTable")) {
+          if (user != null && user.getUsername().equals("admin")) {
+            return true;
+          }
+          return false;
+        }
         return true;
       }
-      return false;
-    }
-    return true;
+    };
   }
 
 }

@@ -17,7 +17,9 @@ package org.apache.blur.server;
  * the License.
  */
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -25,7 +27,12 @@ import lucene.security.index.AccessControlFactory;
 import lucene.security.search.SecureIndexSearcher;
 
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.Weight;
 import org.apache.lucene.store.Directory;
 
 public abstract class IndexSearcherCloseableSecureBase extends SecureIndexSearcher implements IndexSearcherCloseable {
@@ -40,37 +47,23 @@ public abstract class IndexSearcherCloseableSecureBase extends SecureIndexSearch
 
   @Override
   public abstract void close() throws IOException;
-  //
-  // protected void search(List<AtomicReaderContext> leaves, Weight weight,
-  // Collector collector) throws IOException {
-  // // TODO: should we make this
-  // // threaded...? the Collector could be sync'd?
-  // // always use single thread:
-  // for (AtomicReaderContext ctx : leaves) { // search each subreader
-  // Tracer trace = Trace.trace("search - internal", Trace.param("AtomicReader",
-  // ctx.reader()));
-  // try {
-  // try {
-  // collector.setNextReader(ctx);
-  // } catch (CollectionTerminatedException e) {
-  // // there is no doc of interest in this reader context
-  // // continue with the following leaf
-  // continue;
-  // }
-  // Scorer scorer = weight.scorer(ctx, !collector.acceptsDocsOutOfOrder(),
-  // true, ctx.reader().getLiveDocs());
-  // if (scorer != null) {
-  // try {
-  // scorer.score(collector);
-  // } catch (CollectionTerminatedException e) {
-  // // collection was terminated prematurely
-  // // continue with the following leaf
-  // }
-  // }
-  // } finally {
-  // trace.done();
-  // }
-  // }
-  // }
+
+  protected void search(List<AtomicReaderContext> leaves, Weight weight, Collector collector) throws IOException {
+    // TODO: should we make this
+    // threaded...? the Collector could be sync'd?
+    // always use single thread:
+    for (AtomicReaderContext ctx : leaves) { // search each subreader
+      Tracer trace = Trace.trace("search - internal", Trace.param("AtomicReader", ctx.reader()));
+      try {
+        super.search(makeList(ctx), weight, collector);
+      } finally {
+        trace.done();
+      }
+    }
+  }
+
+  private List<AtomicReaderContext> makeList(AtomicReaderContext ctx) {
+    return Arrays.asList(ctx);
+  }
 
 }

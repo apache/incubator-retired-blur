@@ -93,7 +93,7 @@ public class FacetQueryTest {
     BlurConfiguration configuration = new BlurConfiguration();
     Trace.setStorage(new LogTraceStorage(configuration));
     int facetCount = 200;
-    int docCount = 1000000;
+    int docCount = 100000;
     IndexReader reader = createIndex(docCount, facetCount, false);
 
     Query[] facets = new Query[facetCount];
@@ -137,7 +137,7 @@ public class FacetQueryTest {
     BlurConfiguration configuration = new BlurConfiguration();
     Trace.setStorage(new LogTraceStorage(configuration));
     int facetCount = 200;
-    int docCount = 1000000;
+    int docCount = 100000;
     IndexReader reader = createIndex(docCount, facetCount, false);
 
     Query[] facets = new Query[facetCount];

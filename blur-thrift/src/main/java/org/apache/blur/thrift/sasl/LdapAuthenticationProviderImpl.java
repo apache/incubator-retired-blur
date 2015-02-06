@@ -40,6 +40,18 @@ public class LdapAuthenticationProviderImpl extends PasswordAuthenticationProvid
   private final String _baseDN;
   private final String _ldapDomain;
 
+//  public static void main(String[] args) throws IOException {
+//    BlurConfiguration blurConfiguration = new BlurConfiguration();
+//    blurConfiguration.set(BLUR_SECURITY_SASL_LDAP_URL,"ldap://localhost:10389/o=sevenSeas");
+//    LdapAuthenticationProviderImpl ldapAuthenticationProviderImpl = new LdapAuthenticationProviderImpl(
+//        blurConfiguration);
+//    try {
+//      ldapAuthenticationProviderImpl.authenticate("cn=James Hook,ou=people,o=sevenSeas", "peterPan", null);
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//    }
+//  }
+
   public LdapAuthenticationProviderImpl(BlurConfiguration configuration) {
     super(configuration);
     _ldapURL = configuration.get(BLUR_SECURITY_SASL_LDAP_URL);

@@ -69,6 +69,7 @@ public class QueryUtilTest extends ConsoleTestBase {
 
   @Test
   public void testGetCurrentQueryCount() throws BlurException, IOException, TException {
+    UserContext.setUser(new User("testUser",null));
     Iface client = Config.getClient();
     BlurQuery query = new BlurQuery(
         new Query("fam0.col0:*", true, ScoreType.SUPER, null, null),
@@ -78,6 +79,7 @@ public class QueryUtilTest extends ConsoleTestBase {
     int currentCount = QueryUtil.getCurrentQueryCount();
     client.query("queryUnitTable", query);
     assertEquals(currentCount + 1, QueryUtil.getCurrentQueryCount());
+    UserContext.reset();
   }
 
   @SuppressWarnings("unchecked")

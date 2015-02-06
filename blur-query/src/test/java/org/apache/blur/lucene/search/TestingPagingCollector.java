@@ -54,10 +54,12 @@ import org.junit.Test;
  * 
  */
 public class TestingPagingCollector {
+  
+  private int length = 1324;
 
   @Test
   public void testSimpleSearchPaging() throws Exception {
-    IndexReader reader = getReaderFlatScore(13245);
+    IndexReader reader = getReaderFlatScore(length);
     IndexSearcherCloseable searcher = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
 
     TotalHitsRef totalHitsRef = new TotalHitsRef();
@@ -86,7 +88,6 @@ public class TestingPagingCollector {
 
   @Test
   public void testSimpleSearchPagingThroughAll() throws Exception {
-    int length = 13245;
     IndexReader reader = getReaderFlatScore(length);
     IndexSearcherCloseable searcher = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
 
@@ -123,7 +124,7 @@ public class TestingPagingCollector {
 
   @Test
   public void testSimpleSearchPagingWithSorting() throws Exception {
-    IndexReader reader = getReaderFlatScore(13245);
+    IndexReader reader = getReaderFlatScore(length);
     IndexSearcherCloseable searcher = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
 
     TotalHitsRef totalHitsRef = new TotalHitsRef();

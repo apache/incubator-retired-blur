@@ -195,7 +195,7 @@ public abstract class BaseDirectoryTestSuite {
     // The serial merge scheduler can be useful for debugging.
     // conf.setMergeScheduler(new SerialMergeScheduler());
     IndexWriter writer = new IndexWriter(dir, conf);
-    int numDocs = 10000;
+    int numDocs = 1000;
     DirectoryReader reader = null;
     long gen = 0;
     for (int i = 0; i < 100; i++) {

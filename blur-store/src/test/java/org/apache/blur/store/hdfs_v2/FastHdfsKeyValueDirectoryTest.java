@@ -114,7 +114,7 @@ public class FastHdfsKeyValueDirectoryTest {
     System.out.println("Seed:" + seed);
     Random random = new Random(seed);
     int docCount = 0;
-    int passes = 50;
+    int passes = 10;
     byte[] segmentsGenContents = null;
     for (int run = 0; run < passes; run++) {
       final FastHdfsKeyValueDirectory directory = new FastHdfsKeyValueDirectory(_timer, _configuration, new Path(_path,

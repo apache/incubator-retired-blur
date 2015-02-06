@@ -330,8 +330,16 @@ public abstract class BlurClusterTestBase {
     columnDefinition.setMultiValueField(false);
     columnDefinition.setProperties(new HashMap<String, String>());
     client.addColumnDefinition(tableName, columnDefinition);
+    boolean bulkMutate = false;
     long s = System.nanoTime();
-    client.mutateBatch(mutate(mutations));
+    if (bulkMutate) {
+      String bulkId = UUID.randomUUID().toString();
+      client.bulkMutateStart(bulkId);
+      client.bulkMutateAddMultiple(bulkId, mutate(mutations));
+      client.bulkMutateFinish(bulkId, true, true);
+    } else {
+      client.mutateBatch(mutate(mutations));
+    }
     long e = System.nanoTime();
     System.out.println("mutateBatch took [" + (e - s) / 1000000.0 + "]");
     BlurQuery blurQueryRow = new BlurQuery();
@@ -518,8 +526,11 @@ public abstract class BlurClusterTestBase {
   @Test
   public void testBatchFetch() throws BlurException, TException, InterruptedException, IOException {
     String tableName = "testBatchFetch";
+    long t1 = System.nanoTime();
     createTable(tableName);
+    long t2 = System.nanoTime();
     loadTable(tableName);
+    long t3 = System.nanoTime();
     final Iface client = getClient();
     List<String> terms = client.terms(tableName, null, "rowid", "", (short) 100);
 
@@ -539,6 +550,8 @@ public abstract class BlurClusterTestBase {
       i++;
     }
 
+    System.out.println("Create table took [" + (t2 - t1) / 1000000.0 + "]");
+    System.out.println("Load table took [" + (t3 - t2) / 1000000.0 + "]");
   }
 
   @Test

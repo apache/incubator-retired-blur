@@ -16,6 +16,9 @@
  */
 package org.apache.blur.hive;
 
+import static org.apache.blur.hive.BlurSerDe.BLUR_BLOCKING_APPLY;
+import static org.apache.blur.hive.BlurSerDe.BLUR_CONTROLLER_CONNECTION_STR;
+
 import java.io.IOException;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
@@ -68,11 +71,12 @@ public class BlurHiveOutputCommitter extends OutputCommitter {
 
   private void finishBulkJob(JobContext context, boolean apply) throws IOException {
     Configuration configuration = context.getConfiguration();
-    String connectionStr = configuration.get(BlurSerDe.BLUR_CONTROLLER_CONNECTION_STR);
+    String connectionStr = configuration.get(BLUR_CONTROLLER_CONNECTION_STR);
+    boolean blocking = configuration.getBoolean(BLUR_BLOCKING_APPLY, false);
     Iface client = BlurClient.getClient(connectionStr);
     String bulkId = BlurHiveOutputFormat.getBulkId(configuration);
     try {
-      client.bulkMutateFinish(bulkId, apply, false);
+      client.bulkMutateFinish(bulkId, apply, blocking);
     } catch (BlurException e) {
       throw new IOException(e);
     } catch (TException e) {

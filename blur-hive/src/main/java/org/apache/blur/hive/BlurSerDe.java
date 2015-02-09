@@ -43,10 +43,12 @@ import org.apache.hadoop.io.Writable;
 
 public class BlurSerDe extends AbstractSerDe {
 
-  public static final String BLUR_CONTROLLER_CONNECTION_STR = "BLUR_CONTROLLER_CONNECTION_STR";
+  public static final String BLUR_BLOCKING_APPLY = "blur.blocking.apply";
+  public static final String BLUR_CONTROLLER_CONNECTION_STR = "blur.controller.connection.str";
   public static final String FAMILY = "blur.family";
   public static final String TABLE = "blur.table";
   public static final String ZK = BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+  
   private String _family;
   private Map<String, ColumnDefinition> _schema;
   private ObjectInspector _objectInspector;

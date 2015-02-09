@@ -256,7 +256,8 @@ public class BlurSerDeTest {
   }
 
   @Test
-  public void test2() throws SQLException, ClassNotFoundException, IOException, BlurException, TException, InterruptedException {
+  public void test2() throws SQLException, ClassNotFoundException, IOException, BlurException, TException,
+      InterruptedException {
     miniCluster.startMrMiniCluster();
     Configuration configuration = miniCluster.getMRConfiguration();
     HiveConf hiveConf = new HiveConf(configuration, getClass());
@@ -290,6 +291,7 @@ public class BlurSerDeTest {
     generateData(tableDir, totalRecords);
 
     run(connection, "select * from loadtable");
+    run(connection, "set " + BlurSerDe.BLUR_BLOCKING_APPLY + " = true");
     run(connection, "insert into table testtable select * from loadtable");
     miniCluster.stopMrMiniCluster();
     connection.close();

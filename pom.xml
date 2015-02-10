@@ -299,6 +299,10 @@ under the License.
 			<id>cloudera</id>
 			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
 		</repository>
+		<repository>
+			<id>hortonworks</id>
+			<url>http://repo.hortonworks.com/content/repositories/public/</url>
+		</repository>
 	</repositories>
 
 	<build>

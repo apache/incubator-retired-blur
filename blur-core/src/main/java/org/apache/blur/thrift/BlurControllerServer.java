@@ -1604,7 +1604,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             return true;
           }
           Map<String, Map<String, String>> layout = _shardServerLayout.get();
+          if (layout == null) {
+            return false;
+          }
           Map<String, String> shardIdToServerMap = layout.get(table);
+          if (shardIdToServerMap == null) {
+            return false;
+          }
           for (Shard shard : shards) {
             String serverId = shardIdToServerMap.get(shard.getShard());
             if (serverId.equals(server.getServer())) {

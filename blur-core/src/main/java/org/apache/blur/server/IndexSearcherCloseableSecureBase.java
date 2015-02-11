@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import lucene.security.index.AccessControlFactory;
-import lucene.security.search.SecureIndexSearcher;
 
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.trace.Trace;
@@ -35,7 +34,8 @@ import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.store.Directory;
 
-public abstract class IndexSearcherCloseableSecureBase extends SecureIndexSearcher implements IndexSearcherCloseable {
+public abstract class IndexSearcherCloseableSecureBase extends BlurSecureIndexSearcher implements
+    IndexSearcherCloseable {
 
   public IndexSearcherCloseableSecureBase(IndexReader r, ExecutorService executor,
       AccessControlFactory accessControlFactory, Collection<String> readAuthorizations,

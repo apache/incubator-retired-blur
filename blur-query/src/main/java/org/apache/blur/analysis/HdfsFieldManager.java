@@ -195,7 +195,13 @@ public class HdfsFieldManager extends BaseFieldManager {
       inputStream.close();
       boolean fieldLessIndexing = Boolean.parseBoolean(properties.getProperty(FIELD_LESS_INDEXING));
       boolean sortenabled = Boolean.parseBoolean(properties.getProperty(SORTENABLED));
-      boolean multiValueField = Boolean.parseBoolean(properties.getProperty(MULTI_VALUE_FIELD));
+      String mvfProp = properties.getProperty(MULTI_VALUE_FIELD);
+      boolean multiValueField;
+      if (mvfProp == null || mvfProp.trim().isEmpty()) {
+        multiValueField = true;
+      } else {
+        multiValueField = Boolean.parseBoolean(mvfProp);
+      }
       String fieldType = properties.getProperty(FIELD_TYPE);
       Map<String, String> props = toMap(properties);
       FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType,

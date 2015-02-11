@@ -210,11 +210,12 @@ public class ThriftBlurShardServer extends ThriftServer {
     int internalSearchThreads = configuration.getInt(BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT, 16);
     final Timer hdfsKeyValueTimer = new Timer("HDFS KV Store", true);
     final Timer indexImporterTimer = new Timer("IndexImporter", true);
+    final Timer indexBulkTimer = new Timer("BulkIndex", true);
     long smallMergeThreshold = configuration.getLong(BLUR_SHARD_SMALL_MERGE_THRESHOLD, 128 * 1000 * 1000);
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
         filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay,
         shardOpenerThreadCount, maxMergeThreads, internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode,
-        hdfsKeyValueTimer, indexImporterTimer, smallMergeThreshold);
+        hdfsKeyValueTimer, indexImporterTimer, smallMergeThreshold, indexBulkTimer);
 
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 
@@ -270,7 +271,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
-    List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration, ServerSecurityFilterFactory.ServerType.SHARD);
+    List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration,
+        ServerSecurityFilterFactory.ServerType.SHARD);
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, shardServer, true);
     iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, true);
@@ -324,9 +326,9 @@ public class ThriftBlurShardServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(makeCloseable(hdfsKeyValueTimer), makeCloseable(indexImporterTimer), blockCacheDirectoryFactory,
-            commandManager, traceStorage, server, shardServer, indexManager, indexServer, threadWatcher, clusterStatus,
-            zooKeeper, httpServer);
+        quietClose(makeCloseable(hdfsKeyValueTimer), makeCloseable(indexImporterTimer), makeCloseable(indexBulkTimer),
+            blockCacheDirectoryFactory, commandManager, traceStorage, server, shardServer, indexManager, indexServer,
+            threadWatcher, clusterStatus, zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);

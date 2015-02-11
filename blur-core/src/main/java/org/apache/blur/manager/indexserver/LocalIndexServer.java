@@ -68,6 +68,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   private final boolean _ramDir;
   private final BlurIndexCloser _indexCloser;
   private final Timer _timer;
+  private final Timer _bulkTimer;
 
   public LocalIndexServer(TableDescriptor tableDescriptor) throws IOException {
     this(tableDescriptor, false);
@@ -75,6 +76,7 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   public LocalIndexServer(TableDescriptor tableDescriptor, boolean ramDir) throws IOException {
     _timer = new Timer("Index Importer", true);
+    _bulkTimer = new Timer("Bulk Indexing", true);
     _closer = Closer.create();
     _tableContext = TableContext.create(tableDescriptor);
     _mergeScheduler = _closer.register(new SharedMergeScheduler(3, 128 * 1000 * 1000));
@@ -166,7 +168,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     ShardContext shardContext = ShardContext.create(_tableContext, shard);
     BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(shardContext, dir, _mergeScheduler, _searchExecutor,
-        _indexCloser, _timer);
+        _indexCloser, _timer, _bulkTimer);
     return index;
   }
 

@@ -990,7 +990,7 @@ public abstract class BlurClusterTestBase {
     String bulkId = UUID.randomUUID().toString();
     Iface client = getClient();
     client.bulkMutateStart(bulkId);
-    int batchSize = 10;
+    int batchSize = 11;
     int total = 10000;
     int maxFacetValue = 100;
     List<RowMutation> mutations = new ArrayList<RowMutation>();

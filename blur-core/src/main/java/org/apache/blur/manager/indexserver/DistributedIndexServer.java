@@ -116,15 +116,17 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final int _minimumNumberOfNodes;
   private final Timer _hdfsKeyValueTimer;
   private final Timer _indexImporterTimer;
+  private final Timer _indexBulkTimer;
 
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
       int shardOpenerThreadCount, int maxMergeThreads, int internalSearchThreads,
-      int minimumNumberOfNodesBeforeExitingSafeMode, Timer hdfsKeyValueTimer, Timer indexImporterTimer, long smallMergeThreshold)
-      throws KeeperException, InterruptedException {
+      int minimumNumberOfNodesBeforeExitingSafeMode, Timer hdfsKeyValueTimer, Timer indexImporterTimer,
+      long smallMergeThreshold, Timer indexBulkTimer) throws KeeperException, InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
     _indexImporterTimer = indexImporterTimer;
+    _indexBulkTimer = indexBulkTimer;
     _hdfsKeyValueTimer = hdfsKeyValueTimer;
     _minimumNumberOfNodes = minimumNumberOfNodesBeforeExitingSafeMode;
     _running.set(true);
@@ -520,7 +522,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, directory, _mergeScheduler, _searchExecutor,
-        _indexCloser, _indexImporterTimer);
+        _indexCloser, _indexImporterTimer, _indexBulkTimer);
 
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
       index = new BlurIndexReadOnly(index);

@@ -125,7 +125,7 @@ public class IndexImporterTest {
   }
 
   private BlurIndex getBlurIndex(ShardContext shardContext, final Directory mainDirectory) throws IOException {
-    return new BlurIndex(shardContext, mainDirectory, null, null, null, null) {
+    return new BlurIndex(shardContext, mainDirectory, null, null, null, null, null) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {

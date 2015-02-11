@@ -79,10 +79,12 @@ public class BlurIndexSimpleWriterTest {
   private String uuid;
   private BlurIndexCloser _closer;
   private Timer _timer;
+  private Timer _bulkTimer;
 
   @Before
   public void setup() throws IOException {
     _timer = new Timer("Index Importer", true);
+    _bulkTimer = new Timer("Bulk Indexing", true);
     TableContext.clear();
     _base = new File(TMPDIR, "blur-index-writer-test");
     rmr(_base);
@@ -125,7 +127,7 @@ public class BlurIndexSimpleWriterTest {
     // FSDirectory directory = FSDirectory.open(path);
 
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer, _timer);
+    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer, _timer, _bulkTimer);
   }
 
   @After
@@ -200,11 +202,11 @@ public class BlurIndexSimpleWriterTest {
 
       @Override
       public void store(TraceCollector collector) {
-//        try {
-//          System.out.println(collector.toJsonObject().toString(1));
-//        } catch (JSONException e) {
-//          e.printStackTrace();
-//        }
+        // try {
+        // System.out.println(collector.toJsonObject().toString(1));
+        // } catch (JSONException e) {
+        // e.printStackTrace();
+        // }
       }
     });
     Trace.setupTrace("test");

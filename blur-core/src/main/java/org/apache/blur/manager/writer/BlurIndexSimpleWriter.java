@@ -21,6 +21,7 @@ import static org.apache.blur.utils.BlurConstants.ACL_DISCOVER;
 import static org.apache.blur.utils.BlurConstants.ACL_READ;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -71,6 +73,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
@@ -130,17 +133,21 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final AccessControlFactory _accessControlFactory;
   private final Set<String> _discoverableFields;
   private final Splitter _commaSplitter;
+  private final Timer _bulkIndexingTimer;
+  private final TimerTask _watchForIdleBulkWriters;
 
   private Thread _optimizeThread;
   private Thread _writerOpener;
   private IndexImporter _indexImporter;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
-      final ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer) throws IOException {
-    super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexImporterTimer);
+      final ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer,
+      Timer bulkIndexingTimer) throws IOException {
+    super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexImporterTimer, bulkIndexingTimer);
     _commaSplitter = Splitter.on(',');
     _bulkWriters = new ConcurrentHashMap<String, BlurIndexSimpleWriter.BulkEntry>();
     _indexImporterTimer = indexImporterTimer;
+    _bulkIndexingTimer = bulkIndexingTimer;
     _searchThreadPool = searchExecutor;
     _shardContext = shardContext;
     _tableContext = _shardContext.getTableContext();
@@ -189,6 +196,28 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _indexReader.set(wrap(DirectoryReader.open(_directory)));
 
     openWriter();
+    _watchForIdleBulkWriters = new TimerTask() {
+      @Override
+      public void run() {
+        for (BulkEntry bulkEntry : _bulkWriters.values()) {
+          bulkEntry._lock.lock();
+          try {
+            if (!bulkEntry.isClosed() && bulkEntry.isIdle()) {
+              LOG.info("Bulk Entry [{0}] has become idle and now closing.", bulkEntry);
+              try {
+                bulkEntry.close();
+              } catch (IOException e) {
+                LOG.error("Unkown error while trying to close bulk writer when it became idle.", e);
+              }
+            }
+          } finally {
+            bulkEntry._lock.unlock();
+          }
+        }
+      }
+    };
+    long delay = TimeUnit.SECONDS.toMillis(30);
+    _bulkIndexingTimer.schedule(_watchForIdleBulkWriters, delay, delay);
   }
 
   private synchronized void openWriter() {
@@ -355,7 +384,17 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   @Override
   public void close() throws IOException {
     _isClosed.set(true);
-    IOUtils.cleanup(LOG, _indexImporter, _mutationQueueProcessor, _writer.get(), _indexReader.get());
+    IOUtils.cleanup(LOG, makeCloseable(_watchForIdleBulkWriters), _indexImporter, _mutationQueueProcessor,
+        _writer.get(), _indexReader.get());
+  }
+
+  private Closeable makeCloseable(final TimerTask timerTask) {
+    return new Closeable() {
+      @Override
+      public void close() throws IOException {
+        timerTask.cancel();
+      }
+    };
   }
 
   @Override
@@ -507,25 +546,38 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   }
 
   static class BulkEntry {
-    final SequenceFile.Writer _writer;
-    final Path _path;
 
-    BulkEntry(Writer writer, Path path) {
-      _writer = writer;
-      _path = path;
+    private final long _idleTime = TimeUnit.SECONDS.toNanos(30);
+    private final Path _parentPath;
+    private final String _bulkId;
+    private final TableContext _tableContext;
+    private final ShardContext _shardContext;
+    private final Configuration _configuration;
+    private final FileSystem _fileSystem;
+    private final String _table;
+    private final String _shard;
+    private final Lock _lock = new ReentrantReadWriteLock().writeLock();
+
+    private volatile SequenceFile.Writer _writer;
+    private volatile long _lastWrite;
+    private volatile int _count = 0;
+
+    public BulkEntry(String bulkId, Path parentPath, ShardContext shardContext) throws IOException {
+      _bulkId = bulkId;
+      _parentPath = parentPath;
+      _shardContext = shardContext;
+      _tableContext = shardContext.getTableContext();
+      _configuration = _tableContext.getConfiguration();
+      _fileSystem = _parentPath.getFileSystem(_configuration);
+      _shard = _shardContext.getShard();
+      _table = _tableContext.getTable();
     }
-  }
 
-  public BulkEntry startBulkMutate(String bulkId) throws IOException {
-    BulkEntry bulkEntry = _bulkWriters.get(bulkId);
-    if (bulkEntry == null) {
-      Path tablePath = _tableContext.getTablePath();
-      Path bulk = new Path(tablePath, "bulk");
-      Path bulkInstance = new Path(bulk, bulkId);
-      Path path = new Path(bulkInstance, _shardContext.getShard() + ".notsorted.seq");
-      Configuration configuration = _tableContext.getConfiguration();
-      FileSystem fileSystem = path.getFileSystem(configuration);
+    public boolean isClosed() {
+      return _writer == null;
+    }
 
+    private Writer openSeqWriter() throws IOException {
       Progressable progress = new Progressable() {
         @Override
         public void progress() {
@@ -535,7 +587,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       final CompressionCodec codec;
       final CompressionType type;
 
-      if (isSnappyCodecLoaded(configuration)) {
+      if (isSnappyCodecLoaded(_configuration)) {
         codec = new SnappyCodec();
         type = CompressionType.BLOCK;
       } else {
@@ -543,61 +595,178 @@ public class BlurIndexSimpleWriter extends BlurIndex {
         type = CompressionType.NONE;
       }
 
-      Writer writer = SequenceFile.createWriter(fileSystem, configuration, path, Text.class, RowMutationWritable.class,
-          type, codec, progress);
+      Path path = new Path(_parentPath, _shard + "." + _count + ".unsorted.seq");
 
-      bulkEntry = new BulkEntry(writer, path);
+      _count++;
+
+      return SequenceFile.createWriter(_fileSystem, _configuration, path, Text.class, RowMutationWritable.class, type,
+          codec, progress);
+    }
+
+    public void close() throws IOException {
+      _lock.lock();
+      try {
+        if (_writer != null) {
+          _writer.close();
+          _writer = null;
+        }
+      } finally {
+        _lock.unlock();
+      }
+    }
+
+    public void append(Text key, RowMutationWritable rowMutationWritable) throws IOException {
+      _lock.lock();
+      try {
+        getWriter().append(key, rowMutationWritable);
+        _lastWrite = System.nanoTime();
+      } finally {
+        _lock.unlock();
+      }
+    }
+
+    private SequenceFile.Writer getWriter() throws IOException {
+      if (_writer == null) {
+        _writer = openSeqWriter();
+        _lastWrite = System.nanoTime();
+      }
+      return _writer;
+    }
+
+    public boolean isIdle() {
+      if (_lastWrite + _idleTime < System.nanoTime()) {
+        return true;
+      }
+      return false;
+    }
+
+    public List<Path> getUnsortedFiles() throws IOException {
+      FileStatus[] listStatus = _fileSystem.listStatus(_parentPath, new PathFilter() {
+        @Override
+        public boolean accept(Path path) {
+          return path.getName().matches(_shard + "\\.[0-9].*\\.unsorted\\.seq");
+        }
+      });
+
+      List<Path> unsortedPaths = new ArrayList<Path>();
+      for (FileStatus fileStatus : listStatus) {
+        unsortedPaths.add(fileStatus.getPath());
+      }
+      return unsortedPaths;
+    }
+
+    public void cleanupFiles(List<Path> unsortedPaths, Path sorted) throws IOException {
+      for (Path p : unsortedPaths) {
+        _fileSystem.delete(p, false);
+      }
+      if (sorted != null) {
+        _fileSystem.delete(sorted, false);
+      }
+      removeParentIfLastFile(_fileSystem, _parentPath);
+    }
+
+    public IndexAction getIndexAction() throws IOException {
+      return new IndexAction() {
+        private Path _sorted;
+        private List<Path> _unsortedPaths;
+
+        @Override
+        public void performMutate(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
+          Configuration configuration = _tableContext.getConfiguration();
+
+          SequenceFile.Sorter sorter = new Sorter(_fileSystem, Text.class, RowMutationWritable.class, configuration);
+
+          _unsortedPaths = getUnsortedFiles();
+
+          _sorted = new Path(_parentPath, _shard + ".sorted.seq");
+
+          LOG.info("Shard [{2}/{3}] Id [{4}] Sorting mutates paths [{0}] sorted path [{1}]", _unsortedPaths, _sorted,
+              _table, _shard, _bulkId);
+          sorter.sort(_unsortedPaths.toArray(new Path[_unsortedPaths.size()]), _sorted, true);
+
+          LOG.info("Shard [{1}/{2}] Id [{3}] Applying mutates sorted path [{0}]", _sorted, _table, _shard, _bulkId);
+          Reader reader = new SequenceFile.Reader(_fileSystem, _sorted, configuration);
+
+          Text key = new Text();
+          RowMutationWritable value = new RowMutationWritable();
+
+          Text last = null;
+          List<RowMutation> list = new ArrayList<RowMutation>();
+          while (reader.next(key, value)) {
+            if (!key.equals(last)) {
+              flushMutates(searcher, writer, list);
+              last = new Text(key);
+              list.clear();
+            }
+            list.add(value.getRowMutation().deepCopy());
+          }
+          flushMutates(searcher, writer, list);
+          reader.close();
+          LOG.info("Shard [{0}/{1}] Id [{2}] Finished applying mutates starting commit.", _table, _shard, _bulkId);
+        }
+
+        private void flushMutates(IndexSearcherCloseable searcher, IndexWriter writer, List<RowMutation> list)
+            throws IOException {
+          if (!list.isEmpty()) {
+            List<RowMutation> reduceMutates;
+            try {
+              reduceMutates = MutatableAction.reduceMutates(list);
+            } catch (BlurException e) {
+              throw new IOException(e);
+            }
+            for (RowMutation mutation : reduceMutates) {
+              MutatableAction mutatableAction = new MutatableAction(_shardContext);
+              mutatableAction.mutate(mutation);
+              mutatableAction.performMutate(searcher, writer);
+            }
+          }
+        }
+
+        @Override
+        public void doPreRollback(IndexWriter writer) throws IOException {
+
+        }
+
+        @Override
+        public void doPreCommit(IndexSearcherCloseable indexSearcher, IndexWriter writer) throws IOException {
+
+        }
+
+        @Override
+        public void doPostRollback(IndexWriter writer) throws IOException {
+          cleanupFiles(_unsortedPaths, _sorted);
+        }
+
+        @Override
+        public void doPostCommit(IndexWriter writer) throws IOException {
+          cleanupFiles(_unsortedPaths, _sorted);
+        }
+      };
+    }
+
+    @Override
+    public String toString() {
+      return "BulkEntry [_bulkId=" + _bulkId + ", _table=" + _table + ", _shard=" + _shard + ", _idleTime=" + _idleTime
+          + ", _lastWrite=" + _lastWrite + ", _count=" + _count + "]";
+    }
+
+  }
+
+  public synchronized BulkEntry startBulkMutate(String bulkId) throws IOException {
+    BulkEntry bulkEntry = _bulkWriters.get(bulkId);
+    if (bulkEntry == null) {
+      Path tablePath = _tableContext.getTablePath();
+      Path bulk = new Path(tablePath, "bulk");
+      Path bulkInstance = new Path(bulk, bulkId);
+      Path path = new Path(bulkInstance, _shardContext.getShard() + ".notsorted.seq");
+
+      bulkEntry = new BulkEntry(bulkId, path, _shardContext);
       _bulkWriters.put(bulkId, bulkEntry);
     } else {
       LOG.info("Bulk [{0}] mutate already started on shard [{1}] in table [{2}].", bulkId, _shardContext.getShard(),
           _tableContext.getTable());
     }
     return bulkEntry;
-  }
-
-  private boolean isSnappyCodecLoaded(Configuration configuration) {
-    try {
-      Method methodHadoop1 = SnappyCodec.class.getMethod("isNativeSnappyLoaded", new Class[] { Configuration.class });
-      Boolean loaded = (Boolean) methodHadoop1.invoke(null, new Object[] { configuration });
-      if (loaded != null && loaded) {
-        LOG.info("Using SnappyCodec");
-        return true;
-      } else {
-        LOG.info("Not using SnappyCodec");
-        return false;
-      }
-    } catch (NoSuchMethodException e) {
-      Method methodHadoop2;
-      try {
-        methodHadoop2 = SnappyCodec.class.getMethod("isNativeCodeLoaded", new Class[] {});
-      } catch (NoSuchMethodException ex) {
-        LOG.info("Can not determine if SnappyCodec is loaded.");
-        return false;
-      } catch (SecurityException ex) {
-        LOG.error("Not allowed.", ex);
-        return false;
-      }
-      Boolean loaded;
-      try {
-        loaded = (Boolean) methodHadoop2.invoke(null);
-        if (loaded != null && loaded) {
-          LOG.info("Using SnappyCodec");
-          return true;
-        } else {
-          LOG.info("Not using SnappyCodec");
-          return false;
-        }
-      } catch (Exception ex) {
-        LOG.info("Unknown error while trying to determine if SnappyCodec is loaded.", ex);
-        return false;
-      }
-    } catch (SecurityException e) {
-      LOG.error("Not allowed.", e);
-      return false;
-    } catch (Exception e) {
-      LOG.info("Unknown error while trying to determine if SnappyCodec is loaded.", e);
-      return false;
-    }
   }
 
   @Override
@@ -611,112 +780,26 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       return;
     }
     LOG.info("Shard [{2}/{3}] Id [{0}] Finishing bulk mutate apply [{1}]", bulkId, apply, table, shard);
-    bulkEntry._writer.close();
-
-    Configuration configuration = _tableContext.getConfiguration();
-    final Path path = bulkEntry._path;
-    final FileSystem fileSystem = path.getFileSystem(configuration);
+    bulkEntry.close();
 
     if (!apply) {
-      fileSystem.delete(path, false);
-      Path parent = path.getParent();
-      removeParentIfLastFile(fileSystem, parent);
+      bulkEntry.cleanupFiles(bulkEntry.getUnsortedFiles(), null);
     } else {
-      Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-          try {
-            process(new IndexAction() {
-              private Path _sorted;
-
-              @Override
-              public void performMutate(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
-                Configuration configuration = _tableContext.getConfiguration();
-
-                SequenceFile.Sorter sorter = new Sorter(fileSystem, Text.class, RowMutationWritable.class,
-                    configuration);
-
-                _sorted = new Path(path.getParent(), shard + ".sorted.seq");
-
-                LOG.info("Shard [{2}/{3}] Id [{4}] Sorting mutates path [{0}] sorted path [{1}]", path, _sorted, table,
-                    shard, bulkId);
-                sorter.sort(path, _sorted);
-
-                LOG.info("Shard [{1}/{2}] Id [{3}] Applying mutates sorted path [{0}]", _sorted, table, shard, bulkId);
-                Reader reader = new SequenceFile.Reader(fileSystem, _sorted, configuration);
-
-                Text key = new Text();
-                RowMutationWritable value = new RowMutationWritable();
-
-                Text last = null;
-                List<RowMutation> list = new ArrayList<RowMutation>();
-                while (reader.next(key, value)) {
-                  if (!key.equals(last)) {
-                    flushMutates(searcher, writer, list);
-                    last = new Text(key);
-                    list.clear();
-                  }
-                  list.add(value.getRowMutation().deepCopy());
-                }
-                flushMutates(searcher, writer, list);
-                reader.close();
-                LOG.info("Shard [{0}/{1}] Id [{2}] Finished applying mutates starting commit.", table, shard, bulkId);
-              }
-
-              private void flushMutates(IndexSearcherCloseable searcher, IndexWriter writer, List<RowMutation> list)
-                  throws IOException {
-                if (!list.isEmpty()) {
-                  List<RowMutation> reduceMutates;
-                  try {
-                    reduceMutates = MutatableAction.reduceMutates(list);
-                  } catch (BlurException e) {
-                    throw new IOException(e);
-                  }
-                  for (RowMutation mutation : reduceMutates) {
-                    MutatableAction mutatableAction = new MutatableAction(_shardContext);
-                    mutatableAction.mutate(mutation);
-                    mutatableAction.performMutate(searcher, writer);
-                  }
-                }
-              }
-
-              private void cleanupFiles() throws IOException {
-                fileSystem.delete(path, false);
-                fileSystem.delete(_sorted, false);
-                Path parent = path.getParent();
-                removeParentIfLastFile(fileSystem, parent);
-              }
-
-              @Override
-              public void doPreRollback(IndexWriter writer) throws IOException {
-
-              }
-
-              @Override
-              public void doPreCommit(IndexSearcherCloseable indexSearcher, IndexWriter writer) throws IOException {
-
-              }
-
-              @Override
-              public void doPostRollback(IndexWriter writer) throws IOException {
-                cleanupFiles();
-              }
-
-              @Override
-              public void doPostCommit(IndexWriter writer) throws IOException {
-                cleanupFiles();
-              }
-            });
-          } catch (IOException e) {
-            LOG.error("Shard [{0}/{1}] Id [{2}] Unknown error while trying to finish the bulk updates.", table, shard,
-                bulkId, e);
-          }
-        }
-      };
+      final IndexAction indexAction = bulkEntry.getIndexAction();
       if (blockUntilComplete) {
-        runnable.run();
+        process(indexAction);
       } else {
-        Thread thread = new Thread(runnable);
+        Thread thread = new Thread(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              process(indexAction);
+            } catch (IOException e) {
+              LOG.error("Shard [{0}/{1}] Id [{2}] Unknown error while trying to finish the bulk updates.", table,
+                  shard, bulkId, e);
+            }
+          }
+        });
         thread.setName("Bulk Finishing Thread Table [" + table + "] Shard [" + shard + "] BulkId [" + bulkId + "]");
         thread.start();
       }
@@ -731,9 +814,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     }
     RowMutationWritable rowMutationWritable = new RowMutationWritable();
     rowMutationWritable.setRowMutation(mutation);
-    synchronized (bulkEntry._writer) {
-      bulkEntry._writer.append(getKey(mutation), rowMutationWritable);
-    }
+    bulkEntry.append(getKey(mutation), rowMutationWritable);
   }
 
   private Text getKey(RowMutation mutation) {
@@ -799,4 +880,48 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     }
   }
 
+  private static boolean isSnappyCodecLoaded(Configuration configuration) {
+    try {
+      Method methodHadoop1 = SnappyCodec.class.getMethod("isNativeSnappyLoaded", new Class[] { Configuration.class });
+      Boolean loaded = (Boolean) methodHadoop1.invoke(null, new Object[] { configuration });
+      if (loaded != null && loaded) {
+        LOG.info("Using SnappyCodec");
+        return true;
+      } else {
+        LOG.info("Not using SnappyCodec");
+        return false;
+      }
+    } catch (NoSuchMethodException e) {
+      Method methodHadoop2;
+      try {
+        methodHadoop2 = SnappyCodec.class.getMethod("isNativeCodeLoaded", new Class[] {});
+      } catch (NoSuchMethodException ex) {
+        LOG.info("Can not determine if SnappyCodec is loaded.");
+        return false;
+      } catch (SecurityException ex) {
+        LOG.error("Not allowed.", ex);
+        return false;
+      }
+      Boolean loaded;
+      try {
+        loaded = (Boolean) methodHadoop2.invoke(null);
+        if (loaded != null && loaded) {
+          LOG.info("Using SnappyCodec");
+          return true;
+        } else {
+          LOG.info("Not using SnappyCodec");
+          return false;
+        }
+      } catch (Exception ex) {
+        LOG.info("Unknown error while trying to determine if SnappyCodec is loaded.", ex);
+        return false;
+      }
+    } catch (SecurityException e) {
+      LOG.error("Not allowed.", e);
+      return false;
+    } catch (Exception e) {
+      LOG.info("Unknown error while trying to determine if SnappyCodec is loaded.", e);
+      return false;
+    }
+  }
 }

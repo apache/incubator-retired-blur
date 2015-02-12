@@ -819,8 +819,8 @@ public abstract class BlurClusterTestBase {
   }
 
   @Test
-  public void testTrucateRaceCondition() throws BlurException, TException, IOException, InterruptedException {
-    String tableName = "testTrucateRaceCondition";
+  public void testTruncateRaceCondition() throws BlurException, TException, IOException, InterruptedException {
+    String tableName = "testTruncateRaceCondition";
     createTable(tableName);
     loadTable(tableName);
     List<Connection> connections = BlurClientManager.getConnections(miniCluster.getControllerConnectionStr());

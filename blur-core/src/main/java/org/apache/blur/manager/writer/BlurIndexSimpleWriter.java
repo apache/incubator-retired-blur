@@ -795,8 +795,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
             try {
               process(indexAction);
             } catch (IOException e) {
-              LOG.error("Shard [{0}/{1}] Id [{2}] Unknown error while trying to finish the bulk updates.", table,
-                  shard, bulkId, e);
+              LOG.error("Shard [{0}/{1}] Id [{2}] Unknown error while trying to finish the bulk updates.", e, table,
+                  shard, bulkId);
             }
           }
         });

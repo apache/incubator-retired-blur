@@ -20,6 +20,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SECURITY_SASL_LDAP_BASEDN
 import static org.apache.blur.utils.BlurConstants.BLUR_SECURITY_SASL_LDAP_DOMAIN;
 import static org.apache.blur.utils.BlurConstants.BLUR_SECURITY_SASL_LDAP_URL;
 
+import java.io.Console;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Hashtable;
 
@@ -40,17 +42,36 @@ public class LdapAuthenticationProviderImpl extends PasswordAuthenticationProvid
   private final String _baseDN;
   private final String _ldapDomain;
 
-//  public static void main(String[] args) throws IOException {
-//    BlurConfiguration blurConfiguration = new BlurConfiguration();
-//    blurConfiguration.set(BLUR_SECURITY_SASL_LDAP_URL,"ldap://localhost:10389/o=sevenSeas");
-//    LdapAuthenticationProviderImpl ldapAuthenticationProviderImpl = new LdapAuthenticationProviderImpl(
-//        blurConfiguration);
-//    try {
-//      ldapAuthenticationProviderImpl.authenticate("cn=James Hook,ou=people,o=sevenSeas", "peterPan", null);
-//    } catch (Exception e) {
-//      e.printStackTrace();
-//    }
-//  }
+  public static void main(String[] args) throws IOException {
+    if (args.length < 2) {
+      System.err.println("<ldap uri> <username>");
+      System.exit(1);
+    }
+    String ldap = args[0];
+    StringBuilder builder = new StringBuilder();
+    for (int i = 1; i < args.length; i++) {
+      if (builder.length() != 0) {
+        builder.append(' ');
+      }
+      builder.append(args[i]);
+    }
+    String user = builder.toString();
+
+    Console cons;
+
+    if ((cons = System.console()) != null) {
+      char[] passwd = cons.readPassword("%s", "Type Password:\n");
+      BlurConfiguration blurConfiguration = new BlurConfiguration();
+      blurConfiguration.set(BLUR_SECURITY_SASL_LDAP_URL, ldap);
+      LdapAuthenticationProviderImpl ldapAuthenticationProviderImpl = new LdapAuthenticationProviderImpl(
+          blurConfiguration);
+      ldapAuthenticationProviderImpl.authenticate(user, new String(passwd), null);
+      System.out.println("Valid");
+    } else {
+      System.err.println("No Console.");
+      System.exit(1);
+    }
+  }
 
   public LdapAuthenticationProviderImpl(BlurConfiguration configuration) {
     super(configuration);

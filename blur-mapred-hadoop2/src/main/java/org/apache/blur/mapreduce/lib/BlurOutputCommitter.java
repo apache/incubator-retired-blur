@@ -106,11 +106,11 @@ public class BlurOutputCommitter extends OutputCommitter {
               LOG.info("Committing [{0}] in path [{1}]", taskAttemptID, path);
             } else {
               fileSystem.delete(path, true);
-              LOG.info("Deleteing tmp dir [{0}] in path [{1}]", taskAttemptID, path);
+              LOG.info("Deleting tmp dir [{0}] in path [{1}]", taskAttemptID, path);
             }
           } else {
             fileSystem.delete(path, true);
-            LOG.info("Deleteing aborted job dir [{0}] in path [{1}]", taskAttemptID, path);
+            LOG.info("Deleting aborted job dir [{0}] in path [{1}]", taskAttemptID, path);
           }
         } else {
           LOG.warn("TaskAttempt JobID [{0}] does not match JobContext JobId [{1}]", taskAttemptID.getJobID(),

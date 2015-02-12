@@ -311,7 +311,7 @@ public class IndexImporter extends TimerTask implements Closeable {
     }
 
     for (Path p : inuseDirs) {
-      LOG.info("Deleteing path [{0}] no longer in use.", p);
+      LOG.info("Deleting path [{0}] no longer in use.", p);
       fileSystem.delete(p, true);
     }
   }

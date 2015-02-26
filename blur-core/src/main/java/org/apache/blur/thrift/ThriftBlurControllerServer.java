@@ -38,6 +38,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_SHARD_CONNECTI
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_MAX_READ_BUFFER_BYTES;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS;
+import static org.apache.blur.utils.BlurConstants.BLUR_GC_BACK_PRESSURE_HEAP_RATIO;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_HTTP_STATUS_RUNNING_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
@@ -76,6 +77,7 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.GCWatcher;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -96,6 +98,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
       ReporterSetup.setupReporters(configuration);
       MemoryReporter.enable();
       setupJvmMetrics();
+      double ratio = configuration.getDouble(BLUR_GC_BACK_PRESSURE_HEAP_RATIO, 0.75);
+      GCWatcher.init(ratio);
       ThriftServer server = createServer(serverIndex, configuration);
       server.start();
     } catch (Throwable t) {

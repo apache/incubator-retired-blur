@@ -20,6 +20,7 @@ import static org.apache.blur.metrics.MetricsConstants.BLUR;
 import static org.apache.blur.metrics.MetricsConstants.INDEX_COUNT;
 import static org.apache.blur.metrics.MetricsConstants.INDEX_MEMORY_USAGE;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+import static org.apache.blur.metrics.MetricsConstants.RECORD_COUNT;
 import static org.apache.blur.metrics.MetricsConstants.SEGMENT_COUNT;
 import static org.apache.blur.metrics.MetricsConstants.TABLE_COUNT;
 
@@ -48,6 +49,7 @@ public abstract class AbstractDistributedIndexServer extends AbstractIndexServer
   protected final AtomicLong _indexCount = new AtomicLong();
   protected final AtomicLong _segmentCount = new AtomicLong();
   protected final AtomicLong _indexMemoryUsage = new AtomicLong();
+  protected final AtomicLong _recordCount = new AtomicLong();
 
   public AbstractDistributedIndexServer(ClusterStatus clusterStatus, Configuration configuration, String nodeName,
       String cluster) {
@@ -59,11 +61,13 @@ public abstract class AbstractDistributedIndexServer extends AbstractIndexServer
     MetricName indexCount = new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_COUNT, _cluster);
     MetricName segmentCount = new MetricName(ORG_APACHE_BLUR, BLUR, SEGMENT_COUNT, _cluster);
     MetricName indexMemoryUsage = new MetricName(ORG_APACHE_BLUR, BLUR, INDEX_MEMORY_USAGE, _cluster);
+    MetricName recordCount = new MetricName(ORG_APACHE_BLUR, BLUR, RECORD_COUNT, _cluster);
 
     Metrics.newGauge(tableCount, new AtomicLongGauge(_tableCount));
     Metrics.newGauge(indexCount, new AtomicLongGauge(_indexCount));
     Metrics.newGauge(segmentCount, new AtomicLongGauge(_segmentCount));
     Metrics.newGauge(indexMemoryUsage, new AtomicLongGauge(_indexMemoryUsage));
+    Metrics.newGauge(recordCount, new AtomicLongGauge(_recordCount));
   }
 
   @Override

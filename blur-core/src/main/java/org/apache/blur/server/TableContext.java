@@ -57,6 +57,7 @@ import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
 //import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
+import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.ScoreType;
@@ -358,8 +359,8 @@ public class TableContext implements Cloneable {
 
   @SuppressWarnings("unchecked")
   public BlurIndex newInstanceBlurIndex(ShardContext shardContext, Directory dir, SharedMergeScheduler mergeScheduler,
-      ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer, Timer bulkTimer)
-      throws IOException {
+      ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer, Timer bulkTimer,
+      ThriftCache thriftCache) throws IOException {
 
     String className = _blurConfiguration.get(BLUR_SHARD_BLURINDEX_CLASS, BlurIndexSimpleWriter.class.getName());
 
@@ -372,7 +373,7 @@ public class TableContext implements Cloneable {
     Constructor<? extends BlurIndex> constructor = findConstructor(clazz);
     try {
       return constructor.newInstance(shardContext, dir, mergeScheduler, searchExecutor, indexCloser,
-          indexImporterTimer, bulkTimer);
+          indexImporterTimer, bulkTimer, thriftCache);
     } catch (InstantiationException e) {
       throw new IOException(e);
     } catch (IllegalAccessException e) {
@@ -387,7 +388,7 @@ public class TableContext implements Cloneable {
   private Constructor<? extends BlurIndex> findConstructor(Class<? extends BlurIndex> clazz) throws IOException {
     try {
       return clazz.getConstructor(new Class[] { ShardContext.class, Directory.class, SharedMergeScheduler.class,
-          ExecutorService.class, BlurIndexCloser.class, Timer.class, Timer.class });
+          ExecutorService.class, BlurIndexCloser.class, Timer.class, Timer.class, ThriftCache.class });
     } catch (NoSuchMethodException e) {
       throw new IOException(e);
     } catch (SecurityException e) {

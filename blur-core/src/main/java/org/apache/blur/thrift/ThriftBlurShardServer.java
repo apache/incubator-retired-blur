@@ -20,6 +20,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER;
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_COMMAND_LIB_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_REMOTE_FETCH_COUNT;
+import static org.apache.blur.utils.BlurConstants.BLUR_GC_BACK_PRESSURE_HEAP_RATIO;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_HTTP_STATUS_RUNNING_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_INDEXMANAGER_FACET_THREAD_COUNT;
@@ -41,6 +42,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_MERGE_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_REQUEST_CACHE_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
@@ -77,6 +79,7 @@ import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.DefaultBlurFilterCache;
 import org.apache.blur.manager.IndexManager;
+import org.apache.blur.manager.clusterstatus.ClusterStatus.Action;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
@@ -90,6 +93,8 @@ import org.apache.blur.server.ServerSecurityFilterFactory;
 import org.apache.blur.server.ServerSecurityUtil;
 import org.apache.blur.server.ShardServerEventHandler;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.cache.ThriftCache;
+import org.apache.blur.server.cache.ThriftCacheServer;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV1;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV2;
@@ -130,7 +135,8 @@ public class ThriftBlurShardServer extends ThriftServer {
       MemoryReporter.enable();
       setupJvmMetrics();
       // make this configurable
-      GCWatcher.init(0.75);
+      double ratio = configuration.getDouble(BLUR_GC_BACK_PRESSURE_HEAP_RATIO, 0.75);
+      GCWatcher.init(ratio);
       ThriftServer server = createServer(serverIndex, configuration);
       server.start();
     } catch (Throwable t) {
@@ -202,6 +208,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     DistributedLayoutFactory distributedLayoutFactory = DistributedLayoutFactoryImpl.getDistributedLayoutFactory(
         configuration, cluster, zooKeeper);
 
+    long requestCacheSize = configuration.getLong(BLUR_SHARD_REQUEST_CACHE_SIZE, 10000000);
+    final ThriftCache thriftCache = new ThriftCache(requestCacheSize);
+
     long safeModeDelay = configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000);
     int shardOpenerThreadCount = configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16);
     int maxMergeThreads = configuration.getInt(BLUR_SHARD_MERGE_THREAD_COUNT, 3);
@@ -215,7 +224,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
         filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay,
         shardOpenerThreadCount, maxMergeThreads, internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode,
-        hdfsKeyValueTimer, indexImporterTimer, smallMergeThreshold, indexBulkTimer);
+        hdfsKeyValueTimer, indexImporterTimer, smallMergeThreshold, indexBulkTimer, thriftCache);
 
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 
@@ -256,6 +265,13 @@ public class ThriftBlurShardServer extends ThriftServer {
     final ShardCommandManager commandManager = new ShardCommandManager(indexServer, tmpPath, commandPath,
         numberOfShardWorkerCommandThreads, numberOfShardDriverCommandThreads, Connection.DEFAULT_TIMEOUT, config);
 
+    clusterStatus.registerActionOnTableStateChange(new Action() {
+      @Override
+      public void action() {
+        thriftCache.clear();
+      }
+    });
+
     final BlurShardServer shardServer = new BlurShardServer();
     shardServer.setCommandManager(commandManager);
     shardServer.setIndexServer(indexServer);
@@ -274,7 +290,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration,
         ServerSecurityFilterFactory.ServerType.SHARD);
 
-    Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, shardServer, true);
+    Iface iface = new ThriftCacheServer(configuration, shardServer, thriftCache);
+    iface = BlurUtil.wrapFilteredBlurServer(configuration, iface, true);
     iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, true);
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, false);
     iface = BlurUtil.runWithUser(iface, false);

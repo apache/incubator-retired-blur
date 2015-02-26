@@ -127,7 +127,8 @@ public class BlurIndexSimpleWriterTest {
     // FSDirectory directory = FSDirectory.open(path);
 
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer, _timer, _bulkTimer);
+    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer, _timer,
+        _bulkTimer, null);
   }
 
   @After

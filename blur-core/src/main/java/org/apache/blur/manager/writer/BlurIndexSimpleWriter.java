@@ -60,6 +60,7 @@ import org.apache.blur.server.IndexSearcherCloseableBase;
 import org.apache.blur.server.IndexSearcherCloseableSecureBase;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -135,6 +136,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final Splitter _commaSplitter;
   private final Timer _bulkIndexingTimer;
   private final TimerTask _watchForIdleBulkWriters;
+  private final ThriftCache _thriftCache;
 
   private Thread _optimizeThread;
   private Thread _writerOpener;
@@ -142,8 +144,10 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       final ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer,
-      Timer bulkIndexingTimer) throws IOException {
-    super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexImporterTimer, bulkIndexingTimer);
+      Timer bulkIndexingTimer, ThriftCache thriftCache) throws IOException {
+    super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexImporterTimer, bulkIndexingTimer,
+        thriftCache);
+    _thriftCache = thriftCache;
     _commaSplitter = Splitter.on(',');
     _bulkWriters = new ConcurrentHashMap<String, BlurIndexSimpleWriter.BulkEntry>();
     _indexImporterTimer = indexImporterTimer;
@@ -515,6 +519,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       indexAction.doPostRollback(writer);
       throw new IOException("Unknown error during mutation", e);
     } finally {
+      if (_thriftCache != null) {
+        _thriftCache.clearTable(_tableContext.getTable());
+      }
       if (indexSearcher != null) {
         indexSearcher.close();
       }

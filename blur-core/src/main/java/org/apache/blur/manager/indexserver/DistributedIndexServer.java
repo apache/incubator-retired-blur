@@ -49,6 +49,7 @@ import org.apache.blur.manager.writer.BlurIndexReadOnly;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.hdfs.BlurLockFactory;
 import org.apache.blur.store.hdfs.HdfsDirectory;
@@ -117,13 +118,15 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final Timer _hdfsKeyValueTimer;
   private final Timer _indexImporterTimer;
   private final Timer _indexBulkTimer;
+  private final ThriftCache _thriftCache;
 
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
       int shardOpenerThreadCount, int maxMergeThreads, int internalSearchThreads,
       int minimumNumberOfNodesBeforeExitingSafeMode, Timer hdfsKeyValueTimer, Timer indexImporterTimer,
-      long smallMergeThreshold, Timer indexBulkTimer) throws KeeperException, InterruptedException {
+      long smallMergeThreshold, Timer indexBulkTimer, ThriftCache thriftCache) throws KeeperException,
+      InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
     _indexImporterTimer = indexImporterTimer;
     _indexBulkTimer = indexBulkTimer;
@@ -138,6 +141,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     _internalSearchThreads = internalSearchThreads;
     _blockCacheDirectoryFactory = blockCacheDirectoryFactory;
     _distributedLayoutFactory = distributedLayoutFactory;
+    _thriftCache = thriftCache;
 
     _closer.register(_shardStateManager);
 
@@ -380,12 +384,13 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       long indexCount = 0;
       AtomicLong segmentCount = new AtomicLong();
       AtomicLong indexMemoryUsage = new AtomicLong();
+      AtomicLong recordCount = new AtomicLong();
       for (String table : tableList) {
         try {
           Map<String, BlurIndex> indexes = getIndexes(table);
           int count = indexes.size();
           indexCount += count;
-          updateMetrics(indexes, segmentCount, indexMemoryUsage);
+          updateMetrics(indexes, segmentCount, indexMemoryUsage, recordCount);
           LOG.debug("Table [{0}] has [{1}] number of shards online in this node.", table, count);
         } catch (IOException e) {
           LOG.error("Unknown error trying to warm table [{0}]", e, table);
@@ -394,14 +399,16 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       _indexCount.set(indexCount);
       _segmentCount.set(segmentCount.get());
       _indexMemoryUsage.set(indexMemoryUsage.get());
+      _recordCount.set(recordCount.get());
     }
   }
 
-  private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage)
-      throws IOException {
+  private void updateMetrics(Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage,
+      AtomicLong recordCount) throws IOException {
     for (BlurIndex index : indexes.values()) {
       indexMemoryUsage.addAndGet(index.getIndexMemoryUsage());
       segmentCount.addAndGet(index.getSegmentCount());
+      recordCount.addAndGet(index.getRecordCount());
     }
   }
 
@@ -522,7 +529,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, directory, _mergeScheduler, _searchExecutor,
-        _indexCloser, _indexImporterTimer, _indexBulkTimer);
+        _indexCloser, _indexImporterTimer, _indexBulkTimer, _thriftCache);
 
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
       index = new BlurIndexReadOnly(index);

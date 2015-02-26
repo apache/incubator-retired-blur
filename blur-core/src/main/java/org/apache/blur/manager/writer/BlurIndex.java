@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.server.ShardContext;
+import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.lucene.index.IndexReader;
@@ -41,7 +42,8 @@ public abstract class BlurIndex {
   protected ShardContext _shardContext;
 
   public BlurIndex(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
-      ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer, Timer bulkIndexingTimer) throws IOException {
+      ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer, Timer bulkIndexingTimer,
+      ThriftCache thriftCache) throws IOException {
     _shardContext = shardContext;
   }
 

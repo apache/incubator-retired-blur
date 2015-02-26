@@ -134,7 +134,6 @@ public class ThriftBlurShardServer extends ThriftServer {
       ReporterSetup.setupReporters(configuration);
       MemoryReporter.enable();
       setupJvmMetrics();
-      // make this configurable
       double ratio = configuration.getDouble(BLUR_GC_BACK_PRESSURE_HEAP_RATIO, 0.75);
       GCWatcher.init(ratio);
       ThriftServer server = createServer(serverIndex, configuration);

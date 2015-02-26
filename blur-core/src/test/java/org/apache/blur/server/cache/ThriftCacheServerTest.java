@@ -16,7 +16,8 @@
  */
 package org.apache.blur.server.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,8 +54,6 @@ import org.apache.blur.thrift.generated.User;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.yammer.metrics.core.Meter;
-
 public class ThriftCacheServerTest {
 
   private BlurConfiguration _configuration;
@@ -73,27 +72,23 @@ public class ThriftCacheServerTest {
   @Test
   public void testQuery() throws IOException, BlurException, TException {
     _thriftCache.clear();
-    Meter misses = _thriftCache.getMisses();
-    long currentMisses = misses.count();
-    Meter hits = _thriftCache.getHits();
-    long currentHits = misses.count();
 
-    assertEquals(0 + currentMisses, misses.count());
-    assertEquals(0 + currentHits, hits.count());
+    assertEquals(0, _thriftCache.getMisses());
+    assertEquals(0, _thriftCache.getHits());
 
     BlurQuery blurQuery1 = new BlurQuery();
     blurQuery1.setUserContext("user1");
     BlurResults blurResults1 = _thriftCacheServer.query(_table, blurQuery1);
 
-    assertEquals(1 + currentMisses, misses.count());
-    assertEquals(0 + currentHits, hits.count());
+    assertEquals(1, _thriftCache.getMisses());
+    assertEquals(0, _thriftCache.getHits());
 
     BlurQuery blurQuery2 = new BlurQuery();
     blurQuery1.setUserContext("user2");
     BlurResults blurResults2 = _thriftCacheServer.query(_table, blurQuery2);
 
-    assertEquals(1 + currentMisses, misses.count());
-    assertEquals(1 + currentHits, hits.count());
+    assertEquals(1, _thriftCache.getMisses());
+    assertEquals(1, _thriftCache.getHits());
 
     assertFalse(blurResults1 == blurResults2);
     assertEquals(blurResults1, blurResults2);
@@ -102,23 +97,19 @@ public class ThriftCacheServerTest {
   @Test
   public void testTableStats() throws IOException, BlurException, TException {
     _thriftCache.clear();
-    Meter misses = _thriftCache.getMisses();
-    long currentMisses = misses.count();
-    Meter hits = _thriftCache.getHits();
-    long currentHits = misses.count();
 
-    assertEquals(0 + currentMisses, misses.count());
-    assertEquals(0 + currentHits, hits.count());
+    assertEquals(0, _thriftCache.getMisses());
+    assertEquals(0, _thriftCache.getHits());
 
     TableStats tableStats1 = _thriftCacheServer.tableStats(_table);
 
-    assertEquals(1 + currentMisses, misses.count());
-    assertEquals(0 + currentHits, hits.count());
+    assertEquals(1, _thriftCache.getMisses());
+    assertEquals(0, _thriftCache.getHits());
 
     TableStats tableStats2 = _thriftCacheServer.tableStats(_table);
 
-    assertEquals(1 + currentMisses, misses.count());
-    assertEquals(1 + currentHits, hits.count());
+    assertEquals(1, _thriftCache.getMisses());
+    assertEquals(1, _thriftCache.getHits());
 
     assertFalse(tableStats1 == tableStats2);
     assertEquals(tableStats1, tableStats2);
@@ -127,27 +118,23 @@ public class ThriftCacheServerTest {
   @Test
   public void testFetchRow() throws BlurException, TException {
     _thriftCache.clear();
-    Meter misses = _thriftCache.getMisses();
-    long currentMisses = misses.count();
-    Meter hits = _thriftCache.getHits();
-    long currentHits = misses.count();
 
-    assertEquals(0 + currentMisses, misses.count());
-    assertEquals(0 + currentHits, hits.count());
+    assertEquals(0, _thriftCache.getMisses());
+    assertEquals(0, _thriftCache.getHits());
 
     Selector selector1 = new Selector();
     selector1.setLocationId("1");
     FetchResult fetchRow1 = _thriftCacheServer.fetchRow(_table, selector1);
 
-    assertEquals(1 + currentMisses, misses.count());
-    assertEquals(0 + currentHits, hits.count());
+    assertEquals(1, _thriftCache.getMisses());
+    assertEquals(0, _thriftCache.getHits());
 
     Selector selector2 = new Selector();
     selector2.setLocationId("1");
     FetchResult fetchRow2 = _thriftCacheServer.fetchRow(_table, selector2);
 
-    assertEquals(1 + currentMisses, misses.count());
-    assertEquals(1 + currentHits, hits.count());
+    assertEquals(1, _thriftCache.getMisses());
+    assertEquals(1, _thriftCache.getHits());
 
     assertFalse(fetchRow1 == fetchRow2);
     assertEquals(fetchRow1, fetchRow2);
@@ -156,27 +143,23 @@ public class ThriftCacheServerTest {
   @Test
   public void testFetchRowBatch1() throws BlurException, TException {
     _thriftCache.clear();
-    Meter misses = _thriftCache.getMisses();
-    long currentMisses = misses.count();
-    Meter hits = _thriftCache.getHits();
-    long currentHits = misses.count();
 
-    assertEquals(0 + currentMisses, misses.count());
-    assertEquals(0 + currentHits, hits.count());
+    assertEquals(0, _thriftCache.getMisses());
+    assertEquals(0, _thriftCache.getHits());
 
     Selector selector1 = new Selector();
     selector1.setLocationId("1");
     List<FetchResult> fetchRowBatch1 = _thriftCacheServer.fetchRowBatch(_table, Arrays.asList(selector1));
 
-    assertEquals(1 + currentMisses, misses.count());
-    assertEquals(0 + currentHits, hits.count());
+    assertEquals(1, _thriftCache.getMisses());
+    assertEquals(0, _thriftCache.getHits());
 
     Selector selector2 = new Selector();
     selector2.setLocationId("1");
     List<FetchResult> fetchRowBatch2 = _thriftCacheServer.fetchRowBatch(_table, Arrays.asList(selector2));
 
-    assertEquals(1 + currentMisses, misses.count());
-    assertEquals(1 + currentHits, hits.count());
+    assertEquals(1, _thriftCache.getMisses());
+    assertEquals(1, _thriftCache.getHits());
 
     assertFalse(fetchRowBatch1 == fetchRowBatch2);
     assertEquals(fetchRowBatch1, fetchRowBatch2);
@@ -185,27 +168,23 @@ public class ThriftCacheServerTest {
   @Test
   public void testFetchRowBatch2() throws BlurException, TException {
     _thriftCache.clear();
-    Meter misses = _thriftCache.getMisses();
-    long currentMisses = misses.count();
-    Meter hits = _thriftCache.getHits();
-    long currentHits = misses.count();
 
-    assertEquals(0 + currentMisses, misses.count());
-    assertEquals(0 + currentHits, hits.count());
+    assertEquals(0, _thriftCache.getMisses());
+    assertEquals(0, _thriftCache.getHits());
 
     Selector selector1 = new Selector();
     selector1.setLocationId("1");
     List<FetchResult> fetchRowBatch1 = _thriftCacheServer.fetchRowBatch(_table, Arrays.asList(selector1));
 
-    assertEquals(1 + currentMisses, misses.count());
-    assertEquals(0 + currentHits, hits.count());
+    assertEquals(1, _thriftCache.getMisses());
+    assertEquals(0, _thriftCache.getHits());
 
     Selector selector2 = new Selector();
     selector2.setLocationId("1");
     List<FetchResult> fetchRowBatch2 = _thriftCacheServer.fetchRowBatch(_table, Arrays.asList(selector2));
 
-    assertEquals(1 + currentMisses, misses.count());
-    assertEquals(1 + currentHits, hits.count());
+    assertEquals(1, _thriftCache.getMisses());
+    assertEquals(1, _thriftCache.getHits());
 
     assertFalse(fetchRowBatch1 == fetchRowBatch2);
     assertEquals(fetchRowBatch1, fetchRowBatch2);
@@ -215,17 +194,17 @@ public class ThriftCacheServerTest {
     List<FetchResult> fetchRowBatch3 = _thriftCacheServer.fetchRowBatch(_table, Arrays.asList(selector1, selector3));
 
     // one miss for the non cached selector
-    assertEquals(2 + currentMisses, misses.count());
+    assertEquals(2, _thriftCache.getMisses());
     // one hit for the cached selector
-    assertEquals(2 + currentHits, hits.count());
+    assertEquals(2, _thriftCache.getHits());
 
     Selector selector4 = new Selector();
     selector4.setLocationId("2");
     List<FetchResult> fetchRowBatch4 = _thriftCacheServer.fetchRowBatch(_table, Arrays.asList(selector2, selector4));
 
-    assertEquals(2 + currentMisses, misses.count());
+    assertEquals(2, _thriftCache.getMisses());
     // two hits for the cached selectors
-    assertEquals(4 + currentHits, hits.count());
+    assertEquals(4, _thriftCache.getHits());
 
     assertFalse(fetchRowBatch3 == fetchRowBatch4);
     assertEquals(fetchRowBatch3, fetchRowBatch4);

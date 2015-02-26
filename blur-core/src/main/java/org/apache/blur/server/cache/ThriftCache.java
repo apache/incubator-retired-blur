@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -49,6 +50,9 @@ public class ThriftCache {
   private final Meter _hits;
   private final Meter _misses;
   private final Meter _evictions;
+  private final AtomicLong _hitsAtomicLong;
+  private final AtomicLong _missesAtomicLong;
+  private final AtomicLong _evictionsAtomicLong;
 
   public ThriftCache(long totalNumberOfBytes) {
     _hits = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, HIT), HIT, TimeUnit.SECONDS);
@@ -64,8 +68,12 @@ public class ThriftCache {
           @Override
           public void onEviction(ThriftCacheKey<?> key, ThriftCacheValue<?> value) {
             _evictions.mark();
+            _evictionsAtomicLong.incrementAndGet();
           }
         }).maximumWeightedCapacity(totalNumberOfBytes).build();
+    _hitsAtomicLong = new AtomicLong();
+    _missesAtomicLong = new AtomicLong();
+    _evictionsAtomicLong = new AtomicLong();
   }
 
   public <K extends TBase<?, ?>, V extends TBase<?, ?>> V put(ThriftCacheKey<K> key, V t) throws BlurException {
@@ -80,10 +88,12 @@ public class ThriftCache {
     if (value == null) {
       LOG.debug("Cache Miss for [{0}]", key);
       _misses.mark();
+      _missesAtomicLong.incrementAndGet();
       return null;
     }
     LOG.debug("Cache Hit for [{0}]", key);
     _hits.mark();
+    _hitsAtomicLong.incrementAndGet();
     return value.getValue(clazz);
   }
 
@@ -113,16 +123,16 @@ public class ThriftCache {
     return _cacheMap.weightedSize();
   }
 
-  public Meter getHits() {
-    return _hits;
+  public long getHits() {
+    return _hitsAtomicLong.get();
   }
 
-  public Meter getMisses() {
-    return _misses;
+  public long getMisses() {
+    return _missesAtomicLong.get();
   }
 
-  public Meter getEvictions() {
-    return _evictions;
+  public long getEvictions() {
+    return _evictionsAtomicLong.get();
   }
 
 }

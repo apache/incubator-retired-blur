@@ -33,7 +33,7 @@ public class ThriftCacheTest {
   public void test1() throws BlurException {
     ThriftCache thriftCache = new ThriftCache(10000);
     BlurQuery blurQuery = new BlurQuery();
-    ThriftCacheKey<?> key = thriftCache.getKey("t", blurQuery, BlurQuery.class);
+    ThriftCacheKey<?> key = thriftCache.getKey("t", new int[] { 0, 1 }, blurQuery, BlurQuery.class);
     assertNull(thriftCache.get(key, BlurResults.class));
     BlurResults value = new BlurResults();
     // assert same instance
@@ -46,7 +46,7 @@ public class ThriftCacheTest {
   @Test
   public void test2() throws BlurException {
     ThriftCache thriftCache = new ThriftCache(10000);
-    ThriftCacheKey<?> key = thriftCache.getKey("t", null, TableStats.class);
+    ThriftCacheKey<?> key = thriftCache.getKey("t", new int[] { 0, 1 }, null, TableStats.class);
     assertNull(thriftCache.get(key, TableStats.class));
     TableStats value = new TableStats();
     // assert same instance
@@ -64,7 +64,7 @@ public class ThriftCacheTest {
       BlurQuery blurQuery = new BlurQuery();
       // just make keys different
       blurQuery.fetch = i;
-      ThriftCacheKey<?> key = thriftCache.getKey("t", blurQuery, BlurQuery.class);
+      ThriftCacheKey<?> key = thriftCache.getKey("t", new int[] { 0, 1 }, blurQuery, BlurQuery.class);
       assertNull(thriftCache.get(key, BlurResults.class));
       BlurResults value = new BlurResults();
       // assert same instance

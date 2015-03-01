@@ -475,6 +475,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
       BlurUtil.setStartTime(blurQuery);
 
+      QueryCoundNotBeCompletedReport report = null;
       OUTER: for (int retries = 0; retries < _maxDefaultRetries; retries++) {
         Tracer selectorTrace = Trace.trace("selector - setup", Trace.param("retries", retries));
         final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
@@ -534,6 +535,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           if (!validResults(results, shardCount, blurQuery)) {
             BlurClientManager.sleep(_defaultDelay, _maxDefaultDelay, retries, _maxDefaultRetries);
             Map<String, String> map = getTableLayout(table);
+            Map<String, Long> shardInfo = results.getShardInfo();
+            report = new QueryCoundNotBeCompletedReport(map, shardCount, shardInfo, blurQuery);
             LOG.info("Current layout for table [{0}] is [{1}]", table, map);
             continue OUTER;
           }
@@ -544,7 +547,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           }
         }
       }
-      throw new BException("Query could not be completed.");
+      throw new BException("Query could not be completed, report [{0}].", report);
     } catch (Exception e) {
       LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
       if (e instanceof BlurException) {

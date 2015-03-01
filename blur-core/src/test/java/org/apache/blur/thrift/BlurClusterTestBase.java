@@ -792,7 +792,6 @@ public abstract class BlurClusterTestBase {
     loadTable(tableName);
     Iface client = getClient();
     BlurQuery blurQuery = new BlurQuery();
-    blurQuery.setUseCacheIfPresent(false);
     Query query = new Query();
     query.setQuery("test.test:value");
     blurQuery.setQuery(query);

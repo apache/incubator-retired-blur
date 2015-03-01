@@ -16,6 +16,8 @@
  */
 package org.apache.blur.server.cache;
 
+import java.util.Arrays;
+
 import org.apache.blur.thirdparty.thrift_0_9_0.TBase;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol;
@@ -29,8 +31,12 @@ public class ThriftCacheValue<T extends TBase<?, ?>> {
   private final byte[] _data;
 
   public ThriftCacheValue(T t) throws BlurException {
+    _data = toBytes(t);
+  }
+
+  public static <T extends TBase<?, ?>> byte[] toBytes(T t) throws BException {
     if (t == null) {
-      _data = null;
+      return null;
     } else {
       TMemoryBuffer transport = new TMemoryBuffer(1024);
       try {
@@ -38,11 +44,11 @@ public class ThriftCacheValue<T extends TBase<?, ?>> {
       } catch (TException e) {
         throw new BException("Unknown error while trying to read from cache.", e);
       }
-      _data = trim(transport.getArray(), transport.length());
+      return trim(transport.getArray(), transport.length());
     }
   }
 
-  private byte[] trim(byte[] bs, int len) {
+  public static byte[] trim(byte[] bs, int len) {
     if (bs.length == len) {
       return bs;
     }
@@ -75,4 +81,27 @@ public class ThriftCacheValue<T extends TBase<?, ?>> {
       throw new BException("Unknown error while trying to read from cache.", e);
     }
   }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + Arrays.hashCode(_data);
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    ThriftCacheValue<?> other = (ThriftCacheValue<?>) obj;
+    if (!Arrays.equals(_data, other._data))
+      return false;
+    return true;
+  }
+
 }

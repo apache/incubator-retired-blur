@@ -16,10 +16,12 @@
  */
 package org.apache.blur.server.cache;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TBase;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.user.User;
 
 public class ThriftCacheKey<T extends TBase<?, ?>> {
@@ -27,11 +29,16 @@ public class ThriftCacheKey<T extends TBase<?, ?>> {
   private final String _username;
   private final Map<String, String> _attributes;
   private final String _table;
-  private final T _t;
-  private final String _clazz;
+  private final int[] _shards;
+  private final ClassObj<T> _clazz;
+  private final ThriftCacheValue<T> _key;
 
-  public ThriftCacheKey(User user, String table, T t, Class<T> clazz) {
-    _clazz = clazz.getName();
+  // not apart of the key for equally
+  private final transient long _timestamp;
+
+  public ThriftCacheKey(User user, String table, int[] shards, T t, Class<T> clazz) throws BlurException {
+    _timestamp = System.nanoTime();
+    _clazz = new ClassObj<T>(clazz);
     if (user != null) {
       _username = user.getUsername();
       Map<String, String> attributes = user.getAttributes();
@@ -45,11 +52,31 @@ public class ThriftCacheKey<T extends TBase<?, ?>> {
       _attributes = null;
     }
     _table = table;
-    _t = t;
+    _shards = shards;
+    _key = new ThriftCacheValue<T>(t);
+  }
+
+  public long getTimestamp() {
+    return _timestamp;
   }
 
   public String getTable() {
     return _table;
+  }
+
+  @Override
+  public String toString() {
+    try {
+      return "ThriftCacheKey [_username=" + _username + ", _attributes=" + _attributes + ", _table=" + _table
+          + ", _shards=" + Arrays.toString(_shards) + ", _clazz=" + _clazz + ", _key="
+          + _key.getValue(_clazz.getClazz()) + ", _timestamp=" + _timestamp + "]";
+    } catch (BlurException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public int size() {
+    return _key.size();
   }
 
   @Override
@@ -58,7 +85,8 @@ public class ThriftCacheKey<T extends TBase<?, ?>> {
     int result = 1;
     result = prime * result + ((_attributes == null) ? 0 : _attributes.hashCode());
     result = prime * result + ((_clazz == null) ? 0 : _clazz.hashCode());
-    result = prime * result + ((_t == null) ? 0 : _t.hashCode());
+    result = prime * result + ((_key == null) ? 0 : _key.hashCode());
+    result = prime * result + Arrays.hashCode(_shards);
     result = prime * result + ((_table == null) ? 0 : _table.hashCode());
     result = prime * result + ((_username == null) ? 0 : _username.hashCode());
     return result;
@@ -83,10 +111,12 @@ public class ThriftCacheKey<T extends TBase<?, ?>> {
         return false;
     } else if (!_clazz.equals(other._clazz))
       return false;
-    if (_t == null) {
-      if (other._t != null)
+    if (_key == null) {
+      if (other._key != null)
         return false;
-    } else if (!_t.equals(other._t))
+    } else if (!_key.equals(other._key))
+      return false;
+    if (!Arrays.equals(_shards, other._shards))
       return false;
     if (_table == null) {
       if (other._table != null)
@@ -99,12 +129,6 @@ public class ThriftCacheKey<T extends TBase<?, ?>> {
     } else if (!_username.equals(other._username))
       return false;
     return true;
-  }
-
-  @Override
-  public String toString() {
-    return "ThriftCacheKey [_username=" + _username + ", _attributes=" + _attributes + ", _table=" + _table + ", _t="
-        + _t + ", _clazz=" + _clazz + "]";
   }
 
 }

@@ -289,7 +289,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration,
         ServerSecurityFilterFactory.ServerType.SHARD);
 
-    Iface iface = new ThriftCacheServer(configuration, shardServer, thriftCache);
+    Iface iface = new ThriftCacheServer(configuration, shardServer, indexServer, thriftCache);
     iface = BlurUtil.wrapFilteredBlurServer(configuration, iface, true);
     iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, true);
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, false);

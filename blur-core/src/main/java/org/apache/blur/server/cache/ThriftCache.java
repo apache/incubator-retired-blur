@@ -25,6 +25,8 @@ import static org.apache.blur.metrics.MetricsConstants.THRIFT_CACHE;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -36,8 +38,8 @@ import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.EntryWeigher;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
-import com.googlecode.concurrentlinkedhashmap.Weigher;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
@@ -47,6 +49,7 @@ public class ThriftCache {
   private static final Log LOG = LogFactory.getLog(ThriftCache.class);
 
   private final ConcurrentLinkedHashMap<ThriftCacheKey<?>, ThriftCacheValue<?>> _cacheMap;
+  private final ConcurrentMap<String, Long> _lastModTimestamps = new ConcurrentHashMap<String, Long>();
   private final Meter _hits;
   private final Meter _misses;
   private final Meter _evictions;
@@ -59,10 +62,10 @@ public class ThriftCache {
     _misses = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, MISS), MISS, TimeUnit.SECONDS);
     _evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
     _cacheMap = new ConcurrentLinkedHashMap.Builder<ThriftCacheKey<?>, ThriftCacheValue<?>>()
-        .weigher(new Weigher<ThriftCacheValue<?>>() {
+        .weigher(new EntryWeigher<ThriftCacheKey<?>, ThriftCacheValue<?>>() {
           @Override
-          public int weightOf(ThriftCacheValue<?> value) {
-            return value.size();
+          public int weightOf(ThriftCacheKey<?> key, ThriftCacheValue<?> value) {
+            return key.size() + value.size();
           }
         }).listener(new EvictionListener<ThriftCacheKey<?>, ThriftCacheValue<?>>() {
           @Override
@@ -77,6 +80,16 @@ public class ThriftCache {
   }
 
   public <K extends TBase<?, ?>, V extends TBase<?, ?>> V put(ThriftCacheKey<K> key, V t) throws BlurException {
+    synchronized (_lastModTimestamps) {
+      Long lastModTimestamp = _lastModTimestamps.get(key.getTable());
+      if (lastModTimestamp != null && key.getTimestamp() < lastModTimestamp) {
+        // This means that the key was created before the index was modified. So
+        // do not cache the value because it's already out of date with the
+        // index.
+        return t;
+      }
+    }
+    LOG.debug("Inserting into cache [{0}] with key [{1}]", t, key);
     _cacheMap.put(key, new ThriftCacheValue<V>(t));
     return t;
   }
@@ -97,17 +110,15 @@ public class ThriftCache {
     return value.getValue(clazz);
   }
 
-  public <K extends TBase<?, ?>> ThriftCacheKey<K> getKey(String table, K tkey, Class<K> clazz) {
+  public <K extends TBase<?, ?>> ThriftCacheKey<K> getKey(String table, int[] shards, K tkey, Class<K> clazz) throws BlurException {
     User user = UserContext.getUser();
-    return new ThriftCacheKey<K>(user, table, tkey, clazz);
-  }
-
-  public void clear() {
-    LOG.info("Clearing all cache.");
-    _cacheMap.clear();
+    return new ThriftCacheKey<K>(user, table, shards, tkey, clazz);
   }
 
   public void clearTable(String table) {
+    synchronized (_lastModTimestamps) {
+      _lastModTimestamps.put(table, System.nanoTime());
+    }
     LOG.info("Clearing cache for table [{0}]", table);
     Set<Entry<ThriftCacheKey<?>, ThriftCacheValue<?>>> entrySet = _cacheMap.entrySet();
     Iterator<Entry<ThriftCacheKey<?>, ThriftCacheValue<?>>> iterator = entrySet.iterator();
@@ -117,6 +128,11 @@ public class ThriftCache {
         iterator.remove();
       }
     }
+  }
+
+  public void clear() {
+    LOG.info("Clearing all cache.");
+    _cacheMap.clear();
   }
 
   public long size() {

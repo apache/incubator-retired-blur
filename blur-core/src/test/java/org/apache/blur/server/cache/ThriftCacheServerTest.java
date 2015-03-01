@@ -22,11 +22,15 @@ import static org.junit.Assert.assertFalse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.manager.IndexServer;
+import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -65,7 +69,7 @@ public class ThriftCacheServerTest {
   public void setup() throws IOException {
     _configuration = new BlurConfiguration();
     _thriftCache = new ThriftCache(10000);
-    _thriftCacheServer = new ThriftCacheServer(_configuration, getMock(), _thriftCache);
+    _thriftCacheServer = new ThriftCacheServer(_configuration, getMock(), getMockIndexServer(), _thriftCache);
     _table = "t";
   }
 
@@ -503,6 +507,54 @@ public class ThriftCacheServerTest {
       @Override
       public boolean addColumnDefinition(String table, ColumnDefinition columnDefinition) throws BlurException,
           TException {
+        throw new RuntimeException("Not implemented.");
+      }
+    };
+  }
+
+  private IndexServer getMockIndexServer() {
+    return new IndexServer() {
+
+      @Override
+      public long getTableSize(String table) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public Map<String, ShardState> getShardState(String table) {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getRowCount(String table) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getRecordCount(String table) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public String getNodeName() {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public Map<String, BlurIndex> getIndexes(String table) throws IOException {
+        Map<String, BlurIndex> map = new HashMap<String, BlurIndex>();
+        map.put("shard-000000", null);
+        map.put("shard-000001", null);
+        return map;
+      }
+
+      @Override
+      public void close() throws IOException {
         throw new RuntimeException("Not implemented.");
       }
     };

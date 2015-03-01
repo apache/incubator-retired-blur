@@ -16,11 +16,7 @@
  */
 package org.apache.blur.server.cache;
 
-import static org.apache.blur.metrics.MetricsConstants.EVICTION;
-import static org.apache.blur.metrics.MetricsConstants.HIT;
-import static org.apache.blur.metrics.MetricsConstants.MISS;
-import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
-import static org.apache.blur.metrics.MetricsConstants.THRIFT_CACHE;
+import static org.apache.blur.metrics.MetricsConstants.*;
 
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -41,6 +37,7 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EntryWeigher;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Gauge;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
@@ -61,6 +58,12 @@ public class ThriftCache {
     _hits = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, HIT), HIT, TimeUnit.SECONDS);
     _misses = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, MISS), MISS, TimeUnit.SECONDS);
     _evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, SIZE), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return _cacheMap.weightedSize();
+      }
+    });
     _cacheMap = new ConcurrentLinkedHashMap.Builder<ThriftCacheKey<?>, ThriftCacheValue<?>>()
         .weigher(new EntryWeigher<ThriftCacheKey<?>, ThriftCacheValue<?>>() {
           @Override
@@ -110,7 +113,8 @@ public class ThriftCache {
     return value.getValue(clazz);
   }
 
-  public <K extends TBase<?, ?>> ThriftCacheKey<K> getKey(String table, int[] shards, K tkey, Class<K> clazz) throws BlurException {
+  public <K extends TBase<?, ?>> ThriftCacheKey<K> getKey(String table, int[] shards, K tkey, Class<K> clazz)
+      throws BlurException {
     User user = UserContext.getUser();
     return new ThriftCacheKey<K>(user, table, shards, tkey, clazz);
   }

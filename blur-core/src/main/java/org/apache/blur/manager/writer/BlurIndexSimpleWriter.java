@@ -19,6 +19,8 @@ package org.apache.blur.manager.writer;
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.apache.blur.utils.BlurConstants.ACL_DISCOVER;
 import static org.apache.blur.utils.BlurConstants.ACL_READ;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WRITER_SORT_FACTOR;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WRITER_SORT_MEMORY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH;
 
 import java.io.Closeable;
@@ -683,7 +685,13 @@ public class BlurIndexSimpleWriter extends BlurIndex {
         public void performMutate(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
           Configuration configuration = _tableContext.getConfiguration();
 
+          BlurConfiguration blurConfiguration = _tableContext.getBlurConfiguration();
+
           SequenceFile.Sorter sorter = new Sorter(_fileSystem, Text.class, RowMutationWritable.class, configuration);
+          // This should support up to ~100 GB per shard, probably have
+          // incremental updates in that batch size.
+          sorter.setFactor(blurConfiguration.getInt(BLUR_SHARD_INDEX_WRITER_SORT_FACTOR, 10000));
+          sorter.setMemory(blurConfiguration.getInt(BLUR_SHARD_INDEX_WRITER_SORT_MEMORY, 10 * 1024 * 1024));
 
           _unsortedPaths = getUnsortedFiles();
 

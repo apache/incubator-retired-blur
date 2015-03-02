@@ -62,13 +62,11 @@ public class UnsafeCacheValue extends BaseCacheValue {
   }
 
   private final long _address;
-  private final int _capacity;
 
   public UnsafeCacheValue(int length) {
     super(length);
-    _capacity = length;
-    _address = _unsafe.allocateMemory(_capacity);
-    _offHeapMemorySize.addAndGet(_capacity);
+    _address = _unsafe.allocateMemory(_length);
+    _offHeapMemorySize.addAndGet(_length);
   }
 
   @Override
@@ -95,7 +93,7 @@ public class UnsafeCacheValue extends BaseCacheValue {
     if (!_released) {
       _unsafe.freeMemory(_address);
       _released = true;
-      _offHeapMemorySize.addAndGet(0 - _capacity);
+      _offHeapMemorySize.addAndGet(0 - _length);
     }
   }
 

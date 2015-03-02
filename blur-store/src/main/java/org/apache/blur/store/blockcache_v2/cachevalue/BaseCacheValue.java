@@ -34,7 +34,7 @@ public abstract class BaseCacheValue implements CacheValue {
 
   private static final AtomicLong _neededFinalizedCall = new AtomicLong();
 
-  private final int _length;
+  protected final int _length;
   protected volatile boolean _released = false;
   protected volatile boolean _evicted = false;
 

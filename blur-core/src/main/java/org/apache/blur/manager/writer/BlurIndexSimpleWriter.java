@@ -663,8 +663,10 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     }
 
     public void cleanupFiles(List<Path> unsortedPaths, Path sorted) throws IOException {
-      for (Path p : unsortedPaths) {
-        _fileSystem.delete(p, false);
+      if (unsortedPaths != null) {
+        for (Path p : unsortedPaths) {
+          _fileSystem.delete(p, false);
+        }
       }
       if (sorted != null) {
         _fileSystem.delete(sorted, false);

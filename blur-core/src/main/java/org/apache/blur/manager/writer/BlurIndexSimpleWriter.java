@@ -63,6 +63,7 @@ import org.apache.blur.server.IndexSearcherCloseableSecureBase;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.cache.ThriftCache;
+import org.apache.blur.store.hdfs_v2.StoreDirection;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -804,16 +805,24 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     } else {
       final IndexAction indexAction = bulkEntry.getIndexAction();
       if (blockUntilComplete) {
-        process(indexAction);
+        StoreDirection.LONG_TERM.set(true);
+        try {
+          process(indexAction);
+        } finally {
+          StoreDirection.LONG_TERM.set(false);
+        }
       } else {
         Thread thread = new Thread(new Runnable() {
           @Override
           public void run() {
             try {
+              StoreDirection.LONG_TERM.set(true);
               process(indexAction);
             } catch (IOException e) {
               LOG.error("Shard [{0}/{1}] Id [{2}] Unknown error while trying to finish the bulk updates.", e, table,
                   shard, bulkId);
+            } finally {
+              StoreDirection.LONG_TERM.set(false);
             }
           }
         });

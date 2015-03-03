@@ -26,7 +26,6 @@ import org.apache.blur.user.User;
 
 public class ThriftCacheKey<T extends TBase<?, ?>> {
 
-  private final String _username;
   private final Map<String, String> _attributes;
   private final String _table;
   private final int[] _shards;
@@ -40,7 +39,6 @@ public class ThriftCacheKey<T extends TBase<?, ?>> {
     _timestamp = System.nanoTime();
     _clazz = new ClassObj<T>(clazz);
     if (user != null) {
-      _username = user.getUsername();
       Map<String, String> attributes = user.getAttributes();
       if (attributes == null) {
         _attributes = attributes;
@@ -48,7 +46,6 @@ public class ThriftCacheKey<T extends TBase<?, ?>> {
         _attributes = new TreeMap<String, String>(user.getAttributes());
       }
     } else {
-      _username = null;
       _attributes = null;
     }
     _table = table;
@@ -67,7 +64,7 @@ public class ThriftCacheKey<T extends TBase<?, ?>> {
   @Override
   public String toString() {
     try {
-      return "ThriftCacheKey [_username=" + _username + ", _attributes=" + _attributes + ", _table=" + _table
+      return "ThriftCacheKey [_attributes=" + _attributes + ", _table=" + _table
           + ", _shards=" + Arrays.toString(_shards) + ", _clazz=" + _clazz + ", _key="
           + _key.getValue(_clazz.getClazz()) + ", _timestamp=" + _timestamp + "]";
     } catch (BlurException e) {
@@ -88,7 +85,6 @@ public class ThriftCacheKey<T extends TBase<?, ?>> {
     result = prime * result + ((_key == null) ? 0 : _key.hashCode());
     result = prime * result + Arrays.hashCode(_shards);
     result = prime * result + ((_table == null) ? 0 : _table.hashCode());
-    result = prime * result + ((_username == null) ? 0 : _username.hashCode());
     return result;
   }
 
@@ -122,11 +118,6 @@ public class ThriftCacheKey<T extends TBase<?, ?>> {
       if (other._table != null)
         return false;
     } else if (!_table.equals(other._table))
-      return false;
-    if (_username == null) {
-      if (other._username != null)
-        return false;
-    } else if (!_username.equals(other._username))
       return false;
     return true;
   }

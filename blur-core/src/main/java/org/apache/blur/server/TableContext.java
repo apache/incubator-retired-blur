@@ -142,12 +142,28 @@ public class TableContext implements Cloneable {
     }
     TableContext tableContext = _cache.get(name);
     if (tableContext != null) {
-      TableContext clone = tableContext.clone();
-      TableDescriptor newTd = new TableDescriptor(clone._descriptor);
-      clone._descriptor = newTd;
-      clone._descriptor.setEnabled(tableDescriptor.isEnabled());
-      return clone;
+      return clone(tableDescriptor, tableContext);
     }
+    synchronized (_cache) {
+      tableContext = _cache.get(name);
+      if (tableContext != null) {
+        return clone(tableDescriptor, tableContext);
+      }
+      return createInternal(tableDescriptor, remote, client, name, tableUri);
+    }
+  }
+
+  private static TableContext clone(TableDescriptor tableDescriptor, TableContext tableContext) {
+    TableContext clone = tableContext.clone();
+    TableDescriptor newTd = new TableDescriptor(clone._descriptor);
+    clone._descriptor = newTd;
+    clone._descriptor.setEnabled(tableDescriptor.isEnabled());
+    return clone;
+  }
+
+  private static TableContext createInternal(TableDescriptor tableDescriptor, boolean remote, Iface client,
+      String name, String tableUri) {
+    TableContext tableContext;
     LOG.info("Creating table context for table [{0}]", name);
     Configuration configuration = getSystemConfiguration();
     BlurConfiguration blurConfiguration = getSystemBlurConfiguration();

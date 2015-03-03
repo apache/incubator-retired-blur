@@ -16,8 +16,7 @@
  */
 package org.apache.blur.server.cache;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -100,9 +99,8 @@ public class ThriftCacheKeyTest {
         BlurQuery.class);
     ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(user2, table, new int[] { 0, 1 }, bq2,
         BlurQuery.class);
-
-    assertFalse(key1.equals(key2));
-    assertFalse(key1.hashCode() == key2.hashCode());
+    assertTrue(key1.equals(key2));
+    assertTrue(key1.hashCode() == key2.hashCode());
   }
 
   @Test
@@ -149,8 +147,8 @@ public class ThriftCacheKeyTest {
     ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(user2, table, new int[] { 0, 1 }, bq2,
         BlurQuery.class);
 
-    assertFalse(key1.equals(key2));
-    assertFalse(key1.hashCode() == key2.hashCode());
+    assertTrue(key1.equals(key2));
+    assertTrue(key1.hashCode() == key2.hashCode());
   }
 
   private Map<String, String> map(String... s) {

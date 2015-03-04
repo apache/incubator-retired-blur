@@ -25,6 +25,7 @@ import static org.apache.blur.metrics.MetricsConstants.SYSTEM;
 import static org.apache.blur.utils.BlurConstants.BLUR_HDFS_TRACE_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_HOME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SERVER_SECURITY_FILTER_CLASS;
+import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -132,6 +133,18 @@ public class ThriftServer {
 
   public static String getBlurHomeDir() {
     return System.getenv(BLUR_HOME);
+  }
+
+  public static File getTmpPath(BlurConfiguration configuration) throws IOException {
+    File defaultTmpPath = getDefaultTmpPath(BLUR_TMP_PATH);
+    String configTmpPath = configuration.get(BLUR_TMP_PATH);
+    File tmpPath;
+    if (!(configTmpPath == null || configTmpPath.isEmpty())) {
+      tmpPath = new File(configTmpPath);
+    } else {
+      tmpPath = defaultTmpPath;
+    }
+    return tmpPath;
   }
 
   public static File getDefaultTmpPath(String propName) throws IOException {
@@ -278,10 +291,9 @@ public class ThriftServer {
   }
 
   public void start() throws TTransportException, IOException {
-    _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
     Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(_iface);
-
     if (SaslHelper.isSaslEnabled(_configuration)) {
+      _executorService = Executors.newThreadPool("thrift-processors", _threadCount, false);
       TSaslServerTransport.Factory saslTransportFactory = SaslHelper.getTSaslServerTransportFactory(_configuration);
       Args args = new TThreadPoolServer.Args(_serverTransport);
       args.executorService(_executorService);
@@ -292,6 +304,7 @@ public class ThriftServer {
       _server = new TThreadPoolServer(args);
       _server.setServerEventHandler(_eventHandler);
     } else {
+      _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
       TThreadedSelectorServer.Args args = new TThreadedSelectorServer.Args(
           (TNonblockingServerTransport) _serverTransport);
       args.processor(processor);

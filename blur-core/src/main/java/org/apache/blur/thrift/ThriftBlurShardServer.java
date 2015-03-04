@@ -52,7 +52,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_MAX_READ_BUF
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_SELECTOR_THREADS;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
-import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
@@ -245,14 +244,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay, facetThreadCount,
         deepPagingCache);
 
-    File defaultTmpPath = getDefaultTmpPath(BLUR_TMP_PATH);
-    String configTmpPath = configuration.get(BLUR_TMP_PATH);
-    File tmpPath;
-    if (!(configTmpPath == null || configTmpPath.isEmpty())) {
-      tmpPath = new File(configTmpPath);
-    } else {
-      tmpPath = defaultTmpPath;
-    }
+    File tmpPath = getTmpPath(configuration);
     int numberOfShardWorkerCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_WORKER_THREADS, 16);
     int numberOfShardDriverCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_DRIVER_THREADS, 16);
     String commandPath = configuration.get(BLUR_COMMAND_LIB_PATH, getCommandLibPath());

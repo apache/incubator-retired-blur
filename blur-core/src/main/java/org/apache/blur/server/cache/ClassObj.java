@@ -48,4 +48,9 @@ public class ClassObj<T> {
     return _clazz == other._clazz;
   }
 
+  @Override
+  public String toString() {
+    return "ClassObj [_clazz=" + _clazz + "]";
+  }
+
 }

@@ -30,6 +30,8 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.TBase;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 
@@ -42,6 +44,15 @@ import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
 public class ThriftCache {
+
+  private static final String KEY = "key";
+  private static final String CLASS = "class";
+  private static final String T_KEY = "tKey";
+  private static final String SHARDS = "shards";
+  private static final String TABLE = "table";
+  private static final String THRIFT_CACHE_PUT = "ThriftCache - put";
+  private static final String THRIFT_CACHE_GET = "ThriftCache - get";
+  private static final String THRIFT_CACHE_GET_KEY = "ThriftCache - getKey";
 
   private static final Log LOG = LogFactory.getLog(ThriftCache.class);
 
@@ -83,40 +94,56 @@ public class ThriftCache {
   }
 
   public <K extends TBase<?, ?>, V extends TBase<?, ?>> V put(ThriftCacheKey<K> key, V t) throws BlurException {
-    synchronized (_lastModTimestamps) {
-      Long lastModTimestamp = _lastModTimestamps.get(key.getTable());
-      if (lastModTimestamp != null && key.getTimestamp() < lastModTimestamp) {
-        // This means that the key was created before the index was modified. So
-        // do not cache the value because it's already out of date with the
-        // index.
-        return t;
+    Tracer trace = Trace.trace(THRIFT_CACHE_PUT, Trace.param(KEY, key));
+    try {
+      synchronized (_lastModTimestamps) {
+        Long lastModTimestamp = _lastModTimestamps.get(key.getTable());
+        if (lastModTimestamp != null && key.getTimestamp() < lastModTimestamp) {
+          // This means that the key was created before the index was modified.
+          // So do not cache the value because it's already out of date with the
+          // index.
+          return t;
+        }
       }
+      LOG.debug("Inserting into cache [{0}] with key [{1}]", t, key);
+      _cacheMap.put(key, new ThriftCacheValue<V>(t));
+      return t;
+    } finally {
+      trace.done();
     }
-    LOG.debug("Inserting into cache [{0}] with key [{1}]", t, key);
-    _cacheMap.put(key, new ThriftCacheValue<V>(t));
-    return t;
   }
 
   @SuppressWarnings("unchecked")
   public <K extends TBase<?, ?>, V extends TBase<?, ?>> V get(ThriftCacheKey<K> key, Class<V> clazz)
       throws BlurException {
-    ThriftCacheValue<V> value = (ThriftCacheValue<V>) _cacheMap.get(key);
-    if (value == null) {
-      LOG.debug("Cache Miss for [{0}]", key);
-      _misses.mark();
-      _missesAtomicLong.incrementAndGet();
-      return null;
+    Tracer trace = Trace.trace(THRIFT_CACHE_GET, Trace.param(KEY, key));
+    try {
+      ThriftCacheValue<V> value = (ThriftCacheValue<V>) _cacheMap.get(key);
+      if (value == null) {
+        LOG.debug("Cache Miss for [{0}]", key);
+        _misses.mark();
+        _missesAtomicLong.incrementAndGet();
+        return null;
+      }
+      LOG.debug("Cache Hit for [{0}]", key);
+      _hits.mark();
+      _hitsAtomicLong.incrementAndGet();
+      return value.getValue(clazz);
+    } finally {
+      trace.done();
     }
-    LOG.debug("Cache Hit for [{0}]", key);
-    _hits.mark();
-    _hitsAtomicLong.incrementAndGet();
-    return value.getValue(clazz);
   }
 
   public <K extends TBase<?, ?>> ThriftCacheKey<K> getKey(String table, int[] shards, K tkey, Class<K> clazz)
       throws BlurException {
-    User user = UserContext.getUser();
-    return new ThriftCacheKey<K>(user, table, shards, tkey, clazz);
+    Tracer trace = Trace.trace(THRIFT_CACHE_GET_KEY, Trace.param(TABLE, table), Trace.param(SHARDS, shards),
+        Trace.param(T_KEY, tkey), Trace.param(CLASS, clazz));
+    try {
+      User user = UserContext.getUser();
+      return new ThriftCacheKey<K>(user, table, shards, tkey, clazz);
+    } finally {
+      trace.done();
+    }
   }
 
   public void clearTable(String table) {

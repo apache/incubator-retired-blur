@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.blur.analysis.type.MultiValuedNotAllowedException;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
@@ -247,7 +248,7 @@ public abstract class FieldTypeDefinition {
 
   public void setMultiValueField(boolean multiValueField) {
     if (multiValueField && isSortEnable()) {
-      throw new RuntimeException("Field [" + getFieldName() + "] with type [" + getName()
+      throw new MultiValuedNotAllowedException("Field [" + getFieldName() + "] with type [" + getName()
           + "] can not be sortable and multi valued.");
     }
     _multiValueField = multiValueField;

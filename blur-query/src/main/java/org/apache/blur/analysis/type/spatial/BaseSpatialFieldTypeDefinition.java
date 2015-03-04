@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.blur.analysis.type.CustomFieldTypeDefinition;
+import org.apache.blur.analysis.type.MultiValuedNotAllowedException;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
@@ -178,7 +179,7 @@ public abstract class BaseSpatialFieldTypeDefinition extends CustomFieldTypeDefi
     if (!multiValueField) {
       super.setMultiValueField(multiValueField);
     } else {
-      throw new RuntimeException("Field type [" + getName() + "] can not multi valued.");
+      throw new MultiValuedNotAllowedException("Field type [" + getName() + "] can not multi valued.");
     }
   }
 

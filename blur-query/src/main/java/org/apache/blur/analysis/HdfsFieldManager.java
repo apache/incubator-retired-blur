@@ -28,6 +28,7 @@ import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.blur.analysis.type.MultiValuedNotAllowedException;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.trace.Trace;
@@ -204,8 +205,27 @@ public class HdfsFieldManager extends BaseFieldManager {
       }
       String fieldType = properties.getProperty(FIELD_TYPE);
       Map<String, String> props = toMap(properties);
-      FieldTypeDefinition fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType,
-          sortenabled, multiValueField, props);
+
+      if (mvfProp == null) {
+        if (multiValueField && sortenabled) {
+          // @TODO hack because we use to not have multivalue in the schema
+          LOG.warn("Changing field [{0}] to be NOT multiValueField.", fieldName);
+          multiValueField = false;
+        }
+      }
+      FieldTypeDefinition fieldTypeDefinition;
+      try {
+        fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, sortenabled,
+            multiValueField, props);
+      } catch (MultiValuedNotAllowedException e) {
+        if (mvfProp == null) {
+          multiValueField = false;
+          fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexing, fieldType, sortenabled,
+              multiValueField, props);
+        } else {
+          throw e;
+        }
+      }
       fieldTypeDefinition.setFamily(properties.getProperty(FAMILY));
       fieldTypeDefinition.setColumnName(properties.getProperty(COLUMN_NAME));
       fieldTypeDefinition.setSubColumnName(properties.getProperty(SUB_COLUMN_NAME));

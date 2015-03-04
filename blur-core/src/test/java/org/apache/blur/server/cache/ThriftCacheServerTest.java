@@ -509,6 +509,12 @@ public class ThriftCacheServerTest {
           TException {
         throw new RuntimeException("Not implemented.");
       }
+
+      @Override
+      public String configurationPerServer(String thriftServerPlusPort, String configName) throws BlurException,
+          TException {
+        throw new RuntimeException("Not implemented.");
+      }
     };
   }
 

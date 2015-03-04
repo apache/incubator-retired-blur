@@ -162,6 +162,7 @@ public class BlurConstants {
   public static final String BLUR_CONTROLLER_COMMAND_WORKER_THREADS = "blur.controller.command.worker.threads";
   public static final String BLUR_COMMAND_LIB_PATH = "blur.command.lib.path";
   public static final String BLUR_TMP_PATH = "blur.tmp.path";
+  public static final String BLUR_NODENAME = "blur.nodename";
 
   public static final String BLUR_SECURITY_SASL_TYPE = "blur.security.sasl.type";
   public static final String BLUR_SECURITY_SASL_ENABLED = "blur.security.sasl.enabled";

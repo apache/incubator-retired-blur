@@ -42,6 +42,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_GC_BACK_PRESSURE_HEAP_RAT
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_HTTP_STATUS_RUNNING_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
+import static org.apache.blur.utils.BlurConstants.BLUR_NODENAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
@@ -124,6 +125,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     String nodeName = getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
     nodeName = nodeName + ":" + instanceBindPort;
+    configuration.set(BLUR_NODENAME, nodeName);
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);

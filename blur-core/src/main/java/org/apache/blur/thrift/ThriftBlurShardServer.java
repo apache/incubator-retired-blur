@@ -29,6 +29,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREA
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_HEAP_PER_ROW_FETCH;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
+import static org.apache.blur.utils.BlurConstants.BLUR_NODENAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_TOTAL_SIZE;
@@ -188,6 +189,7 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
     String nodeName = nodeNameHostName + ":" + instanceBindPort;
+    configuration.set(BLUR_NODENAME, nodeName);
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
@@ -264,6 +266,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     });
 
     final BlurShardServer shardServer = new BlurShardServer();
+    shardServer.setNodeName(nodeName);
     shardServer.setCommandManager(commandManager);
     shardServer.setIndexServer(indexServer);
     shardServer.setIndexManager(indexManager);

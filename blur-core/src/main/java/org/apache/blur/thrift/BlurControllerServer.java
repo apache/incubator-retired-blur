@@ -179,7 +179,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private AtomicBoolean _closed = new AtomicBoolean();
   private Map<String, Integer> _tableShardCountMap = new ConcurrentHashMap<String, Integer>();
   private BlurPartitioner _blurPartitioner = new BlurPartitioner();
-  private String _nodeName;
   private int _remoteFetchCount = 100;
   private BlurQueryChecker _queryChecker;
   private AtomicBoolean _running = new AtomicBoolean();
@@ -1385,10 +1384,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }
       throw new BException("Unknown error while trying to get the list of snapshots for table [{0}]", e, table);
     }
-  }
-
-  public void setNodeName(String nodeName) {
-    _nodeName = nodeName;
   }
 
   public int getRemoteFetchCount() {

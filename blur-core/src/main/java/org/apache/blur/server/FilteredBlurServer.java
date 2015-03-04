@@ -312,4 +312,9 @@ public class FilteredBlurServer implements Iface {
     _iface.bulkMutateAddMultiple(bulkId, rowMutations);
   }
 
+  @Override
+  public String configurationPerServer(String thriftServerPlusPort, String configName) throws BlurException, TException {
+    return _iface.configurationPerServer(thriftServerPlusPort, configName);
+  }
+
 }

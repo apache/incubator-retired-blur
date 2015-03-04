@@ -46,6 +46,7 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.CommandDescriptor;
+import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.Level;
 import org.apache.blur.thrift.generated.Metric;
 import org.apache.blur.thrift.generated.Schema;
@@ -68,6 +69,7 @@ public abstract class TableAdmin implements Iface {
   protected ClusterStatus _clusterStatus;
   protected BlurConfiguration _configuration;
   protected int _maxRecordsPerRowFetchRequest = 1000;
+  protected String _nodeName;
 
   protected void checkSelectorFetchSize(Selector selector) {
     if (selector == null) {
@@ -732,5 +734,26 @@ public abstract class TableAdmin implements Iface {
   // TException {
   // throw new RuntimeException("Not implemented.");
   // }
+
+  @Override
+  public String configurationPerServer(String thriftServerPlusPort, String configName) throws BlurException, TException {
+    if (thriftServerPlusPort == null || thriftServerPlusPort.equals(_nodeName)) {
+      String s = _configuration.get(configName);
+      if (s == null) {
+        throw new BlurException("NOT_FOUND", null, ErrorType.UNKNOWN);
+      }
+      return s;
+    }
+    Iface client = BlurClient.getClient(thriftServerPlusPort);
+    return client.configurationPerServer(thriftServerPlusPort, configName);
+  }
+
+  public String getNodeName() {
+    return _nodeName;
+  }
+
+  public void setNodeName(String nodeName) {
+    _nodeName = nodeName;
+  }
 
 }

@@ -44,6 +44,8 @@ import org.apache.lucene.util.BytesRef;
 
 public class FastHdfsKeyValueDirectory extends Directory implements LastModified {
 
+  private static final String MISSING_METADATA_MESSAGE = "Missing meta data for file [{0}], setting length to '0'.  This can occur when a kv log files writes across blocks in hdfs.";
+
   private static final long GC_DELAY = TimeUnit.HOURS.toMillis(1);
 
   private static final Log LOG = LogFactory.getLog(FastHdfsKeyValueDirectory.class);
@@ -75,7 +77,7 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
         if (_store.get(key, value)) {
           _files.put(file, Long.parseLong(value.utf8ToString()));
         } else {
-          throw new IOException("Missing meta data for file [" + file + "], setting length to '0'.");
+          LOG.warn(MISSING_METADATA_MESSAGE, file);
         }
       }
     }

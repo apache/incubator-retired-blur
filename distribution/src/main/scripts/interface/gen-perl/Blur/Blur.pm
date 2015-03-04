@@ -7221,6 +7221,165 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_configurationPerServer_args;
+use base qw(Class::Accessor);
+Blur::Blur_configurationPerServer_args->mk_accessors( qw( thriftServerPlusPort configName ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{thriftServerPlusPort} = undef;
+  $self->{configName} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{thriftServerPlusPort}) {
+      $self->{thriftServerPlusPort} = $vals->{thriftServerPlusPort};
+    }
+    if (defined $vals->{configName}) {
+      $self->{configName} = $vals->{configName};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_configurationPerServer_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{thriftServerPlusPort});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{configName});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_configurationPerServer_args');
+  if (defined $self->{thriftServerPlusPort}) {
+    $xfer += $output->writeFieldBegin('thriftServerPlusPort', TType::STRING, 1);
+    $xfer += $output->writeString($self->{thriftServerPlusPort});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{configName}) {
+    $xfer += $output->writeFieldBegin('configName', TType::STRING, 2);
+    $xfer += $output->writeString($self->{configName});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_configurationPerServer_result;
+use base qw(Class::Accessor);
+Blur::Blur_configurationPerServer_result->mk_accessors( qw( success ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{success} = undef;
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{success}) {
+      $self->{success} = $vals->{success};
+    }
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_configurationPerServer_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^0$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{success});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_configurationPerServer_result');
+  if (defined $self->{success}) {
+    $xfer += $output->writeFieldBegin('success', TType::STRING, 0);
+    $xfer += $output->writeString($self->{success});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::Blur_metrics_args;
 use base qw(Class::Accessor);
 Blur::Blur_metrics_args->mk_accessors( qw( metrics ) );
@@ -8838,6 +8997,14 @@ sub configuration{
   die 'implement interface';
 }
 
+sub configurationPerServer{
+  my $self = shift;
+  my $thriftServerPlusPort = shift;
+  my $configName = shift;
+
+  die 'implement interface';
+}
+
 sub metrics{
   my $self = shift;
   my $metrics = shift;
@@ -9260,6 +9427,14 @@ sub configuration{
   my ($self, $request) = @_;
 
   return $self->{impl}->configuration();
+}
+
+sub configurationPerServer{
+  my ($self, $request) = @_;
+
+  my $thriftServerPlusPort = ($request->{'thriftServerPlusPort'}) ? $request->{'thriftServerPlusPort'} : undef;
+  my $configName = ($request->{'configName'}) ? $request->{'configName'} : undef;
+  return $self->{impl}->configurationPerServer($thriftServerPlusPort, $configName);
 }
 
 sub metrics{
@@ -11456,6 +11631,55 @@ sub recv_configuration{
   }
   die "configuration failed: unknown result";
 }
+sub configurationPerServer{
+  my $self = shift;
+  my $thriftServerPlusPort = shift;
+  my $configName = shift;
+
+    $self->send_configurationPerServer($thriftServerPlusPort, $configName);
+  return $self->recv_configurationPerServer();
+}
+
+sub send_configurationPerServer{
+  my $self = shift;
+  my $thriftServerPlusPort = shift;
+  my $configName = shift;
+
+  $self->{output}->writeMessageBegin('configurationPerServer', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_configurationPerServer_args();
+  $args->{thriftServerPlusPort} = $thriftServerPlusPort;
+  $args->{configName} = $configName;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_configurationPerServer{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_configurationPerServer_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{success} ) {
+    return $result->{success};
+  }
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  die "configurationPerServer failed: unknown result";
+}
 sub metrics{
   my $self = shift;
   my $metrics = shift;
@@ -12641,6 +12865,23 @@ sub process_configuration {
       $result->{ex} = $@;
     }
     $output->writeMessageBegin('configuration', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_configurationPerServer {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_configurationPerServer_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_configurationPerServer_result();
+    eval {
+      $result->{success} = $self->{handler}->configurationPerServer($args->thriftServerPlusPort, $args->configName);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('configurationPerServer', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();

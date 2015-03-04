@@ -6281,6 +6281,143 @@ Blur_configuration_result.prototype.write = function(output) {
   return;
 };
 
+Blur_configurationPerServer_args = function(args) {
+  this.thriftServerPlusPort = null;
+  this.configName = null;
+  if (args) {
+    if (args.thriftServerPlusPort !== undefined) {
+      this.thriftServerPlusPort = args.thriftServerPlusPort;
+    }
+    if (args.configName !== undefined) {
+      this.configName = args.configName;
+    }
+  }
+};
+Blur_configurationPerServer_args.prototype = {};
+Blur_configurationPerServer_args.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+      if (ftype == Thrift.Type.STRING) {
+        this.thriftServerPlusPort = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 2:
+      if (ftype == Thrift.Type.STRING) {
+        this.configName = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_configurationPerServer_args.prototype.write = function(output) {
+  output.writeStructBegin('Blur_configurationPerServer_args');
+  if (this.thriftServerPlusPort !== null && this.thriftServerPlusPort !== undefined) {
+    output.writeFieldBegin('thriftServerPlusPort', Thrift.Type.STRING, 1);
+    output.writeString(this.thriftServerPlusPort);
+    output.writeFieldEnd();
+  }
+  if (this.configName !== null && this.configName !== undefined) {
+    output.writeFieldBegin('configName', Thrift.Type.STRING, 2);
+    output.writeString(this.configName);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
+Blur_configurationPerServer_result = function(args) {
+  this.success = null;
+  this.ex = null;
+  if (args instanceof BlurException) {
+    this.ex = args;
+    return;
+  }
+  if (args) {
+    if (args.success !== undefined) {
+      this.success = args.success;
+    }
+    if (args.ex !== undefined) {
+      this.ex = args.ex;
+    }
+  }
+};
+Blur_configurationPerServer_result.prototype = {};
+Blur_configurationPerServer_result.prototype.read = function(input) {
+  input.readStructBegin();
+  while (true)
+  {
+    var ret = input.readFieldBegin();
+    var fname = ret.fname;
+    var ftype = ret.ftype;
+    var fid = ret.fid;
+    if (ftype == Thrift.Type.STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 0:
+      if (ftype == Thrift.Type.STRING) {
+        this.success = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 1:
+      if (ftype == Thrift.Type.STRUCT) {
+        this.ex = new BlurException();
+        this.ex.read(input);
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      default:
+        input.skip(ftype);
+    }
+    input.readFieldEnd();
+  }
+  input.readStructEnd();
+  return;
+};
+
+Blur_configurationPerServer_result.prototype.write = function(output) {
+  output.writeStructBegin('Blur_configurationPerServer_result');
+  if (this.success !== null && this.success !== undefined) {
+    output.writeFieldBegin('success', Thrift.Type.STRING, 0);
+    output.writeString(this.success);
+    output.writeFieldEnd();
+  }
+  if (this.ex !== null && this.ex !== undefined) {
+    output.writeFieldBegin('ex', Thrift.Type.STRUCT, 1);
+    this.ex.write(output);
+    output.writeFieldEnd();
+  }
+  output.writeFieldStop();
+  output.writeStructEnd();
+  return;
+};
+
 Blur_metrics_args = function(args) {
   this.metrics = null;
   if (args) {
@@ -9001,6 +9138,44 @@ BlurClient.prototype.recv_configuration = function() {
     return result.success;
   }
   throw 'configuration failed: unknown result';
+};
+BlurClient.prototype.configurationPerServer = function(thriftServerPlusPort, configName) {
+  this.send_configurationPerServer(thriftServerPlusPort, configName);
+  return this.recv_configurationPerServer();
+};
+
+BlurClient.prototype.send_configurationPerServer = function(thriftServerPlusPort, configName) {
+  this.output.writeMessageBegin('configurationPerServer', Thrift.MessageType.CALL, this.seqid);
+  var args = new Blur_configurationPerServer_args();
+  args.thriftServerPlusPort = thriftServerPlusPort;
+  args.configName = configName;
+  args.write(this.output);
+  this.output.writeMessageEnd();
+  return this.output.getTransport().flush();
+};
+
+BlurClient.prototype.recv_configurationPerServer = function() {
+  var ret = this.input.readMessageBegin();
+  var fname = ret.fname;
+  var mtype = ret.mtype;
+  var rseqid = ret.rseqid;
+  if (mtype == Thrift.MessageType.EXCEPTION) {
+    var x = new Thrift.TApplicationException();
+    x.read(this.input);
+    this.input.readMessageEnd();
+    throw x;
+  }
+  var result = new Blur_configurationPerServer_result();
+  result.read(this.input);
+  this.input.readMessageEnd();
+
+  if (null !== result.ex) {
+    throw result.ex;
+  }
+  if (null !== result.success) {
+    return result.success;
+  }
+  throw 'configurationPerServer failed: unknown result';
 };
 BlurClient.prototype.metrics = function(metrics) {
   this.send_metrics(metrics);

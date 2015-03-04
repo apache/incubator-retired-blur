@@ -132,6 +132,13 @@ public java.util.Map configuration() throws org.apache.blur.thrift.generated.Blu
 }
 
 @Override
+public java.lang.String configurationPerServer(java.lang.String arg0, java.lang.String arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    return super.configurationPerServer(arg0, arg1);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public java.util.List controllerServerList() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.controllerServerList();
@@ -387,6 +394,13 @@ public java.util.List recv_commandStatusList() throws org.apache.blur.thrift.gen
 public java.util.Map recv_configuration() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.recv_configuration();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public java.lang.String recv_configurationPerServer() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    return super.recv_configurationPerServer();
   } finally {_lock.unlock();}
 }
 
@@ -793,6 +807,13 @@ public void send_commandStatusList(int arg0, short arg1, org.apache.blur.thrift.
 public void send_configuration() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_configuration();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_configurationPerServer(java.lang.String arg0, java.lang.String arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_configurationPerServer(arg0, arg1);
   } finally {_lock.unlock();}
 }
 

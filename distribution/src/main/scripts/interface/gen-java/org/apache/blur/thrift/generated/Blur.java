@@ -469,6 +469,15 @@ public class Blur {
     public Map<String,String> configuration() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     /**
+     * Fetches the Blur configuration.
+     * @return Map of property name to value.
+     * 
+     * @param thriftServerPlusPort
+     * @param configName
+     */
+    public String configurationPerServer(String thriftServerPlusPort, String configName) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    /**
      * Fetches the Blur metrics by name.  If the metrics parameter is null all the Metrics are returned.
      * @return Map of metric name to Metric.
      * 
@@ -632,6 +641,8 @@ public class Blur {
     public void isInSafeMode(String cluster, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.isInSafeMode_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void configuration(org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.configuration_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
+
+    public void configurationPerServer(String thriftServerPlusPort, String configName, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.configurationPerServer_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
     public void metrics(Set<String> metrics, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<AsyncClient.metrics_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException;
 
@@ -1837,6 +1848,33 @@ public class Blur {
         throw result.ex;
       }
       throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "configuration failed: unknown result");
+    }
+
+    public String configurationPerServer(String thriftServerPlusPort, String configName) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      send_configurationPerServer(thriftServerPlusPort, configName);
+      return recv_configurationPerServer();
+    }
+
+    public void send_configurationPerServer(String thriftServerPlusPort, String configName) throws org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      configurationPerServer_args args = new configurationPerServer_args();
+      args.setThriftServerPlusPort(thriftServerPlusPort);
+      args.setConfigName(configName);
+      sendBase("configurationPerServer", args);
+    }
+
+    public String recv_configurationPerServer() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
+    {
+      configurationPerServer_result result = new configurationPerServer_result();
+      receiveBase(result, "configurationPerServer");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      throw new org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException(org.apache.blur.thirdparty.thrift_0_9_0.TApplicationException.MISSING_RESULT, "configurationPerServer failed: unknown result");
     }
 
     public Map<String,Metric> metrics(Set<String> metrics) throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException
@@ -3624,6 +3662,41 @@ public class Blur {
       }
     }
 
+    public void configurationPerServer(String thriftServerPlusPort, String configName, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<configurationPerServer_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      checkReady();
+      configurationPerServer_call method_call = new configurationPerServer_call(thriftServerPlusPort, configName, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class configurationPerServer_call extends org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall {
+      private String thriftServerPlusPort;
+      private String configName;
+      public configurationPerServer_call(String thriftServerPlusPort, String configName, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<configurationPerServer_call> resultHandler, org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncClient client, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolFactory protocolFactory, org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingTransport transport) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.thriftServerPlusPort = thriftServerPlusPort;
+        this.configName = configName;
+      }
+
+      public void write_args(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        prot.writeMessageBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessage("configurationPerServer", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMessageType.CALL, 0));
+        configurationPerServer_args args = new configurationPerServer_args();
+        args.setThriftServerPlusPort(thriftServerPlusPort);
+        args.setConfigName(configName);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public String getResult() throws BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        if (getState() != org.apache.blur.thirdparty.thrift_0_9_0.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport memoryTransport = new org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_configurationPerServer();
+      }
+    }
+
     public void metrics(Set<String> metrics, org.apache.blur.thirdparty.thrift_0_9_0.async.AsyncMethodCallback<metrics_call> resultHandler) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       checkReady();
       metrics_call method_call = new metrics_call(metrics, resultHandler, this, ___protocolFactory, ___transport);
@@ -3971,6 +4044,7 @@ public class Blur {
       processMap.put("shardServerLayoutState", new shardServerLayoutState());
       processMap.put("isInSafeMode", new isInSafeMode());
       processMap.put("configuration", new configuration());
+      processMap.put("configurationPerServer", new configurationPerServer());
       processMap.put("metrics", new metrics());
       processMap.put("startTrace", new startTrace());
       processMap.put("traceList", new traceList());
@@ -5101,6 +5175,30 @@ public class Blur {
         configuration_result result = new configuration_result();
         try {
           result.success = iface.configuration();
+        } catch (BlurException ex) {
+          result.ex = ex;
+        }
+        return result;
+      }
+    }
+
+    public static class configurationPerServer<I extends Iface> extends org.apache.blur.thirdparty.thrift_0_9_0.ProcessFunction<I, configurationPerServer_args> {
+      public configurationPerServer() {
+        super("configurationPerServer");
+      }
+
+      public configurationPerServer_args getEmptyArgsInstance() {
+        return new configurationPerServer_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public configurationPerServer_result getResult(I iface, configurationPerServer_args args) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        configurationPerServer_result result = new configurationPerServer_result();
+        try {
+          result.success = iface.configurationPerServer(args.thriftServerPlusPort, args.configName);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -44627,6 +44725,916 @@ public class Blur {
               struct.success.put(_key458, _val459);
             }
           }
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.ex = new BlurException();
+          struct.ex.read(iprot);
+          struct.setExIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class configurationPerServer_args implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<configurationPerServer_args, configurationPerServer_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("configurationPerServer_args");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField THRIFT_SERVER_PLUS_PORT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("thriftServerPlusPort", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField CONFIG_NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("configName", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new configurationPerServer_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new configurationPerServer_argsTupleSchemeFactory());
+    }
+
+    public String thriftServerPlusPort; // required
+    public String configName; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      THRIFT_SERVER_PLUS_PORT((short)1, "thriftServerPlusPort"),
+      CONFIG_NAME((short)2, "configName");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // THRIFT_SERVER_PLUS_PORT
+            return THRIFT_SERVER_PLUS_PORT;
+          case 2: // CONFIG_NAME
+            return CONFIG_NAME;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.THRIFT_SERVER_PLUS_PORT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("thriftServerPlusPort", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      tmpMap.put(_Fields.CONFIG_NAME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("configName", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(configurationPerServer_args.class, metaDataMap);
+    }
+
+    public configurationPerServer_args() {
+    }
+
+    public configurationPerServer_args(
+      String thriftServerPlusPort,
+      String configName)
+    {
+      this();
+      this.thriftServerPlusPort = thriftServerPlusPort;
+      this.configName = configName;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public configurationPerServer_args(configurationPerServer_args other) {
+      if (other.isSetThriftServerPlusPort()) {
+        this.thriftServerPlusPort = other.thriftServerPlusPort;
+      }
+      if (other.isSetConfigName()) {
+        this.configName = other.configName;
+      }
+    }
+
+    public configurationPerServer_args deepCopy() {
+      return new configurationPerServer_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.thriftServerPlusPort = null;
+      this.configName = null;
+    }
+
+    public String getThriftServerPlusPort() {
+      return this.thriftServerPlusPort;
+    }
+
+    public configurationPerServer_args setThriftServerPlusPort(String thriftServerPlusPort) {
+      this.thriftServerPlusPort = thriftServerPlusPort;
+      return this;
+    }
+
+    public void unsetThriftServerPlusPort() {
+      this.thriftServerPlusPort = null;
+    }
+
+    /** Returns true if field thriftServerPlusPort is set (has been assigned a value) and false otherwise */
+    public boolean isSetThriftServerPlusPort() {
+      return this.thriftServerPlusPort != null;
+    }
+
+    public void setThriftServerPlusPortIsSet(boolean value) {
+      if (!value) {
+        this.thriftServerPlusPort = null;
+      }
+    }
+
+    public String getConfigName() {
+      return this.configName;
+    }
+
+    public configurationPerServer_args setConfigName(String configName) {
+      this.configName = configName;
+      return this;
+    }
+
+    public void unsetConfigName() {
+      this.configName = null;
+    }
+
+    /** Returns true if field configName is set (has been assigned a value) and false otherwise */
+    public boolean isSetConfigName() {
+      return this.configName != null;
+    }
+
+    public void setConfigNameIsSet(boolean value) {
+      if (!value) {
+        this.configName = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case THRIFT_SERVER_PLUS_PORT:
+        if (value == null) {
+          unsetThriftServerPlusPort();
+        } else {
+          setThriftServerPlusPort((String)value);
+        }
+        break;
+
+      case CONFIG_NAME:
+        if (value == null) {
+          unsetConfigName();
+        } else {
+          setConfigName((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case THRIFT_SERVER_PLUS_PORT:
+        return getThriftServerPlusPort();
+
+      case CONFIG_NAME:
+        return getConfigName();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case THRIFT_SERVER_PLUS_PORT:
+        return isSetThriftServerPlusPort();
+      case CONFIG_NAME:
+        return isSetConfigName();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof configurationPerServer_args)
+        return this.equals((configurationPerServer_args)that);
+      return false;
+    }
+
+    public boolean equals(configurationPerServer_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_thriftServerPlusPort = true && this.isSetThriftServerPlusPort();
+      boolean that_present_thriftServerPlusPort = true && that.isSetThriftServerPlusPort();
+      if (this_present_thriftServerPlusPort || that_present_thriftServerPlusPort) {
+        if (!(this_present_thriftServerPlusPort && that_present_thriftServerPlusPort))
+          return false;
+        if (!this.thriftServerPlusPort.equals(that.thriftServerPlusPort))
+          return false;
+      }
+
+      boolean this_present_configName = true && this.isSetConfigName();
+      boolean that_present_configName = true && that.isSetConfigName();
+      if (this_present_configName || that_present_configName) {
+        if (!(this_present_configName && that_present_configName))
+          return false;
+        if (!this.configName.equals(that.configName))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(configurationPerServer_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      configurationPerServer_args typedOther = (configurationPerServer_args)other;
+
+      lastComparison = Boolean.valueOf(isSetThriftServerPlusPort()).compareTo(typedOther.isSetThriftServerPlusPort());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetThriftServerPlusPort()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.thriftServerPlusPort, typedOther.thriftServerPlusPort);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetConfigName()).compareTo(typedOther.isSetConfigName());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetConfigName()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.configName, typedOther.configName);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("configurationPerServer_args(");
+      boolean first = true;
+
+      sb.append("thriftServerPlusPort:");
+      if (this.thriftServerPlusPort == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.thriftServerPlusPort);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("configName:");
+      if (this.configName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.configName);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class configurationPerServer_argsStandardSchemeFactory implements SchemeFactory {
+      public configurationPerServer_argsStandardScheme getScheme() {
+        return new configurationPerServer_argsStandardScheme();
+      }
+    }
+
+    private static class configurationPerServer_argsStandardScheme extends StandardScheme<configurationPerServer_args> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, configurationPerServer_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // THRIFT_SERVER_PLUS_PORT
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.thriftServerPlusPort = iprot.readString();
+                struct.setThriftServerPlusPortIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // CONFIG_NAME
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.configName = iprot.readString();
+                struct.setConfigNameIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, configurationPerServer_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.thriftServerPlusPort != null) {
+          oprot.writeFieldBegin(THRIFT_SERVER_PLUS_PORT_FIELD_DESC);
+          oprot.writeString(struct.thriftServerPlusPort);
+          oprot.writeFieldEnd();
+        }
+        if (struct.configName != null) {
+          oprot.writeFieldBegin(CONFIG_NAME_FIELD_DESC);
+          oprot.writeString(struct.configName);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class configurationPerServer_argsTupleSchemeFactory implements SchemeFactory {
+      public configurationPerServer_argsTupleScheme getScheme() {
+        return new configurationPerServer_argsTupleScheme();
+      }
+    }
+
+    private static class configurationPerServer_argsTupleScheme extends TupleScheme<configurationPerServer_args> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, configurationPerServer_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetThriftServerPlusPort()) {
+          optionals.set(0);
+        }
+        if (struct.isSetConfigName()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetThriftServerPlusPort()) {
+          oprot.writeString(struct.thriftServerPlusPort);
+        }
+        if (struct.isSetConfigName()) {
+          oprot.writeString(struct.configName);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, configurationPerServer_args struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.thriftServerPlusPort = iprot.readString();
+          struct.setThriftServerPlusPortIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.configName = iprot.readString();
+          struct.setConfigNameIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class configurationPerServer_result implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<configurationPerServer_result, configurationPerServer_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("configurationPerServer_result");
+
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SUCCESS_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("success", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)0);
+    private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EX_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("ex", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new configurationPerServer_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new configurationPerServer_resultTupleSchemeFactory());
+    }
+
+    public String success; // required
+    public BlurException ex; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("success", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+      tmpMap.put(_Fields.EX, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("ex", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+          new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(configurationPerServer_result.class, metaDataMap);
+    }
+
+    public configurationPerServer_result() {
+    }
+
+    public configurationPerServer_result(
+      String success,
+      BlurException ex)
+    {
+      this();
+      this.success = success;
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public configurationPerServer_result(configurationPerServer_result other) {
+      if (other.isSetSuccess()) {
+        this.success = other.success;
+      }
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public configurationPerServer_result deepCopy() {
+      return new configurationPerServer_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
+    }
+
+    public String getSuccess() {
+      return this.success;
+    }
+
+    public configurationPerServer_result setSuccess(String success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public configurationPerServer_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((String)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof configurationPerServer_result)
+        return this.equals((configurationPerServer_result)that);
+      return false;
+    }
+
+    public boolean equals(configurationPerServer_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(configurationPerServer_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      configurationPerServer_result typedOther = (configurationPerServer_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("configurationPerServer_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+      // check for required fields
+      // check for sub-struct validity
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(out)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
+      } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class configurationPerServer_resultStandardSchemeFactory implements SchemeFactory {
+      public configurationPerServer_resultStandardScheme getScheme() {
+        return new configurationPerServer_resultStandardScheme();
+      }
+    }
+
+    private static class configurationPerServer_resultStandardScheme extends StandardScheme<configurationPerServer_result> {
+
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, configurationPerServer_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+                struct.success = iprot.readString();
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 1: // EX
+              if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
+                struct.ex = new BlurException();
+                struct.ex.read(iprot);
+                struct.setExIsSet(true);
+              } else { 
+                org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, configurationPerServer_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          oprot.writeString(struct.success);
+          oprot.writeFieldEnd();
+        }
+        if (struct.ex != null) {
+          oprot.writeFieldBegin(EX_FIELD_DESC);
+          struct.ex.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class configurationPerServer_resultTupleSchemeFactory implements SchemeFactory {
+      public configurationPerServer_resultTupleScheme getScheme() {
+        return new configurationPerServer_resultTupleScheme();
+      }
+    }
+
+    private static class configurationPerServer_resultTupleScheme extends TupleScheme<configurationPerServer_result> {
+
+      @Override
+      public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, configurationPerServer_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        if (struct.isSetEx()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetSuccess()) {
+          oprot.writeString(struct.success);
+        }
+        if (struct.isSetEx()) {
+          struct.ex.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, configurationPerServer_result struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.success = iprot.readString();
           struct.setSuccessIsSet(true);
         }
         if (incoming.get(1)) {

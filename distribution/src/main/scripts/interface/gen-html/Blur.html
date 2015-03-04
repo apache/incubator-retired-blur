@@ -21,6 +21,7 @@
 <li><a href="Blur.html#Fn_Blur_commandStatus">commandStatus</a></li>
 <li><a href="Blur.html#Fn_Blur_commandStatusList">commandStatusList</a></li>
 <li><a href="Blur.html#Fn_Blur_configuration">configuration</a></li>
+<li><a href="Blur.html#Fn_Blur_configurationPerServer">configurationPerServer</a></li>
 <li><a href="Blur.html#Fn_Blur_controllerServerList">controllerServerList</a></li>
 <li><a href="Blur.html#Fn_Blur_createSnapshot">createSnapshot</a></li>
 <li><a href="Blur.html#Fn_Blur_createTable">createTable</a></li>
@@ -1076,6 +1077,12 @@ the shard given the same situation.
 </td></tr>
 </table></div><div class="definition"><h4 id="Fn_Blur_configuration">Function: Blur.configuration</h4>
 <pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> configuration()
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Fetches the Blur configuration.
+@return Map of property name to value.
+<br/></div><div class="definition"><h4 id="Fn_Blur_configurationPerServer">Function: Blur.configurationPerServer</h4>
+<pre><code>string</code> configurationPerServer(<code>string</code> thriftServerPlusPort,
+                              <code>string</code> configName)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Fetches the Blur configuration.
 @return Map of property name to value.

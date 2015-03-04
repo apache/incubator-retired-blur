@@ -730,6 +730,22 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'configuration failed: unknown result')
       end
 
+      def configurationPerServer(thriftServerPlusPort, configName)
+        send_configurationPerServer(thriftServerPlusPort, configName)
+        return recv_configurationPerServer()
+      end
+
+      def send_configurationPerServer(thriftServerPlusPort, configName)
+        send_message('configurationPerServer', ConfigurationPerServer_args, :thriftServerPlusPort => thriftServerPlusPort, :configName => configName)
+      end
+
+      def recv_configurationPerServer()
+        result = receive_message(ConfigurationPerServer_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'configurationPerServer failed: unknown result')
+      end
+
       def metrics(metrics)
         send_metrics(metrics)
         return recv_metrics()
@@ -1374,6 +1390,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'configuration', seqid)
+      end
+
+      def process_configurationPerServer(seqid, iprot, oprot)
+        args = read_args(iprot, ConfigurationPerServer_args)
+        result = ConfigurationPerServer_result.new()
+        begin
+          result.success = @handler.configurationPerServer(args.thriftServerPlusPort, args.configName)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'configurationPerServer', seqid)
       end
 
       def process_metrics(seqid, iprot, oprot)
@@ -3122,6 +3149,42 @@ module Blur
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ConfigurationPerServer_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      THRIFTSERVERPLUSPORT = 1
+      CONFIGNAME = 2
+
+      FIELDS = {
+        THRIFTSERVERPLUSPORT => {:type => ::Thrift::Types::STRING, :name => 'thriftServerPlusPort'},
+        CONFIGNAME => {:type => ::Thrift::Types::STRING, :name => 'configName'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ConfigurationPerServer_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 

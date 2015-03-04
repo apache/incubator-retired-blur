@@ -161,6 +161,7 @@ limitations under the License.
 <li><a href="#Fn_Blur_shardServerLayoutState">&nbsp;&nbsp;shardServerLayoutState</a></li>
 <li><a href="#Fn_Blur_isInSafeMode">&nbsp;&nbsp;isInSafeMode</a></li>
 <li><a href="#Fn_Blur_configuration">&nbsp;&nbsp;configuration</a></li>
+<li><a href="#Fn_Blur_configurationPerServer">&nbsp;&nbsp;configurationPerServer</a></li>
 <li><a href="#Fn_Blur_metrics">&nbsp;&nbsp;metrics</a></li>
 <li><a href="#Fn_Blur_startTrace">&nbsp;&nbsp;startTrace</a></li>
 <li><a href="#Fn_Blur_traceList">&nbsp;&nbsp;traceList</a></li>
@@ -1134,6 +1135,12 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </td></tr>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_configuration">Function: Blur.configuration</h4></div><p class="lead">
 <pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> configuration()
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Fetches the Blur configuration.
+@return Map of property name to value.
+<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_configurationPerServer">Function: Blur.configurationPerServer</h4></div><p class="lead">
+<pre><code>string</code> configurationPerServer(<code>string</code> thriftServerPlusPort,
+<code>string</code> configName)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Fetches the Blur configuration.
 @return Map of property name to value.

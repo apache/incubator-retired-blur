@@ -1353,6 +1353,12 @@ service Blur {
   map<string,string> configuration() throws (1:BlurException ex)
 
   /**
+   * Fetches the Blur configuration.
+   * @return Map of property name to value.
+   */
+  string configurationPerServer(1:string thriftServerPlusPort, 2:string configName) throws (1:BlurException ex)
+
+  /**
    * Fetches the Blur metrics by name.  If the metrics parameter is null all the Metrics are returned.
    * @return Map of metric name to Metric.
    */

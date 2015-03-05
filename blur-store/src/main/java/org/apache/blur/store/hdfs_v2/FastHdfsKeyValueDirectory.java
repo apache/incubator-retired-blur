@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.memory.MemoryLeakDetector;
 import org.apache.blur.store.blockcache.LastModified;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -64,6 +65,7 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
   public FastHdfsKeyValueDirectory(Timer hdfsKeyValueTimer, Configuration configuration, Path path) throws IOException {
     _path = path;
     _store = new HdfsKeyValueStore(hdfsKeyValueTimer, configuration, path);
+    MemoryLeakDetector.record(_store, "HdfsKeyValueStore", path.toString());
     BytesRef value = new BytesRef();
     if (_store.get(FILES, value)) {
       String filesString = value.utf8ToString();

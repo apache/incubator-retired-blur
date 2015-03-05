@@ -58,6 +58,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.codec.Blur024Codec;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.memory.MemoryLeakDetector;
 import org.apache.blur.server.IndexSearcherCloseableBase;
 import org.apache.blur.server.IndexSearcherCloseableSecureBase;
 import org.apache.blur.server.ShardContext;
@@ -90,6 +91,8 @@ import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.hadoop.io.compress.SnappyCodec;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.BlurIndexWriter;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
@@ -200,7 +203,11 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _directory = directory;
 
     _indexCloser = indexCloser;
-    _indexReader.set(wrap(DirectoryReader.open(_directory)));
+    DirectoryReader realDirectoryReader = DirectoryReader.open(_directory);
+    DirectoryReader wrappped = wrap(realDirectoryReader);
+    String message = "BlurIndexSimpleWriter - inital open";
+    DirectoryReader directoryReader = checkForMemoryLeaks(wrappped, message);
+    _indexReader.set(directoryReader);
 
     openWriter();
     _watchForIdleBulkWriters = new TimerTask() {
@@ -225,6 +232,25 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     };
     long delay = TimeUnit.SECONDS.toMillis(30);
     _bulkIndexingTimer.schedule(_watchForIdleBulkWriters, delay, delay);
+  }
+
+  private DirectoryReader checkForMemoryLeaks(DirectoryReader wrappped, String message) {
+    DirectoryReader directoryReader = MemoryLeakDetector.record(wrappped, message, _tableContext.getTable(),
+        _shardContext.getShard());
+    if (directoryReader instanceof ExitableReader) {
+      ExitableReader exitableReader = (ExitableReader) directoryReader;
+      checkForMemoryLeaks(exitableReader.getIn().leaves(), message);
+    } else {
+      checkForMemoryLeaks(directoryReader.leaves(), message);
+    }
+    return directoryReader;
+  }
+
+  private void checkForMemoryLeaks(List<AtomicReaderContext> leaves, String message) {
+    for (AtomicReaderContext context : leaves) {
+      AtomicReader reader = context.reader();
+      MemoryLeakDetector.record(reader, message, _tableContext.getTable(), _shardContext.getShard());
+    }
   }
 
   private synchronized void openWriter() {
@@ -392,7 +418,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   public void close() throws IOException {
     _isClosed.set(true);
     IOUtils.cleanup(LOG, makeCloseable(_watchForIdleBulkWriters), _indexImporter, _mutationQueueProcessor,
-        _writer.get(), _indexReader.get());
+        _writer.get(), _indexReader.get(), _directory);
   }
 
   private Closeable makeCloseable(final TimerTask timerTask) {
@@ -400,6 +426,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       @Override
       public void close() throws IOException {
         timerTask.cancel();
+        _bulkIndexingTimer.purge();
       }
     };
   }
@@ -489,6 +516,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
           _shardContext.getShard());
     } else {
       DirectoryReader reader = wrap(newReader);
+      checkForMemoryLeaks(reader, "BlurIndexSimpleWriter - reopen table [{0}] shard [{1}]");
       _indexRefreshWriteLock.lock();
       try {
         _indexReader.set(reader);

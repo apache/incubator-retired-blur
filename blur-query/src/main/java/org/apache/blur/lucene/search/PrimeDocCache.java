@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.blur.index.AtomicReaderUtil;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.memory.MemoryLeakDetector;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.Fields;
@@ -67,6 +68,7 @@ public class PrimeDocCache {
         });
         LOG.debug("Prime Doc BitSet missing for segment [" + reader + "] current size [" + primeDocMap.size() + "]");
         final OpenBitSet bs = new OpenBitSet(reader.maxDoc());
+        MemoryLeakDetector.record(bs, "PrimeDoc BitSet", key.toString());
 
         Fields fields = reader.fields();
         if (fields == null) {

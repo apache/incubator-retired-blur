@@ -161,6 +161,7 @@ public class HdfsKeyValueStore implements Store {
   private final TimerTask _idleLogTimerTask;
   private final TimerTask _oldFileCleanerTimerTask;
   private final AtomicLong _lastWrite = new AtomicLong();
+  private final Timer _hdfsKeyValueTimer;
 
   private FSDataOutputStream _output;
   private Path _outputPath;
@@ -188,14 +189,16 @@ public class HdfsKeyValueStore implements Store {
     cleanupOldFiles();
     _idleLogTimerTask = getIdleLogTimer();
     _oldFileCleanerTimerTask = getOldFileCleanerTimer();
-    hdfsKeyValueTimer.schedule(_idleLogTimerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
-    hdfsKeyValueTimer.schedule(_oldFileCleanerTimerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, HDFS_KV, SIZE, path.getParent().toString()), new Gauge<Long>() {
-      @Override
-      public Long value() {
-        return _size.get();
-      }
-    });
+    _hdfsKeyValueTimer = hdfsKeyValueTimer;
+    _hdfsKeyValueTimer.schedule(_idleLogTimerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
+    _hdfsKeyValueTimer.schedule(_oldFileCleanerTimerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
+    // Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, HDFS_KV, SIZE,
+    // path.getParent().toString()), new Gauge<Long>() {
+    // @Override
+    // public Long value() {
+    // return _size.get();
+    // }
+    // });
   }
 
   private void removeAnyTruncatedFiles() throws IOException {
@@ -467,6 +470,7 @@ public class HdfsKeyValueStore implements Store {
       _isClosed = true;
       _idleLogTimerTask.cancel();
       _oldFileCleanerTimerTask.cancel();
+      _hdfsKeyValueTimer.purge();
       _writeLock.lock();
       try {
         if (isOpenForWriting()) {

@@ -75,6 +75,7 @@ public class IndexImporter extends TimerTask implements Closeable {
   private final String _table;
   private final String _shard;
   private final long _cleanupDelay;
+  private final Timer _inindexImporterTimer;
 
   private long _lastCleanup;
   private Runnable _testError;
@@ -86,6 +87,7 @@ public class IndexImporter extends TimerTask implements Closeable {
 
     long period = refreshUnit.toMillis(refreshAmount);
     indexImporterTimer.schedule(this, period, period);
+    _inindexImporterTimer = indexImporterTimer;
     _table = _shardContext.getTableContext().getTable();
     _shard = _shardContext.getShard();
     _cleanupDelay = TimeUnit.MINUTES.toMillis(10);
@@ -94,6 +96,7 @@ public class IndexImporter extends TimerTask implements Closeable {
   @Override
   public void close() throws IOException {
     cancel();
+    _inindexImporterTimer.purge();
   }
 
   @Override

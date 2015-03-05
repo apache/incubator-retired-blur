@@ -284,6 +284,7 @@ public class ExitableReader extends FilterDirectoryReader {
   }
 
   private final ExitObject _exitObject;
+  private final DirectoryReader _in;
 
   public ExitableReader(DirectoryReader in) {
     this(in, new ExitObject());
@@ -292,6 +293,11 @@ public class ExitableReader extends FilterDirectoryReader {
   public ExitableReader(DirectoryReader in, ExitObject exitObject) {
     super(in, new ExitableSubReaderWrapper(exitObject));
     _exitObject = exitObject;
+    _in = in;
+  }
+
+  public DirectoryReader getIn() {
+    return _in;
   }
 
   public AtomicBoolean getRunning() {

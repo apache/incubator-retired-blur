@@ -27,7 +27,7 @@ blurconsole.queries = (function() {
     states: ['Running', 'Interrupted', 'Complete', 'Back Pressure Interrupted'],
     queryDef: [
       { label: 'User', key: 'user', width: '0%', style: 'white-space:nowrap' },
-      { label: 'Query', key: 'query', style: 'text-overflow:ellipsis; overflow: hidden; max-width:1px;', width: '100%' },
+      { label: 'Query', key: 'query', class: 'truncatedQuery', width: '100%' },
       { label: 'Started', width: '0%', style: 'white-space:nowrap', key: function(row) {
         var start = new Date(row.startTime);
         return start.toLocaleTimeString(); //start.getHours() + ':' + start.getMinutes() + ':' + start.getSeconds();
@@ -72,6 +72,7 @@ blurconsole.queries = (function() {
   function _registerPageEvents() {
     jqueryMap.$tableHolder.on('click', '.list-group-item', _showQueriesForTable);
     jqueryMap.$queryHolder.on('click', 'a.cancelTrigger', _cancelSelectedQuery);
+    jqueryMap.$queryHolder.on('click', 'td.truncatedQuery', _stopTruncating);
     jqueryMap.$filterHolder.on('click', '.filterTrigger', _filterQueries);
   }
 
@@ -99,6 +100,10 @@ blurconsole.queries = (function() {
     $('.list-group-item[href="' + stateMap.currentTable + '"]', jqueryMap.$tableHolder).addClass('active');
     _drawQueries();
     return false;
+  }
+
+  function _stopTruncating(evt) {
+    $(evt.currentTarget).removeClass('truncatedQuery');
   }
 
   function _cancelSelectedQuery(evt) {

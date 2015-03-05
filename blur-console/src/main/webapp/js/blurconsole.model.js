@@ -410,7 +410,7 @@ blurconsole.model = (function() {
   }());
 
   var search = (function() {
-    var results = {}, totalRecords = 0, currentQuery, currentTable, currentArgs = {start: 0, fetch: 10, rowRecordOption: 'rowrow', families: null};
+    var results = {}, totalRecords = 0, currentQuery, currentTable, time = 0, currentArgs = {start: 0, fetch: 10, rowRecordOption: 'rowrow', families: null};
 
     //-------------- Private Methods -------------------------
     function _sendSearch() {
@@ -421,6 +421,7 @@ blurconsole.model = (function() {
       var dataFamilies = data.families;
       var dataResults = data.results;
       totalRecords = data.total;
+      time = data.time;
 
       if (typeof dataResults !== 'undefined' && dataResults !== null) {
         $.each(dataResults, function(family, resultList){
@@ -459,6 +460,10 @@ blurconsole.model = (function() {
       return totalRecords;
     }
 
+    function getTime() {
+      return time;
+    }
+
     function loadMoreResults(family) {
       var alreadyLoadedResults = results[family];
 
@@ -485,6 +490,7 @@ blurconsole.model = (function() {
       getResults: getResults,
       loadMoreResults: loadMoreResults,
       getTotal: getTotal,
+      getTime: getTime,
       runFacetCount: runFacetCount
     };
   }());

@@ -366,16 +366,16 @@ blurconsole.model = (function() {
     //-------------- Public API -----------------------
     function queriesForTable(table, sort, filter) {
       var queries = [], qSort, sortField, sortDir;
-
       qSort = (sort || 'startTime~desc').split('~');
       sortField = qSort[0];
       sortDir = qSort.length > 1 ? qSort[1] : 'asc';
-
-      $.each(stateMap.queries.queries, function(i, query){
-        if (query.table === table && _matchesFilter(query, filter)) {
-          queries.push(query);
-        }
-      });
+      if(stateMap.queries.queries) {
+        $.each(stateMap.queries.queries, function(i, query){
+          if (query.table === table && _matchesFilter(query, filter)) {
+            queries.push(query);
+          }
+        });
+      }
 
       queries.sort(function(a, b){
         if (sortDir === 'asc') {
@@ -384,7 +384,6 @@ blurconsole.model = (function() {
           return b[sortField] > a[sortField];
         }
       });
-
       return queries;
     }
 

@@ -93,6 +93,7 @@ blurconsole.queries = (function() {
   //----------------------------- Event Handlers and DOM Methods -----------------------------
 
   function _showQueriesForTable(evt) {
+    evt.preventDefault();
     stateMap.currentTable = $(evt.currentTarget).attr('href');
     $('.list-group-item', jqueryMap.$tableHolder).removeClass('active');
     $('.list-group-item[href="' + stateMap.currentTable + '"]', jqueryMap.$tableHolder).addClass('active');

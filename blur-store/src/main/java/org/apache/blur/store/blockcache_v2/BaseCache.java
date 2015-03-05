@@ -89,7 +89,6 @@ public class BaseCache extends Cache implements Closeable {
   private final Size _cacheBlockSize;
   private final Size _fileBufferSize;
   private final Map<FileIdKey, Long> _fileNameToId = new ConcurrentHashMap<FileIdKey, Long>();
-  private final Map<Long, FileIdKey> _oldFileNameIdMap = new ConcurrentHashMap<Long, FileIdKey>();
   private final AtomicLong _fileId = new AtomicLong();
   private final Quiet _quiet;
   private final Meter _hits;
@@ -197,7 +196,6 @@ public class BaseCache extends Cache implements Closeable {
     }
     long newId = _fileId.incrementAndGet();
     _fileNameToId.put(cachedFileName, newId);
-    _oldFileNameIdMap.put(newId, cachedFileName);
     return newId;
   }
 
@@ -221,7 +219,6 @@ public class BaseCache extends Cache implements Closeable {
               + currentFileId + "] for key [" + oldKey + "]");
         }
         _fileNameToId.put(newKey, fileId);
-        _oldFileNameIdMap.put(fileId, newKey);
         _fileNameToId.remove(oldKey);
       }
     } else {

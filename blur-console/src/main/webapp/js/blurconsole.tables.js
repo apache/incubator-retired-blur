@@ -28,7 +28,6 @@ blurconsole.tables = (function () {
     if(row.enabled) {
       activityIndicator = ' <i class="glyphicon glyphicon-exclamation-sign" data-table="' + row.name + '" style="display:none" title="Activity detected"></i>';
     }
-    console.log(row);
     if(row.error) {
       errorIndicator = ' <i class="glyphicon glyphicon-ban-circle" title="'+row.error+'"></i>';
     }

@@ -22,15 +22,25 @@ under the License.
 blurconsole.tables = (function () {
   'use strict';
 
+  function _tableName(row) {
+    var activityIndicator = '';
+    var errorIndicator = '';
+    if(row.enabled) {
+      activityIndicator = ' <i class="glyphicon glyphicon-exclamation-sign" data-table="' + row.name + '" style="display:none" title="Activity detected"></i>';
+    }
+    console.log(row);
+    if(row.error) {
+      errorIndicator = ' <i class="glyphicon glyphicon-ban-circle" title="'+row.error+'"></i>';
+    }
+    return row.name + activityIndicator + errorIndicator;
+  }
     //------------------------ Configuration and State ----------------------
   var configMap = {
     view : 'views/tables.tpl.html',
     enabledDef : [
-      {label:'Table Name', key: function(row){
-        return row.name + ' <i class="glyphicon glyphicon-exclamation-sign" data-table="' + row.name + '" style="display:none" title="Activity detected"></i>';
-      }},
-      {label:'Row Count', key: 'rowCount', format:'number'},
-      {label:'Record Count', key: 'recordCount', format:'number'},
+      {label:'Table Name', key: _tableName},
+      {label:'Row Count', key: 'rows', format:'number'},
+      {label:'Record Count', key: 'records', format:'number'},
       {label:'Actions', key: function(row) {
         var actions = '', table = row.name;
         actions += '<a href="#" class="schemaTrigger btn btn-default" data-name="' + table + '"><i class="glyphicon glyphicon-list-alt"></i> Schema</a> ';
@@ -42,7 +52,7 @@ blurconsole.tables = (function () {
       }}
     ],
     disabledDef : [
-      {label:'Table Name', key:'name'},
+      {label:'Table Name', key:_tableName},
       {label:'Actions', key: function(row) {
         var actions = '', table = row.name;
         if(blurconsole.auth.hasRole('manager')) {
@@ -56,7 +66,7 @@ blurconsole.tables = (function () {
   stateMap = { $container : null },
   jqueryMap = {};
 
-    //----------------------------- Private Methods ----------------------------
+  //----------------------------- Private Methods ---------------------------
   function _setJqueryMap() {
     var $container = stateMap.$container;
     jqueryMap = {

@@ -40,23 +40,27 @@ public class TableUtil {
       List<String> tables = client.tableListByCluster(cluster);
       for (String table : tables) {
         Map<String, Object> tableInfo = new HashMap<String, Object>();
-        TableDescriptor descriptor = client.describe(table);
-
         tableInfo.put("cluster", cluster);
         tableInfo.put("name", table);
-        tableInfo.put("enabled", descriptor.isEnabled());
-
-        if (descriptor.isEnabled()) {
-          TableStats stats = client.tableStats(table);
-          tableInfo.put("rows", stats.getRowCount());
-          tableInfo.put("records", stats.getRecordCount());
-
-          Schema schema = client.schema(table);
-          tableInfo.put("families", new ArrayList<String>(schema.getFamilies().keySet()));
-        } else {
-          tableInfo.put("rows", "?");
-          tableInfo.put("records", "?");
-          tableInfo.put("families", new ArrayList<String>());
+        try {
+          TableDescriptor descriptor = client.describe(table);
+          tableInfo.put("enabled", descriptor.isEnabled());
+          tableInfo.put("readonly", descriptor.isReadOnly());
+  
+          if (descriptor.isEnabled()) {
+            TableStats stats = client.tableStats(table);
+            tableInfo.put("rows", stats.getRowCount());
+            tableInfo.put("records", stats.getRecordCount());
+  
+            Schema schema = client.schema(table);
+            tableInfo.put("families", new ArrayList<String>(schema.getFamilies().keySet()));
+          } else {
+            tableInfo.put("rows", "?");
+            tableInfo.put("records", "?");
+            tableInfo.put("families", new ArrayList<String>());
+          }
+        } catch(Exception e) {
+          tableInfo.put("error", e.getMessage());
         }
 
         summaries.add(tableInfo);

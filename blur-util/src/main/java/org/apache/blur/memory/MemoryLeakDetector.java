@@ -33,7 +33,8 @@ import com.google.common.collect.MapMaker;
 public class MemoryLeakDetector {
 
   private static final Log LOG = LogFactory.getLog(MemoryLeakDetector.class);
-  private static boolean _enabled = true;
+  
+  private static boolean _enabled = false;
   private static final ConcurrentMap<Object, Info> _map;
   private static Timer _timer;
 

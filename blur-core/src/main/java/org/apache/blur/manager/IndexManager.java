@@ -68,6 +68,8 @@ import org.apache.blur.manager.status.QueryStatus;
 import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.MutatableAction;
+import org.apache.blur.memory.MemoryAllocationWatcher;
+import org.apache.blur.memory.Watcher;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
@@ -177,12 +179,14 @@ public class IndexManager {
   private final int _threadCount;
   private final int _mutateThreadCount;
   private final DeepPagingCache _deepPagingCache;
+  private final MemoryAllocationWatcher _memoryAllocationWatcher;
 
   public static AtomicBoolean DEBUG_RUN_SLOW = new AtomicBoolean(false);
 
   public IndexManager(IndexServer indexServer, ClusterStatus clusterStatus, BlurFilterCache filterCache,
       int maxHeapPerRowFetch, int fetchCount, int threadCount, int mutateThreadCount, long statusCleanupTimerDelay,
-      int facetThreadCount, DeepPagingCache deepPagingCache) {
+      int facetThreadCount, DeepPagingCache deepPagingCache, MemoryAllocationWatcher memoryAllocationWatcher) {
+    _memoryAllocationWatcher = memoryAllocationWatcher;
     _deepPagingCache = deepPagingCache;
     _indexServer = indexServer;
     _clusterStatus = clusterStatus;
@@ -529,7 +533,7 @@ public class IndexManager {
       Sort sort = getSort(blurQuery, fieldManager);
       call = new SimpleQueryParallelCall(running, table, status, facetedQuery, blurQuery.selector,
           _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch,
-          context.getSimilarity(), context, sort, _deepPagingCache);
+          context.getSimilarity(), context, sort, _deepPagingCache, _memoryAllocationWatcher);
       trace.done();
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       BlurResultIterable merge = ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -1191,11 +1195,12 @@ public class IndexManager {
     private final TableContext _context;
     private final Sort _sort;
     private final DeepPagingCache _deepPagingCache;
+    private final MemoryAllocationWatcher _memoryAllocationWatcher;
 
     public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, Query query,
         Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext, boolean runSlow,
         int fetchCount, int maxHeapPerRowFetch, Similarity similarity, TableContext context, Sort sort,
-        DeepPagingCache deepPagingCache) {
+        DeepPagingCache deepPagingCache, MemoryAllocationWatcher memoryAllocationWatcher) {
       _running = running;
       _table = table;
       _status = status;
@@ -1210,14 +1215,15 @@ public class IndexManager {
       _context = context;
       _sort = sort;
       _deepPagingCache = deepPagingCache;
+      _memoryAllocationWatcher = memoryAllocationWatcher;
     }
 
     @Override
     public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
-      String shard = entry.getKey();
+      final String shard = entry.getKey();
       _status.attachThread(shard);
       BlurIndex index = entry.getValue();
-      IndexSearcherCloseable searcher = index.getIndexSearcher();
+      final IndexSearcherCloseable searcher = index.getIndexSearcher();
       Tracer trace2 = null;
       try {
         IndexReader indexReader = searcher.getIndexReader();
@@ -1229,7 +1235,7 @@ public class IndexManager {
         }
         searcher.setSimilarity(_similarity);
         Tracer trace1 = Trace.trace("query rewrite", Trace.param("table", _table));
-        Query rewrite;
+        final Query rewrite;
         try {
           rewrite = searcher.rewrite((Query) _query.clone());
         } catch (ExitingReaderException e) {
@@ -1242,8 +1248,16 @@ public class IndexManager {
         // BlurResultIterableSearcher will close searcher, if shard server
         // context is null.
         trace2 = Trace.trace("query initial search");
-        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
-            _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch, _context, _sort, _deepPagingCache);
+        BlurResultIterableSearcher iterableSearcher = _memoryAllocationWatcher
+            .run(new Watcher<BlurResultIterableSearcher, BlurException>() {
+              @Override
+              public BlurResultIterableSearcher run() throws BlurException {
+                return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
+                    _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch, _context, _sort,
+                    _deepPagingCache);
+              }
+            });
+        return iterableSearcher;
       } catch (BlurException e) {
         switch (_status.getQueryStatus().getState()) {
         case INTERRUPTED:

@@ -51,6 +51,8 @@ import org.apache.blur.lucene.search.DeepPagingCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.indexserver.LocalIndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
+import org.apache.blur.memory.MemoryAllocationWatcher;
+import org.apache.blur.memory.Watcher;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -94,6 +96,12 @@ public class IndexManagerTest {
   private static final String TABLE = "table";
   private static final String FAMILY = "test-family";
   private static final String FAMILY2 = "test-family2";
+  private static final MemoryAllocationWatcher NOTHING = new MemoryAllocationWatcher() {
+    @Override
+    public <T, E extends Exception> T run(Watcher<T, E> w) throws E {
+      return w.run();
+    }
+  };
   private LocalIndexServer server;
   private IndexManager indexManager;
   private File base;
@@ -121,7 +129,7 @@ public class IndexManagerTest {
     BlurFilterCache filterCache = new DefaultBlurFilterCache(new BlurConfiguration());
     long statusCleanupTimerDelay = 1000;
     indexManager = new IndexManager(server, getClusterStatus(tableDescriptor), filterCache, 10000000, 100, 1, 1,
-        statusCleanupTimerDelay, 0, new DeepPagingCache());
+        statusCleanupTimerDelay, 0, new DeepPagingCache(), NOTHING);
     setupData();
   }
 

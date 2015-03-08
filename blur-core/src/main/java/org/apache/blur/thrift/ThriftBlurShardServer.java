@@ -86,6 +86,8 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
+import org.apache.blur.memory.MemoryAllocationWatcher;
+import org.apache.blur.memory.Watcher;
 import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ServerSecurityFilter;
@@ -242,9 +244,16 @@ public class ThriftBlurShardServer extends ThriftServer {
     int cacheSize = configuration.getInt(BLUR_SHARD_DEEP_PAGING_CACHE_SIZE, 1000);
     DeepPagingCache deepPagingCache = new DeepPagingCache(cacheSize);
 
+    MemoryAllocationWatcher memoryAllocationWatcher = new MemoryAllocationWatcher() {
+      @Override
+      public <T, E extends Exception> T run(Watcher<T, E> w) throws E {
+        return w.run();
+      }
+    };
+
     final IndexManager indexManager = new IndexManager(indexServer, clusterStatus, filterCache, maxHeapPerRowFetch,
         fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay, facetThreadCount,
-        deepPagingCache);
+        deepPagingCache, memoryAllocationWatcher);
 
     File tmpPath = getTmpPath(configuration);
     int numberOfShardWorkerCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_WORKER_THREADS, 16);

@@ -16,27 +16,49 @@ package org.apache.blur.gui;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 @SuppressWarnings("serial")
-public class LogServlet extends HttpServlet {
+public class LogsServlet extends HttpServlet {
 
-  private final String _filePath;
+  private final String _dir;
 
-  public LogServlet(String filePath) {
-    _filePath = filePath;
+  public LogsServlet(String dir) {
+    _dir = dir;
   }
 
   protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    response.setContentType("text/html");
-    PrintWriter out = response.getWriter();
+    try {
+      processGet(request, response);
+    } catch (JSONException e) {
+      throw new IOException(e);
+    }
+  }
 
+  private void processGet(HttpServletRequest request, HttpServletResponse response) throws JSONException, IOException {
+    response.setContentType("text/html");
+    listFiles(response);
+  }
+
+  private void listFiles(HttpServletResponse response) throws JSONException, IOException {
+    JSONObject jsonObject = new JSONObject();
+    File[] files = new File(_dir).listFiles();
+    JSONArray array = new JSONArray();
+    for (File file : files) {
+      array.put(file.getName());
+    }
+    jsonObject.put("files", array);
+    jsonObject.write(response.getWriter());
   }
 
 }

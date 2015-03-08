@@ -49,8 +49,6 @@ public class HttpJettyServer {
   public HttpJettyServer(Class<?> c, int port) throws IOException {
     server = new Server(port);
     String logDir = System.getProperty("blur.logs.dir");
-    String logFile = System.getProperty("blur.log.file");
-    String blurLogFile = logDir + "/" + logFile;
     LOG.info("System props:" + System.getProperties().toString());
 
     context = new WebAppContext();
@@ -59,11 +57,9 @@ public class HttpJettyServer {
     context.setContextPath("/");
     context.setParentLoaderPriority(true);
     context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
-    context.addServlet(new ServletHolder(new LogServlet(blurLogFile)), "/logs");
-
+    context.addServlet(new ServletHolder(new LogsServlet(logDir)), "/logs");
+    context.addServlet(new ServletHolder(new LogServlet(logDir)), "/log");
     LOG.info("Http server thinks its at: " + warPath);
-    LOG.info("Http server log file being exposed: " + logDir == null ? "STDOUT" : blurLogFile);
-
     server.setHandler(context);
 
     try {

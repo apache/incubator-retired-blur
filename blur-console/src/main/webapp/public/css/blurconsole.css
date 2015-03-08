@@ -6409,6 +6409,12 @@ under the License.
 #filterOptions {
   margin-bottom: 5px;
 }
+td.truncatedQuery {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 1px;
+  white-space: nowrap;
+}
 /*
 
 Licensed to the Apache Software Foundation (ASF) under one
@@ -6610,4 +6616,4 @@ input[type="text"].tm-input {
 .form-horizontal .control-group.tm-group {
   margin-bottom: 15px;
 }
-/*# sourceMappingURL=blurconsole.css.5fa0e71593d7ef244172ddff242e3517.map */
+/*# sourceMappingURL=blurconsole.css.951e46a333bf74da4046cf4ecc75e5e1.map */

@@ -454,7 +454,7 @@ blurconsole.search = (function () {
 
   function _drawResults(evt, families) {
     var results = blurconsole.model.search.getResults();
-    jqueryMap.$countHolder.html('<small>Found ' + blurconsole.utils.formatNumber(blurconsole.model.search.getTotal()) + ' total results</small>');
+    jqueryMap.$countHolder.html('<small>Found ' + blurconsole.utils.formatNumber(blurconsole.model.search.getTotal()) + ' total results in ' + blurconsole.model.search.getTime() + 'ms</small>');
     if (blurconsole.model.search.getTotal() > 0) {
       jqueryMap.$facetTrigger.show();
     }

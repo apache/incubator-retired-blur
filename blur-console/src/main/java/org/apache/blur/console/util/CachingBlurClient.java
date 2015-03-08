@@ -134,7 +134,7 @@ public class CachingBlurClient {
       } else {
         cacheHits++;
       }
-      return (T) item.value;
+      return (T) item.getValue();
     }
   }
 
@@ -152,27 +152,15 @@ public class CachingBlurClient {
 	  getClient().addColumnDefinition(table, def);
   }
 
-  @SuppressWarnings("unchecked")
   private void invalidateQuery(String table, String uuid) {
-    synchronized (queryListCache) {
-      Item item = queryListCache.get(null);
-      if(item != null && item.getValue() != null) {
-        ((List<String>)(item.getValue())).remove(uuid);
-      }
-    }
     synchronized (queryStatusCache) {
       queryStatusCache.remove(queryKey(table,uuid));
     }
   }
 
-  @SuppressWarnings("unchecked")
   private void invalidateTable(String table) {
     synchronized (tableListCache) {
-      for(Item item: tableListCache.values()) {
-        if(item != null && item.getValue() != null) {
-          ((List<String>)(item.getValue())).remove(table);
-        }
-      }
+      tableListCache.clear();
     }
   }
 

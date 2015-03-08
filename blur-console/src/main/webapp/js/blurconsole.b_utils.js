@@ -48,11 +48,14 @@ blurconsole.browserUtils = (function(){
       $.each(data, function(ir, row){
         tableMarkup += '<tr>';
         $.each(def, function(ic, col) {
+          tableMarkup += '<td';
           if(col.style) {
-            tableMarkup += '<td style="'+col.style+'">';
-          } else {
-            tableMarkup += '<td>';
+            tableMarkup += ' style="'+col.style+'"';
           }
+          if(col.class) {
+            tableMarkup += ' class="'+col.class+'"';
+          }
+          tableMarkup += '>';
           var val;
           if ($.isFunction(col.key)) {
             val = col.key(row);

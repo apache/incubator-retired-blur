@@ -227,13 +227,11 @@ public class CsvBlurDriver {
       }
     }
     BlurOutputFormat.setupJob(job, tableDescriptor);
-    
+    BlurMapReduceUtil.addDependencyJars(job.getConfiguration(), Splitter.class);
     if (cmd.hasOption("r")) {
       int reducerMultiplier = Integer.parseInt(cmd.getOptionValue("r"));
       BlurOutputFormat.setReducerMultiplier(job, reducerMultiplier);
     }
-    
-    BlurMapReduceUtil.addDependencyJars(job.getConfiguration(), Splitter.class);
     return job;
   }
 

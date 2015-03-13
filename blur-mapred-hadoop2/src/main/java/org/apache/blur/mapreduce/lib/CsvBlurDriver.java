@@ -219,10 +219,6 @@ public class CsvBlurDriver {
       int maxDocumentBufferSize = Integer.parseInt(cmd.getOptionValue("b"));
       BlurOutputFormat.setMaxDocumentBufferSize(job, maxDocumentBufferSize);
     }
-    if (cmd.hasOption("r")) {
-      int reducerMultiplier = Integer.parseInt(cmd.getOptionValue("r"));
-      BlurOutputFormat.setReducerMultiplier(job, reducerMultiplier);
-    }
     // processing the 'd' option
     Option[] options = cmd.getOptions();
     for (Option option : options) {
@@ -237,6 +233,10 @@ public class CsvBlurDriver {
     }
     BlurOutputFormat.setupJob(job, tableDescriptor);
     BlurMapReduceUtil.addDependencyJars(job.getConfiguration(), Splitter.class);
+    if (cmd.hasOption("r")) {
+      int reducerMultiplier = Integer.parseInt(cmd.getOptionValue("r"));
+      BlurOutputFormat.setReducerMultiplier(job, reducerMultiplier);
+    }
     return job;
   }
 

@@ -49,6 +49,7 @@ import org.apache.lucene.search.NumericRangeQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
+import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
 import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
 import org.apache.lucene.spatial.query.SpatialArgs;
@@ -489,6 +490,20 @@ public class SuperParserTest {
     Query q3 = new TermQuery(new Term("_primedoc_", "true"));
     BooleanQuery bq = bq(bc_n(q1), bc_n(q2), bc(q3));
     assertQuery(bq, q);
+  }
+
+  @Test
+  public void test41() throws ParseException {
+    Query q = parseSq("<*>");
+    Query q1 = sq(new MatchAllDocsQuery());
+    assertQuery(q1, q);
+  }
+
+  @Test
+  public void test42() throws ParseException {
+    Query q = parseSq("<f.c:*abc>");
+    Query q1 = sq(new WildcardQuery(new Term("f.c", "*abc")));
+    assertQuery(q1, q);
   }
 
   public static BooleanClause bc_m(Query q) {

@@ -43,6 +43,7 @@ public class BlurQueryParser extends QueryParser {
     super(matchVersion, f, fieldManager.getAnalyzerForQuery());
     _fieldNames = fieldNames == null ? new HashMap<Query, String>() : fieldNames;
     _fieldManager = fieldManager;
+    setAllowLeadingWildcard(true);
   }
 
   @Override

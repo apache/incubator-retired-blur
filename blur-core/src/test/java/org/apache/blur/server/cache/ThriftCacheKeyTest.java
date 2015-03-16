@@ -16,7 +16,9 @@
  */
 package org.apache.blur.server.cache;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,21 +27,19 @@ import java.util.TreeSet;
 
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
-import org.apache.blur.user.User;
 import org.junit.Test;
 
 public class ThriftCacheKeyTest {
 
   @Test
   public void test1() throws BlurException {
-    User user = null;
     String table = "t";
     BlurQuery bq1 = new BlurQuery();
     BlurQuery bq2 = new BlurQuery();
-    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(user, table, new int[] { 0, 1 }, bq1,
-        BlurQuery.class);
-    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(user, table, new int[] { 0, 1 }, bq2,
-        BlurQuery.class);
+    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(null, table, new ShardsKey(new int[] { 0, 1 }), bq1,
+        new ClassObj<BlurQuery>(BlurQuery.class));
+    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(null, table, new ShardsKey(new int[] { 0, 1 }), bq2,
+        new ClassObj<BlurQuery>(BlurQuery.class));
 
     assertEquals(key1, key2);
     assertEquals(key1.hashCode(), key2.hashCode());
@@ -47,12 +47,11 @@ public class ThriftCacheKeyTest {
 
   @Test
   public void test2() throws BlurException {
-    User user = null;
     String table = "t";
-    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(user, table, new int[] { 0, 1 }, null,
-        BlurQuery.class);
-    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(user, table, new int[] { 0, 1 }, null,
-        BlurQuery.class);
+    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(null, table, new ShardsKey(new int[] { 0, 1 }),
+        null, new ClassObj<BlurQuery>(BlurQuery.class));
+    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(null, table, new ShardsKey(new int[] { 0, 1 }),
+        null, new ClassObj<BlurQuery>(BlurQuery.class));
 
     assertEquals(key1, key2);
     assertEquals(key1.hashCode(), key2.hashCode());
@@ -60,14 +59,13 @@ public class ThriftCacheKeyTest {
 
   @Test
   public void test3() throws BlurException {
-    User user = new User("test", null);
     String table = "t";
     BlurQuery bq1 = new BlurQuery();
     BlurQuery bq2 = new BlurQuery();
-    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(user, table, new int[] { 0, 1 }, bq1,
-        BlurQuery.class);
-    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(user, table, new int[] { 0, 1 }, bq2,
-        BlurQuery.class);
+    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(null, table, new ShardsKey(new int[] { 0, 1 }), bq1,
+        new ClassObj<BlurQuery>(BlurQuery.class));
+    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(null, table, new ShardsKey(new int[] { 0, 1 }), bq2,
+        new ClassObj<BlurQuery>(BlurQuery.class));
 
     assertEquals(key1, key2);
     assertEquals(key1.hashCode(), key2.hashCode());
@@ -75,14 +73,13 @@ public class ThriftCacheKeyTest {
 
   @Test
   public void test4() throws BlurException {
-    User user = new User("test", map("a", "b"));
     String table = "t";
     BlurQuery bq1 = new BlurQuery();
     BlurQuery bq2 = new BlurQuery();
-    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(user, table, new int[] { 0, 1 }, bq1,
-        BlurQuery.class);
-    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(user, table, new int[] { 0, 1 }, bq2,
-        BlurQuery.class);
+    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(map("a", "b"), table, new ShardsKey(
+        new int[] { 0, 1 }), bq1, new ClassObj<BlurQuery>(BlurQuery.class));
+    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(map("a", "b"), table, new ShardsKey(
+        new int[] { 0, 1 }), bq2, new ClassObj<BlurQuery>(BlurQuery.class));
 
     assertEquals(key1, key2);
     assertEquals(key1.hashCode(), key2.hashCode());
@@ -90,30 +87,26 @@ public class ThriftCacheKeyTest {
 
   @Test
   public void test5a() throws BlurException {
-    User user1 = new User("test1", null);
-    User user2 = new User("test2", null);
     String table = "t";
     BlurQuery bq1 = new BlurQuery();
     BlurQuery bq2 = new BlurQuery();
-    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(user1, table, new int[] { 0, 1 }, bq1,
-        BlurQuery.class);
-    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(user2, table, new int[] { 0, 1 }, bq2,
-        BlurQuery.class);
+    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(null, table, new ShardsKey(new int[] { 0, 1 }), bq1,
+        new ClassObj<BlurQuery>(BlurQuery.class));
+    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(null, table, new ShardsKey(new int[] { 0, 1 }), bq2,
+        new ClassObj<BlurQuery>(BlurQuery.class));
     assertTrue(key1.equals(key2));
     assertTrue(key1.hashCode() == key2.hashCode());
   }
 
   @Test
   public void test5b() throws BlurException {
-    User user1 = new User("test1", null);
-    User user2 = new User("test1", null);
     String table = "t";
     BlurQuery bq1 = new BlurQuery();
     BlurQuery bq2 = new BlurQuery();
-    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(user1, table, new int[] { 0, 1 }, bq1,
-        BlurQuery.class);
-    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(user2, table, new int[] { 0, 2 }, bq2,
-        BlurQuery.class);
+    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(null, table, new ShardsKey(new int[] { 0, 1 }), bq1,
+        new ClassObj<BlurQuery>(BlurQuery.class));
+    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(null, table, new ShardsKey(new int[] { 0, 2 }), bq2,
+        new ClassObj<BlurQuery>(BlurQuery.class));
 
     assertFalse(key1.equals(key2));
     assertFalse(key1.hashCode() == key2.hashCode());
@@ -121,15 +114,13 @@ public class ThriftCacheKeyTest {
 
   @Test
   public void test6() throws BlurException {
-    User user1 = new User("test1", map("a", "b"));
-    User user2 = new User("test1", map("a", "c"));
     String table = "t";
     BlurQuery bq1 = new BlurQuery();
     BlurQuery bq2 = new BlurQuery();
-    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(user1, table, new int[] { 0, 1 }, bq1,
-        BlurQuery.class);
-    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(user2, table, new int[] { 0, 1 }, bq2,
-        BlurQuery.class);
+    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(map("a", "b"), table, new ShardsKey(
+        new int[] { 0, 1 }), bq1, new ClassObj<BlurQuery>(BlurQuery.class));
+    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(map("a", "c"), table, new ShardsKey(
+        new int[] { 0, 1 }), bq2, new ClassObj<BlurQuery>(BlurQuery.class));
 
     assertFalse(key1.equals(key2));
     assertFalse(key1.hashCode() == key2.hashCode());
@@ -137,15 +128,13 @@ public class ThriftCacheKeyTest {
 
   @Test
   public void test7() throws BlurException {
-    User user1 = new User("test1", map("a", "b"));
-    User user2 = new User("test2", map("a", "b"));
     String table = "t";
     BlurQuery bq1 = new BlurQuery();
     BlurQuery bq2 = new BlurQuery();
-    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(user1, table, new int[] { 0, 1 }, bq1,
-        BlurQuery.class);
-    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(user2, table, new int[] { 0, 1 }, bq2,
-        BlurQuery.class);
+    ThriftCacheKey<BlurQuery> key1 = new ThriftCacheKey<BlurQuery>(map("a", "b"), table, new ShardsKey(
+        new int[] { 0, 1 }), bq1, new ClassObj<BlurQuery>(BlurQuery.class));
+    ThriftCacheKey<BlurQuery> key2 = new ThriftCacheKey<BlurQuery>(map("a", "b"), table, new ShardsKey(
+        new int[] { 0, 1 }), bq2, new ClassObj<BlurQuery>(BlurQuery.class));
 
     assertTrue(key1.equals(key2));
     assertTrue(key1.hashCode() == key2.hashCode());

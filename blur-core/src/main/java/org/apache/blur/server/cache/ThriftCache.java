@@ -16,11 +16,20 @@
  */
 package org.apache.blur.server.cache;
 
-import static org.apache.blur.metrics.MetricsConstants.*;
+import static org.apache.blur.metrics.MetricsConstants.COUNT;
+import static org.apache.blur.metrics.MetricsConstants.EVICTION;
+import static org.apache.blur.metrics.MetricsConstants.HIT;
+import static org.apache.blur.metrics.MetricsConstants.MISS;
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+import static org.apache.blur.metrics.MetricsConstants.SIZE;
+import static org.apache.blur.metrics.MetricsConstants.THRIFT_CACHE;
+import static org.apache.blur.metrics.MetricsConstants.THRIFT_CACHE_ATTRIBUTE_MAP;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -35,6 +44,7 @@ import org.apache.blur.trace.Tracer;
 import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 
+import com.google.common.collect.MapMaker;
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EntryWeigher;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
@@ -57,6 +67,9 @@ public class ThriftCache {
   private static final Log LOG = LogFactory.getLog(ThriftCache.class);
 
   private final ConcurrentLinkedHashMap<ThriftCacheKey<?>, ThriftCacheValue<?>> _cacheMap;
+  private final ConcurrentMap<Map<String, String>, Map<String, String>> _attributeKeys;
+  private final ConcurrentMap<ShardsKey, ShardsKey> _shardsKeys;
+  private final ConcurrentMap<String, ClassObj<?>> _classObjMap = new ConcurrentHashMap<String, ClassObj<?>>();
   private final ConcurrentMap<String, Long> _lastModTimestamps = new ConcurrentHashMap<String, Long>();
   private final Meter _hits;
   private final Meter _misses;
@@ -66,6 +79,8 @@ public class ThriftCache {
   private final AtomicLong _evictionsAtomicLong;
 
   public ThriftCache(long totalNumberOfBytes) {
+    _attributeKeys = new MapMaker().weakKeys().makeMap();
+    _shardsKeys = new MapMaker().weakKeys().makeMap();
     _hits = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, HIT), HIT, TimeUnit.SECONDS);
     _misses = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, MISS), MISS, TimeUnit.SECONDS);
     _evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
@@ -73,6 +88,18 @@ public class ThriftCache {
       @Override
       public Long value() {
         return _cacheMap.weightedSize();
+      }
+    });
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, COUNT), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return (long) _cacheMap.size();
+      }
+    });
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE_ATTRIBUTE_MAP, COUNT), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return (long) _attributeKeys.size();
       }
     });
     _cacheMap = new ConcurrentLinkedHashMap.Builder<ThriftCacheKey<?>, ThriftCacheValue<?>>()
@@ -140,10 +167,63 @@ public class ThriftCache {
         Trace.param(T_KEY, tkey), Trace.param(CLASS, clazz));
     try {
       User user = UserContext.getUser();
-      return new ThriftCacheKey<K>(user, table, shards, tkey, clazz);
+      Map<String, String> userAttributes = getUserAttributes(user);
+      ClassObj<K> classObj = getClassObj(clazz);
+      ShardsKey shardsKey = getShardsKey(shards);
+      return new ThriftCacheKey<K>(userAttributes, table, shardsKey, tkey, classObj);
     } finally {
       trace.done();
     }
+  }
+
+  private ShardsKey getShardsKey(int[] shards) {
+    ShardsKey shardsKey = new ShardsKey(shards);
+    ShardsKey insternalShardsKey = _shardsKeys.get(shardsKey);
+    if (insternalShardsKey != null) {
+      return insternalShardsKey;
+    }
+    insternalShardsKey = _shardsKeys.putIfAbsent(shardsKey, shardsKey);
+    if (insternalShardsKey == null) {
+      return shardsKey;
+    } else {
+      return insternalShardsKey;
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T> ClassObj<T> getClassObj(Class<T> clazz) {
+    String name = clazz.getName();
+    ClassObj<T> classObj = (ClassObj<T>) _classObjMap.get(name);
+    if (classObj != null) {
+      return classObj;
+    }
+    classObj = new ClassObj<T>(clazz);
+    ClassObj<T> currentValue = (ClassObj<T>) _classObjMap.putIfAbsent(name, classObj);
+    if (currentValue == null) {
+      return classObj;
+    }
+    return currentValue;
+  }
+
+  private Map<String, String> getUserAttributes(User user) {
+    if (user == null) {
+      return null;
+    }
+    Map<String, String> attributes = user.getAttributes();
+    if (attributes == null) {
+      return null;
+    }
+    if (!(attributes instanceof TreeMap)) {
+      attributes = new TreeMap<String, String>();
+    }
+    Map<String, String> internalInstance = _attributeKeys.get(attributes);
+    if (internalInstance == null) {
+      internalInstance = _attributeKeys.putIfAbsent(attributes, attributes);
+      if (internalInstance == null) {
+        return attributes;
+      }
+    }
+    return internalInstance;
   }
 
   public void clearTable(String table) {

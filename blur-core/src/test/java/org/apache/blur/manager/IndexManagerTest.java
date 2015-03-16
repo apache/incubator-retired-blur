@@ -605,6 +605,42 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testFetchRowByLocationIdFromRecordOnlySearch() throws Exception {
+
+    BlurQuery blurQuery = new BlurQuery();
+    Query query = new Query();
+    query.setQuery("recordid:record-5B");
+    query.setRowQuery(false);
+    blurQuery.setQuery(query);
+
+    BlurResultIterable blurResultIterable = indexManager.query(TABLE, blurQuery, null);
+    BlurIterator<BlurResult, BlurException> iterator = blurResultIterable.iterator();
+    String locationId = null;
+    if (iterator.hasNext()) {
+      BlurResult result = iterator.next();
+      locationId = result.locationId;
+    } else {
+      fail();
+    }
+
+    Selector selector = new Selector().setLocationId(locationId);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+
+    Row row = newRow(
+        "row-5",
+        newRecord(FAMILY, "record-5A", newColumn("testcol1", "value13"), newColumn("testcol2", "value14"),
+            newColumn("testcol3", "value15")),
+        newRecord(FAMILY, "record-5B", newColumn("testcol1", "value16"), newColumn("testcol2", "value17"),
+            newColumn("testcol3", "value18"), newColumn("testcol3", "value19")));
+    assertEquals(row, fetchResult.rowResult.row);
+    FetchRowResult rowResult = fetchResult.getRowResult();
+    assertEquals(row, rowResult.getRow());
+    assertEquals(2, rowResult.getTotalRecords());
+  }
+
+  @Test
   public void testFetchMissingRowByLocationId() throws Exception {
     try {
       Selector selector = new Selector().setLocationId("shard4/0");

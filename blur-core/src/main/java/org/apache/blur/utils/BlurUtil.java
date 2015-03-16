@@ -886,16 +886,17 @@ public class BlurUtil {
       if (indexOf < 0) {
         throw new IOException("Location id [" + locationId + "] not valid");
       }
-      int notAdjustedPrimeDocId = Integer.parseInt(locationId.substring(indexOf + 1));
-      int readerIndex = BaseCompositeReaderUtil.readerIndex(indexReader, notAdjustedPrimeDocId);
+      int notAdjustedRequestedDocId = Integer.parseInt(locationId.substring(indexOf + 1));
+      int readerIndex = BaseCompositeReaderUtil.readerIndex(indexReader, notAdjustedRequestedDocId);
       int readerBase = BaseCompositeReaderUtil.readerBase(indexReader, readerIndex);
-      int primeDocId = notAdjustedPrimeDocId - readerBase;
+      int requestedDocId = notAdjustedRequestedDocId - readerBase;
       IndexReader orgReader = sequentialSubReaders.get(readerIndex);
       if (orgReader != null && orgReader instanceof AtomicReader) {
         AtomicReader atomicReader = (AtomicReader) orgReader;
         Bits liveDocs = atomicReader.getLiveDocs();
 
         OpenBitSet bitSet = PrimeDocCache.getPrimeDocBitSet(primeDocTerm, atomicReader);
+        int primeDocId = bitSet.prevSetBit(requestedDocId);
         int nextPrimeDoc = bitSet.nextSetBit(primeDocId + 1);
         int numberOfDocsInRow;
         if (nextPrimeDoc == -1) {

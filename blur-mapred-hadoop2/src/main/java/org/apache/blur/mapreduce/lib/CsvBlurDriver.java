@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -57,6 +59,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.GenericOptionsParser;
 
 import com.google.common.base.Splitter;
@@ -100,22 +103,28 @@ public class CsvBlurDriver {
   public static void main(String... args) throws Exception {
     Configuration configuration = new Configuration();
     String[] otherArgs = new GenericOptionsParser(configuration, args).getRemainingArgs();
+    AtomicReference<Callable<Void>> ref = new AtomicReference<Callable<Void>>();
     Job job = setupJob(configuration, new ControllerPool() {
       @Override
       public Iface getClient(String controllerConnectionStr) {
         return BlurClient.getClient(controllerConnectionStr);
       }
-    }, otherArgs);
+    }, ref, otherArgs);
     if (job == null) {
       System.exit(1);
     }
-
     boolean waitForCompletion = job.waitForCompletion(true);
+    if (waitForCompletion) {
+      Callable<Void> callable = ref.get();
+      if (callable != null) {
+        callable.call();
+      }
+    }
     System.exit(waitForCompletion ? 0 : 1);
   }
 
-  public static Job setupJob(Configuration configuration, ControllerPool controllerPool, String... otherArgs)
-      throws Exception {
+  public static Job setupJob(Configuration configuration, ControllerPool controllerPool,
+      AtomicReference<Callable<Void>> ref, String... otherArgs) throws Exception {
     CommandLine cmd = parse(otherArgs);
     if (cmd == null) {
       return null;
@@ -237,6 +246,24 @@ public class CsvBlurDriver {
       int reducerMultiplier = Integer.parseInt(cmd.getOptionValue("r"));
       BlurOutputFormat.setReducerMultiplier(job, reducerMultiplier);
     }
+    final Path output;
+    if (cmd.hasOption("out")) {
+      output = new Path(cmd.getOptionValue("out"));
+    } else {
+      UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+      String userName = currentUser.getUserName();
+      output = new Path("/user/" + userName + "/.blur-" + System.currentTimeMillis());
+    }
+    BlurOutputFormat.setOutputPath(job, output);
+    if (cmd.hasOption("import")) {
+      ref.set(new Callable<Void>() {
+        @Override
+        public Void call() throws Exception {
+          client.loadData(tableName, output.toUri().toString());
+          return null;
+        }
+      });
+    }
     return job;
   }
 
@@ -344,6 +371,12 @@ public class CsvBlurDriver {
         .withDescription(
             "Sets the compression codec for the map compress output setting. (SNAPPY,GZIP,BZIP,DEFAULT, or classname)")
         .create("p"));
+    options.addOption(OptionBuilder.withArgName("path").hasArg()
+        .withDescription("Sets the output directory for the map reduce job before the indexes are loaded into Blur.")
+        .create("out"));
+    options.addOption(OptionBuilder.withArgName("path").hasArg()
+        .withDescription("Imports the data into Blur after the map reduce job completes.")
+        .create("import"));
 
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;

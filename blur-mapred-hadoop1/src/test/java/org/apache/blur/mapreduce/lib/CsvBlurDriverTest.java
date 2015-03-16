@@ -27,6 +27,8 @@ import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.blur.mapreduce.lib.CsvBlurDriver.ControllerPool;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -63,7 +65,8 @@ public class CsvBlurDriverTest {
         return null;
       }
     };
-    assertNull(CsvBlurDriver.setupJob(configuration, controllerPool, new String[] {}));
+    AtomicReference<Callable<Void>> ref = new AtomicReference<Callable<Void>>();
+    assertNull(CsvBlurDriver.setupJob(configuration, controllerPool, ref, new String[] {}));
   }
 
   @Test
@@ -75,8 +78,10 @@ public class CsvBlurDriverTest {
         return getMockIface();
       }
     };
-    Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, "-c", "host:40010", "-d", "family1", "col1",
-        "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i", "file:///tmp/test2");
+    AtomicReference<Callable<Void>> ref = new AtomicReference<Callable<Void>>();
+    Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, ref, "-c", "host:40010", "-d", "family1",
+        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i",
+        "file:///tmp/test2");
     assertNotNull(job);
     Configuration configuration = job.getConfiguration();
     TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
@@ -96,9 +101,10 @@ public class CsvBlurDriverTest {
         return getMockIface();
       }
     };
-    Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, "-c", "host:40010", "-d", "family1", "col1",
-        "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i", "file:///tmp/test2",
-        "-S", "-C", "1000000", "2000000");
+    AtomicReference<Callable<Void>> ref = new AtomicReference<Callable<Void>>();
+    Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, ref, "-c", "host:40010", "-d", "family1",
+        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i",
+        "file:///tmp/test2", "-S", "-C", "1000000", "2000000");
     assertNotNull(job);
     Configuration configuration = job.getConfiguration();
     TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
@@ -118,9 +124,10 @@ public class CsvBlurDriverTest {
         return getMockIface();
       }
     };
-    Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, "-c", "host:40010", "-d", "family1", "col1",
-        "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i", "file:///tmp/test2",
-        "-S", "-C", "1000000", "2000000", "-p", "SNAPPY");
+    AtomicReference<Callable<Void>> ref = new AtomicReference<Callable<Void>>();
+    Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, ref, "-c", "host:40010", "-d", "family1",
+        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i",
+        "file:///tmp/test2", "-S", "-C", "1000000", "2000000", "-p", "SNAPPY");
     assertNotNull(job);
     Configuration configuration = job.getConfiguration();
     TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
@@ -143,9 +150,10 @@ public class CsvBlurDriverTest {
       }
     };
     int multiplierParam = 10;
-    Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, "-c", "host:40010", "-d", "family1", "col1",
-        "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i", "file:///tmp/test2",
-        "-S", "-C", "1000000", "2000000", "-p", "SNAPPY", "-r", Integer.toString(multiplierParam));
+    AtomicReference<Callable<Void>> ref = new AtomicReference<Callable<Void>>();
+    Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, ref, "-c", "host:40010", "-d", "family1",
+        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i",
+        "file:///tmp/test2", "-S", "-C", "1000000", "2000000", "-p", "SNAPPY", "-r", Integer.toString(multiplierParam));
     assertNotNull(job);
 
     assertEquals(multiplierParam * shardCount, job.getNumReduceTasks());

@@ -29,11 +29,10 @@ under the License.
 <script src="js/Blur.js"></script>
 <script src="js/Blur_types.js"></script>
 <script>
+var transport = new Thrift.Transport("/blur");
+var protocol  = new Thrift.Protocol(transport);
+var client    = new BlurClient(protocol);
 function displayPage() {
-    var transport = new Thrift.Transport("/blur");
-    var protocol  = new Thrift.Protocol(transport);
-    var client    = new BlurClient(protocol);
-        
     try {
 	  var metrics = client.metrics(null);
 	  var body = $("#page_body");
@@ -45,9 +44,9 @@ function displayPage() {
         var key = keys[i];
         var metric = metrics[key];
         s += "<tr><td>"+key+"</td><td>";
-		s += "<table border=1 class=\"table-bordered table-striped table-condensed\">" + writeValueMap(metrics,key,metric.strMap,false) + "</table>";
-		s += "<table border=1 class=\"table-bordered table-striped table-condensed\">" + writeValueMap(metrics,key,metric.longMap,false) + "</table>";
-		s += "<table border=1 class=\"table-bordered table-striped table-condensed\">" + writeValueMap(metrics,key,metric.doubleMap,true) + "</table>";
+		s += "<table border=1 class=\"table-bordered table-striped table-condensed\">" + writeValueMap(metrics,key,metric.strMap,false,false) + "</table>";
+		s += "<table border=1 class=\"table-bordered table-striped table-condensed\">" + writeValueMap(metrics,key,metric.longMap,true,false) + "</table>";
+		s += "<table border=1 class=\"table-bordered table-striped table-condensed\">" + writeValueMap(metrics,key,metric.doubleMap,true,true) + "</table>";
 		s += "</td></tr>";
       }
       s += "</table>";
@@ -57,7 +56,7 @@ function displayPage() {
     }
     setTimeout(displayPage,3000);
 }
-function writeValueMap(metrics,key,map,formatNumber) {
+function writeValueMap(metrics,key,map,isNumber,formatNumber) {
   if (map) {
 	var s = "<tr>";
     var keys = Object.keys(map).sort();
@@ -68,16 +67,31 @@ function writeValueMap(metrics,key,map,formatNumber) {
     s += "</tr><tr>";
 	for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
-      if (formatNumber) {
-        s += "<td>"+map[key].toPrecision(6)+"</td>";
+      if (isNumber) {
+        if (formatNumber) {
+          s += "<td>"+addCommas(map[key].toFixed(3))+"</td>";
+        } else {
+          s += "<td>"+addCommas(map[key])+"</td>";
+        }
       } else {
-        s += "<td>"+map[key]+"</td>";
+        s += "<td>"+map[key]+"</td>";	
       }
     }
     s += "</tr>";
     return s;
   }
   return "";
+}
+function addCommas(numberStr) {
+  numberStr += '';
+  var numb = numberStr.split('.');
+  var greaterThan1 = numb[0];
+  var lessThan1 = numb.length > 1 ? '.' + numb[1] : '';
+  var regex = /(\d+)(\d{3})/;
+  while (regex.test(greaterThan1)) {
+    greaterThan1 = greaterThan1.replace(regex, '$1' + ',' + '$2');
+  }
+  return greaterThan1 + lessThan1;
 }
 $(window).bind("load", displayPage);
 </script>

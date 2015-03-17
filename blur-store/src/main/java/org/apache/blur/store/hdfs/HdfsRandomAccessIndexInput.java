@@ -31,16 +31,13 @@ public class HdfsRandomAccessIndexInput extends ReusedBufferedIndexInput {
   private final FSDataInputStream _inputStream;
   private final MetricsGroup _metricsGroup;
   private final Path _path;
-  private final HdfsStreamIndexInput _streamInput;
 
-  public HdfsRandomAccessIndexInput(FSDataInputStream inputStream, long length, MetricsGroup metricsGroup, Path path,
-      HdfsStreamIndexInput streamInput) throws IOException {
+  public HdfsRandomAccessIndexInput(FSDataInputStream inputStream, long length, MetricsGroup metricsGroup, Path path) throws IOException {
     super("HdfsRandomAccessIndexInput(" + path.toString() + ")");
     _inputStream = inputStream;
     _length = length;
     _metricsGroup = metricsGroup;
     _path = path;
-    _streamInput = streamInput;
   }
 
   @Override
@@ -78,15 +75,6 @@ public class HdfsRandomAccessIndexInput extends ReusedBufferedIndexInput {
 
   @Override
   public IndexInput clone() {
-    if (IndexInputMergeUtil.isMergeThread()) {
-      IndexInput clone = _streamInput.clone();
-      try {
-        clone.seek(getFilePointer());
-      } catch (IOException e) {
-        throw new RuntimeException(e);
-      }
-      return clone;
-    }
     return (HdfsRandomAccessIndexInput) super.clone();
   }
 

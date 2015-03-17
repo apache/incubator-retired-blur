@@ -66,7 +66,7 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     final int cacheBlockSizeInt = configuration.getInt(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE, 8192);
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE, cacheBlockSizeInt);
 
-    final Map<String,Integer> cacheBlockSizeMap = new HashMap<String, Integer>();
+    final Map<String, Integer> cacheBlockSizeMap = new HashMap<String, Integer>();
     Map<String, String> properties = configuration.getProperties();
     for (Entry<String, String> prop : properties.entrySet()) {
       String key = prop.getKey();
@@ -77,7 +77,7 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
       if (key.startsWith(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX)) {
         int cacheBlockSizeForFile = Integer.parseInt(value);
         String fieldType = key.substring(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX.length());
-        
+
         cacheBlockSizeMap.put(fieldType, cacheBlockSizeForFile);
         LOG.info("{0}={1} for file type [{2}]", key, cacheBlockSizeForFile, fieldType);
       }
@@ -86,28 +86,27 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     final STORE store = STORE.valueOf(configuration.get(BLUR_SHARD_BLOCK_CACHE_V2_STORE, OFF_HEAP));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_STORE, store);
 
-    final Set<String> cachingFileExtensionsForRead = getSet(configuration.get(
-        BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT, DEFAULT_VALUE));
+    final Set<String> cachingFileExtensionsForRead = getSet(configuration.get(BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT,
+        DEFAULT_VALUE));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT, cachingFileExtensionsForRead);
-    
+
     final Set<String> nonCachingFileExtensionsForRead = getSet(configuration.get(
         BLUR_SHARD_BLOCK_CACHE_V2_READ_NOCACHE_EXT, DEFAULT_VALUE));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_READ_NOCACHE_EXT, nonCachingFileExtensionsForRead);
-    
+
     final boolean defaultReadCaching = configuration.getBoolean(BLUR_SHARD_BLOCK_CACHE_V2_READ_DEFAULT, true);
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_READ_DEFAULT, defaultReadCaching);
 
     final Set<String> cachingFileExtensionsForWrite = getSet(configuration.get(
         BLUR_SHARD_BLOCK_CACHE_V2_WRITE_CACHE_EXT, DEFAULT_VALUE));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_WRITE_CACHE_EXT, cachingFileExtensionsForWrite);
-    
+
     final Set<String> nonCachingFileExtensionsForWrite = getSet(configuration.get(
         BLUR_SHARD_BLOCK_CACHE_V2_WRITE_NOCACHE_EXT, DEFAULT_VALUE));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_WRITE_NOCACHE_EXT, nonCachingFileExtensionsForWrite);
-    
+
     final boolean defaultWriteCaching = configuration.getBoolean(BLUR_SHARD_BLOCK_CACHE_V2_WRITE_DEFAULT, true);
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_WRITE_DEFAULT, defaultWriteCaching);
-    
 
     Size fileBufferSize = new Size() {
       @Override
@@ -166,7 +165,8 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
       }
     };
 
-    BaseCache baseCache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet, store);
+    BaseCache baseCache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,
+        quiet, store);
     CachePoolStrategy cachePoolStrategy = new SingleCachePoolStrategy(baseCache);
     _cache = new PooledCache(cachePoolStrategy);
   }

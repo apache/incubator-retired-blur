@@ -195,4 +195,8 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     _cache.close();
   }
 
+  public Cache getCache() {
+    return _cache;
+  }
+
 }

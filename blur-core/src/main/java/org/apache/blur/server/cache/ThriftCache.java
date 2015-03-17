@@ -230,7 +230,7 @@ public class ThriftCache {
     synchronized (_lastModTimestamps) {
       _lastModTimestamps.put(table, System.nanoTime());
     }
-    LOG.info("Clearing cache for table [{0}]", table);
+    LOG.debug("Clearing cache for table [{0}]", table);
     Set<Entry<ThriftCacheKey<?>, ThriftCacheValue<?>>> entrySet = _cacheMap.entrySet();
     Iterator<Entry<ThriftCacheKey<?>, ThriftCacheValue<?>>> iterator = entrySet.iterator();
     while (iterator.hasNext()) {
@@ -242,7 +242,7 @@ public class ThriftCache {
   }
 
   public void clear() {
-    LOG.info("Clearing all cache.");
+    LOG.debug("Clearing all cache.");
     _cacheMap.clear();
   }
 

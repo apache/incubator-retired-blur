@@ -92,7 +92,7 @@ public class SharedMergeScheduler implements Closeable {
       _writer.merge(_merge);
       long e = System.nanoTime();
       double time = (e - s) / 1000000000.0;
-      double rate = (_size / 1000 / 1000) / time;
+      double rate = (_size / 1000.0 / 1000.0) / time;
       LOG.info("Merge took [{0} s] to complete at rate of [{1} MB/s], input bytes [{2}], segments merged {3}", time,
           rate, _size, _merge.segments);
       _throughputBytes.mark(_size);
@@ -168,8 +168,8 @@ public class SharedMergeScheduler implements Closeable {
             MergeWork mergeWork = queue.take();
             try {
               mergeWork.merge();
-            } catch (IOException e) {
-              LOG.error("Unknown error while trying to perform merge on [{0}]", e, mergeWork);
+            } catch (Throwable t) {
+              LOG.error("Unknown error while trying to perform merge on [{0}]", t, mergeWork);
             }
           } catch (InterruptedException e) {
             if (_running.get()) {
@@ -195,6 +195,11 @@ public class SharedMergeScheduler implements Closeable {
       @Override
       public void close() throws IOException {
         remove(_id);
+      }
+
+      @Override
+      public MergeScheduler clone() {
+        return getMergeScheduler();
       }
     };
   }

@@ -113,4 +113,8 @@ public class PooledCache extends Cache {
     cache.fileClosedForWriting(directory, fileName, fileId);
   }
 
+  public CachePoolStrategy getCachePoolStrategy() {
+    return _cachePoolStrategy;
+  }
+
 }

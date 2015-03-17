@@ -42,4 +42,8 @@ public class SingleCachePoolStrategy extends CachePoolStrategy {
     return Arrays.asList(_cache);
   }
 
+  public Cache getCache() {
+    return _cache;
+  }
+
 }

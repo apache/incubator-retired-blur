@@ -118,13 +118,13 @@ public class BaseCache extends Cache implements Closeable {
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, ENTRIES), new Gauge<Long>() {
       @Override
       public Long value() {
-        return (long) _cacheMap.size();
+        return (long) getEntryCount();
       }
     });
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, SIZE), new Gauge<Long>() {
       @Override
       public Long value() {
-        return _cacheMap.weightedSize();
+        return getWeightedSize();
       }
     });
     _oldFileDaemonThread = new Thread(new Runnable() {
@@ -144,6 +144,14 @@ public class BaseCache extends Cache implements Closeable {
     _oldFileDaemonThread.setName("BaseCacheOldFileCleanup");
     _oldFileDaemonThread.setPriority(Thread.MIN_PRIORITY);
     _oldFileDaemonThread.start();
+  }
+
+  public int getEntryCount() {
+    return _cacheMap.size();
+  }
+
+  public long getWeightedSize() {
+    return _cacheMap.weightedSize();
   }
 
   protected void cleanupOldFiles() {

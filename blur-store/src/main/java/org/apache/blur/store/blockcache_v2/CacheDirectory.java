@@ -63,7 +63,7 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
 
   public IndexInput openInput(String name, IOContext context) throws IOException {
     IndexInput indexInput = _internal.openInput(name, context);
-    if (_cache.cacheFileForReading(this, name, context) || isCachableFile(name)) {
+    if (_cache.cacheFileForReading(this, name, context) || (_tableBlockCacheFileTypes != null && isCachableFile(name))) {
       return new CacheIndexInput(this, name, indexInput, _cache);
     }
     return indexInput;
@@ -84,7 +84,7 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
   }
 
   public IndexOutput createOutput(String name, IOContext context) throws IOException {
-    if (_cache.cacheFileForWriting(this, name, context) || isCachableFile(name)) {
+    if (_cache.cacheFileForWriting(this, name, context) || (_tableBlockCacheFileTypes != null && isCachableFile(name))) {
       return new CacheIndexOutput(this, name, _cache, _internal, context);
     }
     return _internal.createOutput(name, context);

@@ -20,18 +20,23 @@ package org.apache.blur.store.hdfs;
 import static org.apache.blur.metrics.MetricsConstants.HDFS;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 
+import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.WeakHashMap;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
@@ -72,6 +77,10 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
    */
   protected static Map<URI, MetricsGroup> _metricsGroupMap = new WeakHashMap<URI, MetricsGroup>();
 
+  private static final Timer TIMER;
+  private static final BlockingQueue<Closeable> CLOSING_QUEUE = new LinkedBlockingQueue<Closeable>();
+  private static final BlockingQueue<SequentialRef> SEQUENTIAL_CLOSING_QUEUE = new LinkedBlockingQueue<SequentialRef>();
+
   static class FStat {
     FStat(FileStatus fileStatus) {
       this(fileStatus.getModificationTime(), fileStatus.getLen());
@@ -107,7 +116,12 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       }
       return _random;
     }
+  }
 
+  static {
+    TIMER = new Timer("HdfsDirectory-Timer", true);
+    TIMER.schedule(getClosingQueueTimerTask(), TimeUnit.SECONDS.toMillis(3), TimeUnit.SECONDS.toMillis(3));
+    TIMER.schedule(getSequentialRefClosingQueueTimerTask(), TimeUnit.SECONDS.toMillis(3), TimeUnit.SECONDS.toMillis(3));
   }
 
   protected final Path _path;
@@ -119,10 +133,9 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected final Map<Path, FSDataInputStream> _inputMap = new ConcurrentHashMap<Path, FSDataInputStream>();
   protected final boolean _useCache = true;
 
-  private ExecutorService _service;
-
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
     _fileSystem = path.getFileSystem(configuration);
+
     _path = _fileSystem.makeQualified(path);
     _fileSystem.mkdirs(path);
     setLockFactory(NoLockFactory.getNoLockFactory());
@@ -153,7 +166,38 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
         }
       }
     }
-    _service = Executors.newCachedThreadPool();
+  }
+
+  private static TimerTask getSequentialRefClosingQueueTimerTask() {
+    return new TimerTask() {
+      @Override
+      public void run() {
+        Iterator<SequentialRef> iterator = SEQUENTIAL_CLOSING_QUEUE.iterator();
+        while (iterator.hasNext()) {
+          SequentialRef sequentialRef = iterator.next();
+          if (sequentialRef.isClosable()) {
+            iterator.remove();
+            CLOSING_QUEUE.add(sequentialRef._inputStream);
+          }
+        }
+      }
+    };
+  }
+
+  private static TimerTask getClosingQueueTimerTask() {
+    return new TimerTask() {
+      @Override
+      public void run() {
+        while (true) {
+          Closeable closeable = CLOSING_QUEUE.poll();
+          if (closeable == null) {
+            return;
+          }
+          LOG.debug("Closing [{0}]", closeable);
+          org.apache.hadoop.io.IOUtils.cleanup(LOG, closeable);
+        }
+      }
+    };
   }
 
   private String getRealFileName(String name) {
@@ -218,16 +262,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
         super.close();
         outputStream.sync();
         _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), outputStream.getPos()));
-        _service.submit(new Runnable() {
-          @Override
-          public void run() {
-            try {
-              outputStream.close();
-            } catch (IOException e) {
-              LOG.error("Unknown error while trying to close outputstream [{0}]", outputStream);
-            }
-          }
-        });
+        CLOSING_QUEUE.add(outputStream);
         openForInput(name);
       }
 
@@ -257,7 +292,9 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     FSDataInputStream inputRandomAccess = openForInput(name);
     long fileLength = fileLength(name);
     Path path = getPath(name);
-    return new HdfsIndexInput(inputRandomAccess, fileLength, _metricsGroup, path);
+    boolean sequentialReadAllowed = name.endsWith(".fdt");
+    // boolean sequentialReadAllowed = true;
+    return new HdfsIndexInput(this, inputRandomAccess, fileLength, _metricsGroup, path, sequentialReadAllowed);
   }
 
   protected synchronized FSDataInputStream openForInput(String name) throws IOException {
@@ -521,6 +558,28 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   @Override
   public HdfsDirectory getSymlinkDirectory() {
     return this;
+  }
+
+  protected FSDataInputStream openForSequentialInput(Path p, Object key) throws IOException {
+    FSDataInputStream input = _fileSystem.open(p);
+    SEQUENTIAL_CLOSING_QUEUE.add(new SequentialRef(input, key));
+    return input;
+  }
+
+  static class SequentialRef {
+
+    final FSDataInputStream _inputStream;
+    final WeakReference<Object> _ref;
+
+    SequentialRef(FSDataInputStream input, Object key) {
+      _inputStream = input;
+      _ref = new WeakReference<Object>(key);
+    }
+
+    boolean isClosable() {
+      return _ref.get() == null ? true : false;
+    }
+
   }
 
 }

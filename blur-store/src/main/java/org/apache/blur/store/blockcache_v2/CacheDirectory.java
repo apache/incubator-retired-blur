@@ -84,11 +84,10 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
   }
 
   public IndexOutput createOutput(String name, IOContext context) throws IOException {
-    IndexOutput indexOutput = _internal.createOutput(name, context);
     if (_cache.cacheFileForWriting(this, name, context) || isCachableFile(name)) {
-      return new CacheIndexOutput(this, name, indexOutput, _cache);
+      return new CacheIndexOutput(this, name, _cache, _internal, context);
     }
-    return indexOutput;
+    return _internal.createOutput(name, context);
   }
 
   public void deleteFile(String name) throws IOException {

@@ -21,6 +21,8 @@ import java.io.IOException;
 
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.buffer.Store;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexOutput;
 
 public class CacheIndexOutput extends IndexOutput {
@@ -39,7 +41,7 @@ public class CacheIndexOutput extends IndexOutput {
   private byte[] _buffer;
   private int _bufferPosition;
 
-  public CacheIndexOutput(CacheDirectory directory, String fileName, IndexOutput indexOutput, Cache cache)
+  public CacheIndexOutput(CacheDirectory directory, String fileName, Cache cache, Directory dir, IOContext context)
       throws IOException {
     _cache = cache;
     _directory = directory;
@@ -47,7 +49,7 @@ public class CacheIndexOutput extends IndexOutput {
     _fileBufferSize = _cache.getFileBufferSize(_directory, _fileName);
     _cacheBlockSize = _cache.getCacheBlockSize(_directory, _fileName);
     _fileId = _cache.getFileId(_directory, _fileName);
-    _indexOutput = indexOutput;
+    _indexOutput = dir.createOutput(fileName, context);
     _store = BufferStore.instance(_cacheBlockSize);
     _buffer = _store.takeBuffer(_cacheBlockSize);
     _shouldBeQuiet = _cache.shouldBeQuiet(directory, fileName);

@@ -257,7 +257,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     FSDataInputStream inputRandomAccess = openForInput(name);
     long fileLength = fileLength(name);
     Path path = getPath(name);
-    return new HdfsRandomAccessIndexInput(inputRandomAccess, fileLength, _metricsGroup, path);
+    return new HdfsIndexInput(inputRandomAccess, fileLength, _metricsGroup, path);
   }
 
   protected synchronized FSDataInputStream openForInput(String name) throws IOException {

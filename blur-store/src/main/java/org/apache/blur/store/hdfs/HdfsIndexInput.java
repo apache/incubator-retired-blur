@@ -25,15 +25,22 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.IndexInput;
 
-public class HdfsRandomAccessIndexInput extends ReusedBufferedIndexInput {
+public class HdfsIndexInput extends ReusedBufferedIndexInput {
 
   private final long _length;
   private final FSDataInputStream _inputStream;
   private final MetricsGroup _metricsGroup;
   private final Path _path;
 
-  public HdfsRandomAccessIndexInput(FSDataInputStream inputStream, long length, MetricsGroup metricsGroup, Path path) throws IOException {
-    super("HdfsRandomAccessIndexInput(" + path.toString() + ")");
+  private long _prevFilePointer;
+  private long _sequentialReadDetectorCounter;
+  private long _sequentialReadThreshold = 50;
+  private boolean _sequentialRead;
+  private boolean _isClone;
+
+  public HdfsIndexInput(FSDataInputStream inputStream, long length, MetricsGroup metricsGroup, Path path)
+      throws IOException {
+    super("HdfsIndexInput(" + path.toString() + ")");
     _inputStream = inputStream;
     _length = length;
     _metricsGroup = metricsGroup;
@@ -57,6 +64,20 @@ public class HdfsRandomAccessIndexInput extends ReusedBufferedIndexInput {
     try {
       long start = System.nanoTime();
       long filePointer = getFilePointer();
+      if (filePointer == _prevFilePointer) {
+        _sequentialReadDetectorCounter++;
+      } else {
+        if (_sequentialRead) {
+//          System.out.println("Sequential Read OFF clone [" + _isClone + "] [" + _path + "] count ["
+//              + (_sequentialReadDetectorCounter - _sequentialReadThreshold) + "]");
+        }
+        _sequentialReadDetectorCounter = 0;
+        _sequentialRead = false;
+      }
+      if (_sequentialReadDetectorCounter > _sequentialReadThreshold && !_sequentialRead) {
+//        System.out.println("Sequential Read ON clone [" + _isClone + "] [" + _path + "]");
+        _sequentialRead = true;
+      }
       int olen = length;
       while (length > 0) {
         int amount;
@@ -68,6 +89,7 @@ public class HdfsRandomAccessIndexInput extends ReusedBufferedIndexInput {
       long end = System.nanoTime();
       _metricsGroup.readRandomAccess.update((end - start) / 1000);
       _metricsGroup.readRandomThroughput.mark(olen);
+      _prevFilePointer = filePointer;
     } finally {
       trace.done();
     }
@@ -75,7 +97,9 @@ public class HdfsRandomAccessIndexInput extends ReusedBufferedIndexInput {
 
   @Override
   public IndexInput clone() {
-    return (HdfsRandomAccessIndexInput) super.clone();
+    HdfsIndexInput clone = (HdfsIndexInput) super.clone();
+    clone._isClone = true;
+    return clone;
   }
 
   @Override

@@ -35,7 +35,6 @@ public class CacheIndexOutput extends IndexOutput {
   private final int _fileBufferSize;
   private final int _cacheBlockSize;
   private final Store _store;
-  private final boolean _shouldBeQuiet;
 
   private long _position;
   private byte[] _buffer;
@@ -52,7 +51,6 @@ public class CacheIndexOutput extends IndexOutput {
     _indexOutput = dir.createOutput(fileName, context);
     _store = BufferStore.instance(_cacheBlockSize);
     _buffer = _store.takeBuffer(_cacheBlockSize);
-    _shouldBeQuiet = _cache.shouldBeQuiet(directory, fileName);
   }
 
   @Override
@@ -97,13 +95,11 @@ public class CacheIndexOutput extends IndexOutput {
     if (length == 0) {
       return;
     }
-    if (!_shouldBeQuiet) {
-      CacheValue cacheValue = _cache.newInstance(_directory, _fileName);
-      cacheValue.write(0, _buffer, 0, length);
-      long blockId = (_position - length) / _cacheBlockSize;
-      cacheValue = cacheValue.trim(length);
-      _cache.put(_directory, _fileName, new CacheKey(_fileId, blockId), cacheValue);
-    }
+    CacheValue cacheValue = _cache.newInstance(_directory, _fileName);
+    cacheValue.write(0, _buffer, 0, length);
+    long blockId = (_position - length) / _cacheBlockSize;
+    cacheValue = cacheValue.trim(length);
+    _cache.put(_directory, _fileName, new CacheKey(_fileId, blockId), cacheValue);
     _bufferPosition = 0;
     writeBufferToOutputStream(length);
   }

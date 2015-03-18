@@ -237,7 +237,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   public IndexOutput createOutput(final String name, IOContext context) throws IOException {
     LOG.debug("createOutput [{0}] [{1}] [{2}]", name, context, _path);
     if (fileExists(name)) {
-      throw new IOException("File [" + name + "] already exists found.");
+      deleteFile(name);
     }
     _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), 0L));
     final FSDataOutputStream outputStream = openForOutput(name);

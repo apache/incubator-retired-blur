@@ -132,11 +132,16 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected final Map<String, Path> _symlinkPathMap = new ConcurrentHashMap<String, Path>();
   protected final Map<Path, FSDataInputStream> _inputMap = new ConcurrentHashMap<Path, FSDataInputStream>();
   protected final boolean _useCache = true;
+  protected final boolean _asyncClosing;
 
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
     _fileSystem = path.getFileSystem(configuration);
-
     _path = _fileSystem.makeQualified(path);
+    if (_path.toUri().getScheme().equals("hdfs")) {
+      _asyncClosing = true;
+    } else {
+      _asyncClosing = false;
+    }
     _fileSystem.mkdirs(path);
     setLockFactory(NoLockFactory.getNoLockFactory());
     synchronized (_metricsGroupMap) {
@@ -260,9 +265,13 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       @Override
       public void close() throws IOException {
         super.close();
-        outputStream.sync();
         _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), outputStream.getPos()));
-        CLOSING_QUEUE.add(outputStream);
+        if (_asyncClosing) {
+          outputStream.sync();
+          CLOSING_QUEUE.add(outputStream);
+        } else {
+          outputStream.close();
+        }
         openForInput(name);
       }
 

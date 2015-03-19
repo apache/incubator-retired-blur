@@ -96,12 +96,12 @@ import org.junit.Test;
 
 public abstract class BlurClusterTestBase {
 
-  private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClusterTest"));
-  private static MiniCluster miniCluster;
-  private static boolean externalProcesses = false;
+  protected static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClusterTest"));
+  protected static MiniCluster miniCluster;
+  protected static boolean externalProcesses = false;
 
-  private int numberOfDocs = 1000;
-  private String controllerConnectionStr;
+  protected int numberOfDocs = 1000;
+  protected String controllerConnectionStr;
 
   @BeforeClass
   public static void startCluster() throws IOException {

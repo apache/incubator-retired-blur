@@ -148,6 +148,17 @@ public class FastHdfsKeyValueDirectoryTest {
     }
   }
 
+  @SuppressWarnings("resource")
+  @Test
+  public void testOpenDirectoryAndReopenEmptyDirectory() throws IOException, InterruptedException {
+    FastHdfsKeyValueDirectory directory1 = new FastHdfsKeyValueDirectory(_timer, _configuration, new Path(_path,
+        "testOpenDirectoryAndReopenEmptyDirectory"), HdfsKeyValueStore.DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE, 5000L);
+    assertTrue(Arrays.equals(new String[] {}, directory1.listAll()));
+    FastHdfsKeyValueDirectory directory2 = new FastHdfsKeyValueDirectory(_timer, _configuration, new Path(_path,
+        "testOpenDirectoryAndReopenEmptyDirectory"));
+    assertTrue(Arrays.equals(new String[] {}, directory2.listAll()));
+  }
+
   private byte[] readSegmentsGen(FastHdfsKeyValueDirectory directory) throws IOException {
     boolean fileExists = directory.fileExists("segments.gen");
     if (!fileExists) {

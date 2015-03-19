@@ -16,10 +16,6 @@
  */
 package org.apache.blur.store.hdfs_v2;
 
-import static org.apache.blur.metrics.MetricsConstants.HDFS_KV;
-import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
-import static org.apache.blur.metrics.MetricsConstants.SIZE;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.FilterInputStream;
@@ -61,21 +57,18 @@ import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.lucene.util.BytesRef;
 
-import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Gauge;
-import com.yammer.metrics.core.MetricName;
-
 public class HdfsKeyValueStore implements Store {
 
+  public static final int DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE = 64 * 1024 * 1024;
+  public static final long DEFAULT_MAX_OPEN_FOR_WRITING = TimeUnit.MINUTES.toMillis(1);
+  
   private static final String UTF_8 = "UTF-8";
   private static final String BLUR_KEY_VALUE = "blur_key_value";
   private static final String IN = "in";
   private static final String GET_FILE_LENGTH = "getFileLength";
-  private static final int DEFAULT_MAX = 64 * 1024 * 1024;
   private static final Log LOG = LogFactory.getLog(HdfsKeyValueStore.class);
   private static final byte[] MAGIC;
   private static final int VERSION = 1;
-  private static final long MAX_OPEN_FOR_WRITING = TimeUnit.MINUTES.toMillis(1);
   private static final long DAEMON_POLL_TIME = TimeUnit.SECONDS.toMillis(5);
   private static final int VERSION_LENGTH = 4;
 
@@ -162,17 +155,24 @@ public class HdfsKeyValueStore implements Store {
   private final TimerTask _oldFileCleanerTimerTask;
   private final AtomicLong _lastWrite = new AtomicLong();
   private final Timer _hdfsKeyValueTimer;
+  private final long _maxOpenForWriting;
 
   private FSDataOutputStream _output;
   private Path _outputPath;
   private boolean _isClosed;
 
   public HdfsKeyValueStore(Timer hdfsKeyValueTimer, Configuration configuration, Path path) throws IOException {
-    this(hdfsKeyValueTimer, configuration, path, DEFAULT_MAX);
+    this(hdfsKeyValueTimer, configuration, path, DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE, DEFAULT_MAX_OPEN_FOR_WRITING);
   }
 
   public HdfsKeyValueStore(Timer hdfsKeyValueTimer, Configuration configuration, Path path, long maxAmountAllowedPerFile)
       throws IOException {
+    this(hdfsKeyValueTimer, configuration, path, maxAmountAllowedPerFile, DEFAULT_MAX_OPEN_FOR_WRITING);
+  }
+
+  public HdfsKeyValueStore(Timer hdfsKeyValueTimer, Configuration configuration, Path path,
+      long maxAmountAllowedPerFile, long maxOpenForWriting) throws IOException {
+    _maxOpenForWriting = maxOpenForWriting;
     _maxAmountAllowedPerFile = maxAmountAllowedPerFile;
     _path = path;
     _fileSystem = _path.getFileSystem(configuration);
@@ -394,7 +394,7 @@ public class HdfsKeyValueStore implements Store {
   private void closeLogFileIfIdle() throws IOException {
     _writeLock.lock();
     try {
-      if (_output != null && _lastWrite.get() + MAX_OPEN_FOR_WRITING < System.currentTimeMillis()) {
+      if (_output != null && _lastWrite.get() + _maxOpenForWriting < System.currentTimeMillis()) {
         // Close writer
         LOG.info("Closing KV log due to inactivity [{0}].", _path);
         try {

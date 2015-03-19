@@ -63,28 +63,36 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
   private long _lastGc;
 
   public FastHdfsKeyValueDirectory(Timer hdfsKeyValueTimer, Configuration configuration, Path path) throws IOException {
+    this(hdfsKeyValueTimer, configuration, path, HdfsKeyValueStore.DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE,
+        HdfsKeyValueStore.DEFAULT_MAX_OPEN_FOR_WRITING);
+  }
+
+  public FastHdfsKeyValueDirectory(Timer hdfsKeyValueTimer, Configuration configuration, Path path,
+      long maxAmountAllowedPerFile, long maxOpenForWriting) throws IOException {
     _path = path;
-    _store = new HdfsKeyValueStore(hdfsKeyValueTimer, configuration, path);
+    _store = new HdfsKeyValueStore(hdfsKeyValueTimer, configuration, path, maxAmountAllowedPerFile, maxOpenForWriting);
     MemoryLeakDetector.record(_store, "HdfsKeyValueStore", path.toString());
     BytesRef value = new BytesRef();
     if (_store.get(FILES, value)) {
       String filesString = value.utf8ToString();
       // System.out.println("Open Files String [" + filesString + "]");
-      String[] files = filesString.split("\\" + SEP);
-      for (String file : files) {
-        if (file.isEmpty()) {
-          throw new IOException("Empty file names should not occur [" + filesString + "]");
-        }
-        BytesRef key = new BytesRef(file + LENGTH);
-        if (_store.get(key, value)) {
-          _files.put(file, Long.parseLong(value.utf8ToString()));
-        } else {
-          LOG.warn(MISSING_METADATA_MESSAGE, file);
+      if (!filesString.isEmpty()) {
+        String[] files = filesString.split("\\" + SEP);
+        for (String file : files) {
+          if (file.isEmpty()) {
+            throw new IOException("Empty file names should not occur [" + filesString + "]");
+          }
+          BytesRef key = new BytesRef(file + LENGTH);
+          if (_store.get(key, value)) {
+            _files.put(file, Long.parseLong(value.utf8ToString()));
+          } else {
+            LOG.warn(MISSING_METADATA_MESSAGE, file);
+          }
         }
       }
     }
     setLockFactory(NoLockFactory.getNoLockFactory());
-    writeFilesNames();
+    writeFileNamesAndSync();
     gc();
   }
 

@@ -101,6 +101,7 @@ import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV1;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV2;
 import org.apache.blur.store.buffer.BufferStore;
+import org.apache.blur.store.hdfs.SequentialReadControl;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerTransport;
@@ -223,10 +224,11 @@ public class ThriftBlurShardServer extends ThriftServer {
     final Timer indexImporterTimer = new Timer("IndexImporter", true);
     final Timer indexBulkTimer = new Timer("BulkIndex", true);
     long smallMergeThreshold = configuration.getLong(BLUR_SHARD_SMALL_MERGE_THRESHOLD, 128 * 1000 * 1000);
+    SequentialReadControl sequentialReadControl = new SequentialReadControl(configuration);
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
         filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay,
         shardOpenerThreadCount, maxMergeThreads, internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode,
-        hdfsKeyValueTimer, indexImporterTimer, smallMergeThreshold, indexBulkTimer, thriftCache);
+        hdfsKeyValueTimer, indexImporterTimer, smallMergeThreshold, indexBulkTimer, thriftCache, sequentialReadControl);
 
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 

@@ -23,8 +23,12 @@ import static org.apache.blur.utils.BlurConstants.SHARED_MERGE_SCHEDULER_PREFIX;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Iterator;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +41,9 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.MergePolicy.OneMerge;
 import org.apache.lucene.index.MergeScheduler;
+import org.apache.lucene.index.SegmentInfo;
+import org.apache.lucene.index.SegmentInfoPerCommit;
+import org.apache.lucene.store.Directory;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
@@ -88,13 +95,16 @@ public class SharedMergeScheduler implements Closeable {
     }
 
     public void merge() throws IOException {
-      long s = System.nanoTime();
-      _writer.merge(_merge);
-      long e = System.nanoTime();
-      double time = (e - s) / 1000000000.0;
-      double rate = (_size / 1000.0 / 1000.0) / time;
-      LOG.info("Merge took [{0} s] to complete at rate of [{1} MB/s], input bytes [{2}], segments merged {3}", time,
-          rate, _size, _merge.segments);
+      MergeStatus mergeStatus = new MergeStatus(_merge, _writer.getDirectory(), _size, _merge.segments);
+      // Trace.setupTrace(BlurConstants.SHARED_MERGE_SCHEDULER_PREFIX + "-" +
+      // System.nanoTime());
+      startWatching(mergeStatus);
+      try {
+        _writer.merge(_merge);
+      } finally {
+        stopWatching(mergeStatus);
+        // Trace.tearDownTrace();
+      }
       _throughputBytes.mark(_size);
     }
 
@@ -107,8 +117,61 @@ public class SharedMergeScheduler implements Closeable {
     }
   }
 
+  static class MergeStatus {
+
+    final String _id;
+    final Directory _directory;
+    final long _start;
+    final long _size;
+    final OneMerge _oneMerge;
+    final List<SegmentInfoPerCommit> _segments;
+
+    MergeStatus(OneMerge oneMerge, Directory directory, long size, List<SegmentInfoPerCommit> segments) {
+      _id = UUID.randomUUID().toString();
+      _directory = directory;
+      _start = System.nanoTime();
+      _size = size;
+      _oneMerge = oneMerge;
+      _segments = segments;
+    }
+
+    void finalReport() throws IOException {
+      long e = System.nanoTime();
+      double time = (e - _start) / 1000000000.0;
+      double rate = (_size / 1000.0 / 1000.0) / time;
+      SegmentInfo segmentInfo = getSegmentInfo(_oneMerge);
+      long segmentSize = getSegmentSize(segmentInfo, _directory);
+      LOG.info(
+          "Merge took [{0} s] to complete at rate of [{1} MB/s], input bytes [{2}], output bytes [{4}], segments merged {3}",
+          time, rate, _size, _segments, segmentSize);
+    }
+
+    void report() throws IOException {
+      long e = System.nanoTime();
+      double time = (e - _start) / 1000000000.0;
+      SegmentInfo segmentInfo = getSegmentInfo(_oneMerge);
+      long segmentSize = getSegmentSize(segmentInfo, _directory);
+      double rate = (segmentSize / 1000.0 / 1000.0) / time;
+      LOG.info(
+          "Merge running for [{0} s] at rate of [{1} MB/s], input bytes [{2}], output bytes [{4}], segments being merged {3}",
+          time, rate, _size, _segments, segmentSize);
+    }
+
+  }
+
   public SharedMergeScheduler(int threads) {
     this(threads, 128 * 1000 * 1000);
+  }
+
+  private static ConcurrentMap<String, MergeStatus> _mergeStatusMap = new ConcurrentHashMap<String, MergeStatus>();
+
+  protected static void stopWatching(MergeStatus mergeStatus) throws IOException {
+    MergeStatus status = _mergeStatusMap.remove(mergeStatus._id);
+    status.finalReport();
+  }
+
+  protected static void startWatching(MergeStatus mergeStatus) {
+    _mergeStatusMap.put(mergeStatus._id, mergeStatus);
   }
 
   public SharedMergeScheduler(int threads, long smallMergeThreshold) {
@@ -250,4 +313,41 @@ public class SharedMergeScheduler implements Closeable {
     _largeMergeService.shutdownNow();
   }
 
+  protected static long getSegmentSize(SegmentInfo newSegmentInfo, Directory directory) throws IOException {
+    if (newSegmentInfo == null) {
+      return -1L;
+    }
+    String prefix = newSegmentInfo.name;
+    long total = 0;
+    for (String name : directory.listAll()) {
+      if (name.startsWith(prefix)) {
+        total += directory.fileLength(name);
+      }
+    }
+    return total;
+  }
+
+  protected static SegmentInfo getSegmentInfo(OneMerge oneMerge) {
+    Object segmentInfoPerCommit = getFieldObject(oneMerge, "info");
+    if (segmentInfoPerCommit == null) {
+      return null;
+    }
+    return (SegmentInfo) getFieldObject(segmentInfoPerCommit, "info");
+  }
+
+  protected static Object getFieldObject(Object o, String fieldName) {
+    try {
+      Field field = o.getClass().getDeclaredField(fieldName);
+      field.setAccessible(true);
+      return field.get(o);
+    } catch (NoSuchFieldException e) {
+      return null;
+    } catch (SecurityException e) {
+      return null;
+    } catch (IllegalArgumentException e) {
+      return null;
+    } catch (IllegalAccessException e) {
+      return null;
+    }
+  }
 }

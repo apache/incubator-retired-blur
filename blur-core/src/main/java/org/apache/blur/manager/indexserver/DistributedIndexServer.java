@@ -53,6 +53,7 @@ import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.hdfs.BlurLockFactory;
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.store.hdfs.SequentialReadControl;
 import org.apache.blur.store.hdfs_v2.FastHdfsKeyValueDirectory;
 import org.apache.blur.store.hdfs_v2.JoinDirectory;
 import org.apache.blur.thrift.generated.ShardState;
@@ -119,15 +120,17 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final Timer _indexImporterTimer;
   private final Timer _indexBulkTimer;
   private final ThriftCache _thriftCache;
+  private final SequentialReadControl _sequentialReadControl;
 
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
       DistributedLayoutFactory distributedLayoutFactory, String cluster, String nodeName, long safeModeDelay,
       int shardOpenerThreadCount, int maxMergeThreads, int internalSearchThreads,
       int minimumNumberOfNodesBeforeExitingSafeMode, Timer hdfsKeyValueTimer, Timer indexImporterTimer,
-      long smallMergeThreshold, Timer indexBulkTimer, ThriftCache thriftCache) throws KeeperException,
-      InterruptedException {
+      long smallMergeThreshold, Timer indexBulkTimer, ThriftCache thriftCache,
+      SequentialReadControl sequentialReadControl) throws KeeperException, InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
+    _sequentialReadControl = sequentialReadControl;
     _indexImporterTimer = indexImporterTimer;
     _indexBulkTimer = indexBulkTimer;
     _hdfsKeyValueTimer = hdfsKeyValueTimer;
@@ -503,8 +506,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     Path hdfsDirPath = new Path(tablePath, shard);
 
     BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurUtil.getPid());
-
-    HdfsDirectory longTermStorage = new HdfsDirectory(_configuration, hdfsDirPath);
+    HdfsDirectory longTermStorage = new HdfsDirectory(_configuration, hdfsDirPath, _sequentialReadControl);
     longTermStorage.setLockFactory(lockFactory);
 
     Directory directory;

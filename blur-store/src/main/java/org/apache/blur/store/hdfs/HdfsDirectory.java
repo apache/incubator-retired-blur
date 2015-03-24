@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache.LastModified;
@@ -79,7 +80,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   private static final Timer TIMER;
   private static final BlockingQueue<Closeable> CLOSING_QUEUE = new LinkedBlockingQueue<Closeable>();
-  private static final BlockingQueue<SequentialRef> SEQUENTIAL_CLOSING_QUEUE = new LinkedBlockingQueue<SequentialRef>();
+  private static final BlockingQueue<WeakRef> WEAK_CLOSING_QUEUE = new LinkedBlockingQueue<WeakRef>();
 
   static class FStat {
     FStat(FileStatus fileStatus) {
@@ -133,10 +134,18 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected final Map<Path, FSDataInputStream> _inputMap = new ConcurrentHashMap<Path, FSDataInputStream>();
   protected final boolean _useCache = true;
   protected final boolean _asyncClosing;
+  protected final Path _localCachePath = new Path("/tmp/cache");
+  protected final SequentialReadControl _sequentialReadControl;
 
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
+    this(configuration, path, new SequentialReadControl(new BlurConfiguration()));
+  }
+
+  public HdfsDirectory(Configuration configuration, Path path, SequentialReadControl sequentialReadControl)
+      throws IOException {
     _fileSystem = path.getFileSystem(configuration);
     _path = _fileSystem.makeQualified(path);
+    _sequentialReadControl = sequentialReadControl;
     if (_path.toUri().getScheme().equals("hdfs")) {
       _asyncClosing = true;
     } else {
@@ -177,12 +186,12 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     return new TimerTask() {
       @Override
       public void run() {
-        Iterator<SequentialRef> iterator = SEQUENTIAL_CLOSING_QUEUE.iterator();
+        Iterator<WeakRef> iterator = WEAK_CLOSING_QUEUE.iterator();
         while (iterator.hasNext()) {
-          SequentialRef sequentialRef = iterator.next();
-          if (sequentialRef.isClosable()) {
+          WeakRef weakRef = iterator.next();
+          if (weakRef.isClosable()) {
             iterator.remove();
-            CLOSING_QUEUE.add(sequentialRef._inputStream);
+            CLOSING_QUEUE.add(weakRef._inputStream);
           }
         }
       }
@@ -301,9 +310,9 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     FSDataInputStream inputRandomAccess = openForInput(name);
     long fileLength = fileLength(name);
     Path path = getPath(name);
-    boolean sequentialReadAllowed = name.endsWith(".fdt");
-    // boolean sequentialReadAllowed = true;
-    return new HdfsIndexInput(this, inputRandomAccess, fileLength, _metricsGroup, path, sequentialReadAllowed);
+    HdfsIndexInput input = new HdfsIndexInput(this, inputRandomAccess, fileLength, _metricsGroup, path,
+        _sequentialReadControl.clone());
+    return input;
   }
 
   protected synchronized FSDataInputStream openForInput(String name) throws IOException {
@@ -570,17 +579,21 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   }
 
   protected FSDataInputStream openForSequentialInput(Path p, Object key) throws IOException {
-    FSDataInputStream input = _fileSystem.open(p);
-    SEQUENTIAL_CLOSING_QUEUE.add(new SequentialRef(input, key));
+    return openInputStream(_fileSystem, p, key);
+  }
+
+  protected FSDataInputStream openInputStream(FileSystem fileSystem, Path p, Object key) throws IOException {
+    FSDataInputStream input = fileSystem.open(p);
+    WEAK_CLOSING_QUEUE.add(new WeakRef(input, key));
     return input;
   }
 
-  static class SequentialRef {
+  static class WeakRef {
 
     final FSDataInputStream _inputStream;
     final WeakReference<Object> _ref;
 
-    SequentialRef(FSDataInputStream input, Object key) {
+    WeakRef(FSDataInputStream input, Object key) {
       _inputStream = input;
       _ref = new WeakReference<Object>(key);
     }
@@ -589,6 +602,16 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       return _ref.get() == null ? true : false;
     }
 
+  }
+
+  protected boolean isAlreadyExistsLocally(FileSystem localFileSystem, Path localFile, long length) throws IOException {
+    if (localFileSystem.exists(localFile)) {
+      FileStatus fileStatus = localFileSystem.getFileStatus(localFile);
+      if (fileStatus.getLen() == length) {
+        return true;
+      }
+    }
+    return false;
   }
 
 }

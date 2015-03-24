@@ -18,6 +18,8 @@ package org.apache.blur.store.hdfs;
 
 import java.io.IOException;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.buffer.ReusedBufferedIndexInput;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
@@ -27,28 +29,28 @@ import org.apache.lucene.store.IndexInput;
 
 public class HdfsIndexInput extends ReusedBufferedIndexInput {
 
+  private static final Log LOG = LogFactory.getLog(HdfsIndexInput.class);
+
   private final long _length;
   private final FSDataInputStream _inputStream;
   private final MetricsGroup _metricsGroup;
   private final Path _path;
   private final HdfsDirectory _dir;
-  private final boolean _sequentialReadAllowed;
+
+  private SequentialReadControl _sequentialReadControl;
 
   private long _prevFilePointer;
-  private long _sequentialReadDetectorCounter;
-  private long _sequentialReadThreshold = 50;
-  private boolean _sequentialRead;
   private FSDataInputStream _sequentialInputStream;
 
   public HdfsIndexInput(HdfsDirectory dir, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup,
-      Path path, boolean sequentialReadAllowed) throws IOException {
+      Path path, SequentialReadControl sequentialReadControl) throws IOException {
     super("HdfsIndexInput(" + path.toString() + ")");
+    _sequentialReadControl = sequentialReadControl;
     _dir = dir;
     _inputStream = inputStream;
     _length = length;
     _metricsGroup = metricsGroup;
     _path = path;
-    _sequentialReadAllowed = sequentialReadAllowed;
   }
 
   @Override
@@ -63,70 +65,79 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
 
   @Override
   protected void readInternal(byte[] b, int offset, int length) throws IOException {
-    Tracer trace = Trace.trace("filesystem - read", Trace.param("file", _path),
-        Trace.param("location", getFilePointer()), Trace.param("length", length));
-    try {
-      long start = System.nanoTime();
-      long filePointer = getFilePointer();
-      if (!_sequentialReadAllowed) {
-        randomAccessRead(b, offset, length, start, filePointer);
-        return;
-      }
-      if (filePointer == _prevFilePointer) {
-        _sequentialReadDetectorCounter++;
-      } else {
-        if (_sequentialRead) {
-          // System.out.println("Sequential Read OFF clone [" + _isClone + "] ["
-          // + _path + "] count ["
-          // + (_sequentialReadDetectorCounter - _sequentialReadThreshold) +
-          // "]");
-        }
-        _sequentialReadDetectorCounter = 0;
-        _sequentialRead = false;
-      }
-      if (_sequentialReadDetectorCounter > _sequentialReadThreshold && !_sequentialRead) {
-        // System.out.println("Sequential Read ON clone [" + _isClone + "] [" +
-        // _path + "]");
-        _sequentialRead = true;
-        if (_sequentialInputStream == null) {
-          _sequentialInputStream = _dir.openForSequentialInput(_path, this);
-        }
-      }
-      if (_sequentialRead) {
-        long pos = _sequentialInputStream.getPos();
-        if (pos != filePointer) {
-          _sequentialInputStream.seek(filePointer);
-        }
-        _sequentialInputStream.readFully(b, offset, length);
-        // @TODO add metrics back
-      } else {
-        filePointer = randomAccessRead(b, offset, length, start, filePointer);
-      }
-      _prevFilePointer = filePointer;
-    } finally {
-      trace.done();
+    long start = System.nanoTime();
+    long filePointer = getFilePointer();
+    if (!_sequentialReadControl.isSequentialReadAllowed()) {
+      randomAccessRead(b, offset, length, start, filePointer);
+      return;
     }
+    if (filePointer == _prevFilePointer) {
+      _sequentialReadControl.incrReadDetector();
+    } else {
+      if (_sequentialReadControl.isEnabled()) {
+        // System.out.println("Sequential Read OFF clone [" + _isClone + "] ["
+        // + _path + "] count ["
+        // + (_sequentialReadDetectorCounter - _sequentialReadThreshold) +
+        // "]");
+
+        if (_sequentialReadControl.shouldSkipInput(filePointer, _prevFilePointer)) {
+          _sequentialInputStream.skip(filePointer - _prevFilePointer);
+        } else {
+          LOG.debug("Current Pos [{0}] Prev Pos [{1}] Diff [{2}]", filePointer, _prevFilePointer, filePointer
+              - _prevFilePointer);
+        }
+      }
+    }
+    if (_sequentialReadControl.switchToSequentialRead()) {
+
+      _sequentialReadControl.setEnabled(true);
+      if (_sequentialInputStream == null) {
+        Tracer trace = Trace.trace("filesystem - read - openForSequentialInput", Trace.param("file", _path),
+            Trace.param("location", getFilePointer()));
+        _sequentialInputStream = _dir.openForSequentialInput(_path, this);
+        trace.done();
+      }
+    }
+    if (_sequentialReadControl.isEnabled()) {
+      long pos = _sequentialInputStream.getPos();
+      if (pos != filePointer) {
+        _sequentialInputStream.seek(filePointer);
+      }
+      _sequentialInputStream.readFully(b, offset, length);
+      filePointer = _sequentialInputStream.getPos();
+      // @TODO add metrics back
+    } else {
+      filePointer = randomAccessRead(b, offset, length, start, filePointer);
+    }
+    _prevFilePointer = filePointer;
   }
 
   private long randomAccessRead(byte[] b, int offset, int length, long start, long filePointer) throws IOException {
-    int olen = length;
-    while (length > 0) {
-      int amount;
-      amount = _inputStream.read(filePointer, b, offset, length);
-      length -= amount;
-      offset += amount;
-      filePointer += amount;
+    Tracer trace = Trace.trace("filesystem - read - randomAccessRead", Trace.param("file", _path),
+        Trace.param("location", getFilePointer()), Trace.param("length", length));
+    try {
+      int olen = length;
+      while (length > 0) {
+        int amount;
+        amount = _inputStream.read(filePointer, b, offset, length);
+        length -= amount;
+        offset += amount;
+        filePointer += amount;
+      }
+      long end = System.nanoTime();
+      _metricsGroup.readRandomAccess.update((end - start) / 1000);
+      _metricsGroup.readRandomThroughput.mark(olen);
+      return filePointer;
+    } finally {
+      trace.done();
     }
-    long end = System.nanoTime();
-    _metricsGroup.readRandomAccess.update((end - start) / 1000);
-    _metricsGroup.readRandomThroughput.mark(olen);
-    return filePointer;
   }
 
   @Override
   public IndexInput clone() {
     HdfsIndexInput clone = (HdfsIndexInput) super.clone();
     clone._sequentialInputStream = null;
+    clone._sequentialReadControl = _sequentialReadControl.clone();
     return clone;
   }
 

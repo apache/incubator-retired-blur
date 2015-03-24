@@ -625,7 +625,7 @@ public abstract class TableAdmin implements Iface {
     }
     org.apache.log4j.Level current = logger.getLevel();
     org.apache.log4j.Level newLevel = getLevel(level);
-    LOG.info("Changing Logger [{0}] from logging level [{1}] to [{2}]", logger, current, newLevel);
+    LOG.info("Changing Logger [{0}] from logging level [{1}] to [{2}]", logger.getName(), current, newLevel);
     logger.setLevel(newLevel);
   }
 

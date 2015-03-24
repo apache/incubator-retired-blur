@@ -214,7 +214,7 @@ public class ThriftCache {
       return null;
     }
     if (!(attributes instanceof TreeMap)) {
-      attributes = new TreeMap<String, String>();
+      attributes = new TreeMap<String, String>(attributes);
     }
     Map<String, String> internalInstance = _attributeKeys.get(attributes);
     if (internalInstance == null) {

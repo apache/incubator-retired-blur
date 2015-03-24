@@ -71,7 +71,7 @@ public class BaseCache extends Cache implements Closeable {
     }
   }
 
-  class BaseCacheWeigher implements Weigher<CacheValue> {
+  protected static class BaseCacheWeigher implements Weigher<CacheValue> {
     @Override
     public int weightOf(CacheValue value) {
       try {
@@ -267,6 +267,7 @@ public class BaseCache extends Cache implements Closeable {
     CacheValue cacheValue = _cacheMap.get(key);
     if (cacheValue == null) {
       _misses.mark();
+//      System.out.println("Loud Miss [" + fileName + "] Key [" + key + "]");
     } else {
       _hits.mark();
     }
@@ -278,6 +279,8 @@ public class BaseCache extends Cache implements Closeable {
     CacheValue cacheValue = _cacheMap.getQuietly(key);
     if (cacheValue != null) {
       _hits.mark();
+    } else {
+//      System.out.println("Quiet Miss [" + fileName + "] Key [" + key + "]");
     }
     return cacheValue;
   }

@@ -66,6 +66,23 @@ for f in $BLUR_HOME/lib/*.war; do
 done
 
 if [ -z "$HADOOP_HOME" ]; then
+  export HADOOP_HOME=`ls -d1 $BLUR_HOME/lib/hadoop-*/ | head -1`
+  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$HADOOP_HOME/conf
+
+  for f in $HADOOP_HOME/*.jar; do
+    BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
+  done
+
+  for f in $HADOOP_HOME/lib/*.jar; do
+    BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
+  done
+
+  for f in $HADOOP_HOME/lib/jsp-*/*.jar; do
+    BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
+  done
+  
+else
+
   BLUR_CLASSPATH=${BLUR_CLASSPATH}:$HADOOP_HOME/conf
 
   for f in $HADOOP_HOME/share/hadoop/mapreduce/*.jar; do
@@ -91,23 +108,6 @@ if [ -z "$HADOOP_HOME" ]; then
   for f in $HADOOP_HOME/share/hadoop/common/lib/*.jar; do
     BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
   done
-  
-else
-  export HADOOP_HOME=`ls -d1 $BLUR_HOME/lib/hadoop-*/ | head -1`
-  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$HADOOP_HOME/conf
-
-  for f in $HADOOP_HOME/*.jar; do
-    BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
-  done
-
-  for f in $HADOOP_HOME/lib/*.jar; do
-    BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
-  done
-
-  for f in $HADOOP_HOME/lib/jsp-*/*.jar; do
-    BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
-  done
-
 fi
 
 

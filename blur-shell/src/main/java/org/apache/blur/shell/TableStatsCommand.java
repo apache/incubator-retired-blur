@@ -19,6 +19,7 @@
 package org.apache.blur.shell;
 
 import java.io.PrintWriter;
+import java.text.NumberFormat;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
@@ -42,14 +43,20 @@ public class TableStatsCommand extends Command implements TableFirstArgCommand {
 
     TableStats tableStats = client.tableStats(tablename);
     long bytes = tableStats.getBytes();
-//    long queries = tableStats.getQueries();
     long recordCount = tableStats.getRecordCount();
     long rowCount = tableStats.getRowCount();
-    //Queries is an unknown value now.
-//    out.println("Queries      : " + queries);
-    out.println("Row Count    : " + rowCount);
-    out.println("Record Count : " + recordCount);
-    out.println("Table Size   : " + humanize(bytes));
+    long segmentImportInProgressCount = tableStats.getSegmentImportInProgressCount();
+    long segmentImportPendingCount = tableStats.getSegmentImportPendingCount();
+    // Queries is an unknown value now.
+    out.println("Row Count           : " + numberFormat(rowCount));
+    out.println("Record Count        : " + numberFormat(recordCount));
+    out.println("Table Size          : " + humanize(bytes));
+    out.println("Pending Imports     : " + segmentImportPendingCount);
+    out.println("In Progress Imports : " + segmentImportInProgressCount);
+  }
+
+  private String numberFormat(long l) {
+    return NumberFormat.getNumberInstance().format(l);
   }
 
   private String humanize(long bytes) {

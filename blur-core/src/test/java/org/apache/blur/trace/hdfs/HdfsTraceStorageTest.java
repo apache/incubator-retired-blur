@@ -67,6 +67,7 @@ public class HdfsTraceStorageTest {
     configuration = new BlurConfiguration();
     configuration.set(BLUR_HDFS_TRACE_PATH, directory.makeQualified(localFS).toString());
     _storage = new HdfsTraceStorage(configuration);
+    _storage.init(new Configuration());
   }
 
   @After

@@ -84,4 +84,14 @@ public class BlurIndexReadOnly extends BlurIndex {
     throw new RuntimeException("Read-only shard");
   }
 
+  @Override
+  public long getSegmentImportPendingCount() throws IOException {
+    return _blurIndex.getSegmentImportPendingCount();
+  }
+
+  @Override
+  public long getSegmentImportInProgressCount() throws IOException {
+    return _blurIndex.getSegmentImportInProgressCount();
+  }
+
 }

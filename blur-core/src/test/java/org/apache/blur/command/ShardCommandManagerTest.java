@@ -361,6 +361,16 @@ public class ShardCommandManagerTest {
       public void close() throws IOException {
         throw new RuntimeException("Not implemented.");
       }
+
+      @Override
+      public long getSegmentImportInProgressCount(String table) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getSegmentImportPendingCount(String table) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
     };
   }
 
@@ -426,6 +436,16 @@ public class ShardCommandManagerTest {
 
       @Override
       public void addBulkMutate(String bulkId, RowMutation mutation) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getSegmentImportPendingCount() throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getSegmentImportInProgressCount() throws IOException {
         throw new RuntimeException("Not implemented.");
       }
     };

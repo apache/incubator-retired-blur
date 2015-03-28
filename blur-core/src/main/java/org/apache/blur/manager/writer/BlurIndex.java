@@ -141,4 +141,8 @@ public abstract class BlurIndex {
 
   public abstract void addBulkMutate(String bulkId, RowMutation mutation) throws IOException;
 
+  public abstract long getSegmentImportPendingCount() throws IOException;
+
+  public abstract long getSegmentImportInProgressCount() throws IOException;
+
 }

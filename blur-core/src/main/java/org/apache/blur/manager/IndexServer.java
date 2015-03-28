@@ -18,7 +18,6 @@ package org.apache.blur.manager;
  */
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
@@ -109,5 +108,9 @@ public interface IndexServer extends Closeable {
    * @return the map of shard name to state.
    */
   Map<String, ShardState> getShardState(String table);
+
+  long getSegmentImportInProgressCount(String table) throws IOException;
+
+  long getSegmentImportPendingCount(String table) throws IOException;
 
 }

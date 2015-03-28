@@ -563,6 +563,16 @@ public class ThriftCacheServerTest {
       public void close() throws IOException {
         throw new RuntimeException("Not implemented.");
       }
+
+      @Override
+      public long getSegmentImportInProgressCount(String table) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getSegmentImportPendingCount(String table) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
     };
   }
 }

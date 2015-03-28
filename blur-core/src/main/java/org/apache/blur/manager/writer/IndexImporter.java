@@ -99,6 +99,69 @@ public class IndexImporter extends TimerTask implements Closeable {
     _inindexImporterTimer.purge();
   }
 
+  public long getSegmentImportPendingCount() throws IOException {
+    Path path = _shardContext.getHdfsDirPath();
+    Configuration configuration = _shardContext.getTableContext().getConfiguration();
+    FileSystem fileSystem = path.getFileSystem(configuration);
+    for (int i = 0; i < 10; i++) {
+      try {
+        FileStatus[] listStatus = fileSystem.listStatus(path, new PathFilter() {
+          @Override
+          public boolean accept(Path path) {
+            if (path != null && path.getName().endsWith(COMMIT)) {
+              return true;
+            }
+            return false;
+          }
+        });
+        return listStatus.length;
+      } catch (FileNotFoundException e) {
+        LOG.warn("File not found error, retrying.");
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        return 0L;
+      }
+    }
+    throw new IOException("Received too many errors. Give up.");
+  }
+
+  public long getSegmentImportInProgressCount() throws IOException {
+    Path path = _shardContext.getHdfsDirPath();
+    Configuration configuration = _shardContext.getTableContext().getConfiguration();
+    FileSystem fileSystem = path.getFileSystem(configuration);
+    for (int i = 0; i < 10; i++) {
+      try {
+        FileStatus[] listStatus = fileSystem.listStatus(path, new PathFilter() {
+          @Override
+          public boolean accept(Path path) {
+            if (path != null && path.getName().endsWith(INUSE)) {
+              return true;
+            }
+            return false;
+          }
+        });
+        long count = 0;
+        for (FileStatus fileStatus : listStatus) {
+          Path p = fileStatus.getPath();
+          if (fileSystem.exists(new Path(p, INPROGRESS))) {
+            count++;
+          }
+        }
+        return count;
+      } catch (FileNotFoundException e) {
+        LOG.warn("File not found error, retrying.");
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        return 0L;
+      }
+    }
+    throw new IOException("Received too many errors. Give up.");
+  }
+
   @Override
   public void run() {
     // Only allow one import to occur in the process at a time.

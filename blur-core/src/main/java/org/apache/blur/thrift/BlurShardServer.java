@@ -251,6 +251,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
       tableStats.recordCount = _indexServer.getRecordCount(table);
       tableStats.rowCount = _indexServer.getRowCount(table);
       tableStats.bytes = _indexServer.getTableSize(table);
+      tableStats.segmentImportInProgressCount = _indexServer.getSegmentImportInProgressCount(table);
+      tableStats.segmentImportPendingCount = _indexServer.getSegmentImportPendingCount(table);
       return tableStats;
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get table stats [table={0}]", e, table);

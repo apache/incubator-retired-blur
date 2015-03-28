@@ -978,4 +978,20 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       return false;
     }
   }
+
+  @Override
+  public long getSegmentImportPendingCount() throws IOException {
+    if (_indexImporter != null) {
+      return _indexImporter.getSegmentImportPendingCount();
+    }
+    return 0l;
+  }
+
+  @Override
+  public long getSegmentImportInProgressCount() throws IOException {
+    if (_indexImporter != null) {
+      return _indexImporter.getSegmentImportInProgressCount();
+    }
+    return 0l;
+  }
 }

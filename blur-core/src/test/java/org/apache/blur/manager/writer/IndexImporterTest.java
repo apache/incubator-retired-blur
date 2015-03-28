@@ -197,6 +197,16 @@ public class IndexImporterTest {
       public void addBulkMutate(String bulkId, RowMutation mutation) throws IOException {
         throw new RuntimeException("Not implemented.");
       }
+
+      @Override
+      public long getSegmentImportPendingCount() throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getSegmentImportInProgressCount() throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
     };
   }
 

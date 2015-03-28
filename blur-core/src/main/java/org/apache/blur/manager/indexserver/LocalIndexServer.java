@@ -203,4 +203,14 @@ public class LocalIndexServer extends AbstractIndexServer {
   public Map<String, ShardState> getShardState(String table) {
     throw new RuntimeException("Not supported yet.");
   }
+
+  @Override
+  public long getSegmentImportInProgressCount(String table) {
+    return 0l;
+  }
+
+  @Override
+  public long getSegmentImportPendingCount(String table) {
+    return 0l;
+  }
 }

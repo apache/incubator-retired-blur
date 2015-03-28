@@ -189,7 +189,7 @@ public class BlurOutputFormatMiniClusterTest {
       if (tableStats.getRowCount() > 0) {
         break;
       }
-      Thread.sleep(5000);
+      Thread.sleep(100);
     }
 
     assertTrue(fileSystem.exists(tablePath));

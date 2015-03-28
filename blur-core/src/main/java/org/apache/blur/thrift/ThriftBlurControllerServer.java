@@ -188,7 +188,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     controllerServer.init();
 
-    final TraceStorage traceStorage = setupTraceStorage(configuration);
+    final TraceStorage traceStorage = setupTraceStorage(configuration, config);
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 

@@ -76,6 +76,7 @@ import org.apache.blur.thrift.server.TThreadedSelectorServer.Args.AcceptPolicy;
 import org.apache.blur.trace.LogTraceStorage;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.trace.hdfs.HdfsTraceStorage;
+import org.apache.hadoop.conf.Configuration;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
@@ -177,10 +178,12 @@ public class ThriftServer {
     return new File(System.getProperty("java.io.tmpdir"), "blur_tmp");
   }
 
-  public static TraceStorage setupTraceStorage(BlurConfiguration configuration) throws IOException {
+  public static TraceStorage setupTraceStorage(BlurConfiguration configuration, Configuration conf) throws IOException {
     String hdfsPath = configuration.get(BLUR_HDFS_TRACE_PATH);
     if (hdfsPath != null) {
-      return new HdfsTraceStorage(configuration);
+      HdfsTraceStorage hdfsTraceStorage = new HdfsTraceStorage(configuration);
+      hdfsTraceStorage.init(conf);
+      return hdfsTraceStorage;
     } else {
       return new LogTraceStorage(configuration);
     }

@@ -288,7 +288,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setConfiguration(configuration);
     shardServer.init();
 
-    final TraceStorage traceStorage = setupTraceStorage(configuration);
+    final TraceStorage traceStorage = setupTraceStorage(configuration, config);
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 

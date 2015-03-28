@@ -2928,7 +2928,7 @@ sub write {
 
 package Blur::TableStats;
 use base qw(Class::Accessor);
-Blur::TableStats->mk_accessors( qw( tableName bytes recordCount rowCount ) );
+Blur::TableStats->mk_accessors( qw( tableName bytes recordCount rowCount segmentImportPendingCount segmentImportInProgressCount ) );
 
 sub new {
   my $classname = shift;
@@ -2938,6 +2938,8 @@ sub new {
   $self->{bytes} = undef;
   $self->{recordCount} = undef;
   $self->{rowCount} = undef;
+  $self->{segmentImportPendingCount} = 0;
+  $self->{segmentImportInProgressCount} = 0;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{tableName}) {
       $self->{tableName} = $vals->{tableName};
@@ -2950,6 +2952,12 @@ sub new {
     }
     if (defined $vals->{rowCount}) {
       $self->{rowCount} = $vals->{rowCount};
+    }
+    if (defined $vals->{segmentImportPendingCount}) {
+      $self->{segmentImportPendingCount} = $vals->{segmentImportPendingCount};
+    }
+    if (defined $vals->{segmentImportInProgressCount}) {
+      $self->{segmentImportInProgressCount} = $vals->{segmentImportInProgressCount};
     }
   }
   return bless ($self, $classname);
@@ -2998,6 +3006,18 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^5$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{segmentImportPendingCount});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^6$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{segmentImportInProgressCount});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -3028,6 +3048,16 @@ sub write {
   if (defined $self->{rowCount}) {
     $xfer += $output->writeFieldBegin('rowCount', TType::I64, 4);
     $xfer += $output->writeI64($self->{rowCount});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{segmentImportPendingCount}) {
+    $xfer += $output->writeFieldBegin('segmentImportPendingCount', TType::I64, 5);
+    $xfer += $output->writeI64($self->{segmentImportPendingCount});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{segmentImportInProgressCount}) {
+    $xfer += $output->writeFieldBegin('segmentImportInProgressCount', TType::I64, 6);
+    $xfer += $output->writeI64($self->{segmentImportInProgressCount});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

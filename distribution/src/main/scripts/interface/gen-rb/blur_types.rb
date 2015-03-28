@@ -795,6 +795,8 @@ module Blur
     BYTES = 2
     RECORDCOUNT = 3
     ROWCOUNT = 4
+    SEGMENTIMPORTPENDINGCOUNT = 5
+    SEGMENTIMPORTINPROGRESSCOUNT = 6
 
     FIELDS = {
       # The table name.
@@ -804,7 +806,11 @@ module Blur
       # The record count.
       RECORDCOUNT => {:type => ::Thrift::Types::I64, :name => 'recordCount'},
       # The row count.
-      ROWCOUNT => {:type => ::Thrift::Types::I64, :name => 'rowCount'}
+      ROWCOUNT => {:type => ::Thrift::Types::I64, :name => 'rowCount'},
+      # The number of pending segment imports for this table.
+      SEGMENTIMPORTPENDINGCOUNT => {:type => ::Thrift::Types::I64, :name => 'segmentImportPendingCount', :default => 0},
+      # The number of segment imports in progress for this table.
+      SEGMENTIMPORTINPROGRESSCOUNT => {:type => ::Thrift::Types::I64, :name => 'segmentImportInProgressCount', :default => 0}
     }
 
     def struct_fields; FIELDS; end

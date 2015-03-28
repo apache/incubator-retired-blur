@@ -2744,6 +2744,8 @@ TableStats = function(args) {
   this.bytes = null;
   this.recordCount = null;
   this.rowCount = null;
+  this.segmentImportPendingCount = 0;
+  this.segmentImportInProgressCount = 0;
   if (args) {
     if (args.tableName !== undefined) {
       this.tableName = args.tableName;
@@ -2756,6 +2758,12 @@ TableStats = function(args) {
     }
     if (args.rowCount !== undefined) {
       this.rowCount = args.rowCount;
+    }
+    if (args.segmentImportPendingCount !== undefined) {
+      this.segmentImportPendingCount = args.segmentImportPendingCount;
+    }
+    if (args.segmentImportInProgressCount !== undefined) {
+      this.segmentImportInProgressCount = args.segmentImportInProgressCount;
     }
   }
 };
@@ -2801,6 +2809,20 @@ TableStats.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 5:
+      if (ftype == Thrift.Type.I64) {
+        this.segmentImportPendingCount = input.readI64().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 6:
+      if (ftype == Thrift.Type.I64) {
+        this.segmentImportInProgressCount = input.readI64().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -2830,6 +2852,16 @@ TableStats.prototype.write = function(output) {
   if (this.rowCount !== null && this.rowCount !== undefined) {
     output.writeFieldBegin('rowCount', Thrift.Type.I64, 4);
     output.writeI64(this.rowCount);
+    output.writeFieldEnd();
+  }
+  if (this.segmentImportPendingCount !== null && this.segmentImportPendingCount !== undefined) {
+    output.writeFieldBegin('segmentImportPendingCount', Thrift.Type.I64, 5);
+    output.writeI64(this.segmentImportPendingCount);
+    output.writeFieldEnd();
+  }
+  if (this.segmentImportInProgressCount !== null && this.segmentImportInProgressCount !== undefined) {
+    output.writeFieldBegin('segmentImportInProgressCount', Thrift.Type.I64, 6);
+    output.writeI64(this.segmentImportInProgressCount);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

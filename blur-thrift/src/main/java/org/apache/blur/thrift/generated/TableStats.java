@@ -59,6 +59,8 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField BYTES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("bytes", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)2);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField RECORD_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("recordCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)3);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField ROW_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("rowCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)4);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SEGMENT_IMPORT_PENDING_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("segmentImportPendingCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)5);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SEGMENT_IMPORT_IN_PROGRESS_COUNT_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("segmentImportInProgressCount", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -82,6 +84,14 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
    * The row count.
    */
   public long rowCount; // required
+  /**
+   * The number of pending segment imports for this table.
+   */
+  public long segmentImportPendingCount; // required
+  /**
+   * The number of segment imports in progress for this table.
+   */
+  public long segmentImportInProgressCount; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -100,7 +110,15 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     /**
      * The row count.
      */
-    ROW_COUNT((short)4, "rowCount");
+    ROW_COUNT((short)4, "rowCount"),
+    /**
+     * The number of pending segment imports for this table.
+     */
+    SEGMENT_IMPORT_PENDING_COUNT((short)5, "segmentImportPendingCount"),
+    /**
+     * The number of segment imports in progress for this table.
+     */
+    SEGMENT_IMPORT_IN_PROGRESS_COUNT((short)6, "segmentImportInProgressCount");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -123,6 +141,10 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
           return RECORD_COUNT;
         case 4: // ROW_COUNT
           return ROW_COUNT;
+        case 5: // SEGMENT_IMPORT_PENDING_COUNT
+          return SEGMENT_IMPORT_PENDING_COUNT;
+        case 6: // SEGMENT_IMPORT_IN_PROGRESS_COUNT
+          return SEGMENT_IMPORT_IN_PROGRESS_COUNT;
         default:
           return null;
       }
@@ -166,6 +188,8 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
   private static final int __BYTES_ISSET_ID = 0;
   private static final int __RECORDCOUNT_ISSET_ID = 1;
   private static final int __ROWCOUNT_ISSET_ID = 2;
+  private static final int __SEGMENTIMPORTPENDINGCOUNT_ISSET_ID = 3;
+  private static final int __SEGMENTIMPORTINPROGRESSCOUNT_ISSET_ID = 4;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -178,18 +202,28 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
     tmpMap.put(_Fields.ROW_COUNT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("rowCount", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+    tmpMap.put(_Fields.SEGMENT_IMPORT_PENDING_COUNT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("segmentImportPendingCount", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
+    tmpMap.put(_Fields.SEGMENT_IMPORT_IN_PROGRESS_COUNT, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("segmentImportInProgressCount", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(TableStats.class, metaDataMap);
   }
 
   public TableStats() {
+    this.segmentImportPendingCount = 0L;
+
+    this.segmentImportInProgressCount = 0L;
+
   }
 
   public TableStats(
     String tableName,
     long bytes,
     long recordCount,
-    long rowCount)
+    long rowCount,
+    long segmentImportPendingCount,
+    long segmentImportInProgressCount)
   {
     this();
     this.tableName = tableName;
@@ -199,6 +233,10 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     setRecordCountIsSet(true);
     this.rowCount = rowCount;
     setRowCountIsSet(true);
+    this.segmentImportPendingCount = segmentImportPendingCount;
+    setSegmentImportPendingCountIsSet(true);
+    this.segmentImportInProgressCount = segmentImportInProgressCount;
+    setSegmentImportInProgressCountIsSet(true);
   }
 
   /**
@@ -212,6 +250,8 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     this.bytes = other.bytes;
     this.recordCount = other.recordCount;
     this.rowCount = other.rowCount;
+    this.segmentImportPendingCount = other.segmentImportPendingCount;
+    this.segmentImportInProgressCount = other.segmentImportInProgressCount;
   }
 
   public TableStats deepCopy() {
@@ -227,6 +267,10 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     this.recordCount = 0;
     setRowCountIsSet(false);
     this.rowCount = 0;
+    this.segmentImportPendingCount = 0L;
+
+    this.segmentImportInProgressCount = 0L;
+
   }
 
   /**
@@ -346,6 +390,64 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __ROWCOUNT_ISSET_ID, value);
   }
 
+  /**
+   * The number of pending segment imports for this table.
+   */
+  public long getSegmentImportPendingCount() {
+    return this.segmentImportPendingCount;
+  }
+
+  /**
+   * The number of pending segment imports for this table.
+   */
+  public TableStats setSegmentImportPendingCount(long segmentImportPendingCount) {
+    this.segmentImportPendingCount = segmentImportPendingCount;
+    setSegmentImportPendingCountIsSet(true);
+    return this;
+  }
+
+  public void unsetSegmentImportPendingCount() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SEGMENTIMPORTPENDINGCOUNT_ISSET_ID);
+  }
+
+  /** Returns true if field segmentImportPendingCount is set (has been assigned a value) and false otherwise */
+  public boolean isSetSegmentImportPendingCount() {
+    return EncodingUtils.testBit(__isset_bitfield, __SEGMENTIMPORTPENDINGCOUNT_ISSET_ID);
+  }
+
+  public void setSegmentImportPendingCountIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SEGMENTIMPORTPENDINGCOUNT_ISSET_ID, value);
+  }
+
+  /**
+   * The number of segment imports in progress for this table.
+   */
+  public long getSegmentImportInProgressCount() {
+    return this.segmentImportInProgressCount;
+  }
+
+  /**
+   * The number of segment imports in progress for this table.
+   */
+  public TableStats setSegmentImportInProgressCount(long segmentImportInProgressCount) {
+    this.segmentImportInProgressCount = segmentImportInProgressCount;
+    setSegmentImportInProgressCountIsSet(true);
+    return this;
+  }
+
+  public void unsetSegmentImportInProgressCount() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __SEGMENTIMPORTINPROGRESSCOUNT_ISSET_ID);
+  }
+
+  /** Returns true if field segmentImportInProgressCount is set (has been assigned a value) and false otherwise */
+  public boolean isSetSegmentImportInProgressCount() {
+    return EncodingUtils.testBit(__isset_bitfield, __SEGMENTIMPORTINPROGRESSCOUNT_ISSET_ID);
+  }
+
+  public void setSegmentImportInProgressCountIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SEGMENTIMPORTINPROGRESSCOUNT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE_NAME:
@@ -380,6 +482,22 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       }
       break;
 
+    case SEGMENT_IMPORT_PENDING_COUNT:
+      if (value == null) {
+        unsetSegmentImportPendingCount();
+      } else {
+        setSegmentImportPendingCount((Long)value);
+      }
+      break;
+
+    case SEGMENT_IMPORT_IN_PROGRESS_COUNT:
+      if (value == null) {
+        unsetSegmentImportInProgressCount();
+      } else {
+        setSegmentImportInProgressCount((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -396,6 +514,12 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
 
     case ROW_COUNT:
       return Long.valueOf(getRowCount());
+
+    case SEGMENT_IMPORT_PENDING_COUNT:
+      return Long.valueOf(getSegmentImportPendingCount());
+
+    case SEGMENT_IMPORT_IN_PROGRESS_COUNT:
+      return Long.valueOf(getSegmentImportInProgressCount());
 
     }
     throw new IllegalStateException();
@@ -416,6 +540,10 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       return isSetRecordCount();
     case ROW_COUNT:
       return isSetRowCount();
+    case SEGMENT_IMPORT_PENDING_COUNT:
+      return isSetSegmentImportPendingCount();
+    case SEGMENT_IMPORT_IN_PROGRESS_COUNT:
+      return isSetSegmentImportInProgressCount();
     }
     throw new IllegalStateException();
   }
@@ -466,6 +594,24 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       if (!(this_present_rowCount && that_present_rowCount))
         return false;
       if (this.rowCount != that.rowCount)
+        return false;
+    }
+
+    boolean this_present_segmentImportPendingCount = true;
+    boolean that_present_segmentImportPendingCount = true;
+    if (this_present_segmentImportPendingCount || that_present_segmentImportPendingCount) {
+      if (!(this_present_segmentImportPendingCount && that_present_segmentImportPendingCount))
+        return false;
+      if (this.segmentImportPendingCount != that.segmentImportPendingCount)
+        return false;
+    }
+
+    boolean this_present_segmentImportInProgressCount = true;
+    boolean that_present_segmentImportInProgressCount = true;
+    if (this_present_segmentImportInProgressCount || that_present_segmentImportInProgressCount) {
+      if (!(this_present_segmentImportInProgressCount && that_present_segmentImportInProgressCount))
+        return false;
+      if (this.segmentImportInProgressCount != that.segmentImportInProgressCount)
         return false;
     }
 
@@ -525,6 +671,26 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetSegmentImportPendingCount()).compareTo(typedOther.isSetSegmentImportPendingCount());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSegmentImportPendingCount()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.segmentImportPendingCount, typedOther.segmentImportPendingCount);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetSegmentImportInProgressCount()).compareTo(typedOther.isSetSegmentImportInProgressCount());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSegmentImportInProgressCount()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.segmentImportInProgressCount, typedOther.segmentImportInProgressCount);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -563,6 +729,14 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
     if (!first) sb.append(", ");
     sb.append("rowCount:");
     sb.append(this.rowCount);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("segmentImportPendingCount:");
+    sb.append(this.segmentImportPendingCount);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("segmentImportInProgressCount:");
+    sb.append(this.segmentImportInProgressCount);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -641,6 +815,22 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 5: // SEGMENT_IMPORT_PENDING_COUNT
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
+              struct.segmentImportPendingCount = iprot.readI64();
+              struct.setSegmentImportPendingCountIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 6: // SEGMENT_IMPORT_IN_PROGRESS_COUNT
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
+              struct.segmentImportInProgressCount = iprot.readI64();
+              struct.setSegmentImportInProgressCountIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -669,6 +859,12 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(ROW_COUNT_FIELD_DESC);
       oprot.writeI64(struct.rowCount);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(SEGMENT_IMPORT_PENDING_COUNT_FIELD_DESC);
+      oprot.writeI64(struct.segmentImportPendingCount);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(SEGMENT_IMPORT_IN_PROGRESS_COUNT_FIELD_DESC);
+      oprot.writeI64(struct.segmentImportInProgressCount);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -700,7 +896,13 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       if (struct.isSetRowCount()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetSegmentImportPendingCount()) {
+        optionals.set(4);
+      }
+      if (struct.isSetSegmentImportInProgressCount()) {
+        optionals.set(5);
+      }
+      oprot.writeBitSet(optionals, 6);
       if (struct.isSetTableName()) {
         oprot.writeString(struct.tableName);
       }
@@ -713,12 +915,18 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       if (struct.isSetRowCount()) {
         oprot.writeI64(struct.rowCount);
       }
+      if (struct.isSetSegmentImportPendingCount()) {
+        oprot.writeI64(struct.segmentImportPendingCount);
+      }
+      if (struct.isSetSegmentImportInProgressCount()) {
+        oprot.writeI64(struct.segmentImportInProgressCount);
+      }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, TableStats struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(6);
       if (incoming.get(0)) {
         struct.tableName = iprot.readString();
         struct.setTableNameIsSet(true);
@@ -734,6 +942,14 @@ public class TableStats implements org.apache.blur.thirdparty.thrift_0_9_0.TBase
       if (incoming.get(3)) {
         struct.rowCount = iprot.readI64();
         struct.setRowCountIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.segmentImportPendingCount = iprot.readI64();
+        struct.setSegmentImportPendingCountIsSet(true);
+      }
+      if (incoming.get(5)) {
+        struct.segmentImportInProgressCount = iprot.readI64();
+        struct.setSegmentImportInProgressCountIsSet(true);
       }
     }
   }

@@ -681,7 +681,15 @@ struct TableStats {
   /**
    * The row count.
    */
-  4:i64 rowCount
+  4:i64 rowCount,
+  /**
+   * The number of pending segment imports for this table.
+   */
+  5:i64 segmentImportPendingCount = 0,
+  /**
+   * The number of segment imports in progress for this table.
+   */
+  6:i64 segmentImportInProgressCount = 0
 }
 
 /**

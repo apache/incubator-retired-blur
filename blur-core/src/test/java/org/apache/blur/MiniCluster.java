@@ -768,32 +768,54 @@ public class MiniCluster {
     startDfs(conf, true, path);
   }
 
-  public void startDfs(Configuration conf, boolean format, String path) {
-    _conf = conf;
-    String perm;
-    Path p = new Path(new File(path).getAbsolutePath());
-    try {
-      FileSystem fileSystem = p.getFileSystem(conf);
-      if (!fileSystem.exists(p)) {
-        if (!fileSystem.mkdirs(p)) {
-          throw new RuntimeException("Could not create path [" + path + "]");
+  public void startDfs(final Configuration conf, final boolean format, final String path) {
+    startDfs(conf, format, path, null);
+  }
+
+  public void startDfs(final Configuration conf, final boolean format, final String path, final String[] racks) {
+    Thread thread = new Thread(group, new Runnable() {
+      @SuppressWarnings("deprecation")
+      @Override
+      public void run() {
+        _conf = conf;
+        String perm;
+        Path p = new Path(new File(path).getAbsolutePath());
+        try {
+          FileSystem fileSystem = p.getFileSystem(conf);
+          if (!fileSystem.exists(p)) {
+            if (!fileSystem.mkdirs(p)) {
+              throw new RuntimeException("Could not create path [" + path + "]");
+            }
+          }
+          FileStatus fileStatus = fileSystem.getFileStatus(p);
+          FsPermission permission = fileStatus.getPermission();
+          perm = permission.getUserAction().ordinal() + "" + permission.getGroupAction().ordinal() + ""
+              + permission.getOtherAction().ordinal();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+        LOG.info("dfs.datanode.data.dir.perm=" + perm);
+        conf.set("dfs.datanode.data.dir.perm", perm);
+        System.setProperty("test.build.data", path);
+        try {
+          if (racks == null) {
+            cluster = new MiniDFSCluster(conf, 1, format, racks);
+          } else {
+            cluster = new MiniDFSCluster(conf, racks.length, format, racks);
+          }
+        } catch (Exception e) {
+          LOG.error("error opening file system", e);
+          throw new RuntimeException(e);
         }
       }
-      FileStatus fileStatus = fileSystem.getFileStatus(p);
-      FsPermission permission = fileStatus.getPermission();
-      perm = permission.getUserAction().ordinal() + "" + permission.getGroupAction().ordinal() + ""
-          + permission.getOtherAction().ordinal();
+    });
+    thread.start();
+    try {
+      thread.join();
+      cluster.waitActive();
     } catch (IOException e) {
       throw new RuntimeException(e);
-    }
-    LOG.info("dfs.datanode.data.dir.perm=" + perm);
-    conf.set("dfs.datanode.data.dir.perm", perm);
-    System.setProperty("test.build.data", path);
-    try {
-      cluster = new MiniDFSCluster(conf, 1, true, (String[]) null);
-      cluster.waitActive();
-    } catch (Exception e) {
-      LOG.error("error opening file system", e);
+    } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
   }

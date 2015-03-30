@@ -506,6 +506,13 @@ public class SuperParserTest {
     assertQuery(q1, q);
   }
 
+  @Test
+  public void test43() throws ParseException {
+    Query q1 = parseSq("+(+f.c:(s\\-a\\-b))");
+    Query q2 = parseSq("+<+f.c:(s\\-a\\-b)>");
+    assertQuery(q1, q2);
+  }
+
   public static BooleanClause bc_m(Query q) {
     return new BooleanClause(q, Occur.MUST);
   }

@@ -44,6 +44,7 @@ public class BlurQueryParser extends QueryParser {
     _fieldNames = fieldNames == null ? new HashMap<Query, String>() : fieldNames;
     _fieldManager = fieldManager;
     setAllowLeadingWildcard(true);
+    setAutoGeneratePhraseQueries(true);
   }
 
   @Override

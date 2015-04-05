@@ -751,6 +751,10 @@ public class MiniCluster {
   public void startZooKeeper(final Properties properties, boolean format, String path, final boolean randomPort) {
     zkMiniCluster.startZooKeeper(properties, format, path, randomPort);
   }
+  
+  public FileSystem getFileSystem() throws IOException {
+    return cluster.getFileSystem();
+  }
 
   public URI getFileSystemUri() throws IOException {
     return cluster.getFileSystem().getUri();

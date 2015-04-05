@@ -67,11 +67,12 @@ import com.yammer.metrics.core.MetricName;
 
 public class HdfsDirectory extends Directory implements LastModified, HdfsSymlink {
 
+  private static final Log LOG = LogFactory.getLog(HdfsDirectory.class);
+
   public static final String LNK = ".lnk";
 
   private static final String UTF_8 = "UTF-8";
-
-  private static final Log LOG = LogFactory.getLog(HdfsDirectory.class);
+  private static final String HDFS_SCHEMA = "hdfs";
 
   /**
    * We keep the metrics separate per filesystem.
@@ -146,7 +147,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     _fileSystem = path.getFileSystem(configuration);
     _path = _fileSystem.makeQualified(path);
     _sequentialReadControl = sequentialReadControl;
-    if (_path.toUri().getScheme().equals("hdfs")) {
+    if (_path.toUri().getScheme().equals(HDFS_SCHEMA)) {
       _asyncClosing = true;
     } else {
       _asyncClosing = false;
@@ -214,7 +215,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     };
   }
 
-  private String getRealFileName(String name) {
+  protected String getRealFileName(String name) {
     if (name.endsWith(LNK)) {
       int lastIndexOf = name.lastIndexOf(LNK);
       return name.substring(0, lastIndexOf);
@@ -222,7 +223,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     return name;
   }
 
-  private MetricsGroup createNewMetricsGroup(String scope) {
+  protected MetricsGroup createNewMetricsGroup(String scope) {
     MetricName readRandomAccessName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Random Latency in \u00B5s", scope);
     MetricName readStreamAccessName = new MetricName(ORG_APACHE_BLUR, HDFS, "Read Stream Latency in \u00B5s", scope);
     MetricName writeAcccessName = new MetricName(ORG_APACHE_BLUR, HDFS, "Write Latency in \u00B5s", scope);
@@ -244,12 +245,12 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   @Override
   public String toString() {
-    return "HdfsDirectory path=[" + _path + "]";
+    return "HdfsDirectory path=[" + getPath() + "]";
   }
 
   @Override
   public IndexOutput createOutput(final String name, IOContext context) throws IOException {
-    LOG.debug("createOutput [{0}] [{1}] [{2}]", name, context, _path);
+    LOG.debug("createOutput [{0}] [{1}] [{2}]", name, context, getPath());
     if (fileExists(name)) {
       deleteFile(name);
     }
@@ -303,7 +304,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   @Override
   public IndexInput openInput(String name, IOContext context) throws IOException {
-    LOG.debug("openInput [{0}] [{1}] [{2}]", name, context, _path);
+    LOG.debug("openInput [{0}] [{1}] [{2}]", name, context, getPath());
     if (!fileExists(name)) {
       throw new FileNotFoundException("File [" + name + "] not found.");
     }
@@ -333,16 +334,16 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   @Override
   public String[] listAll() throws IOException {
-    LOG.debug("listAll [{0}]", _path);
+    LOG.debug("listAll [{0}]", getPath());
 
     if (_useCache) {
       Set<String> names = new HashSet<String>(_fileStatusMap.keySet());
       return names.toArray(new String[names.size()]);
     }
 
-    Tracer trace = Trace.trace("filesystem - list", Trace.param("path", _path));
+    Tracer trace = Trace.trace("filesystem - list", Trace.param("path", getPath()));
     try {
-      FileStatus[] files = _fileSystem.listStatus(_path, new PathFilter() {
+      FileStatus[] files = _fileSystem.listStatus(getPath(), new PathFilter() {
         @Override
         public boolean accept(Path path) {
           try {
@@ -364,7 +365,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   @Override
   public boolean fileExists(String name) throws IOException {
-    LOG.debug("fileExists [{0}] [{1}]", name, _path);
+    LOG.debug("fileExists [{0}] [{1}]", name, getPath());
     if (_useCache) {
       return _fileStatusMap.containsKey(name);
     }
@@ -383,7 +384,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   @Override
   public void deleteFile(String name) throws IOException {
-    LOG.debug("deleteFile [{0}] [{1}]", name, _path);
+    LOG.debug("deleteFile [{0}] [{1}]", name, getPath());
     if (fileExists(name)) {
       if (_useCache) {
         _fileStatusMap.remove(name);
@@ -395,7 +396,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   }
 
   protected void delete(String name) throws IOException {
-    Path path = getPathOrSymlink(name);
+    Path path = getPathOrSymlinkForDelete(name);
     FSDataInputStream inputStream = _inputMap.remove(path);
     Tracer trace = Trace.trace("filesystem - delete", Trace.param("path", path));
     if (inputStream != null) {
@@ -414,7 +415,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   @Override
   public long fileLength(String name) throws IOException {
-    LOG.debug("fileLength [{0}] [{1}]", name, _path);
+    LOG.debug("fileLength [{0}] [{1}]", name, getPath());
     if (_useCache) {
       FStat fStat = _fileStatusMap.get(name);
       if (fStat == null) {
@@ -450,21 +451,21 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     return _path;
   }
 
-  private Path getPath(String name) throws IOException {
+  protected Path getPath(String name) throws IOException {
     if (isSymlink(name)) {
       return getRealFilePathFromSymlink(name);
     }
     return new Path(_path, name);
   }
 
-  private Path getPathOrSymlink(String name) throws IOException {
+  protected Path getPathOrSymlinkForDelete(String name) throws IOException {
     if (isSymlink(name)) {
       return new Path(_path, name + LNK);
     }
     return new Path(_path, name);
   }
 
-  private Path getRealFilePathFromSymlink(String name) throws IOException {
+  protected Path getRealFilePathFromSymlink(String name) throws IOException {
     // need to cache
     if (_useCache) {
       Path path = _symlinkPathMap.get(name);
@@ -496,7 +497,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     return path;
   }
 
-  private boolean isSymlink(String name) throws IOException {
+  protected boolean isSymlink(String name) throws IOException {
     if (_useCache) {
       Boolean b = _symlinkMap.get(name);
       if (b != null) {
@@ -556,7 +557,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     super.copy(to, src, dest, context);
   }
 
-  private boolean createSymLink(HdfsDirectory to, String src, String dest) throws IOException {
+  protected boolean createSymLink(HdfsDirectory to, String src, String dest) throws IOException {
     Path srcPath = getPath(src);
     Path destDir = to.getPath();
     LOG.info("Creating symlink with name [{0}] to [{1}]", dest, srcPath);
@@ -569,7 +570,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     return true;
   }
 
-  private Path getSymPath(Path destDir, String destFilename) {
+  protected Path getSymPath(Path destDir, String destFilename) {
     return new Path(destDir, destFilename + LNK);
   }
 

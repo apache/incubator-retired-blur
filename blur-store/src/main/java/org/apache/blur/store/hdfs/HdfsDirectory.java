@@ -132,7 +132,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected final Map<String, FStat> _fileStatusMap = new ConcurrentHashMap<String, FStat>();
   protected final Map<String, Boolean> _symlinkMap = new ConcurrentHashMap<String, Boolean>();
   protected final Map<String, Path> _symlinkPathMap = new ConcurrentHashMap<String, Path>();
-  protected final Map<Path, FSDataInputStream> _inputMap = new ConcurrentHashMap<Path, FSDataInputStream>();
+  protected final Map<Path, FSDataInputRandomAccess> _inputMap = new ConcurrentHashMap<Path, FSDataInputRandomAccess>();
   protected final boolean _useCache = true;
   protected final boolean _asyncClosing;
   protected final Path _localCachePath = new Path("/tmp/cache");
@@ -192,7 +192,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
           WeakRef weakRef = iterator.next();
           if (weakRef.isClosable()) {
             iterator.remove();
-            CLOSING_QUEUE.add(weakRef._inputStream);
+            CLOSING_QUEUE.add(weakRef._closeable);
           }
         }
       }
@@ -308,7 +308,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     if (!fileExists(name)) {
       throw new FileNotFoundException("File [" + name + "] not found.");
     }
-    FSDataInputStream inputRandomAccess = openForInput(name);
+    FSDataInputRandomAccess inputRandomAccess = openForInput(name);
     long fileLength = fileLength(name);
     Path path = getPath(name);
     HdfsIndexInput input = new HdfsIndexInput(this, inputRandomAccess, fileLength, _metricsGroup, path,
@@ -316,15 +316,27 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     return input;
   }
 
-  protected synchronized FSDataInputStream openForInput(String name) throws IOException {
+  protected synchronized FSDataInputRandomAccess openForInput(String name) throws IOException {
     Path path = getPath(name);
-    FSDataInputStream input = _inputMap.get(path);
+    FSDataInputRandomAccess input = _inputMap.get(path);
     if (input != null) {
       return input;
     }
     Tracer trace = Trace.trace("filesystem - open", Trace.param("path", path));
     try {
-      FSDataInputStream randomInputStream = _fileSystem.open(path);
+      final FSDataInputStream inputStream = _fileSystem.open(path);
+      FSDataInputRandomAccess randomInputStream = new FSDataInputRandomAccess() {
+
+        @Override
+        public void close() throws IOException {
+          inputStream.close();
+        }
+
+        @Override
+        public int read(long filePointer, byte[] b, int offset, int length) throws IOException {
+          return inputStream.read(filePointer, b, offset, length);
+        }
+      };
       _inputMap.put(path, randomInputStream);
       return randomInputStream;
     } finally {
@@ -397,7 +409,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   protected void delete(String name) throws IOException {
     Path path = getPathOrSymlinkForDelete(name);
-    FSDataInputStream inputStream = _inputMap.remove(path);
+    FSDataInputRandomAccess inputStream = _inputMap.remove(path);
     Tracer trace = Trace.trace("filesystem - delete", Trace.param("path", path));
     if (inputStream != null) {
       IOUtils.closeQuietly(inputStream);
@@ -579,23 +591,49 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     return this;
   }
 
-  protected FSDataInputStream openForSequentialInput(Path p, Object key) throws IOException {
+  protected FSDataInputSequentialAccess openForSequentialInput(Path p, Object key) throws IOException {
     return openInputStream(_fileSystem, p, key);
   }
 
-  protected FSDataInputStream openInputStream(FileSystem fileSystem, Path p, Object key) throws IOException {
-    FSDataInputStream input = fileSystem.open(p);
+  protected FSDataInputSequentialAccess openInputStream(FileSystem fileSystem, Path p, Object key) throws IOException {
+    final FSDataInputStream input = fileSystem.open(p);
     WEAK_CLOSING_QUEUE.add(new WeakRef(input, key));
-    return input;
+    return new FSDataInputSequentialAccess() {
+
+      @Override
+      public void close() throws IOException {
+        input.close();
+      }
+
+      @Override
+      public void skip(long amount) throws IOException {
+        input.skip(amount);
+      }
+
+      @Override
+      public void seek(long filePointer) throws IOException {
+        input.seek(filePointer);
+      }
+
+      @Override
+      public void readFully(byte[] b, int offset, int length) throws IOException {
+        input.readFully(b, offset, length);
+      }
+
+      @Override
+      public long getPos() throws IOException {
+        return input.getPos();
+      }
+    };
   }
 
   static class WeakRef {
 
-    final FSDataInputStream _inputStream;
+    final Closeable _closeable;
     final WeakReference<Object> _ref;
 
-    WeakRef(FSDataInputStream input, Object key) {
-      _inputStream = input;
+    WeakRef(Closeable closeable, Object key) {
+      _closeable = closeable;
       _ref = new WeakReference<Object>(key);
     }
 

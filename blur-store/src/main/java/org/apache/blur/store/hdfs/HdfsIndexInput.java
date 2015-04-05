@@ -23,7 +23,6 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.buffer.ReusedBufferedIndexInput;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
-import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.IndexInput;
 
@@ -32,7 +31,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
   private static final Log LOG = LogFactory.getLog(HdfsIndexInput.class);
 
   private final long _length;
-  private final FSDataInputStream _inputStream;
+  private final FSDataInputRandomAccess _input;
   private final MetricsGroup _metricsGroup;
   private final Path _path;
   private final HdfsDirectory _dir;
@@ -40,14 +39,14 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
   private SequentialReadControl _sequentialReadControl;
 
   private long _prevFilePointer;
-  private FSDataInputStream _sequentialInputStream;
+  private FSDataInputSequentialAccess _sequentialInput;
 
-  public HdfsIndexInput(HdfsDirectory dir, FSDataInputStream inputStream, long length, MetricsGroup metricsGroup,
+  public HdfsIndexInput(HdfsDirectory dir, FSDataInputRandomAccess inputStream, long length, MetricsGroup metricsGroup,
       Path path, SequentialReadControl sequentialReadControl) throws IOException {
     super("HdfsIndexInput(" + path.toString() + ")");
     _sequentialReadControl = sequentialReadControl;
     _dir = dir;
-    _inputStream = inputStream;
+    _input = inputStream;
     _length = length;
     _metricsGroup = metricsGroup;
     _path = path;
@@ -81,7 +80,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
         // "]");
 
         if (_sequentialReadControl.shouldSkipInput(filePointer, _prevFilePointer)) {
-          _sequentialInputStream.skip(filePointer - _prevFilePointer);
+          _sequentialInput.skip(filePointer - _prevFilePointer);
         } else {
           LOG.debug("Current Pos [{0}] Prev Pos [{1}] Diff [{2}]", filePointer, _prevFilePointer, filePointer
               - _prevFilePointer);
@@ -91,20 +90,20 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
     if (_sequentialReadControl.switchToSequentialRead()) {
 
       _sequentialReadControl.setEnabled(true);
-      if (_sequentialInputStream == null) {
+      if (_sequentialInput == null) {
         Tracer trace = Trace.trace("filesystem - read - openForSequentialInput", Trace.param("file", _path),
             Trace.param("location", getFilePointer()));
-        _sequentialInputStream = _dir.openForSequentialInput(_path, this);
+        _sequentialInput = _dir.openForSequentialInput(_path, this);
         trace.done();
       }
     }
     if (_sequentialReadControl.isEnabled()) {
-      long pos = _sequentialInputStream.getPos();
+      long pos = _sequentialInput.getPos();
       if (pos != filePointer) {
-        _sequentialInputStream.seek(filePointer);
+        _sequentialInput.seek(filePointer);
       }
-      _sequentialInputStream.readFully(b, offset, length);
-      filePointer = _sequentialInputStream.getPos();
+      _sequentialInput.readFully(b, offset, length);
+      filePointer = _sequentialInput.getPos();
       // @TODO add metrics back
     } else {
       filePointer = randomAccessRead(b, offset, length, start, filePointer);
@@ -119,7 +118,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
       int olen = length;
       while (length > 0) {
         int amount;
-        amount = _inputStream.read(filePointer, b, offset, length);
+        amount = _input.read(filePointer, b, offset, length);
         length -= amount;
         offset += amount;
         filePointer += amount;
@@ -136,7 +135,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
   @Override
   public IndexInput clone() {
     HdfsIndexInput clone = (HdfsIndexInput) super.clone();
-    clone._sequentialInputStream = null;
+    clone._sequentialInput = null;
     clone._sequentialReadControl = _sequentialReadControl.clone();
     return clone;
   }

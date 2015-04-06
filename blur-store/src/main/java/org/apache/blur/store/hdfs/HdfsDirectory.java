@@ -412,7 +412,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   }
 
   protected void delete(String name) throws IOException {
-    Path path = getPathOrSymlinkForDelete(name);
+    Path path = getPath();
     FSDataInputRandomAccess inputStream = _inputMap.remove(path);
     Tracer trace = Trace.trace("filesystem - delete", Trace.param("path", path));
     if (inputStream != null) {
@@ -423,7 +423,8 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       _symlinkPathMap.remove(name);
     }
     try {
-      _fileSystem.delete(path, true);
+      Path symlinkPath = getPathOrSymlinkForDelete(name);
+      _fileSystem.delete(symlinkPath, true);
     } finally {
       trace.done();
     }

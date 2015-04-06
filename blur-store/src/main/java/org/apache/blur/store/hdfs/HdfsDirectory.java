@@ -135,7 +135,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected final Map<Path, FSDataInputRandomAccess> _inputMap = new ConcurrentHashMap<Path, FSDataInputRandomAccess>();
   protected final boolean _useCache = true;
   protected final boolean _asyncClosing;
-  protected final Path _localCachePath = new Path("/tmp/cache");
   protected final SequentialReadControl _sequentialReadControl;
 
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
@@ -310,14 +309,13 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     }
     FSDataInputRandomAccess inputRandomAccess = openForInput(name);
     long fileLength = fileLength(name);
-    Path path = getPath(name);
-    HdfsIndexInput input = new HdfsIndexInput(this, inputRandomAccess, fileLength, _metricsGroup, path,
+    HdfsIndexInput input = new HdfsIndexInput(this, inputRandomAccess, fileLength, _metricsGroup, name,
         _sequentialReadControl.clone());
     return input;
   }
 
   protected synchronized FSDataInputRandomAccess openForInput(String name) throws IOException {
-    Path path = getPath(name);
+    final Path path = getPath(name);
     FSDataInputRandomAccess input = _inputMap.get(path);
     if (input != null) {
       return input;
@@ -336,6 +334,12 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
         public int read(long filePointer, byte[] b, int offset, int length) throws IOException {
           return inputStream.read(filePointer, b, offset, length);
         }
+
+        @Override
+        public String toString() {
+          return path.toString();
+        }
+
       };
       _inputMap.put(path, randomInputStream);
       return randomInputStream;
@@ -591,14 +595,15 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     return this;
   }
 
-  protected FSDataInputSequentialAccess openForSequentialInput(Path p, Object key) throws IOException {
-    return openInputStream(_fileSystem, p, key);
+  protected FSDataInputSequentialAccess openForSequentialInput(String name, Object key) throws IOException {
+    return openInputStream(name, key, _fileSystem);
   }
 
-  protected FSDataInputSequentialAccess openInputStream(FileSystem fileSystem, Path p, Object key) throws IOException {
-    final FSDataInputStream input = fileSystem.open(p);
-    WEAK_CLOSING_QUEUE.add(new WeakRef(input, key));
-    return new FSDataInputSequentialAccess() {
+  protected FSDataInputSequentialAccess openInputStream(String name, Object key, FileSystem fileSystem)
+      throws IOException {
+    final Path path = getPath(name);
+    final FSDataInputStream input = fileSystem.open(path);
+    FSDataInputSequentialAccess sequentialAccess = new FSDataInputSequentialAccess() {
 
       @Override
       public void close() throws IOException {
@@ -624,7 +629,15 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       public long getPos() throws IOException {
         return input.getPos();
       }
+
+      @Override
+      public String toString() {
+        return path.toString();
+      }
+
     };
+    WEAK_CLOSING_QUEUE.add(new WeakRef(sequentialAccess, key));
+    return sequentialAccess;
   }
 
   static class WeakRef {
@@ -641,16 +654,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       return _ref.get() == null ? true : false;
     }
 
-  }
-
-  protected boolean isAlreadyExistsLocally(FileSystem localFileSystem, Path localFile, long length) throws IOException {
-    if (localFileSystem.exists(localFile)) {
-      FileStatus fileStatus = localFileSystem.getFileStatus(localFile);
-      if (fileStatus.getLen() == length) {
-        return true;
-      }
-    }
-    return false;
   }
 
 }

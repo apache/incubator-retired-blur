@@ -23,7 +23,6 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.buffer.ReusedBufferedIndexInput;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
-import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.IndexInput;
 
 public class HdfsIndexInput extends ReusedBufferedIndexInput {
@@ -33,7 +32,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
   private final long _length;
   private final FSDataInputRandomAccess _input;
   private final MetricsGroup _metricsGroup;
-  private final Path _path;
+  private final String _name;
   private final HdfsDirectory _dir;
 
   private SequentialReadControl _sequentialReadControl;
@@ -41,15 +40,15 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
   private long _prevFilePointer;
   private FSDataInputSequentialAccess _sequentialInput;
 
-  public HdfsIndexInput(HdfsDirectory dir, FSDataInputRandomAccess inputStream, long length, MetricsGroup metricsGroup,
-      Path path, SequentialReadControl sequentialReadControl) throws IOException {
-    super("HdfsIndexInput(" + path.toString() + ")");
+  public HdfsIndexInput(HdfsDirectory dir, FSDataInputRandomAccess input, long length, MetricsGroup metricsGroup,
+      String name, SequentialReadControl sequentialReadControl) throws IOException {
+    super("HdfsIndexInput(" + name + "@" + "" + input + ")");
     _sequentialReadControl = sequentialReadControl;
     _dir = dir;
-    _input = inputStream;
+    _input = input;
     _length = length;
     _metricsGroup = metricsGroup;
-    _path = path;
+    _name = name;
   }
 
   @Override
@@ -91,9 +90,9 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
 
       _sequentialReadControl.setEnabled(true);
       if (_sequentialInput == null) {
-        Tracer trace = Trace.trace("filesystem - read - openForSequentialInput", Trace.param("file", _path),
+        Tracer trace = Trace.trace("filesystem - read - openForSequentialInput", Trace.param("file", toString()),
             Trace.param("location", getFilePointer()));
-        _sequentialInput = _dir.openForSequentialInput(_path, this);
+        _sequentialInput = _dir.openForSequentialInput(_name, this);
         trace.done();
       }
     }
@@ -112,7 +111,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
   }
 
   private long randomAccessRead(byte[] b, int offset, int length, long start, long filePointer) throws IOException {
-    Tracer trace = Trace.trace("filesystem - read - randomAccessRead", Trace.param("file", _path),
+    Tracer trace = Trace.trace("filesystem - read - randomAccessRead", Trace.param("file", toString()),
         Trace.param("location", getFilePointer()), Trace.param("length", length));
     try {
       int olen = length;

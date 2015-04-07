@@ -258,4 +258,12 @@ public abstract class FieldTypeDefinition {
     return _multiValueField;
   }
 
+  /**
+   * If true this will allow the same alternate field name(s) across instances of the same {@link FieldTypeDefinition}.
+   * @return booelan.
+   */
+  public boolean isAlternateFieldNamesSharedAcrossInstances() {
+    return false;
+  }
+
 }

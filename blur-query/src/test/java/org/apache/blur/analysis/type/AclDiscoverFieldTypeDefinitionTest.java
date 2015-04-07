@@ -63,6 +63,7 @@ import org.junit.Test;
 public class AclDiscoverFieldTypeDefinitionTest {
 
   private static final String FAM = "fam";
+  private static final String FAM2 = "fam2";
 
   private Directory _dir = new RAMDirectory();
   private AccessControlFactory _accessControlFactory = new FilterAccessControlFactory();
@@ -147,6 +148,8 @@ public class AclDiscoverFieldTypeDefinitionTest {
   private void setupFieldManager(BaseFieldManager fieldManager) throws IOException {
     fieldManager.addColumnDefinition(FAM, "string", null, false, "string", false, false, null);
     fieldManager.addColumnDefinition(FAM, "discover", null, false, "acl-discover", false, false, null);
+    fieldManager.addColumnDefinition(FAM2, "string", null, false, "string", false, false, null);
+    fieldManager.addColumnDefinition(FAM2, "discover", null, false, "acl-discover", false, false, null);
   }
 
   protected BaseFieldManager getFieldManager(Analyzer a) throws IOException {

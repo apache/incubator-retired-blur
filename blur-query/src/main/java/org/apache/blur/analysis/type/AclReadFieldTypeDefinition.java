@@ -56,12 +56,17 @@ public class AclReadFieldTypeDefinition extends FieldTypeDefinition {
 
   @Override
   public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
-    
+
   }
 
   @Override
   public Collection<String> getAlternateFieldNames() {
     return ALT_FIELD_NAMES;
+  }
+
+  @Override
+  public boolean isAlternateFieldNamesSharedAcrossInstances() {
+    return true;
   }
 
   @Override

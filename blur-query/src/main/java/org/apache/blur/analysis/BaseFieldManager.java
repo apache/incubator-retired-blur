@@ -405,8 +405,17 @@ public abstract class BaseFieldManager extends FieldManager {
     fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexed, fieldType, sortable, multiValueField,
         props);
     synchronized (_fieldNameToDefMap) {
+      boolean alternateFieldNamesSharedAcrossInstances = fieldTypeDefinition
+          .isAlternateFieldNamesSharedAcrossInstances();
       for (String alternateFieldName : fieldTypeDefinition.getAlternateFieldNames()) {
-        if (_fieldNameToDefMap.containsKey(alternateFieldName)) {
+        if (alternateFieldNamesSharedAcrossInstances && _fieldNameToDefMap.containsKey(alternateFieldName)) {
+          FieldTypeDefinition ftd = _fieldNameToDefMap.get(alternateFieldName);
+          if (!ftd.getName().equals(fieldTypeDefinition.getName())) {
+            throw new IllegalArgumentException("Alternate fieldName collision of [" + alternateFieldName
+                + "] from field type definition [" + fieldTypeDefinition
+                + "], this field type definition cannot be added.");
+          }
+        } else if (_fieldNameToDefMap.containsKey(alternateFieldName)) {
           throw new IllegalArgumentException("Alternate fieldName collision of [" + alternateFieldName
               + "] from field type definition [" + fieldTypeDefinition
               + "], this field type definition cannot be added.");

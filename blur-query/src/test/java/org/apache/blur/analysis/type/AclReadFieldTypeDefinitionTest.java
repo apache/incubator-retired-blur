@@ -59,6 +59,7 @@ import org.junit.Test;
 public class AclReadFieldTypeDefinitionTest {
 
   private static final String FAM = "fam";
+  private static final String FAM2 = "fam2";
 
   private Directory _dir = new RAMDirectory();
   private AccessControlFactory _accessControlFactory = new FilterAccessControlFactory();
@@ -143,6 +144,8 @@ public class AclReadFieldTypeDefinitionTest {
   private void setupFieldManager(BaseFieldManager fieldManager) throws IOException {
     fieldManager.addColumnDefinition(FAM, "string", null, false, "string", false, false, null);
     fieldManager.addColumnDefinition(FAM, "read", null, false, "acl-read", false, false, null);
+    fieldManager.addColumnDefinition(FAM2, "string", null, false, "string", false, false, null);
+    fieldManager.addColumnDefinition(FAM2, "read", null, false, "acl-read", false, false, null);
   }
 
   protected BaseFieldManager getFieldManager(Analyzer a) throws IOException {

@@ -720,7 +720,13 @@ public class BlurShardServer extends TableAdmin implements Iface {
       TException {
     try {
       List<String> tableListByCluster = tableListByCluster(_cluster);
-      _indexManager.bulkMutateFinish(new HashSet<String>(tableListByCluster), bulkId, apply, blockUntilComplete);
+      List<String> writableTables = new ArrayList<String>();
+      for (String table :tableListByCluster) {
+        if (_clusterStatus.isReadOnly(true, _cluster, table)) {
+          writableTables.add(table);
+        }
+      }
+      _indexManager.bulkMutateFinish(new HashSet<String>(writableTables), bulkId, apply, blockUntilComplete);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to finsh a bulk mutate [" + bulkId + "]", e);
       if (e instanceof BlurException) {

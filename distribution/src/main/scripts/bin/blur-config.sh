@@ -65,7 +65,10 @@ for f in $BLUR_HOME/lib/*.war; do
   BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
 done
 
-if [ -z "$HADOOP_HOME" ]; then
+BLUR_CORE_FILE=`ls -d1 $BLUR_HOME/lib/blur-core-*.jar | head -1`
+
+if [ -z "$HADOOP_HOME" ] || [[ $BLUR_CORE_FILE == *"hadoop1"* ]] ; then
+
   export HADOOP_HOME=`ls -d1 $BLUR_HOME/lib/hadoop-*/ | head -1`
   BLUR_CLASSPATH=${BLUR_CLASSPATH}:$HADOOP_HOME/conf
 
@@ -82,8 +85,7 @@ if [ -z "$HADOOP_HOME" ]; then
   done
   
 else
-
-  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$HADOOP_HOME/conf
+  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$HADOOP_HOME/etc/hadoop
 
   for f in $HADOOP_HOME/share/hadoop/mapreduce/*.jar; do
     BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
@@ -108,6 +110,7 @@ else
   for f in $HADOOP_HOME/share/hadoop/common/lib/*.jar; do
     BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
   done
+
 fi
 
 

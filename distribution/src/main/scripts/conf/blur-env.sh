@@ -68,3 +68,6 @@ export BLUR_NUMBER_OF_CONTROLLER_SERVER_INSTANCES_PER_MACHINE=1
 # The directory where all the log files will be located.
 # export BLUR_LOGS=$BLUR_HOME/logs
 
+# If you would like to add Hadoop native libraries or any other native libs add them to this variable.
+#export JAVA_LIBRARY_PATH=
+

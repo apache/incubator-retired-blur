@@ -82,7 +82,7 @@ public class BlurSerDeTest {
   private static final String TEST = "test";
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurSerDeTest"));
   private static MiniCluster miniCluster;
-  private static boolean externalProcesses = true;
+  private static boolean externalProcesses = false;
 
   @BeforeClass
   public static void startCluster() throws IOException {
@@ -291,7 +291,7 @@ public class BlurSerDeTest {
     generateData(tableDir, totalRecords);
 
     run(connection, "select * from loadtable");
-    run(connection, "set " + BlurSerDe.BLUR_BLOCKING_APPLY + " = true");
+    run(connection, "set " + BlurSerDe.BLUR_BLOCKING_APPLY + "=true");
     run(connection, "insert into table testtable select * from loadtable");
     miniCluster.stopMrMiniCluster();
     connection.close();

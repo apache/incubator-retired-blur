@@ -722,7 +722,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
       List<String> tableListByCluster = tableListByCluster(_cluster);
       List<String> writableTables = new ArrayList<String>();
       for (String table :tableListByCluster) {
-        if (_clusterStatus.isReadOnly(true, _cluster, table)) {
+        if (!_clusterStatus.isReadOnly(true, _cluster, table)) {
           writableTables.add(table);
         }
       }

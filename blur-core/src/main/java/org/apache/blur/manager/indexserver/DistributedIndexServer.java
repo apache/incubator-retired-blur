@@ -16,6 +16,8 @@ package org.apache.blur.manager.indexserver;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static org.apache.blur.utils.BlurConstants.BLUR_TABLE_DISABLE_FAST_DIR;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -512,12 +514,16 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     Directory directory;
     URI uri = hdfsDirPath.toUri();
     String scheme = uri.getScheme();
-    if (scheme != null && scheme.equals("hdfs")) {
+
+    boolean disableFast = tableContext.getBlurConfiguration().getBoolean(BLUR_TABLE_DISABLE_FAST_DIR, false);
+
+    if (scheme != null && scheme.equals("hdfs") && !disableFast) {
       LOG.info("Using Fast HDFS directory implementation on shard [{0}] for table [{1}]", shard, table);
       FastHdfsKeyValueDirectory shortTermStorage = new FastHdfsKeyValueDirectory(_hdfsKeyValueTimer, _configuration,
           new Path(hdfsDirPath, "fast"));
       directory = new JoinDirectory(longTermStorage, shortTermStorage);
     } else {
+      LOG.info("Using regular HDFS directory.");
       directory = longTermStorage;
     }
 
@@ -660,6 +666,5 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       throw new RuntimeException(e);
     }
   }
-
 
 }

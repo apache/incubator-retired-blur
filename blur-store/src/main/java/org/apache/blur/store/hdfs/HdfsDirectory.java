@@ -140,7 +140,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected final Map<String, Boolean> _copyFileMap = new ConcurrentHashMap<String, Boolean>();
   protected final Map<String, Path> _copyFilePathMap = new ConcurrentHashMap<String, Path>();
   protected final Map<String, FSDataInputRandomAccess> _inputMap = new ConcurrentHashMap<String, FSDataInputRandomAccess>();
-  protected final boolean _useCache = false;
+  protected final boolean _useCache = true;
   protected final boolean _asyncClosing;
   protected final SequentialReadControl _sequentialReadControl;
 
@@ -276,7 +276,9 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     if (fileExists(name)) {
       deleteFile(name);
     }
-    _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), 0L));
+    if (_useCache) {
+      _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), 0L));
+    }
     final FSDataOutputStream outputStream = openForOutput(name);
     return new BufferedIndexOutput() {
 
@@ -297,10 +299,12 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       @Override
       public void close() throws IOException {
         super.close();
-        _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), outputStream.getPos()));
+        if (_useCache) {
+          _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), outputStream.getPos()));
+        }
         // This exists because HDFS is so slow to close files. There are
         // built-in sleeps during the close call.
-        if (_asyncClosing) {
+        if (_asyncClosing && _useCache) {
           outputStream.sync();
           CLOSING_QUEUE.add(outputStream);
         } else {

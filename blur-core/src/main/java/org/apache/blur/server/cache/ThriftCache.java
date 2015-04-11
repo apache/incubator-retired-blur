@@ -84,6 +84,22 @@ public class ThriftCache {
     _hits = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, HIT), HIT, TimeUnit.SECONDS);
     _misses = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, MISS), MISS, TimeUnit.SECONDS);
     _evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
+    _cacheMap = new ConcurrentLinkedHashMap.Builder<ThriftCacheKey<?>, ThriftCacheValue<?>>()
+        .weigher(new EntryWeigher<ThriftCacheKey<?>, ThriftCacheValue<?>>() {
+          @Override
+          public int weightOf(ThriftCacheKey<?> key, ThriftCacheValue<?> value) {
+            return key.size() + value.size();
+          }
+        }).listener(new EvictionListener<ThriftCacheKey<?>, ThriftCacheValue<?>>() {
+          @Override
+          public void onEviction(ThriftCacheKey<?> key, ThriftCacheValue<?> value) {
+            _evictions.mark();
+            _evictionsAtomicLong.incrementAndGet();
+          }
+        }).maximumWeightedCapacity(totalNumberOfBytes).build();
+    _hitsAtomicLong = new AtomicLong();
+    _missesAtomicLong = new AtomicLong();
+    _evictionsAtomicLong = new AtomicLong();
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, THRIFT_CACHE, SIZE), new Gauge<Long>() {
       @Override
       public Long value() {
@@ -102,22 +118,6 @@ public class ThriftCache {
         return (long) _attributeKeys.size();
       }
     });
-    _cacheMap = new ConcurrentLinkedHashMap.Builder<ThriftCacheKey<?>, ThriftCacheValue<?>>()
-        .weigher(new EntryWeigher<ThriftCacheKey<?>, ThriftCacheValue<?>>() {
-          @Override
-          public int weightOf(ThriftCacheKey<?> key, ThriftCacheValue<?> value) {
-            return key.size() + value.size();
-          }
-        }).listener(new EvictionListener<ThriftCacheKey<?>, ThriftCacheValue<?>>() {
-          @Override
-          public void onEviction(ThriftCacheKey<?> key, ThriftCacheValue<?> value) {
-            _evictions.mark();
-            _evictionsAtomicLong.incrementAndGet();
-          }
-        }).maximumWeightedCapacity(totalNumberOfBytes).build();
-    _hitsAtomicLong = new AtomicLong();
-    _missesAtomicLong = new AtomicLong();
-    _evictionsAtomicLong = new AtomicLong();
   }
 
   public <K extends TBase<?, ?>, V extends TBase<?, ?>> V put(ThriftCacheKey<K> key, V t) throws BlurException {

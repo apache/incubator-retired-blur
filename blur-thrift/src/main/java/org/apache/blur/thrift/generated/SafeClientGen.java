@@ -244,6 +244,13 @@ public void loadData(java.lang.String arg0, java.lang.String arg1) throws org.ap
 }
 
 @Override
+public void loadIndex(java.lang.String arg0, java.util.List arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.loadIndex(arg0, arg1);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public void logging(java.lang.String arg0, org.apache.blur.thrift.generated.Level arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.logging(arg0, arg1);
@@ -510,6 +517,13 @@ public void recv_loadData() throws org.apache.blur.thrift.generated.BlurExceptio
 }
 
 @Override
+public void recv_loadIndex() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_loadIndex();
+  } finally {_lock.unlock();}
+}
+
+@Override
 public void recv_logging() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.recv_logging();
@@ -702,6 +716,13 @@ public java.lang.String recv_traceRequestFetch() throws org.apache.blur.thrift.g
 public java.util.List recv_traceRequestList() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.recv_traceRequestList();
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void recv_validateIndex() throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.recv_validateIndex();
   } finally {_lock.unlock();}
 }
 
@@ -923,6 +944,13 @@ public void send_loadData(java.lang.String arg0, java.lang.String arg1) throws o
 }
 
 @Override
+public void send_loadIndex(java.lang.String arg0, java.util.List arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_loadIndex(arg0, arg1);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public void send_logging(java.lang.String arg0, org.apache.blur.thrift.generated.Level arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_logging(arg0, arg1);
@@ -1140,6 +1168,13 @@ public void send_traceRequestList(java.lang.String arg0) throws org.apache.blur.
 }
 
 @Override
+public void send_validateIndex(java.lang.String arg0, java.util.List arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_validateIndex(arg0, arg1);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public void setUser(org.apache.blur.thrift.generated.User arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.setUser(arg0);
@@ -1234,6 +1269,13 @@ public java.lang.String traceRequestFetch(java.lang.String arg0, java.lang.Strin
 public java.util.List traceRequestList(java.lang.String arg0) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.traceRequestList(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void validateIndex(java.lang.String arg0, java.util.List arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.validateIndex(arg0, arg1);
   } finally {_lock.unlock();}
 }
 

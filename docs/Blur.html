@@ -139,6 +139,8 @@ limitations under the License.
 <li><a href="#Fn_Blur_fetchRow">&nbsp;&nbsp;fetchRow</a></li>
 <li><a href="#Fn_Blur_fetchRowBatch">&nbsp;&nbsp;fetchRowBatch</a></li>
 <li><a href="#Fn_Blur_loadData">&nbsp;&nbsp;loadData</a></li>
+<li><a href="#Fn_Blur_validateIndex">&nbsp;&nbsp;validateIndex</a></li>
+<li><a href="#Fn_Blur_loadIndex">&nbsp;&nbsp;loadIndex</a></li>
 <li><a href="#Fn_Blur_mutate">&nbsp;&nbsp;mutate</a></li>
 <li><a href="#Fn_Blur_enqueueMutate">&nbsp;&nbsp;enqueueMutate</a></li>
 <li><a href="#Fn_Blur_mutateBatch">&nbsp;&nbsp;mutateBatch</a></li>
@@ -942,7 +944,15 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </td></tr>
 <tr><td>location</td><td>Location of bulk data load.
 </td></tr>
-</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4></div><p class="lead">
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_validateIndex">Function: Blur.validateIndex</h4></div><p class="lead">
+<pre><code>void</code> validateIndex(<code>string</code> table,
+<code>list&lt;<code>string</code>&gt;</code> externalIndexPaths)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></p></section><section><div class="page-header"><h4 id="Fn_Blur_loadIndex">Function: Blur.loadIndex</h4></div><p class="lead">
+<pre><code>void</code> loadIndex(<code>string</code> table,
+<code>list&lt;<code>string</code>&gt;</code> externalIndexPaths)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></p></section><section><div class="page-header"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4></div><p class="lead">
 <pre><code>void</code> mutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Mutates a Row given the RowMutation that is provided.

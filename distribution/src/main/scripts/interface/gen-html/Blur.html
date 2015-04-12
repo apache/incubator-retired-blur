@@ -37,6 +37,7 @@
 <li><a href="Blur.html#Fn_Blur_listInstalledCommands">listInstalledCommands</a></li>
 <li><a href="Blur.html#Fn_Blur_listSnapshots">listSnapshots</a></li>
 <li><a href="Blur.html#Fn_Blur_loadData">loadData</a></li>
+<li><a href="Blur.html#Fn_Blur_loadIndex">loadIndex</a></li>
 <li><a href="Blur.html#Fn_Blur_logging">logging</a></li>
 <li><a href="Blur.html#Fn_Blur_metrics">metrics</a></li>
 <li><a href="Blur.html#Fn_Blur_mutate">mutate</a></li>
@@ -68,6 +69,7 @@
 <li><a href="Blur.html#Fn_Blur_traceRemove">traceRemove</a></li>
 <li><a href="Blur.html#Fn_Blur_traceRequestFetch">traceRequestFetch</a></li>
 <li><a href="Blur.html#Fn_Blur_traceRequestList">traceRequestList</a></li>
+<li><a href="Blur.html#Fn_Blur_validateIndex">validateIndex</a></li>
 </ul>
 </td>
 <td><a href="Blur.html#Struct_ArgumentDescriptor">ArgumentDescriptor</a><br/>
@@ -884,7 +886,15 @@ the shard server, if any.
 </td></tr>
 <tr><td>location</td><td>Location of bulk data load.
 </td></tr>
-</table></div><div class="definition"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4>
+</table></div><div class="definition"><h4 id="Fn_Blur_validateIndex">Function: Blur.validateIndex</h4>
+<pre><code>void</code> validateIndex(<code>string</code> table,
+                   <code>list&lt;<code>string</code>&gt;</code> externalIndexPaths)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_loadIndex">Function: Blur.loadIndex</h4>
+<pre><code>void</code> loadIndex(<code>string</code> table,
+               <code>list&lt;<code>string</code>&gt;</code> externalIndexPaths)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4>
 <pre><code>void</code> mutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Mutates a Row given the RowMutation that is provided.

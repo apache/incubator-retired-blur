@@ -419,6 +419,36 @@ module Blur
         return
       end
 
+      def validateIndex(table, externalIndexPaths)
+        send_validateIndex(table, externalIndexPaths)
+        recv_validateIndex()
+      end
+
+      def send_validateIndex(table, externalIndexPaths)
+        send_message('validateIndex', ValidateIndex_args, :table => table, :externalIndexPaths => externalIndexPaths)
+      end
+
+      def recv_validateIndex()
+        result = receive_message(ValidateIndex_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def loadIndex(table, externalIndexPaths)
+        send_loadIndex(table, externalIndexPaths)
+        recv_loadIndex()
+      end
+
+      def send_loadIndex(table, externalIndexPaths)
+        send_message('loadIndex', LoadIndex_args, :table => table, :externalIndexPaths => externalIndexPaths)
+      end
+
+      def recv_loadIndex()
+        result = receive_message(LoadIndex_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
       def mutate(mutation)
         send_mutate(mutation)
         recv_mutate()
@@ -1170,6 +1200,28 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'loadData', seqid)
+      end
+
+      def process_validateIndex(seqid, iprot, oprot)
+        args = read_args(iprot, ValidateIndex_args)
+        result = ValidateIndex_result.new()
+        begin
+          @handler.validateIndex(args.table, args.externalIndexPaths)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'validateIndex', seqid)
+      end
+
+      def process_loadIndex(seqid, iprot, oprot)
+        args = read_args(iprot, LoadIndex_args)
+        result = LoadIndex_result.new()
+        begin
+          @handler.loadIndex(args.table, args.externalIndexPaths)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'loadIndex', seqid)
       end
 
       def process_mutate(seqid, iprot, oprot)
@@ -2430,6 +2482,74 @@ module Blur
     end
 
     class LoadData_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ValidateIndex_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      EXTERNALINDEXPATHS = 2
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        EXTERNALINDEXPATHS => {:type => ::Thrift::Types::LIST, :name => 'externalIndexPaths', :element => {:type => ::Thrift::Types::STRING}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ValidateIndex_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class LoadIndex_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      EXTERNALINDEXPATHS = 2
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        EXTERNALINDEXPATHS => {:type => ::Thrift::Types::LIST, :name => 'externalIndexPaths', :element => {:type => ::Thrift::Types::STRING}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class LoadIndex_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
       EX = 1
 

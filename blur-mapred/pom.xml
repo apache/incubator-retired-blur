@@ -27,11 +27,11 @@ under the License.
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.apache.blur</groupId>
-	<artifactId>blur-mapred-common</artifactId>
+	<artifactId>blur-mapred</artifactId>
 	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
 	<name>Blur Map Reduce Common</name>
-	<description>The Blur Map Reduce common code module.</description>
+	<description>The Blur Map Reduce code module contains MR drivers and input/output formats.</description>
 
 	<dependencies>
 		<dependency>

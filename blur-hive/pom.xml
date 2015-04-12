@@ -183,7 +183,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.apache.blur</groupId>
-					<artifactId>blur-mapred-hadoop1</artifactId>
+					<artifactId>blur-mapred</artifactId>
 					<version>${projectVersion}</version>
 					<exclusions>
 						<exclusion>
@@ -261,7 +261,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.apache.blur</groupId>
-					<artifactId>blur-mapred-hadoop1</artifactId>
+					<artifactId>blur-mapred</artifactId>
 					<version>${projectVersion}</version>
 					<exclusions>
 						<exclusion>
@@ -345,7 +345,7 @@
 				</dependency>
 				<dependency>
 					<groupId>org.apache.blur</groupId>
-					<artifactId>blur-mapred-hadoop2</artifactId>
+					<artifactId>blur-mapred</artifactId>
 					<version>${projectVersion}</version>
 					<exclusions>
 						<exclusion>

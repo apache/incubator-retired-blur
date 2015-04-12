@@ -508,8 +508,7 @@ under the License.
 				<module>blur-thrift</module>
 				<module>blur-query</module>
 				<module>blur-store</module>
-				<module>blur-mapred-common</module>
-				<module>blur-mapred-hadoop1</module>
+				<module>blur-mapred</module>
 				<module>blur-util</module>
 				<module>blur-status</module>
 				<module>blur-shell</module>
@@ -535,8 +534,7 @@ under the License.
 				<module>blur-thrift</module>
 				<module>blur-query</module>
 				<module>blur-store</module>
-				<module>blur-mapred-common</module>
-				<module>blur-mapred-hadoop1</module>
+				<module>blur-mapred</module>
 				<module>blur-util</module>
 				<module>blur-status</module>
 				<module>blur-shell</module>
@@ -562,8 +560,7 @@ under the License.
 				<module>blur-thrift</module>
 				<module>blur-query</module>
 				<module>blur-store</module>
-				<module>blur-mapred-common</module>
-				<module>blur-mapred-hadoop2</module>
+				<module>blur-mapred</module>
 				<module>blur-util</module>
 				<module>blur-status</module>
 				<module>blur-shell</module>

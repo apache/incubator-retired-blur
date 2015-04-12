@@ -43,7 +43,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.TestMapperReducerCleanup.TrackingTextInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.lucene.index.DirectoryReader;
@@ -195,7 +194,7 @@ public class BlurOutputFormatTest {
     Job job = Job.getInstance(conf, "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
-    job.setInputFormatClass(TrackingTextInputFormat.class);
+    job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
     CsvBlurMapper.addColumns(job, "cf1", "col");
@@ -238,7 +237,7 @@ public class BlurOutputFormatTest {
     Job job = Job.getInstance(conf, "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
-    job.setInputFormatClass(TrackingTextInputFormat.class);
+    job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
     CsvBlurMapper.addColumns(job, "cf1", "col");
@@ -287,7 +286,7 @@ public class BlurOutputFormatTest {
     Job job = Job.getInstance(conf, "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
-    job.setInputFormatClass(TrackingTextInputFormat.class);
+    job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
     CsvBlurMapper.addColumns(job, "cf1", "col");
@@ -335,7 +334,7 @@ public class BlurOutputFormatTest {
     Job job = Job.getInstance(conf, "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
-    job.setInputFormatClass(TrackingTextInputFormat.class);
+    job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
     CsvBlurMapper.addColumns(job, "cf1", "col");
@@ -370,7 +369,7 @@ public class BlurOutputFormatTest {
     Job job = Job.getInstance(conf, "blur index");
     job.setJarByClass(BlurOutputFormatTest.class);
     job.setMapperClass(CsvBlurMapper.class);
-    job.setInputFormatClass(TrackingTextInputFormat.class);
+    job.setInputFormatClass(TextInputFormat.class);
 
     FileInputFormat.addInputPath(job, new Path(TEST_ROOT_DIR + "/in"));
     CsvBlurMapper.addColumns(job, "cf1", "col");

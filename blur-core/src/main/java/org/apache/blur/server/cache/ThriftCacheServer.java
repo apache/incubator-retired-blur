@@ -59,6 +59,15 @@ public class ThriftCacheServer extends FilteredBlurServer {
   }
 
   @Override
+  public void loadIndex(String table, List<String> externalIndexPaths) throws BlurException, TException {
+    try {
+      super.loadIndex(table, externalIndexPaths);
+    } finally {
+      _thriftCache.clearTable(table);
+    }
+  }
+
+  @Override
   public TableStats tableStats(String table) throws BlurException, TException {
     ThriftCacheKey<TableStats> key = _thriftCache.getKey(table, getShards(table), null, TableStats.class);
     Lock lock = getOrCreateLock(key);

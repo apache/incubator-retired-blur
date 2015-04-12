@@ -58,20 +58,14 @@ import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
 //import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.server.cache.ThriftCache;
-import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
-import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.Term;
@@ -423,83 +417,6 @@ public class TableContext implements Cloneable {
       return (TableContext) super.clone();
     } catch (CloneNotSupportedException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  public void loadData(String location) throws IOException {
-    Path path = new Path(location);
-    FileSystem fileSystem = path.getFileSystem(_configuration);
-
-    validateLoad(path, fileSystem);
-
-    FileStatus[] listStatus = fileSystem.listStatus(path);
-    for (FileStatus fileStatus : listStatus) {
-      loadShard(fileStatus.getPath(), fileSystem);
-    }
-
-    // printFS(path, fileSystem);
-
-  }
-
-  private void validateLoad(Path path, FileSystem fileSystem) throws IOException {
-    TableDescriptor descriptor = getDescriptor();
-    int shardCount = descriptor.getShardCount();
-    FileStatus[] listStatus = fileSystem.listStatus(path);
-    int count = 0;
-    for (FileStatus fileStatus : listStatus) {
-      Path shardPath = fileStatus.getPath();
-      String shardId = shardPath.getName();
-      int shardIndex = ShardUtil.getShardIndex(shardId);
-      if (shardIndex >= shardCount) {
-        throw new IOException("Too many shards [" + shardIndex + "].");
-      }
-      count++;
-      validateIndexesExist(shardPath, fileSystem);
-    }
-    if (shardCount != count) {
-      throw new IOException("Not enough shards [" + count + "] should be [" + shardCount + "].");
-    }
-  }
-
-  private void validateIndexesExist(Path shardPath, FileSystem fileSystem) throws IOException {
-    FileStatus[] listStatus = fileSystem.listStatus(shardPath, new PathFilter() {
-      @Override
-      public boolean accept(Path path) {
-        return path.getName().endsWith(".commit");
-      }
-    });
-    for (FileStatus fileStatus : listStatus) {
-      Path path = fileStatus.getPath();
-      HdfsDirectory directory = new HdfsDirectory(_configuration, path);
-      try {
-        if (!DirectoryReader.indexExists(directory)) {
-          throw new IOException("Path [" + path + "] is not a valid index.");
-        }
-      } finally {
-        directory.close();
-      }
-    }
-  }
-
-  private void loadShard(Path newLoadShardPath, FileSystem fileSystem) throws IOException {
-    Path tablePath = getTablePath();
-    Path shardPath = new Path(tablePath, newLoadShardPath.getName());
-    FileStatus[] listStatus = fileSystem.listStatus(newLoadShardPath, new PathFilter() {
-      @Override
-      public boolean accept(Path path) {
-        return path.getName().endsWith(".commit");
-      }
-    });
-
-    for (FileStatus fileStatus : listStatus) {
-      Path src = fileStatus.getPath();
-      Path dst = new Path(shardPath, src.getName());
-      if (fileSystem.rename(src, dst)) {
-        LOG.info("Successfully moved [{0}] to [{1}].", src, dst);
-      } else {
-        LOG.info("Could not move [{0}] to [{1}].", src, dst);
-        throw new IOException("Could not move [" + src + "] to [" + dst + "].");
-      }
     }
   }
 

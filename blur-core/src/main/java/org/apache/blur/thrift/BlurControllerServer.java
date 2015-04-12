@@ -112,12 +112,17 @@ import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ForkJoin;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.blur.utils.ForkJoin.Merger;
 import org.apache.blur.utils.ForkJoin.ParallelCall;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeExistance;
 import org.apache.blur.zookeeper.ZookeeperPathConstants;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -1053,14 +1058,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     });
   }
 
-  private String getCluster(String table) throws BlurException, TException {
-    TableDescriptor describe = describe(table);
-    if (describe == null) {
-      throw new BException("Table [" + table + "] not found.");
-    }
-    return describe.cluster;
-  }
-
   public static Schema merge(Schema result, Schema schema) {
     Map<String, Map<String, ColumnDefinition>> destColumnFamilies = result.getFamilies();
     Map<String, Map<String, ColumnDefinition>> srcColumnFamilies = schema.getFamilies();
@@ -1802,4 +1799,78 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
   }
 
+  @Override
+  public void loadData(String table, String location) throws BlurException, TException {
+    try {
+      String cluster = getCluster(table);
+      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
+      TableContext tableContext = TableContext.create(tableDescriptor);
+      Configuration configuration = tableContext.getConfiguration();
+      Path path = new Path(location);
+      FileSystem fileSystem = path.getFileSystem(configuration);
+      validateOrLoadIndexes(cluster, table, path, fileSystem, tableDescriptor, configuration, false);
+      validateOrLoadIndexes(cluster, table, path, fileSystem, tableDescriptor, configuration, true);
+    } catch (IOException e) {
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  private void validateOrLoadIndexes(String cluster, final String table, Path path, FileSystem fileSystem,
+      TableDescriptor descriptor, Configuration configuration, final boolean load) throws IOException, BlurException,
+      TException {
+    int shardCount = descriptor.getShardCount();
+    FileStatus[] listStatus = fileSystem.listStatus(path);
+    int count = 0;
+    final Map<String, List<String>> shardServerPathMap = new HashMap<String, List<String>>();
+    Map<String, String> shardServerLayout = shardServerLayout(descriptor.getName());
+    for (FileStatus fileStatus : listStatus) {
+      Path shardPath = fileStatus.getPath();
+      String shardId = shardPath.getName();
+      String server = shardServerLayout.get(shardId);
+
+      int shardIndex = ShardUtil.getShardIndex(shardId);
+      if (shardIndex >= shardCount) {
+        throw new IOException("Too many shards [" + shardIndex + "].");
+      }
+      List<String> paths = shardServerPathMap.get(server);
+      if (paths == null) {
+        shardServerPathMap.put(server, paths = new ArrayList<String>());
+      }
+      paths.add(shardPath.toString());
+      count++;
+    }
+    if (shardCount != count) {
+      throw new IOException("Not enough shards [" + count + "] should be [" + shardCount + "].");
+    }
+    try {
+      scatter(cluster, new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          throw new RuntimeException("Not Used.");
+        }
+
+        @Override
+        public Void call(Client client, Connection connection) throws BlurException, TException {
+          String server = connection.getHost() + ":" + connection.getPort();
+          List<String> externalIndexPaths = shardServerPathMap.get(server);
+          if (externalIndexPaths == null || externalIndexPaths.isEmpty()) {
+            return null;
+          }
+          if (load) {
+            client.loadIndex(table, externalIndexPaths);
+          } else {
+            client.validateIndex(table, externalIndexPaths);
+          }
+          return null;
+        }
+
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to validate indexes for table [{0}]", e, table);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error while trying to validate indexes for table [{0}]", e, table);
+    }
+  }
 }

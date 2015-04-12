@@ -515,6 +515,17 @@ public class ThriftCacheServerTest {
           TException {
         throw new RuntimeException("Not implemented.");
       }
+
+      @Override
+      public void validateIndex(String table, List<String> externalIndexPaths) throws BlurException, TException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public void loadIndex(String table, List<String> externalIndexPaths) throws BlurException, TException {
+        throw new RuntimeException("Not implemented.");
+      }
+
     };
   }
 

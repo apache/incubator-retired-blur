@@ -721,7 +721,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
     try {
       List<String> tableListByCluster = tableListByCluster(_cluster);
       List<String> writableTables = new ArrayList<String>();
-      for (String table :tableListByCluster) {
+      for (String table : tableListByCluster) {
         if (!_clusterStatus.isReadOnly(true, _cluster, table)) {
           writableTables.add(table);
         }
@@ -768,6 +768,11 @@ public class BlurShardServer extends TableAdmin implements Iface {
       list.add(rowMutation);
     }
     return result;
+  }
+
+  @Override
+  public void loadData(String table, String location) throws BlurException, TException {
+    throw new RuntimeException("Shard servers do not support this call.");
   }
 
 }

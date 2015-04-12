@@ -317,4 +317,14 @@ public class FilteredBlurServer implements Iface {
     return _iface.configurationPerServer(thriftServerPlusPort, configName);
   }
 
+  @Override
+  public void validateIndex(String table, List<String> externalIndexPaths) throws BlurException, TException {
+    _iface.validateIndex(table, externalIndexPaths);
+  }
+
+  @Override
+  public void loadIndex(String table, List<String> externalIndexPaths) throws BlurException, TException {
+    _iface.loadIndex(table, externalIndexPaths);
+  }
+
 }

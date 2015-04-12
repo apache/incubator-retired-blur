@@ -1154,6 +1154,10 @@ service Blur {
      2:string location
   ) throws (1:BlurException ex)
 
+  void validateIndex(1:string table, 2:list<string> externalIndexPaths) throws (1:BlurException ex)
+
+  void loadIndex(1:string table, 2:list<string> externalIndexPaths) throws (1:BlurException ex)
+
   /**
    * Mutates a Row given the RowMutation that is provided.
    */

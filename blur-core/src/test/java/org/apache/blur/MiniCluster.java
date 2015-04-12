@@ -203,15 +203,18 @@ public class MiniCluster {
   }
 
   public void startMrMiniCluster() throws IOException {
-    _mrConf = startMrMiniClusterInternal();
+    _mrConf = startMrMiniClusterInternal(getFileSystemUri().toString());
+  }
+
+  public void startMrMiniCluster(String fileSystemUri) throws IOException {
+    _mrConf = startMrMiniClusterInternal(fileSystemUri);
   }
 
   public Configuration getMRConfiguration() {
     return _mrConf;
   }
 
-  private Configuration startMrMiniClusterInternal() throws IOException {
-    String fileSystemUri = getFileSystemUri().toString();
+  private Configuration startMrMiniClusterInternal(String fileSystemUri) throws IOException {
     ScriptEngineManager manager = new ScriptEngineManager();
     ScriptEngine engine = manager.getEngineByName("js");
 
@@ -751,7 +754,7 @@ public class MiniCluster {
   public void startZooKeeper(final Properties properties, boolean format, String path, final boolean randomPort) {
     zkMiniCluster.startZooKeeper(properties, format, path, randomPort);
   }
-  
+
   public FileSystem getFileSystem() throws IOException {
     return cluster.getFileSystem();
   }

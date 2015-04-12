@@ -63,6 +63,7 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -349,7 +350,7 @@ public class TableContext implements Cloneable {
 
   public static synchronized Configuration getSystemConfiguration() {
     if (_systemConfiguration == null) {
-      _systemConfiguration = new Configuration();
+      _systemConfiguration = BlurUtil.newHadoopConfiguration();
     }
     return new Configuration(_systemConfiguration);
   }

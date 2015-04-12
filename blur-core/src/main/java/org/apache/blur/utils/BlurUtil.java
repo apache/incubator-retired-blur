@@ -103,7 +103,6 @@ import org.apache.blur.trace.Tracer;
 import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 import org.apache.blur.zookeeper.ZookeeperPathConstants;
-import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -763,31 +762,6 @@ public class BlurUtil {
     return t;
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T> T getInstance(String className, Class<T> c) {
-    Class<?> clazz;
-    try {
-      clazz = Class.forName(className);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-    try {
-      return (T) configure(clazz.newInstance());
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static <T> T configure(T t) {
-    if (t instanceof Configurable) {
-      Configurable configurable = (Configurable) t;
-      configurable.setConf(new Configuration());
-    }
-    return t;
-  }
-
   public static byte[] read(TBase<?, ?> base) {
     if (base == null) {
       return null;
@@ -1311,6 +1285,16 @@ public class BlurUtil {
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
+  }
+  
+  public static Configuration newHadoopConfiguration() {
+    return addHdfsConfig(new Configuration());
+  }
+
+  public static Configuration addHdfsConfig(Configuration configuration) {
+    configuration.addResource("hdfs-default.xml");
+    configuration.addResource("hdfs-site.xml");
+    return configuration;
   }
 
 }

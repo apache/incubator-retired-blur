@@ -148,7 +148,7 @@ public class ThriftBlurShardServer extends ThriftServer {
   }
 
   public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
-    Configuration config = new Configuration();
+    Configuration config = BlurUtil.newHadoopConfiguration();
     TableContext.setSystemBlurConfiguration(configuration);
     TableContext.setSystemConfiguration(config);
 

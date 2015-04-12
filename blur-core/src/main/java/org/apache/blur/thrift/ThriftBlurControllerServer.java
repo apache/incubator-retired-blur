@@ -70,6 +70,7 @@ import org.apache.blur.server.ControllerServerEventHandler;
 import org.apache.blur.server.ServerSecurityFilter;
 import org.apache.blur.server.ServerSecurityFilterFactory;
 import org.apache.blur.server.ServerSecurityUtil;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerTransport;
@@ -110,6 +111,10 @@ public class ThriftBlurControllerServer extends ThriftServer {
   }
 
   public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
+    Configuration config = BlurUtil.newHadoopConfiguration();
+    TableContext.setSystemBlurConfiguration(configuration);
+    TableContext.setSystemConfiguration(config);
+    
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
     int configBindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
@@ -134,8 +139,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
 
-    Configuration config = new Configuration();
-
+    
     BlurUtil.setupZookeeper(zooKeeper, null);
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration, config);

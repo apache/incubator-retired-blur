@@ -18,7 +18,9 @@ package org.apache.blur.manager.writer;
  */
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
@@ -30,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
-import org.apache.blur.lucene.search.IndexSearcherCloseableUtil;
+import org.apache.blur.lucene.search.IndexSearcherCloseableBase;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.buffer.BufferStore;
@@ -49,7 +51,6 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 import org.junit.After;
 import org.junit.Before;
@@ -140,7 +141,18 @@ public class IndexImporterTest {
       @Override
       public void process(IndexAction indexAction) throws IOException {
         final DirectoryReader reader = DirectoryReader.open(mainDirectory);
-        IndexSearcherCloseable searcherClosable = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
+        IndexSearcherCloseable searcherClosable = new IndexSearcherCloseableBase(reader, null) {
+
+          @Override
+          public Directory getDirectory() {
+            return mainDirectory;
+          }
+
+          @Override
+          public void close() throws IOException {
+
+          }
+        };
         try {
           indexAction.performMutate(searcherClosable, _mainWriter);
           indexAction.doPreCommit(searcherClosable, _mainWriter);

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
-import org.apache.blur.lucene.search.IndexSearcherCloseableUtil;
+import org.apache.blur.lucene.search.IndexSearcherCloseableBase;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Column;
@@ -115,7 +115,18 @@ public class MutatableActionTest {
   }
 
   private IndexSearcherCloseable getSearcher(DirectoryReader reader, final Directory directory) {
-    return IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
+    return new IndexSearcherCloseableBase(reader, null) {
+
+      @Override
+      public Directory getDirectory() {
+        return directory;
+      }
+
+      @Override
+      public void close() throws IOException {
+
+      }
+    };
   }
 
   @Test

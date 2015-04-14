@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
-import org.apache.blur.lucene.search.IndexSearcherCloseableUtil;
+import org.apache.blur.lucene.search.IndexSearcherCloseableBase;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.IndexAction;
@@ -55,7 +55,6 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
@@ -411,7 +410,18 @@ public class ShardCommandManagerTest {
       @Override
       public IndexSearcherCloseable getIndexSearcher() throws IOException {
         IndexReader reader = getEmtpyReader();
-        return IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
+        return new IndexSearcherCloseableBase(reader,null) {
+          
+          @Override
+          public Directory getDirectory() {
+            throw new RuntimeException("Not implemented.");
+          }
+          
+          @Override
+          public void close() throws IOException {
+            
+          }
+        };
       }
 
       @Override

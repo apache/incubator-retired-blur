@@ -21,7 +21,7 @@ import java.io.IOException;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
-import org.apache.blur.lucene.search.IndexSearcherCloseableUtil;
+import org.apache.blur.lucene.search.IndexSearcherCloseableBase;
 import org.apache.blur.server.TableContext;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -31,7 +31,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
@@ -91,7 +91,18 @@ public class CoreTestContext extends IndexContext {
 
   @Override
   public IndexSearcherCloseable getIndexSearcher() {
-    return IndexSearcherCloseableUtil.wrap(new IndexSearcher(getIndexReader()));
+    return new IndexSearcherCloseableBase(getIndexReader(), null) {
+
+      @Override
+      public Directory getDirectory() {
+        return directory;
+      }
+
+      @Override
+      public void close() throws IOException {
+
+      }
+    };
   }
 
   @Override

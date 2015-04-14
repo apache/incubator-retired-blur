@@ -1,4 +1,4 @@
-package org.apache.blur.server;
+package org.apache.blur.lucene.search;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -18,36 +18,29 @@ package org.apache.blur.server;
  */
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import lucene.security.index.AccessControlFactory;
-
-import org.apache.blur.lucene.search.CloneableCollector;
-import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.CollectionTerminatedException;
 import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Weight;
 import org.apache.lucene.store.Directory;
 
-public abstract class IndexSearcherCloseableSecureBase extends BlurSecureIndexSearcher implements
-    IndexSearcherCloseable {
+public abstract class IndexSearcherCloseableBase extends IndexSearcher implements IndexSearcherCloseable {
 
   private final ExecutorService _executor;
 
-  public IndexSearcherCloseableSecureBase(IndexReader r, ExecutorService executor,
-      AccessControlFactory accessControlFactory, Collection<String> readAuthorizations,
-      Collection<String> discoverAuthorizations, Set<String> discoverableFields) throws IOException {
-    super(r, executor, accessControlFactory, readAuthorizations, discoverAuthorizations, discoverableFields);
+  public IndexSearcherCloseableBase(IndexReader r, ExecutorService executor) {
+    super(r, executor);
     _executor = executor;
   }
 
@@ -112,14 +105,23 @@ public abstract class IndexSearcherCloseableSecureBase extends BlurSecureIndexSe
   private void runSearch(Weight weight, Collector collector, AtomicReaderContext ctx) throws IOException {
     Tracer trace = Trace.trace("search - internal", Trace.param("AtomicReader", ctx.reader()));
     try {
-      super.search(makeList(ctx), weight, collector);
+      try {
+        collector.setNextReader(ctx);
+      } catch (CollectionTerminatedException e) {
+        return;
+      }
+      Scorer scorer = weight.scorer(ctx, !collector.acceptsDocsOutOfOrder(), true, ctx.reader().getLiveDocs());
+      if (scorer != null) {
+        try {
+          scorer.score(collector);
+        } catch (CollectionTerminatedException e) {
+          // collection was terminated prematurely
+          // continue with the following leaf
+        }
+      }
     } finally {
       trace.done();
     }
-  }
-
-  private List<AtomicReaderContext> makeList(AtomicReaderContext ctx) {
-    return Arrays.asList(ctx);
   }
 
 }

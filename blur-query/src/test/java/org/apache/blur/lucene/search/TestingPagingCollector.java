@@ -20,6 +20,7 @@ package org.apache.blur.lucene.search;
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -38,7 +39,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
@@ -54,13 +54,14 @@ import org.junit.Test;
  * 
  */
 public class TestingPagingCollector {
-  
+
+  private static RAMDirectory _directory;
   private int length = 1324;
 
   @Test
   public void testSimpleSearchPaging() throws Exception {
     IndexReader reader = getReaderFlatScore(length);
-    IndexSearcherCloseable searcher = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
+    IndexSearcherCloseable searcher = getSearcher(reader);
 
     TotalHitsRef totalHitsRef = new TotalHitsRef();
     ProgressRef progressRef = new ProgressRef();
@@ -86,10 +87,24 @@ public class TestingPagingCollector {
     }
   }
 
+  private IndexSearcherCloseable getSearcher(IndexReader reader) {
+    return new IndexSearcherCloseableBase(reader, null) {
+      @Override
+      public Directory getDirectory() {
+        return _directory;
+      }
+
+      @Override
+      public void close() throws IOException {
+        // Do nothing because it's in memory test.
+      }
+    };
+  }
+
   @Test
   public void testSimpleSearchPagingThroughAll() throws Exception {
     IndexReader reader = getReaderFlatScore(length);
-    IndexSearcherCloseable searcher = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
+    IndexSearcherCloseable searcher = getSearcher(reader);
 
     TotalHitsRef totalHitsRef = new TotalHitsRef();
     ProgressRef progressRef = new ProgressRef();
@@ -125,7 +140,7 @@ public class TestingPagingCollector {
   @Test
   public void testSimpleSearchPagingWithSorting() throws Exception {
     IndexReader reader = getReaderFlatScore(length);
-    IndexSearcherCloseable searcher = IndexSearcherCloseableUtil.wrap(new IndexSearcher(reader));
+    IndexSearcherCloseable searcher = getSearcher(reader);
 
     TotalHitsRef totalHitsRef = new TotalHitsRef();
     ProgressRef progressRef = new ProgressRef();
@@ -161,8 +176,8 @@ public class TestingPagingCollector {
   }
 
   private static IndexReader getReaderFlatScore(int length) throws Exception {
-    Directory directory = new RAMDirectory();
-    IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer()));
+    _directory = new RAMDirectory();
+    IndexWriter indexWriter = new IndexWriter(_directory, new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer()));
     for (int i = 0; i < length; i++) {
       Document document = new Document();
       document.add(new StringField("f1", "value", Store.NO));
@@ -171,7 +186,7 @@ public class TestingPagingCollector {
       indexWriter.addDocument(document);
     }
     indexWriter.close();
-    return DirectoryReader.open(directory);
+    return DirectoryReader.open(_directory);
   }
 
   static byte[] toBytes(int val) {

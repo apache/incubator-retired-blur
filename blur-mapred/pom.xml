@@ -30,7 +30,7 @@ under the License.
 	<artifactId>blur-mapred</artifactId>
 	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
-	<name>Blur Map Reduce Common</name>
+	<name>Blur Map Reduce</name>
 	<description>The Blur Map Reduce code module contains MR drivers and input/output formats.</description>
 
 	<dependencies>

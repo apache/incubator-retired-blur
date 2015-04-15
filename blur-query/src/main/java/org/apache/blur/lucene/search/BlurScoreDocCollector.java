@@ -21,14 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopScoreDocCollector;
 
-public class BlurScoreDocCollector extends Collector implements TopDocCollectorInterface, CloneableCollector {
+public class BlurScoreDocCollector extends CloneableCollector implements TopDocCollectorInterface {
 
   public static BlurScoreDocCollector create(int numHitsToCollect, ScoreDoc after, boolean runSlow,
       AtomicBoolean running) {
@@ -47,26 +45,6 @@ public class BlurScoreDocCollector extends Collector implements TopDocCollectorI
     _after = after;
     _runSlow = runSlow;
     _running = running;
-  }
-
-  @Override
-  public void setScorer(Scorer scorer) throws IOException {
-    throw new RuntimeException("Not implemented.");
-  }
-
-  @Override
-  public void collect(int doc) throws IOException {
-    throw new RuntimeException("Not implemented.");
-  }
-
-  @Override
-  public void setNextReader(AtomicReaderContext context) throws IOException {
-    throw new RuntimeException("Not implemented.");
-  }
-
-  @Override
-  public boolean acceptsDocsOutOfOrder() {
-    throw new RuntimeException("Not implemented.");
   }
 
   @Override

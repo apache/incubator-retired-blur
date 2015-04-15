@@ -18,12 +18,34 @@ package org.apache.blur.lucene.search;
 
 import java.io.IOException;
 
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.Scorer;
 
-public interface CloneableCollector {
+public abstract class CloneableCollector extends Collector {
 
-  Collector newCollector() throws IOException;
+  public abstract Collector newCollector() throws IOException;
 
-  Collector merge(Collector... merge) throws IOException;
+  public abstract Collector merge(Collector... merge) throws IOException;
+
+  @Override
+  public final void setScorer(Scorer scorer) throws IOException {
+    throw new RuntimeException("Not implemented.");
+  }
+
+  @Override
+  public final void collect(int doc) throws IOException {
+    throw new RuntimeException("Not implemented.");
+  }
+
+  @Override
+  public final void setNextReader(AtomicReaderContext context) throws IOException {
+    throw new RuntimeException("Not implemented.");
+  }
+
+  @Override
+  public final boolean acceptsDocsOutOfOrder() {
+    throw new RuntimeException("Not implemented.");
+  }
 
 }

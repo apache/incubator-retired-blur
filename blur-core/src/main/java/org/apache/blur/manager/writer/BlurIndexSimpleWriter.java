@@ -287,7 +287,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
             _writer.notify();
           }
           _indexImporter = new IndexImporter(_indexImporterTimer, BlurIndexSimpleWriter.this, _shardContext,
-              TimeUnit.SECONDS, 10);
+              TimeUnit.SECONDS, 10, _thriftCache);
         } catch (IOException e) {
           LOG.error("Unknown error on index writer open.", e);
         }

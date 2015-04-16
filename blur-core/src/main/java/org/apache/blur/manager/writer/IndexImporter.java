@@ -38,6 +38,7 @@ import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.manager.BlurPartitioner;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.ShardUtil;
@@ -76,12 +77,14 @@ public class IndexImporter extends TimerTask implements Closeable {
   private final String _shard;
   private final long _cleanupDelay;
   private final Timer _inindexImporterTimer;
+  private final ThriftCache _thriftCache;
 
   private long _lastCleanup;
   private Runnable _testError;
 
   public IndexImporter(Timer indexImporterTimer, BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit,
-      long refreshAmount) {
+      long refreshAmount, ThriftCache thriftCache) {
+    _thriftCache = thriftCache;
     _blurIndex = blurIndex;
     _shardContext = shardContext;
 
@@ -362,6 +365,15 @@ public class IndexImporter extends TimerTask implements Closeable {
       Path realPath = HdfsDirectory.readRealPathDataFromSymlinkPath(fileSystem, status.getPath());
       Path inuseDir = inuseFileToDir.get(realPath);
       inuseDirs.remove(inuseDir);
+      // if the inuse dir has an inprogress file then remove it because there
+      // are files that reference this dir so it had to be committed.
+      Path path = new Path(inuseDir, INPROGRESS);
+      if (fileSystem.exists(path)) {
+        fileSystem.delete(path, false);
+        if (_thriftCache != null) {
+          _thriftCache.clearTable(_table);
+        }
+      }
     }
 
     // Check if any inuse dirs have inprogress files.

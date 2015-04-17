@@ -760,7 +760,7 @@ public class MiniCluster {
   }
 
   public URI getFileSystemUri() throws IOException {
-    return cluster.getFileSystem().getUri();
+    return getFileSystem().getUri();
   }
 
   public void startDfs(String path) {

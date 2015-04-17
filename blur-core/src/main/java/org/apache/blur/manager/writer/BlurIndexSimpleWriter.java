@@ -188,8 +188,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     _conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
-    _snapshotIndexDeletionPolicy = new SnapshotIndexDeletionPolicy(_tableContext.getConfiguration(), new Path(
-        shardContext.getHdfsDirPath(), "generations"));
+    _snapshotIndexDeletionPolicy = new SnapshotIndexDeletionPolicy(_tableContext.getConfiguration(),
+        SnapshotIndexDeletionPolicy.getGenerationsPath(_shardContext.getHdfsDirPath()));
     _policy = new IndexDeletionPolicyReader(_snapshotIndexDeletionPolicy);
     _conf.setIndexDeletionPolicy(_policy);
     BlurConfiguration blurConfiguration = _tableContext.getBlurConfiguration();

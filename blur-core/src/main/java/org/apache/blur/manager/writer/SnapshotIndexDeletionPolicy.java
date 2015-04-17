@@ -105,7 +105,7 @@ public class SnapshotIndexDeletionPolicy extends IndexDeletionPolicy {
   }
 
   private void cleanupOldFiles() {
-    
+
   }
 
   private String buffer(long number) {
@@ -182,6 +182,14 @@ public class SnapshotIndexDeletionPolicy extends IndexDeletionPolicy {
 
   public Path getSnapshotsDirectoryPath() {
     return _path;
+  }
+  
+  public Long getGeneration(String name) {
+    return _namesToGenerations.get(name);
+  }
+
+  public static Path getGenerationsPath(Path shardDir) {
+    return new Path(shardDir, "generations");
   }
 
 }

@@ -33,6 +33,17 @@ public class BlurRecord implements Writable, ReaderBlurRecord {
 
   private List<BlurColumn> _columns = new ArrayList<BlurColumn>();
 
+  public BlurRecord() {
+
+  }
+
+  public BlurRecord(BlurRecord blurRecord) {
+    _rowId = blurRecord._rowId;
+    _recordId = blurRecord._recordId;
+    _family = blurRecord._family;
+    _columns = new ArrayList<BlurColumn>(blurRecord._columns);
+  }
+
   @Override
   public void readFields(DataInput in) throws IOException {
     _rowId = IOUtil.readString(in);

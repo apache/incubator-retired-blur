@@ -56,6 +56,10 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hdfs.DFSClient;
+import org.apache.hadoop.hdfs.DFSClient.DFSInputStream;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.lucene.store.BufferedIndexOutput;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
@@ -176,18 +180,23 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
         if (!fileStatus.isDir()) {
           Path p = fileStatus.getPath();
           String name = p.getName();
+          long lastMod;
+          long length;
+          String resolvedName;
           if (name.endsWith(LNK)) {
-            String resolvedName = getRealFileName(name);
+            resolvedName = getRealFileName(name);
             Path resolvedPath = getPath(resolvedName);
             FileStatus resolvedFileStatus = _fileSystem.getFileStatus(resolvedPath);
-            _fileStatusMap.put(resolvedName, new FStat(resolvedFileStatus));
+            lastMod = resolvedFileStatus.getModificationTime();
           } else if (name.endsWith(COPY)) {
-            String resolvedName = getRealFileName(name);
-            long lastModTime = getLastModTimeFromCopyFile(name);
-            _fileStatusMap.put(resolvedName, new FStat(lastModTime, fileStatus.getLen()));
+            resolvedName = getRealFileName(name);
+            lastMod = getLastModTimeFromCopyFile(name);
           } else {
-            _fileStatusMap.put(name, new FStat(fileStatus));
+            resolvedName = name;
+            lastMod = fileStatus.getModificationTime();
           }
+          length = length(resolvedName);
+          _fileStatusMap.put(resolvedName, new FStat(lastMod, length));
         }
       }
     }
@@ -518,7 +527,16 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     Path path = getPath(name);
     Tracer trace = Trace.trace("filesystem - length", Trace.param("path", path));
     try {
-      return _fileSystem.getFileStatus(path).getLen();
+      if (_fileSystem instanceof DistributedFileSystem) {
+        DistributedFileSystem distributedFileSystem = (DistributedFileSystem) _fileSystem;
+        DFSClient client = distributedFileSystem.getClient();
+        DFSInputStream inputStream = client.open(path.toUri().getPath());
+        long fileLength = inputStream.getFileLength();
+        inputStream.close();
+        return fileLength;
+      } else {
+        return _fileSystem.getFileStatus(path).getLen();
+      }
     } finally {
       trace.done();
     }

@@ -43,17 +43,19 @@ import org.junit.Test;
 
 public class CsvBlurDriverTest {
 
-  protected String tableUri = "file:///tmp/tmppath";
+  protected Path root = new Path("./target/tmp/CsvBlurDriverTest/");
   protected int shardCount = 13;
+  protected Path _path1;
+  protected Path _path2;
 
   @Before
   public void setup() throws IOException {
     Configuration configuration = new Configuration();
-    Path path1 = new Path("file:///tmp/test1");
-    Path path2 = new Path("file:///tmp/test2");
-    FileSystem fileSystem = path1.getFileSystem(configuration);
-    fileSystem.mkdirs(path1);
-    fileSystem.mkdirs(path2);
+    _path1 = new Path(root, "test1");
+    _path2 = new Path(root, "test2");
+    FileSystem fileSystem = _path1.getFileSystem(configuration);
+    fileSystem.mkdirs(_path1);
+    fileSystem.mkdirs(_path2);
   }
 
   @Test
@@ -80,8 +82,8 @@ public class CsvBlurDriverTest {
     };
     AtomicReference<Callable<Void>> ref = new AtomicReference<Callable<Void>>();
     Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, ref, "-c", "host:40010", "-d", "family1",
-        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i",
-        "file:///tmp/test2");
+        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", _path1.toString(), "-i",
+        _path2.toString());
     assertNotNull(job);
     Configuration configuration = job.getConfiguration();
     TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
@@ -103,8 +105,8 @@ public class CsvBlurDriverTest {
     };
     AtomicReference<Callable<Void>> ref = new AtomicReference<Callable<Void>>();
     Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, ref, "-c", "host:40010", "-d", "family1",
-        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i",
-        "file:///tmp/test2", "-S", "-C", "1000000", "2000000");
+        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", _path1.toString(), "-i",
+        _path2.toString(), "-S", "-C", "1000000", "2000000");
     assertNotNull(job);
     Configuration configuration = job.getConfiguration();
     TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
@@ -126,8 +128,8 @@ public class CsvBlurDriverTest {
     };
     AtomicReference<Callable<Void>> ref = new AtomicReference<Callable<Void>>();
     Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, ref, "-c", "host:40010", "-d", "family1",
-        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i",
-        "file:///tmp/test2", "-S", "-C", "1000000", "2000000", "-p", "SNAPPY");
+        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", _path1.toString(), "-i",
+        _path2.toString(), "-S", "-C", "1000000", "2000000", "-p", "SNAPPY");
     assertNotNull(job);
     Configuration configuration = job.getConfiguration();
     TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
@@ -152,8 +154,8 @@ public class CsvBlurDriverTest {
     int multiplierParam = 10;
     AtomicReference<Callable<Void>> ref = new AtomicReference<Callable<Void>>();
     Job job = CsvBlurDriver.setupJob(configurationSetup, controllerPool, ref, "-c", "host:40010", "-d", "family1",
-        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", "file:///tmp/test1", "-i",
-        "file:///tmp/test2", "-S", "-C", "1000000", "2000000", "-p", "SNAPPY", "-r", Integer.toString(multiplierParam));
+        "col1", "col2", "-d", "family2", "col3", "col4", "-t", "table1", "-i", _path1.toString(), "-i",
+        _path2.toString(), "-S", "-C", "1000000", "2000000", "-p", "SNAPPY", "-r", Integer.toString(multiplierParam));
     assertNotNull(job);
 
     assertEquals(multiplierParam * shardCount, job.getNumReduceTasks());
@@ -167,7 +169,7 @@ public class CsvBlurDriverTest {
         if (method.getName().equals("describe")) {
           TableDescriptor tableDescriptor = new TableDescriptor();
           tableDescriptor.setName((String) args[0]);
-          tableDescriptor.setTableUri(tableUri);
+          tableDescriptor.setTableUri(new Path(root, "tmppath").toString());
           tableDescriptor.setShardCount(shardCount);
           return tableDescriptor;
         }

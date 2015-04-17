@@ -38,6 +38,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.GCWatcher;
+import org.apache.blur.utils.JavaHome;
 import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -68,7 +69,7 @@ public class BlurOutputFormatMiniClusterTest {
   @BeforeClass
   public static void setupTest() throws Exception {
     GCWatcher.init(0.60);
-    BlurOutputFormatTest.setupJavaHome();
+    JavaHome.checkJavaHome();
     LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
     File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
     testDirectory.mkdirs();

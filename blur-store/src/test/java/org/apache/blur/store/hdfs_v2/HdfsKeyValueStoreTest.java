@@ -41,7 +41,7 @@ public class HdfsKeyValueStoreTest {
 
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_HdfsKeyValueStoreTest"));
 
-  private Configuration _configuration = new Configuration();
+  private static Configuration _configuration = new Configuration();
   private static MiniDFSCluster _cluster;
 
   private static Timer _timer;
@@ -49,8 +49,7 @@ public class HdfsKeyValueStoreTest {
 
   @BeforeClass
   public static void startCluster() {
-    Configuration conf = new Configuration();
-    _cluster = HdfsMiniClusterUtil.startDfs(conf, true, TMPDIR.getAbsolutePath());
+    _cluster = HdfsMiniClusterUtil.startDfs(_configuration, true, TMPDIR.getAbsolutePath());
     _timer = new Timer("IndexImporter", true);
   }
 

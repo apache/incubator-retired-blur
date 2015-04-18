@@ -109,14 +109,25 @@ public class BlurInputFormatTest {
   }
 
   @Test
-  public void testBlurInputFormat() throws IOException, BlurException, TException, ClassNotFoundException,
+  public void testBlurInputFormatFastDisabled() throws IOException, BlurException, TException, ClassNotFoundException,
       InterruptedException {
-    String tableName = "testBlurInputFormat";
+    String tableName = "testBlurInputFormatFastDisabled";
+    runTest(tableName, true);
+  }
 
+  @Test
+  public void testBlurInputFormatFastEnabled() throws IOException, BlurException, TException, ClassNotFoundException,
+      InterruptedException {
+    String tableName = "testBlurInputFormatFastEnabled";
+    runTest(tableName, false);
+  }
+
+  private void runTest(String tableName, boolean disableFast) throws IOException, BlurException, TException,
+      InterruptedException, ClassNotFoundException {
     FileSystem fileSystem = miniCluster.getFileSystem();
     Path root = new Path(fileSystem.getUri() + "/");
 
-    creatTable(tableName, new Path(root, "tables"), true);
+    creatTable(tableName, new Path(root, "tables"), disableFast);
     loadTable(tableName, 100, 100);
 
     Iface client = getClient();
@@ -132,7 +143,7 @@ public class BlurInputFormatTest {
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(TableBlurRecord.class);
 
-    Path output = new Path(root, "output");
+    Path output = new Path(new Path(root, "output"), tableName);
 
     String snapshot = UUID.randomUUID().toString();
     client.createSnapshot(tableName, snapshot);
@@ -168,7 +179,6 @@ public class BlurInputFormatTest {
       rowId++;
     }
     assertEquals(200, rowId);
-
   }
 
   public interface ResultReader {
@@ -177,7 +187,6 @@ public class BlurInputFormatTest {
 
   }
 
-  @SuppressWarnings("deprecation")
   private void walkOutput(Path output, Configuration conf, ResultReader resultReader) throws IOException {
     FileSystem fileSystem = output.getFileSystem(conf);
     FileStatus fileStatus = fileSystem.getFileStatus(output);

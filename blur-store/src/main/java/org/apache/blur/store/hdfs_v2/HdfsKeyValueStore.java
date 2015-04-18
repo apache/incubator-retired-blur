@@ -186,11 +186,17 @@ public class HdfsKeyValueStore implements Store {
     removeAnyTruncatedFiles();
     loadIndexes();
     cleanupOldFiles();
-    _idleLogTimerTask = getIdleLogTimer();
-    _oldFileCleanerTimerTask = getOldFileCleanerTimer();
-    _hdfsKeyValueTimer = hdfsKeyValueTimer;
-    _hdfsKeyValueTimer.schedule(_idleLogTimerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
-    _hdfsKeyValueTimer.schedule(_oldFileCleanerTimerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
+    if (!_readOnly) {
+      _idleLogTimerTask = getIdleLogTimer();
+      _oldFileCleanerTimerTask = getOldFileCleanerTimer();
+      _hdfsKeyValueTimer = hdfsKeyValueTimer;
+      _hdfsKeyValueTimer.schedule(_idleLogTimerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
+      _hdfsKeyValueTimer.schedule(_oldFileCleanerTimerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
+    } else {
+      _idleLogTimerTask = null;
+      _oldFileCleanerTimerTask = null;
+      _hdfsKeyValueTimer = null;
+    }
     // Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, HDFS_KV, SIZE,
     // path.getParent().toString()), new Gauge<Long>() {
     // @Override
@@ -467,9 +473,15 @@ public class HdfsKeyValueStore implements Store {
   public void close() throws IOException {
     if (!_isClosed) {
       _isClosed = true;
-      _idleLogTimerTask.cancel();
-      _oldFileCleanerTimerTask.cancel();
-      _hdfsKeyValueTimer.purge();
+      if (_idleLogTimerTask != null) {
+        _idleLogTimerTask.cancel();
+      }
+      if (_oldFileCleanerTimerTask != null) {
+        _oldFileCleanerTimerTask.cancel();
+      }
+      if (_hdfsKeyValueTimer != null) {
+        _hdfsKeyValueTimer.purge();
+      }
       _writeLock.lock();
       try {
         if (isOpenForWriting()) {

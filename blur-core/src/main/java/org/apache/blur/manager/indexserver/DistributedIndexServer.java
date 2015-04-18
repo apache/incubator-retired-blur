@@ -19,7 +19,6 @@ package org.apache.blur.manager.indexserver;
 import static org.apache.blur.utils.BlurConstants.BLUR_TABLE_DISABLE_FAST_DIR;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,10 +53,9 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.hdfs.BlurLockFactory;
+import org.apache.blur.store.hdfs.DirectoryUtil;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.store.hdfs.SequentialReadControl;
-import org.apache.blur.store.hdfs_v2.FastHdfsKeyValueDirectory;
-import org.apache.blur.store.hdfs_v2.JoinDirectory;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
@@ -511,22 +509,9 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     HdfsDirectory longTermStorage = new HdfsDirectory(_configuration, hdfsDirPath, _sequentialReadControl);
     longTermStorage.setLockFactory(lockFactory);
 
-    Directory directory;
-    URI uri = hdfsDirPath.toUri();
-    String scheme = uri.getScheme();
-
     boolean disableFast = tableContext.getBlurConfiguration().getBoolean(BLUR_TABLE_DISABLE_FAST_DIR, false);
-
-    if (scheme != null && scheme.equals("hdfs") && !disableFast) {
-      LOG.info("Using Fast HDFS directory implementation on shard [{0}] for table [{1}]", shard, table);
-      FastHdfsKeyValueDirectory shortTermStorage = new FastHdfsKeyValueDirectory(false, _hdfsKeyValueTimer,
-          _configuration, new Path(hdfsDirPath, "fast"));
-      directory = new JoinDirectory(longTermStorage, shortTermStorage);
-    } else {
-      LOG.info("Using regular HDFS directory.");
-      directory = longTermStorage;
-    }
-
+    Directory directory = DirectoryUtil.getDirectory(_configuration, longTermStorage, disableFast, _hdfsKeyValueTimer,
+        table, shard, false);
     ShardContext shardContext = ShardContext.create(tableContext, shard);
 
     TableDescriptor descriptor = tableContext.getDescriptor();

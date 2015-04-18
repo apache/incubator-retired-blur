@@ -31,6 +31,7 @@ import java.util.concurrent.Future;
 
 import org.apache.blur.lucene.codec.Blur024Codec;
 import org.apache.blur.manager.writer.SnapshotIndexDeletionPolicy;
+import org.apache.blur.store.hdfs.DirectoryUtil;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
@@ -58,6 +59,7 @@ import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.SegmentInfo;
 import org.apache.lucene.index.SegmentInfoPerCommit;
 import org.apache.lucene.index.SegmentInfos;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.util.Bits;
 
@@ -164,8 +166,9 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
 
   private List<InputSplit> getSegmentSplits(Path shardDir, Configuration configuration, Text table, Text snapshot)
       throws IOException {
+    final long start = System.nanoTime();
     List<InputSplit> splits = new ArrayList<InputSplit>();
-    HdfsDirectory hdfsDirectory = new HdfsDirectory(configuration, shardDir);
+    Directory directory = getDirectory(configuration, table.toString(), shardDir);
     try {
       SnapshotIndexDeletionPolicy policy = new SnapshotIndexDeletionPolicy(configuration,
           SnapshotIndexDeletionPolicy.getGenerationsPath(shardDir));
@@ -175,12 +178,12 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
         throw new IOException("Snapshot [" + snapshot + "] not found in shard [" + shardDir + "]");
       }
 
-      List<IndexCommit> listCommits = DirectoryReader.listCommits(hdfsDirectory);
+      List<IndexCommit> listCommits = DirectoryReader.listCommits(directory);
       IndexCommit indexCommit = findIndexCommit(listCommits, generation, shardDir);
 
       String segmentsFileName = indexCommit.getSegmentsFileName();
       SegmentInfos segmentInfos = new SegmentInfos();
-      segmentInfos.read(hdfsDirectory, segmentsFileName);
+      segmentInfos.read(directory, segmentsFileName);
       for (SegmentInfoPerCommit commit : segmentInfos) {
         SegmentInfo segmentInfo = commit.info;
         if (commit.getDelCount() == segmentInfo.getDocCount()) {
@@ -190,14 +193,16 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
           Set<String> files = segmentInfo.files();
           long fileLength = 0;
           for (String file : files) {
-            fileLength += hdfsDirectory.fileLength(file);
+            fileLength += directory.fileLength(file);
           }
           splits.add(new BlurInputSplit(shardDir, segmentsFileName, name, fileLength, table));
         }
       }
       return splits;
     } finally {
-      hdfsDirectory.close();
+      directory.close();
+      final long end = System.nanoTime();
+      LOG.info("Found split in shard [" + shardDir + "] in [" + (end - start) / 1000000000.0 + " ms].");
     }
   }
 
@@ -225,7 +230,7 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     private TableBlurRecord _tableBlurRecord;
     private Bits _liveDocs;
     private StoredFieldsReader _fieldsReader;
-    private HdfsDirectory _directory;
+    private Directory _directory;
 
     private int _docId = -1;
     private int _maxDoc;
@@ -243,7 +248,8 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
 
       _table = blurInputSplit.getTable();
 
-      _directory = new HdfsDirectory(configuration, blurInputSplit.getDir());
+      _directory = getDirectory(configuration, _table.toString(), blurInputSplit.getDir());
+
       SegmentInfos segmentInfos = new SegmentInfos();
       segmentInfos.read(_directory, blurInputSplit.getSegmentsName());
       SegmentInfoPerCommit commit = findSegmentInfoPerCommit(segmentInfos, blurInputSplit);
@@ -416,4 +422,11 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     putSnapshotForTable(job.getConfiguration(), tableName, snapshot);
   }
 
+  public static Directory getDirectory(Configuration configuration, String table, Path shardDir) throws IOException {
+    Path fastPath = DirectoryUtil.getFastDirectoryPath(shardDir);
+    FileSystem fileSystem = shardDir.getFileSystem(configuration);
+    boolean disableFast = !fileSystem.exists(fastPath);
+    return DirectoryUtil.getDirectory(configuration, new HdfsDirectory(configuration, shardDir), disableFast, null,
+        table, shardDir.getName(), true);
+  }
 }

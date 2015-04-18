@@ -37,7 +37,7 @@ public class FastHdfsKeyValueDirectoryTestSuite extends BaseDirectoryTestSuite {
     Path hdfsDirPath = new Path(uri.toString());
     Configuration conf = new Configuration();
     _timer = new Timer("IndexImporter", true);
-    return new FastHdfsKeyValueDirectory(_timer, conf, hdfsDirPath);
+    return new FastHdfsKeyValueDirectory(false, _timer, conf, hdfsDirPath);
   }
 
   @Test

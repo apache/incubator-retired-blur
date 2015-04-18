@@ -151,22 +151,26 @@ public class HdfsKeyValueStore implements Store {
   private final AtomicLong _lastWrite = new AtomicLong();
   private final Timer _hdfsKeyValueTimer;
   private final long _maxOpenForWriting;
+  private final boolean _readOnly;
 
   private FSDataOutputStream _output;
   private Path _outputPath;
   private boolean _isClosed;
 
-  public HdfsKeyValueStore(Timer hdfsKeyValueTimer, Configuration configuration, Path path) throws IOException {
-    this(hdfsKeyValueTimer, configuration, path, DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE, DEFAULT_MAX_OPEN_FOR_WRITING);
-  }
-
-  public HdfsKeyValueStore(Timer hdfsKeyValueTimer, Configuration configuration, Path path, long maxAmountAllowedPerFile)
+  public HdfsKeyValueStore(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path)
       throws IOException {
-    this(hdfsKeyValueTimer, configuration, path, maxAmountAllowedPerFile, DEFAULT_MAX_OPEN_FOR_WRITING);
+    this(readOnly, hdfsKeyValueTimer, configuration, path, DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE,
+        DEFAULT_MAX_OPEN_FOR_WRITING);
   }
 
-  public HdfsKeyValueStore(Timer hdfsKeyValueTimer, Configuration configuration, Path path,
+  public HdfsKeyValueStore(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path,
+      long maxAmountAllowedPerFile) throws IOException {
+    this(readOnly, hdfsKeyValueTimer, configuration, path, maxAmountAllowedPerFile, DEFAULT_MAX_OPEN_FOR_WRITING);
+  }
+
+  public HdfsKeyValueStore(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path,
       long maxAmountAllowedPerFile, long maxOpenForWriting) throws IOException {
+    _readOnly = readOnly;
     _maxOpenForWriting = maxOpenForWriting;
     _maxAmountAllowedPerFile = maxAmountAllowedPerFile;
     _path = path;
@@ -480,6 +484,9 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private void openWriter() throws IOException {
+    if (_readOnly) {
+      throw new IOException("Key value store is set in read only mode.");
+    }
     long nextSegment = _currentFileCounter.incrementAndGet();
     String name = buffer(nextSegment);
     _outputPath = new Path(_path, name);
@@ -580,6 +587,5 @@ public class HdfsKeyValueStore implements Store {
     }
     return new TreeSet<FileStatus>();
   }
-
 
 }

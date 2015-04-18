@@ -608,13 +608,28 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     }
     Tracer trace = Trace.trace("filesystem - isCopyFileAvailable", Trace.param("name", name));
     try {
-      FileStatus[] listStatus = _fileSystem.listStatus(_path, new PathFilter() {
-        @Override
-        public boolean accept(Path path) {
-          String fileName = path.getName();
-          return fileName.startsWith(name) && fileName.endsWith(COPY);
+      FileStatus[] listStatus;
+      int retryCount = 0;
+      while (true) {
+        try {
+          listStatus = _fileSystem.listStatus(_path, new PathFilter() {
+            @Override
+            public boolean accept(Path path) {
+              String fileName = path.getName();
+              return fileName.startsWith(name) && fileName.endsWith(COPY);
+            }
+          });
+          break;
+        } catch (FileNotFoundException e) {
+          // Wait and retry
+          LOG.debug("File not found exception can occur while changes are being made to the file system, retrying.", e);
+          try {
+            Thread.sleep(100 * (retryCount + 1));
+          } catch (InterruptedException ex) {
+            throw e;
+          }
         }
-      });
+      }
       boolean exists;
       if (listStatus == null || listStatus.length == 0) {
         exists = false;

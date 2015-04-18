@@ -519,8 +519,8 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
     if (scheme != null && scheme.equals("hdfs") && !disableFast) {
       LOG.info("Using Fast HDFS directory implementation on shard [{0}] for table [{1}]", shard, table);
-      FastHdfsKeyValueDirectory shortTermStorage = new FastHdfsKeyValueDirectory(_hdfsKeyValueTimer, _configuration,
-          new Path(hdfsDirPath, "fast"));
+      FastHdfsKeyValueDirectory shortTermStorage = new FastHdfsKeyValueDirectory(false, _hdfsKeyValueTimer,
+          _configuration, new Path(hdfsDirPath, "fast"));
       directory = new JoinDirectory(longTermStorage, shortTermStorage);
     } else {
       LOG.info("Using regular HDFS directory.");

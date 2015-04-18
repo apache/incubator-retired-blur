@@ -60,17 +60,22 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
   private final HdfsKeyValueStore _store;
   private final int _blockSize = 4096;
   private final Path _path;
+  private final boolean _readOnly;
+
   private long _lastGc;
 
-  public FastHdfsKeyValueDirectory(Timer hdfsKeyValueTimer, Configuration configuration, Path path) throws IOException {
-    this(hdfsKeyValueTimer, configuration, path, HdfsKeyValueStore.DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE,
+  public FastHdfsKeyValueDirectory(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path)
+      throws IOException {
+    this(readOnly, hdfsKeyValueTimer, configuration, path, HdfsKeyValueStore.DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE,
         HdfsKeyValueStore.DEFAULT_MAX_OPEN_FOR_WRITING);
   }
 
-  public FastHdfsKeyValueDirectory(Timer hdfsKeyValueTimer, Configuration configuration, Path path,
+  public FastHdfsKeyValueDirectory(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path,
       long maxAmountAllowedPerFile, long maxOpenForWriting) throws IOException {
     _path = path;
-    _store = new HdfsKeyValueStore(hdfsKeyValueTimer, configuration, path, maxAmountAllowedPerFile, maxOpenForWriting);
+    _readOnly = readOnly;
+    _store = new HdfsKeyValueStore(readOnly, hdfsKeyValueTimer, configuration, path, maxAmountAllowedPerFile,
+        maxOpenForWriting);
     MemoryLeakDetector.record(_store, "HdfsKeyValueStore", path.toString());
     BytesRef value = new BytesRef();
     if (_store.get(FILES, value)) {
@@ -92,8 +97,10 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
       }
     }
     setLockFactory(NoLockFactory.getNoLockFactory());
-    writeFileNamesAndSync();
-    gc();
+    if (!_readOnly) {
+      writeFileNamesAndSync();
+      gc();
+    }
   }
 
   public void gc() throws IOException {
@@ -158,6 +165,9 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   @Override
   public IndexOutput createOutput(final String name, IOContext context) throws IOException {
+    if (_readOnly) {
+      throw new IOException("Directory is in read only mode.");
+    }
     if (fileExists(name)) {
       deleteFile(name);
     }
@@ -179,6 +189,9 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   @Override
   public void deleteFile(String name) throws IOException {
+    if (_readOnly) {
+      throw new IOException("Directory is in read only mode.");
+    }
     Long length = _files.remove(name);
     if (length != null) {
       LOG.debug("Removing file [{0}] with length [{1}].", name, length);

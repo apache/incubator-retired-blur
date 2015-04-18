@@ -16,9 +16,7 @@
  */
 package org.apache.blur.store.hdfs_v2;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,7 +67,7 @@ public class HdfsKeyValueStoreTest {
 
   @Test
   public void testPutGet() throws IOException {
-    HdfsKeyValueStore store = new HdfsKeyValueStore(_timer, _configuration, _path);
+    HdfsKeyValueStore store = new HdfsKeyValueStore(false, _timer, _configuration, _path);
     store.put(toBytesRef("a"), toBytesRef("value1"));
     store.put(toBytesRef("b"), toBytesRef("value2"));
     store.sync();
@@ -83,7 +81,7 @@ public class HdfsKeyValueStoreTest {
 
   @Test
   public void testPutGetDelete() throws IOException {
-    HdfsKeyValueStore store = new HdfsKeyValueStore(_timer, _configuration, _path);
+    HdfsKeyValueStore store = new HdfsKeyValueStore(false, _timer, _configuration, _path);
     store.put(toBytesRef("a"), toBytesRef("value1"));
     store.put(toBytesRef("b"), toBytesRef("value2"));
     store.sync();
@@ -101,7 +99,7 @@ public class HdfsKeyValueStoreTest {
 
   @Test
   public void testPutGetReopen() throws IOException {
-    HdfsKeyValueStore store1 = new HdfsKeyValueStore(_timer, _configuration, _path);
+    HdfsKeyValueStore store1 = new HdfsKeyValueStore(false, _timer, _configuration, _path);
     store1.put(toBytesRef("a"), toBytesRef("value1"));
     store1.put(toBytesRef("b"), toBytesRef("value2"));
     store1.sync();
@@ -112,7 +110,7 @@ public class HdfsKeyValueStoreTest {
     assertEquals(new BytesRef("value2"), value1);
     store1.close();
 
-    HdfsKeyValueStore store2 = new HdfsKeyValueStore(_timer, _configuration, _path);
+    HdfsKeyValueStore store2 = new HdfsKeyValueStore(false, _timer, _configuration, _path);
     BytesRef value2 = new BytesRef();
     store2.get(toBytesRef("a"), value2);
     assertEquals(new BytesRef("value1"), value2);
@@ -123,7 +121,7 @@ public class HdfsKeyValueStoreTest {
 
   @Test
   public void testFileRolling() throws IOException {
-    HdfsKeyValueStore store = new HdfsKeyValueStore(_timer, _configuration, _path, 1000);
+    HdfsKeyValueStore store = new HdfsKeyValueStore(false, _timer, _configuration, _path, 1000);
     FileSystem fileSystem = _path.getFileSystem(_configuration);
     store.put(new BytesRef("a"), new BytesRef(""));
     assertEquals(1, fileSystem.listStatus(_path).length);
@@ -134,7 +132,7 @@ public class HdfsKeyValueStoreTest {
 
   @Test
   public void testFileGC() throws IOException {
-    HdfsKeyValueStore store = new HdfsKeyValueStore(_timer, _configuration, _path, 1000);
+    HdfsKeyValueStore store = new HdfsKeyValueStore(false, _timer, _configuration, _path, 1000);
     store.put(new BytesRef("a"), new BytesRef(""));
     FileSystem fileSystem = _path.getFileSystem(_configuration);
     assertEquals(1, fileSystem.listStatus(_path).length);
@@ -148,11 +146,11 @@ public class HdfsKeyValueStoreTest {
 
   // @Test
   public void testTwoKeyStoreInstancesWritingAtTheSameTime() throws IOException {
-    HdfsKeyValueStore store1 = new HdfsKeyValueStore(_timer, _configuration, _path);
+    HdfsKeyValueStore store1 = new HdfsKeyValueStore(false, _timer, _configuration, _path);
     listFiles();
     store1.put(new BytesRef("a1"), new BytesRef(new byte[2000]));
     listFiles();
-    HdfsKeyValueStore store2 = new HdfsKeyValueStore(_timer, _configuration, _path);
+    HdfsKeyValueStore store2 = new HdfsKeyValueStore(false, _timer, _configuration, _path);
     listFiles();
     store2.put(new BytesRef("a1"), new BytesRef(new byte[1000]));
     listFiles();
@@ -174,7 +172,7 @@ public class HdfsKeyValueStoreTest {
     store1.close();
     store2.close();
 
-    HdfsKeyValueStore store3 = new HdfsKeyValueStore(_timer, _configuration, _path);
+    HdfsKeyValueStore store3 = new HdfsKeyValueStore(false, _timer, _configuration, _path);
     Iterable<Entry<BytesRef, BytesRef>> scan = store3.scan(null);
     for (Entry<BytesRef, BytesRef> e : scan) {
       System.out.println(e.getValue().length);
@@ -184,9 +182,9 @@ public class HdfsKeyValueStoreTest {
 
   @Test
   public void testTwoKeyStoreInstancesWritingAtTheSameTimeSmallFiles() throws IOException {
-    HdfsKeyValueStore store1 = new HdfsKeyValueStore(_timer, _configuration, _path, 1000);
+    HdfsKeyValueStore store1 = new HdfsKeyValueStore(false, _timer, _configuration, _path, 1000);
     store1.put(new BytesRef("a1"), new BytesRef(new byte[2000]));
-    HdfsKeyValueStore store2 = new HdfsKeyValueStore(_timer, _configuration, _path, 1000);
+    HdfsKeyValueStore store2 = new HdfsKeyValueStore(false, _timer, _configuration, _path, 1000);
     store2.put(new BytesRef("a1"), new BytesRef(new byte[1000]));
     try {
       store1.put(new BytesRef("a2"), new BytesRef(new byte[2000]));
@@ -200,12 +198,52 @@ public class HdfsKeyValueStoreTest {
     store2.sync();
     store2.close();
 
-    HdfsKeyValueStore store3 = new HdfsKeyValueStore(_timer, _configuration, _path);
+    HdfsKeyValueStore store3 = new HdfsKeyValueStore(false, _timer, _configuration, _path);
     Iterable<Entry<BytesRef, BytesRef>> scan = store3.scan(null);
     for (Entry<BytesRef, BytesRef> e : scan) {
       System.out.println(e.getValue().length);
     }
     store3.close();
+  }
+
+  @Test
+  public void testReadonlyPut() throws IOException {
+    HdfsKeyValueStore store1 = new HdfsKeyValueStore(false, _timer, _configuration, _path, 1000);
+    store1.put(new BytesRef("a1"), new BytesRef(new byte[2000]));
+
+    HdfsKeyValueStore store2 = new HdfsKeyValueStore(true, _timer, _configuration, _path, 1000);
+    assertTrue(store2.get(new BytesRef("a1"), new BytesRef(new byte[2000])));
+
+    try {
+      store2.put(new BytesRef("a1"), new BytesRef(new byte[2000]));
+      fail();
+    } catch (IOException e) {
+
+    }
+
+    try {
+      store2.delete(new BytesRef("a1"));
+      fail();
+    } catch (IOException e) {
+
+    }
+
+    try {
+      store2.sync();
+      fail();
+    } catch (IOException e) {
+
+    }
+
+    // Store 1 should still be able to write.
+    store1.put(new BytesRef("a2"), new BytesRef(new byte[2000]));
+    
+    // Store 2 should not be able to find.
+    assertFalse(store2.get(new BytesRef("a2"), new BytesRef(new byte[2000])));
+
+    store2.close();
+    store1.close();
+
   }
 
   private void listFiles() throws IOException {

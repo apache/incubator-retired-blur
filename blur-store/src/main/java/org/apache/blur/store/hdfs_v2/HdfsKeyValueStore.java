@@ -18,11 +18,8 @@ package org.apache.blur.store.hdfs_v2;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -61,11 +58,9 @@ public class HdfsKeyValueStore implements Store {
 
   public static final int DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE = 64 * 1024 * 1024;
   public static final long DEFAULT_MAX_OPEN_FOR_WRITING = TimeUnit.MINUTES.toMillis(1);
-  
+
   private static final String UTF_8 = "UTF-8";
   private static final String BLUR_KEY_VALUE = "blur_key_value";
-  private static final String IN = "in";
-  private static final String GET_FILE_LENGTH = "getFileLength";
   private static final Log LOG = LogFactory.getLog(HdfsKeyValueStore.class);
   private static final byte[] MAGIC;
   private static final int VERSION = 1;
@@ -205,7 +200,7 @@ public class HdfsKeyValueStore implements Store {
     for (FileStatus fileStatus : _fileStatus.get()) {
       Path path = fileStatus.getPath();
       FSDataInputStream inputStream = _fileSystem.open(path);
-      long len = getFileLength(path, inputStream);
+      long len = HdfsUtils.getFileLength(_fileSystem, path, inputStream);
       inputStream.close();
       if (len < MAGIC.length + VERSION_LENGTH) {
         // Remove invalid file
@@ -516,12 +511,6 @@ public class HdfsKeyValueStore implements Store {
     }
   }
 
-  private long getFileLength(Path path, FSDataInputStream inputStream) throws IOException {
-    FileStatus fileStatus = _fileSystem.getFileStatus(path);
-    long dfsLength = getDFSLength(inputStream);
-    return Math.max(dfsLength, fileStatus.getLen());
-  }
-
   private void syncInternal() throws IOException {
     _output.flush();
     _output.sync();
@@ -539,7 +528,7 @@ public class HdfsKeyValueStore implements Store {
     }
     int version = inputStream.readInt();
     if (version == 1) {
-      long fileLength = getFileLength(path, inputStream);
+      long fileLength = HdfsUtils.getFileLength(_fileSystem, path, inputStream);
       Operation operation = new Operation();
       try {
         while (inputStream.getPos() < fileLength) {
@@ -592,16 +581,5 @@ public class HdfsKeyValueStore implements Store {
     return new TreeSet<FileStatus>();
   }
 
-  private long getDFSLength(FSDataInputStream inputStream) throws IOException {
-    try {
-      Field field = FilterInputStream.class.getDeclaredField(IN);
-      field.setAccessible(true);
-      Object dfs = field.get(inputStream);
-      Method method = dfs.getClass().getMethod(GET_FILE_LENGTH, new Class[] {});
-      Object length = method.invoke(dfs, new Object[] {});
-      return (Long) length;
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
-  }
+
 }

@@ -90,10 +90,6 @@ public class BlurOutputFormatMiniClusterTest {
     miniCluster = new MiniCluster();
     miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true, false);
 
-    // System.setProperty("test.build.data",
-    // "./target/BlurOutputFormatTest/data");
-    // TEST_ROOT_DIR = new Path(System.getProperty("test.build.data",
-    // "target/tmp/BlurOutputFormatTest_tmp"));
     TEST_ROOT_DIR = new Path(miniCluster.getFileSystemUri().toString() + "/blur_test");
     System.setProperty("hadoop.log.dir", "./target/BlurOutputFormatTest/hadoop_log");
     try {

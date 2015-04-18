@@ -46,6 +46,7 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache.LastModified;
+import org.apache.blur.store.hdfs_v2.HdfsUtils;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
 import org.apache.commons.io.IOUtils;
@@ -56,10 +57,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hdfs.DFSClient;
-import org.apache.hadoop.hdfs.DFSClient.DFSInputStream;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.hdfs.protocol.HdfsFileStatus;
 import org.apache.lucene.store.BufferedIndexOutput;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
@@ -528,12 +526,12 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     Tracer trace = Trace.trace("filesystem - length", Trace.param("path", path));
     try {
       if (_fileSystem instanceof DistributedFileSystem) {
-        DistributedFileSystem distributedFileSystem = (DistributedFileSystem) _fileSystem;
-        DFSClient client = distributedFileSystem.getClient();
-        DFSInputStream inputStream = client.open(path.toUri().getPath());
-        long fileLength = inputStream.getFileLength();
-        inputStream.close();
-        return fileLength;
+        FSDataInputStream in = _fileSystem.open(path);
+        try {
+          return HdfsUtils.getFileLength(_fileSystem, path, in);
+        } finally {
+          in.close();
+        }
       } else {
         return _fileSystem.getFileStatus(path).getLen();
       }

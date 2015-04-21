@@ -43,12 +43,15 @@ import org.apache.hadoop.io.Writable;
 
 public class BlurSerDe extends AbstractSerDe {
 
+  public static final String BLUR_MR_UPDATE_WORKING_PATH = "blur.mr.update.working.path";
+  public static final String BLUR_MR_UPDATE_DISABLED = "blur.mr.update.disabled";
   public static final String BLUR_BLOCKING_APPLY = "blur.blocking.apply";
   public static final String BLUR_CONTROLLER_CONNECTION_STR = "blur.controller.connection.str";
   public static final String FAMILY = "blur.family";
   public static final String TABLE = "blur.table";
   public static final String ZK = BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
-  
+  public static final String BLUR_MR_LOAD_ID = "blur.mr.load.id";
+
   private String _family;
   private Map<String, ColumnDefinition> _schema;
   private ObjectInspector _objectInspector;
@@ -82,6 +85,16 @@ public class BlurSerDe extends AbstractSerDe {
       }
       if (conf != null) {
         TableDescriptor tableDescriptor = client.describe(table);
+        Map<String, String> tableProperties = tableDescriptor.getTableProperties();
+        if (tableProperties != null) {
+          String workingPath = tableProperties.get(BLUR_MR_UPDATE_WORKING_PATH);
+          if (conf != null && workingPath != null) {
+            if (!conf.getBoolean(BLUR_MR_UPDATE_DISABLED, false)) {
+              conf.set(BLUR_MR_UPDATE_WORKING_PATH, workingPath);
+            }
+          }
+        }
+
         BlurOutputFormat.setTableDescriptor(conf, tableDescriptor);
         conf.set(BLUR_CONTROLLER_CONNECTION_STR, getControllerConnectionStr(client));
       }
@@ -159,6 +172,14 @@ public class BlurSerDe extends AbstractSerDe {
   @Override
   public Class<? extends Writable> getSerializedClass() {
     return BlurRecord.class;
+  }
+
+  public static boolean shouldUseMRWorkingPath(Configuration configuration) {
+    String workingPath = configuration.get(BlurSerDe.BLUR_MR_UPDATE_WORKING_PATH);
+    if (workingPath != null) {
+      return true;
+    }
+    return false;
   }
 
 }

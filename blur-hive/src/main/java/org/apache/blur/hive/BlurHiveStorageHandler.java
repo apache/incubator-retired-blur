@@ -50,17 +50,23 @@ public class BlurHiveStorageHandler extends DefaultStorageHandler {
 
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
-    try {
-      String bulkId = UUID.randomUUID().toString();
-      String connectionStr = jobConf.get(BlurSerDe.BLUR_CONTROLLER_CONNECTION_STR);
-      Iface client = BlurClient.getClient(connectionStr);
-      client.bulkMutateStart(bulkId);
-      BlurHiveOutputFormat.setBulkId(jobConf, bulkId);
-      jobConf.setOutputCommitter(BlurHiveOutputCommitter.class);
-    } catch (BlurException e) {
-      throw new RuntimeException(e);
-    } catch (TException e) {
-      throw new RuntimeException(e);
+    if (BlurSerDe.shouldUseMRWorkingPath(jobConf)) {
+      String loadId = UUID.randomUUID().toString();
+      jobConf.set(BlurSerDe.BLUR_MR_LOAD_ID, loadId);
+      jobConf.setOutputCommitter(BlurHiveMRLoaderOutputCommitter.class);
+    } else {
+      try {
+        String bulkId = UUID.randomUUID().toString();
+        String connectionStr = jobConf.get(BlurSerDe.BLUR_CONTROLLER_CONNECTION_STR);
+        Iface client = BlurClient.getClient(connectionStr);
+        client.bulkMutateStart(bulkId);
+        BlurHiveOutputFormat.setBulkId(jobConf, bulkId);
+        jobConf.setOutputCommitter(BlurHiveOutputCommitter.class);
+      } catch (BlurException e) {
+        throw new RuntimeException(e);
+      } catch (TException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 

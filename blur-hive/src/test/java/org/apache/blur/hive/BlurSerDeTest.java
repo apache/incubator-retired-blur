@@ -40,6 +40,7 @@ import java.util.Properties;
 import org.apache.blur.MiniCluster;
 import org.apache.blur.mapreduce.lib.BlurColumn;
 import org.apache.blur.mapreduce.lib.BlurRecord;
+import org.apache.blur.mapreduce.lib.update.Driver;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -49,6 +50,7 @@ import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -107,12 +109,16 @@ public class BlurSerDeTest {
     testDirectory.delete();
     miniCluster = new MiniCluster();
     miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true, externalProcesses);
+    miniCluster.startMrMiniCluster();
   }
 
   @AfterClass
-  public static void shutdownCluster() {
+  public static void shutdownCluster() throws IOException {
+    miniCluster.stopMrMiniCluster();
     miniCluster.shutdownBlurCluster();
   }
+
+  private String _mrWorkingPath;
 
   @Before
   public void setup() throws BlurException, TException, IOException {
@@ -124,6 +130,10 @@ public class BlurSerDeTest {
       tableDescriptor.setName(TEST);
       tableDescriptor.setShardCount(1);
       tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/tables/test");
+
+      _mrWorkingPath = miniCluster.getFileSystemUri().toString() + "/mrworkingpath";
+      tableDescriptor.putToTableProperties(BlurSerDe.BLUR_MR_UPDATE_WORKING_PATH, _mrWorkingPath);
+
       client.createTable(tableDescriptor);
 
       Map<String, String> props = new HashMap<String, String>();
@@ -258,7 +268,67 @@ public class BlurSerDeTest {
   @Test
   public void test2() throws SQLException, ClassNotFoundException, IOException, BlurException, TException,
       InterruptedException {
-    miniCluster.startMrMiniCluster();
+    int totalRecords = runLoad(true);
+
+    Iface client = BlurClient.getClientFromZooKeeperConnectionStr(miniCluster.getZkConnectionString());
+    BlurQuery blurQuery = new BlurQuery();
+    Query query = new Query();
+    query.setQuery("*");
+    blurQuery.setQuery(query);
+    BlurResults results = client.query(TEST, blurQuery);
+    assertEquals(totalRecords, results.getTotalResults());
+  }
+
+  @Test
+  public void test3() throws Exception {
+
+    Path mrWorkingPath = new Path(_mrWorkingPath);
+    FileSystem fileSystem = miniCluster.getFileSystem();
+    fileSystem.mkdirs(mrWorkingPath);
+    fileSystem.mkdirs(new Path(mrWorkingPath, "tmp"));
+    fileSystem.mkdirs(new Path(mrWorkingPath, Driver.NEW));
+    fileSystem.mkdirs(new Path(mrWorkingPath, Driver.COMPLETE));
+    fileSystem.mkdirs(new Path(mrWorkingPath, Driver.CACHE));
+    fileSystem.mkdirs(new Path(mrWorkingPath, Driver.INPROGRESS));
+
+    int totalRecords = runLoad(false);
+
+    Driver driver = new Driver();
+    driver.setConf(miniCluster.getMRConfiguration());
+
+    String outputPathStr = miniCluster.getFileSystemUri().toString() + "/indexoutput";
+    String blurZkConnection = miniCluster.getZkConnectionString();
+
+    assertEquals(0, driver.run(new String[] { TEST, _mrWorkingPath, outputPathStr, blurZkConnection }));
+
+    Iface client = BlurClient.getClientFromZooKeeperConnectionStr(blurZkConnection);
+
+    client.loadData(TEST, outputPathStr);
+
+    waitUntilAllImportsAreCompleted(client, TEST);
+
+    BlurQuery blurQuery = new BlurQuery();
+    Query query = new Query();
+    query.setQuery("*");
+    blurQuery.setQuery(query);
+    BlurResults results = client.query(TEST, blurQuery);
+    assertEquals(totalRecords, results.getTotalResults());
+  }
+
+  private void waitUntilAllImportsAreCompleted(Iface client, String tableName) throws BlurException, TException,
+      InterruptedException {
+    while (true) {
+      Thread.sleep(1000);
+      TableStats tableStats = client.tableStats(tableName);
+      if (tableStats.getSegmentImportInProgressCount() == 0 && tableStats.getSegmentImportPendingCount() == 0) {
+        return;
+      }
+    }
+  }
+
+  private int runLoad(boolean disableMrUpdate) throws IOException, InterruptedException, ClassNotFoundException,
+      SQLException {
+
     Configuration configuration = miniCluster.getMRConfiguration();
     HiveConf hiveConf = new HiveConf(configuration, getClass());
     hiveConf.set("hive.server2.thrift.port", "0");
@@ -272,6 +342,7 @@ public class BlurSerDeTest {
     String userName = UserGroupInformation.getCurrentUser().getShortUserName();
     Connection connection = DriverManager.getConnection("jdbc:hive2://localhost:" + port, userName, "");
 
+    run(connection, "set blur.mr.update.disabled=" + disableMrUpdate);
     run(connection, "set hive.metastore.warehouse.dir=" + WAREHOUSE.toURI().toString());
     run(connection, "create database if not exists testdb");
     run(connection, "use testdb");
@@ -293,16 +364,8 @@ public class BlurSerDeTest {
     run(connection, "select * from loadtable");
     run(connection, "set " + BlurSerDe.BLUR_BLOCKING_APPLY + "=true");
     run(connection, "insert into table testtable select * from loadtable");
-    miniCluster.stopMrMiniCluster();
     connection.close();
-
-    Iface client = BlurClient.getClientFromZooKeeperConnectionStr(miniCluster.getZkConnectionString());
-    BlurQuery blurQuery = new BlurQuery();
-    Query query = new Query();
-    query.setQuery("*");
-    blurQuery.setQuery(query);
-    BlurResults results = client.query(TEST, blurQuery);
-    assertEquals(totalRecords, results.getTotalResults());
+    return totalRecords;
   }
 
   private void generateData(File file, int totalRecords) throws IOException {

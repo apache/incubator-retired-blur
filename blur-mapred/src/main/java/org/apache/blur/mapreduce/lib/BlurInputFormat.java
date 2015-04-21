@@ -29,15 +29,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.apache.blur.lucene.codec.Blur024Codec;
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.writer.SnapshotIndexDeletionPolicy;
 import org.apache.blur.store.hdfs.DirectoryUtil;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.RowDocumentUtil;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -51,19 +49,16 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.lucene.codecs.StoredFieldsReader;
-import org.apache.lucene.document.DocumentStoredFieldVisitor;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.SegmentInfo;
 import org.apache.lucene.index.SegmentInfoPerCommit;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.IOContext;
-import org.apache.lucene.util.Bits;
 
 public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
+  private static final String BLUR_INPUTFORMAT_FILE_CACHE_PATH = "blur.inputformat.file.cache.path";
+
   private static final Log LOG = LogFactory.getLog(BlurInputFormat.class);
 
   private static final String BLUR_TABLE_PATH_MAPPING = "blur.table.path.mapping.";
@@ -73,11 +68,23 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
   @Override
   public List<InputSplit> getSplits(JobContext context) throws IOException {
     Path[] dirs = getInputPaths(context);
-    Configuration configuration = context.getConfiguration();
+    List<BlurInputSplit> splits = getSplits(context.getConfiguration(), dirs);
+    return toList(splits);
+  }
+
+  private List<InputSplit> toList(List<BlurInputSplit> splits) {
+    List<InputSplit> inputSplits = new ArrayList<InputSplit>();
+    for (BlurInputSplit inputSplit : splits) {
+      inputSplits.add(inputSplit);
+    }
+    return inputSplits;
+  }
+
+  public static List<BlurInputSplit> getSplits(Configuration configuration, Path[] dirs) throws IOException {
     int threads = configuration.getInt(BLUR_INPUT_FORMAT_DISCOVERY_THREADS, 10);
     ExecutorService service = Executors.newFixedThreadPool(threads);
     try {
-      List<InputSplit> splits = new ArrayList<InputSplit>();
+      List<BlurInputSplit> splits = new ArrayList<BlurInputSplit>();
       for (Path dir : dirs) {
         Text table = BlurInputFormat.getTableFromPath(configuration, dir);
         String snapshot = getSnapshotForTable(configuration, table.toString());
@@ -125,8 +132,8 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     throw new IOException("Snaphost not found for table [" + tableName + "]");
   }
 
-  private List<InputSplit> getSegmentSplits(final Path dir, ExecutorService service, final Configuration configuration,
-      final Text table, final Text snapshot) throws IOException {
+  private static List<BlurInputSplit> getSegmentSplits(final Path dir, ExecutorService service,
+      final Configuration configuration, final Text table, final Text snapshot) throws IOException {
 
     FileSystem fileSystem = dir.getFileSystem(configuration);
     FileStatus[] shardDirs = fileSystem.listStatus(dir, new PathFilter() {
@@ -136,18 +143,18 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
       }
     });
 
-    List<Future<List<InputSplit>>> futures = new ArrayList<Future<List<InputSplit>>>();
+    List<Future<List<BlurInputSplit>>> futures = new ArrayList<Future<List<BlurInputSplit>>>();
     for (final FileStatus shardFileStatus : shardDirs) {
-      futures.add(service.submit(new Callable<List<InputSplit>>() {
+      futures.add(service.submit(new Callable<List<BlurInputSplit>>() {
         @Override
-        public List<InputSplit> call() throws Exception {
+        public List<BlurInputSplit> call() throws Exception {
           return getSegmentSplits(shardFileStatus.getPath(), configuration, table, snapshot);
         }
       }));
     }
 
-    List<InputSplit> results = new ArrayList<InputSplit>();
-    for (Future<List<InputSplit>> future : futures) {
+    List<BlurInputSplit> results = new ArrayList<BlurInputSplit>();
+    for (Future<List<BlurInputSplit>> future : futures) {
       try {
         results.addAll(future.get());
       } catch (InterruptedException e) {
@@ -164,10 +171,10 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     return results;
   }
 
-  private List<InputSplit> getSegmentSplits(Path shardDir, Configuration configuration, Text table, Text snapshot)
-      throws IOException {
+  private static List<BlurInputSplit> getSegmentSplits(Path shardDir, Configuration configuration, Text table,
+      Text snapshot) throws IOException {
     final long start = System.nanoTime();
-    List<InputSplit> splits = new ArrayList<InputSplit>();
+    List<BlurInputSplit> splits = new ArrayList<BlurInputSplit>();
     Directory directory = getDirectory(configuration, table.toString(), shardDir);
     try {
       SnapshotIndexDeletionPolicy policy = new SnapshotIndexDeletionPolicy(configuration,
@@ -187,7 +194,7 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
       for (SegmentInfoPerCommit commit : segmentInfos) {
         SegmentInfo segmentInfo = commit.info;
         if (commit.getDelCount() == segmentInfo.getDocCount()) {
-          LOG.info("Segment [" + segmentInfo.name + "] in dir [" + shardDir + "] has all records deleted.");
+          LOG.info("Segment [{0}] in dir [{1}] has all records deleted.", segmentInfo.name, shardDir);
         } else {
           String name = segmentInfo.name;
           Set<String> files = segmentInfo.files();
@@ -202,11 +209,12 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     } finally {
       directory.close();
       final long end = System.nanoTime();
-      LOG.info("Found split in shard [" + shardDir + "] in [" + (end - start) / 1000000000.0 + " ms].");
+      LOG.info("Found split in shard [{0}] in [{1} ms].", shardDir, (end - start) / 1000000000.0);
     }
   }
 
-  private IndexCommit findIndexCommit(List<IndexCommit> listCommits, long generation, Path shardDir) throws IOException {
+  private static IndexCommit findIndexCommit(List<IndexCommit> listCommits, long generation, Path shardDir)
+      throws IOException {
     for (IndexCommit commit : listCommits) {
       if (commit.getGeneration() == generation) {
         return commit;
@@ -218,121 +226,44 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
   @Override
   public RecordReader<Text, TableBlurRecord> createRecordReader(InputSplit split, TaskAttemptContext context)
       throws IOException, InterruptedException {
-    BlurRecordReader blurRecordReader = new BlurRecordReader();
-    blurRecordReader.initialize(split, context);
-    return blurRecordReader;
+    final GenericRecordReader genericRecordReader = new GenericRecordReader();
+    genericRecordReader.initialize((BlurInputSplit) split, context.getConfiguration());
+    return new RecordReader<Text, TableBlurRecord>() {
+
+      @Override
+      public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
+        genericRecordReader.initialize((BlurInputSplit) split, context.getConfiguration());
+      }
+
+      @Override
+      public boolean nextKeyValue() throws IOException, InterruptedException {
+        return genericRecordReader.nextKeyValue();
+      }
+
+      @Override
+      public Text getCurrentKey() throws IOException, InterruptedException {
+        return genericRecordReader.getCurrentKey();
+      }
+
+      @Override
+      public TableBlurRecord getCurrentValue() throws IOException, InterruptedException {
+        return genericRecordReader.getCurrentValue();
+      }
+
+      @Override
+      public float getProgress() throws IOException, InterruptedException {
+        return genericRecordReader.getProgress();
+      }
+
+      @Override
+      public void close() throws IOException {
+        genericRecordReader.close();
+      }
+
+    };
   }
 
-  public static class BlurRecordReader extends RecordReader<Text, TableBlurRecord> {
-
-    private boolean _setup;
-    private Text _rowId;
-    private TableBlurRecord _tableBlurRecord;
-    private Bits _liveDocs;
-    private StoredFieldsReader _fieldsReader;
-    private Directory _directory;
-
-    private int _docId = -1;
-    private int _maxDoc;
-    private Text _table;
-
-    @Override
-    public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
-      if (_setup) {
-        return;
-      }
-      _setup = true;
-
-      Configuration configuration = context.getConfiguration();
-      BlurInputSplit blurInputSplit = (BlurInputSplit) split;
-
-      _table = blurInputSplit.getTable();
-
-      _directory = getDirectory(configuration, _table.toString(), blurInputSplit.getDir());
-
-      SegmentInfos segmentInfos = new SegmentInfos();
-      segmentInfos.read(_directory, blurInputSplit.getSegmentsName());
-      SegmentInfoPerCommit commit = findSegmentInfoPerCommit(segmentInfos, blurInputSplit);
-
-      Blur024Codec blur024Codec = new Blur024Codec();
-      IOContext iocontext = IOContext.READ;
-      SegmentInfo segmentInfo = commit.info;
-      String segmentName = segmentInfo.name;
-      FieldInfos fieldInfos = blur024Codec.fieldInfosFormat().getFieldInfosReader()
-          .read(_directory, segmentName, iocontext);
-      if (commit.getDelCount() > 0) {
-        _liveDocs = blur024Codec.liveDocsFormat().readLiveDocs(_directory, commit, iocontext);
-      }
-      _fieldsReader = blur024Codec.storedFieldsFormat().fieldsReader(_directory, segmentInfo, fieldInfos, iocontext);
-
-      _maxDoc = commit.info.getDocCount();
-    }
-
-    private SegmentInfoPerCommit findSegmentInfoPerCommit(SegmentInfos segmentInfos, BlurInputSplit blurInputSplit)
-        throws IOException {
-      String segmentInfoName = blurInputSplit.getSegmentInfoName();
-      for (SegmentInfoPerCommit commit : segmentInfos) {
-        if (commit.info.name.equals(segmentInfoName)) {
-          return commit;
-        }
-      }
-      throw new IOException("SegmentInfoPerCommit of [" + segmentInfoName + "] not found.");
-    }
-
-    @Override
-    public boolean nextKeyValue() throws IOException, InterruptedException {
-      if (_docId >= _maxDoc) {
-        return false;
-      }
-      while (true) {
-        _docId++;
-        if (_docId >= _maxDoc) {
-          return false;
-        }
-        if (_liveDocs == null) {
-          fetchBlurRecord();
-          return true;
-        } else if (_liveDocs.get(_docId)) {
-          fetchBlurRecord();
-          return true;
-        }
-      }
-    }
-
-    private void fetchBlurRecord() throws IOException {
-      DocumentStoredFieldVisitor visitor = new DocumentStoredFieldVisitor();
-      _fieldsReader.visitDocument(_docId, visitor);
-      BlurRecord blurRecord = new BlurRecord();
-      String rowId = RowDocumentUtil.readRecord(visitor.getDocument(), blurRecord);
-      blurRecord.setRowId(rowId);
-      _rowId = new Text(rowId);
-      _tableBlurRecord = new TableBlurRecord(_table, blurRecord);
-    }
-
-    @Override
-    public Text getCurrentKey() throws IOException, InterruptedException {
-      return _rowId;
-    }
-
-    @Override
-    public TableBlurRecord getCurrentValue() throws IOException, InterruptedException {
-      return _tableBlurRecord;
-    }
-
-    @Override
-    public float getProgress() throws IOException, InterruptedException {
-      return (float) _docId / (float) _maxDoc;
-    }
-
-    @Override
-    public void close() throws IOException {
-      _fieldsReader.close();
-      _directory.close();
-    }
-
-  }
-
-  public static class BlurInputSplit extends InputSplit implements Writable {
+  public static class BlurInputSplit extends InputSplit implements org.apache.hadoop.mapred.InputSplit, Writable {
 
     private static final String UTF_8 = "UTF-8";
     private long _fileLength;
@@ -354,12 +285,12 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     }
 
     @Override
-    public long getLength() throws IOException, InterruptedException {
+    public long getLength() throws IOException {
       return _fileLength;
     }
 
     @Override
-    public String[] getLocations() throws IOException, InterruptedException {
+    public String[] getLocations() throws IOException {
       // @TODO create locations for fdt file
       return new String[] {};
     }
@@ -411,6 +342,22 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
       return new String(buf, UTF_8);
     }
 
+  }
+
+  public static void setLocalCachePath(Job job, Path fileCachePath) {
+    setLocalCachePath(job.getConfiguration(), fileCachePath);
+  }
+
+  public static void setLocalCachePath(Configuration configuration, Path fileCachePath) {
+    configuration.set(BLUR_INPUTFORMAT_FILE_CACHE_PATH, fileCachePath.toString());
+  }
+
+  public static Path getLocalCachePath(Configuration configuration) {
+    String p = configuration.get(BLUR_INPUTFORMAT_FILE_CACHE_PATH);
+    if (p == null) {
+      return null;
+    }
+    return new Path(p);
   }
 
   public static void addTable(Job job, TableDescriptor tableDescriptor, String snapshot)

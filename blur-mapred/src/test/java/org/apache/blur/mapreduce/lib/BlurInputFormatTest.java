@@ -16,16 +16,17 @@
  */
 package org.apache.blur.mapreduce.lib;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.store.buffer.BufferStore;
@@ -109,21 +110,53 @@ public class BlurInputFormatTest {
   }
 
   @Test
-  public void testBlurInputFormatFastDisabled() throws IOException, BlurException, TException, ClassNotFoundException,
-      InterruptedException {
-    String tableName = "testBlurInputFormatFastDisabled";
-    runTest(tableName, true);
+  public void testBlurInputFormatFastDisabledNoFileCache() throws IOException, BlurException, TException,
+      ClassNotFoundException, InterruptedException {
+    String tableName = "testBlurInputFormatFastDisabledNoFileCache";
+    runTest(tableName, true, null);
   }
 
   @Test
-  public void testBlurInputFormatFastEnabled() throws IOException, BlurException, TException, ClassNotFoundException,
-      InterruptedException {
-    String tableName = "testBlurInputFormatFastEnabled";
-    runTest(tableName, false);
+  public void testBlurInputFormatFastEnabledNoFileCache() throws IOException, BlurException, TException,
+      ClassNotFoundException, InterruptedException {
+    String tableName = "testBlurInputFormatFastEnabledNoFileCache";
+    runTest(tableName, false, null);
   }
 
-  private void runTest(String tableName, boolean disableFast) throws IOException, BlurException, TException,
-      InterruptedException, ClassNotFoundException {
+  @Test
+  public void testBlurInputFormatFastDisabledFileCache() throws IOException, BlurException, TException,
+      ClassNotFoundException, InterruptedException {
+    String tableName = "testBlurInputFormatFastDisabledFileCache";
+    Path fileCache = new Path(miniCluster.getFileSystemUri() + "/filecache");
+    runTest(tableName, true, fileCache);
+    FileSystem fileSystem = miniCluster.getFileSystem();
+    // @TODO write some assertions.
+    // RemoteIterator<LocatedFileStatus> listFiles =
+    // fileSystem.listFiles(fileCache, true);
+    // while (listFiles.hasNext()) {
+    // LocatedFileStatus locatedFileStatus = listFiles.next();
+    // System.out.println(locatedFileStatus.getPath());
+    // }
+  }
+
+  @Test
+  public void testBlurInputFormatFastEnabledFileCache() throws IOException, BlurException, TException,
+      ClassNotFoundException, InterruptedException {
+    String tableName = "testBlurInputFormatFastEnabledFileCache";
+    Path fileCache = new Path(miniCluster.getFileSystemUri() + "/filecache");
+    runTest(tableName, false, fileCache);
+    FileSystem fileSystem = miniCluster.getFileSystem();
+    // @TODO write some assertions.
+    // RemoteIterator<LocatedFileStatus> listFiles =
+    // fileSystem.listFiles(fileCache, true);
+    // while (listFiles.hasNext()) {
+    // LocatedFileStatus locatedFileStatus = listFiles.next();
+    // System.out.println(locatedFileStatus.getPath());
+    // }
+  }
+
+  private void runTest(String tableName, boolean disableFast, Path fileCache) throws IOException, BlurException,
+      TException, InterruptedException, ClassNotFoundException {
     FileSystem fileSystem = miniCluster.getFileSystem();
     Path root = new Path(fileSystem.getUri() + "/");
 
@@ -147,6 +180,10 @@ public class BlurInputFormatTest {
 
     String snapshot = UUID.randomUUID().toString();
     client.createSnapshot(tableName, snapshot);
+
+    if (fileCache != null) {
+      BlurInputFormat.setLocalCachePath(job, fileCache);
+    }
 
     BlurInputFormat.addTable(job, tableDescriptor, snapshot);
     FileOutputFormat.setOutputPath(job, output);

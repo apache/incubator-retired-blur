@@ -122,6 +122,7 @@ public class BlurSerDeTest {
 
   @Before
   public void setup() throws BlurException, TException, IOException {
+    _mrWorkingPath = miniCluster.getFileSystemUri().toString() + "/mrworkingpath";
     String controllerConnectionStr = miniCluster.getControllerConnectionStr();
     Iface client = BlurClient.getClient(controllerConnectionStr);
     List<String> tableList = client.tableList();
@@ -130,8 +131,6 @@ public class BlurSerDeTest {
       tableDescriptor.setName(TEST);
       tableDescriptor.setShardCount(1);
       tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/tables/test");
-
-      _mrWorkingPath = miniCluster.getFileSystemUri().toString() + "/mrworkingpath";
       tableDescriptor.putToTableProperties(BlurSerDe.BLUR_MR_UPDATE_WORKING_PATH, _mrWorkingPath);
 
       client.createTable(tableDescriptor);
@@ -365,11 +364,13 @@ public class BlurSerDeTest {
     run(connection, "set " + BlurSerDe.BLUR_BLOCKING_APPLY + "=true");
     run(connection, "insert into table testtable select * from loadtable");
     connection.close();
+    hiveServer2.stop();
     return totalRecords;
   }
 
   private void generateData(File file, int totalRecords) throws IOException {
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat(YYYY_MM_DD);
+    file.mkdirs();
     PrintWriter print = new PrintWriter(new File(file, "data"));
     Date date = new Date(System.currentTimeMillis());
     for (int i = 0; i < totalRecords; i++) {

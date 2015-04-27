@@ -622,12 +622,16 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
           break;
         } catch (FileNotFoundException e) {
           // Wait and retry
+          if (retryCount >= 5) {
+            throw e;
+          }
           LOG.debug("File not found exception can occur while changes are being made to the file system, retrying.", e);
           try {
             Thread.sleep(100 * (retryCount + 1));
           } catch (InterruptedException ex) {
             throw e;
           }
+          retryCount++;
         }
       }
       boolean exists;

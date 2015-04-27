@@ -226,7 +226,6 @@ public class IndexImporterTest {
   public void tearDown() throws IOException {
     _timer.cancel();
     _timer.purge();
-    IOUtils.closeQuietly(_commitWriter);
     IOUtils.closeQuietly(_mainWriter);
     IOUtils.closeQuietly(_indexImporter);
     _base.getFileSystem(_configuration).delete(_base, true);
@@ -234,6 +233,7 @@ public class IndexImporterTest {
 
   @Test
   public void testIndexImporterWithBadIndex() throws IOException {
+    _commitWriter.close();
     _fileSystem.delete(_path, true);
     _fileSystem.mkdirs(_path);
     _indexImporter.run();

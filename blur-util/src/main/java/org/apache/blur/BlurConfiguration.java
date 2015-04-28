@@ -37,13 +37,6 @@ public class BlurConfiguration implements Cloneable {
 
   private Properties _properties = new Properties();
 
-  public static void main(String[] args) throws IOException {
-    BlurConfiguration configuration = new BlurConfiguration();
-    System.out.println(configuration.get("test"));
-    System.out.println(configuration.get("test2"));
-    System.out.println(configuration.get("test3", "def"));
-  }
-
   /**
    * Create a BlurConfiguration including default properties.
    * 

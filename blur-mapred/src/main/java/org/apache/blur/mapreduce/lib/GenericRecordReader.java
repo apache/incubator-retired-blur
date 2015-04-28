@@ -18,6 +18,7 @@ package org.apache.blur.mapreduce.lib;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -66,8 +67,9 @@ public class GenericRecordReader {
     _setup = true;
     _table = blurInputSplit.getTable();
     Path localCachePath = BlurInputFormat.getLocalCachePath(configuration);
+    List<String> files = blurInputSplit.getDirectoryFiles();
     LOG.info("Local cache path [{0}]", localCachePath);
-    _directory = BlurInputFormat.getDirectory(configuration, _table.toString(), blurInputSplit.getDir());
+    _directory = BlurInputFormat.getDirectory(configuration, _table.toString(), blurInputSplit.getDir(), files);
 
     SegmentInfos segmentInfos = new SegmentInfos();
     segmentInfos.read(_directory, blurInputSplit.getSegmentsName());
@@ -100,7 +102,7 @@ public class GenericRecordReader {
       Path localCachePath, Collection<String> files) throws IOException {
     LOG.info("Copying files need to local cache for faster reads [{0}].", shardDir);
     Path localShardPath = new Path(new Path(localCachePath, table), shardDir.getName());
-    HdfsDirectory localDir = new HdfsDirectory(configuration, localShardPath);
+    HdfsDirectory localDir = new HdfsDirectory(configuration, localShardPath, null, files);
     for (String name : files) {
       if (!isValidFileToCache(name)) {
         continue;

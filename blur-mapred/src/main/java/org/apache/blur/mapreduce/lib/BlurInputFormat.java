@@ -20,9 +20,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -175,7 +175,7 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
       Text snapshot) throws IOException {
     final long start = System.nanoTime();
     List<BlurInputSplit> splits = new ArrayList<BlurInputSplit>();
-    Directory directory = getDirectory(configuration, table.toString(), shardDir);
+    Directory directory = getDirectory(configuration, table.toString(), shardDir, null);
     try {
       SnapshotIndexDeletionPolicy policy = new SnapshotIndexDeletionPolicy(configuration,
           SnapshotIndexDeletionPolicy.getGenerationsPath(shardDir));
@@ -197,12 +197,14 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
           LOG.info("Segment [{0}] in dir [{1}] has all records deleted.", segmentInfo.name, shardDir);
         } else {
           String name = segmentInfo.name;
-          Set<String> files = segmentInfo.files();
+          Collection<String> files = commit.files();
           long fileLength = 0;
           for (String file : files) {
             fileLength += directory.fileLength(file);
           }
-          splits.add(new BlurInputSplit(shardDir, segmentsFileName, name, fileLength, table));
+          List<String> dirFiles = new ArrayList<String>(files);
+          dirFiles.add(segmentsFileName);
+          splits.add(new BlurInputSplit(shardDir, segmentsFileName, name, fileLength, table, dirFiles));
         }
       }
       return splits;
@@ -271,17 +273,24 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     private Path _dir;
     private String _segmentInfoName;
     private Text _table = new Text();
+    private List<String> _directoryFiles;
 
     public BlurInputSplit() {
 
     }
 
-    public BlurInputSplit(Path dir, String segmentsName, String segmentInfoName, long fileLength, Text table) {
+    public BlurInputSplit(Path dir, String segmentsName, String segmentInfoName, long fileLength, Text table,
+        List<String> directoryFiles) {
       _fileLength = fileLength;
       _segmentsName = segmentsName;
       _segmentInfoName = segmentInfoName;
       _table = table;
       _dir = dir;
+      _directoryFiles = directoryFiles;
+    }
+
+    public List<String> getDirectoryFiles() {
+      return _directoryFiles;
     }
 
     @Override
@@ -318,6 +327,11 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
       writeString(out, _segmentInfoName);
       _table.write(out);
       out.writeLong(_fileLength);
+      int size = _directoryFiles.size();
+      out.writeInt(size);
+      for (String s : _directoryFiles) {
+        writeString(out, s);
+      }
     }
 
     @Override
@@ -327,6 +341,11 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
       _segmentInfoName = readString(in);
       _table.readFields(in);
       _fileLength = in.readLong();
+      int size = in.readInt();
+      _directoryFiles = new ArrayList<String>();
+      for (int i = 0; i < size; i++) {
+        _directoryFiles.add(readString(in));
+      }
     }
 
     private void writeString(DataOutput out, String s) throws IOException {
@@ -369,11 +388,12 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     putSnapshotForTable(job.getConfiguration(), tableName, snapshot);
   }
 
-  public static Directory getDirectory(Configuration configuration, String table, Path shardDir) throws IOException {
+  public static Directory getDirectory(Configuration configuration, String table, Path shardDir, List<String> files)
+      throws IOException {
     Path fastPath = DirectoryUtil.getFastDirectoryPath(shardDir);
     FileSystem fileSystem = shardDir.getFileSystem(configuration);
     boolean disableFast = !fileSystem.exists(fastPath);
-    return DirectoryUtil.getDirectory(configuration, new HdfsDirectory(configuration, shardDir), disableFast, null,
-        table, shardDir.getName(), true);
+    HdfsDirectory directory = new HdfsDirectory(configuration, shardDir, null, files);
+    return DirectoryUtil.getDirectory(configuration, directory, disableFast, null, table, shardDir.getName(), true);
   }
 }

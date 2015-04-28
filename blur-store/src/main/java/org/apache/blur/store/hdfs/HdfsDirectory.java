@@ -190,8 +190,14 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       } else {
         for (String file : filesToExpose) {
           Path filePath = getPath(file);
-          FileStatus fileStatus = _fileSystem.getFileStatus(filePath);
-          addToCache(fileStatus);
+          try {
+            FileStatus fileStatus = _fileSystem.getFileStatus(filePath);
+            if (fileStatus != null) {
+              addToCache(fileStatus);
+            }
+          } catch (FileNotFoundException e) {
+            // Normal hdfs behavior
+          }
         }
       }
     }

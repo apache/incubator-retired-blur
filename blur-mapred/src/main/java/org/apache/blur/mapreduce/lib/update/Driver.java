@@ -57,10 +57,19 @@ public class Driver extends Configured implements Tool {
   @Override
   public int run(String[] args) throws Exception {
     int c = 0;
+    if (args.length < 5) {
+      System.err
+          .println("Usage Driver <table> <mr inc working path> <output path> <zk connection> <reducer multipler> <extra config files...>");
+    }
     String table = args[c++];
     String mrIncWorkingPathStr = args[c++];
     String outputPathStr = args[c++];
     String blurZkConnection = args[c++];
+    int reducerMultipler = Integer.parseInt(args[c++]);
+    for (; c < args.length; c++) {
+      String externalConfigFileToAdd = args[c];
+      getConf().addResource(new Path(externalConfigFileToAdd));
+    }
 
     Path outputPath = new Path(outputPathStr);
     Path mrIncWorkingPath = new Path(mrIncWorkingPathStr);
@@ -76,14 +85,17 @@ public class Driver extends Configured implements Tool {
     fileSystem.mkdirs(completeData);
     fileSystem.mkdirs(fileCache);
 
+    List<Path> srcPathList = new ArrayList<Path>();
+    for (FileStatus fileStatus : fileSystem.listStatus(newData)) {
+      srcPathList.add(fileStatus.getPath());
+    }
+    if (srcPathList.isEmpty()) {
+      return 0;
+    }
+
     List<Path> inprogressPathList = new ArrayList<Path>();
     boolean success = false;
     try {
-      List<Path> srcPathList = new ArrayList<Path>();
-      for (FileStatus fileStatus : fileSystem.listStatus(newData)) {
-        srcPathList.add(fileStatus.getPath());
-      }
-
       inprogressPathList = movePathList(fileSystem, inprogressData, srcPathList);
 
       Job job = Job.getInstance(getConf(), "Blur Row Updater for table [" + table + "]");
@@ -110,6 +122,8 @@ public class Driver extends Configured implements Tool {
       job.setMapOutputValueClass(IndexValue.class);
       job.setPartitionerClass(IndexKeyPartitioner.class);
       job.setGroupingComparatorClass(IndexKeyWritableComparator.class);
+
+      BlurOutputFormat.setReducerMultiplier(job, reducerMultipler);
 
       success = job.waitForCompletion(true);
       Counters counters = job.getCounters();

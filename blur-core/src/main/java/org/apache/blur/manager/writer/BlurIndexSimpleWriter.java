@@ -418,7 +418,16 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   public void close() throws IOException {
     _isClosed.set(true);
     IOUtils.cleanup(LOG, makeCloseable(_watchForIdleBulkWriters), _indexImporter, _mutationQueueProcessor,
-        _writer.get(), _indexReader.get(), _directory);
+        makeCloseable(_writer.get()), _indexReader.get(), _directory);
+  }
+
+  private Closeable makeCloseable(final BlurIndexWriter blurIndexWriter) {
+    return new Closeable() {
+      @Override
+      public void close() throws IOException {
+        blurIndexWriter.close(false);
+      }
+    };
   }
 
   private Closeable makeCloseable(final TimerTask timerTask) {

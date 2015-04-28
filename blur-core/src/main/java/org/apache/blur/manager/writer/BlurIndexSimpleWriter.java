@@ -425,7 +425,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     return new Closeable() {
       @Override
       public void close() throws IOException {
-        blurIndexWriter.close(false);
+        if (blurIndexWriter != null) {
+          blurIndexWriter.close(false);
+        }
       }
     };
   }

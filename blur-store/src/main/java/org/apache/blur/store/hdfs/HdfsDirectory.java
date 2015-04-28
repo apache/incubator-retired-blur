@@ -75,7 +75,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   private static final Log LOG = LogFactory.getLog(HdfsDirectory.class);
 
   public static final String LNK = ".lnk";
-  public static final String COPY = ".copy";
   public static final String TMP = ".tmp";
 
   private static final String UTF_8 = "UTF-8";
@@ -152,9 +151,19 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   public HdfsDirectory(Configuration configuration, Path path, SequentialReadControl sequentialReadControl)
       throws IOException {
+    this(configuration, path, sequentialReadControl, null);
+  }
+
+  public HdfsDirectory(Configuration configuration, Path path, SequentialReadControl sequentialReadControl,
+      Collection<String> filesToExpose) throws IOException {
+    if (sequentialReadControl == null) {
+      _sequentialReadControl = new SequentialReadControl(new BlurConfiguration());
+    } else {
+      _sequentialReadControl = sequentialReadControl;
+    }
     _fileSystem = path.getFileSystem(configuration);
     _path = _fileSystem.makeQualified(path);
-    _sequentialReadControl = sequentialReadControl;
+
     if (_path.toUri().getScheme().equals(HDFS_SCHEMA)) {
       _asyncClosing = true;
     } else {
@@ -173,40 +182,40 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       _metricsGroup = metricsGroup;
     }
     if (_useCache) {
-      FileStatus[] listStatus = _fileSystem.listStatus(_path);
-      for (FileStatus fileStatus : listStatus) {
-        if (!fileStatus.isDir()) {
-          Path p = fileStatus.getPath();
-          String name = p.getName();
-          long lastMod;
-          long length;
-          String resolvedName;
-          if (name.endsWith(LNK)) {
-            resolvedName = getRealFileName(name);
-            Path resolvedPath = getPath(resolvedName);
-            FileStatus resolvedFileStatus = _fileSystem.getFileStatus(resolvedPath);
-            lastMod = resolvedFileStatus.getModificationTime();
-          } else if (name.endsWith(COPY)) {
-            resolvedName = getRealFileName(name);
-            lastMod = getLastModTimeFromCopyFile(name);
-          } else {
-            resolvedName = name;
-            lastMod = fileStatus.getModificationTime();
-          }
-          length = length(resolvedName);
-          _fileStatusMap.put(resolvedName, new FStat(lastMod, length));
+      if (filesToExpose == null) {
+        FileStatus[] listStatus = _fileSystem.listStatus(_path);
+        for (FileStatus fileStatus : listStatus) {
+          addToCache(fileStatus);
+        }
+      } else {
+        for (String file : filesToExpose) {
+          Path filePath = getPath(file);
+          FileStatus fileStatus = _fileSystem.getFileStatus(filePath);
+          addToCache(fileStatus);
         }
       }
     }
   }
 
-  protected long getLastModTimeFromCopyFile(String name) {
-    int indexOf = name.indexOf('~');
-    int lastIndexOf = name.lastIndexOf(COPY);
-    String lastModPlusTs = name.substring(indexOf + 1, lastIndexOf);
-    int index = lastModPlusTs.indexOf('_');
-    String lastMod = lastModPlusTs.substring(0, index);
-    return Long.parseLong(lastMod);
+  private void addToCache(FileStatus fileStatus) throws IOException {
+    if (!fileStatus.isDir()) {
+      Path p = fileStatus.getPath();
+      String name = p.getName();
+      long lastMod;
+      long length;
+      String resolvedName;
+      if (name.endsWith(LNK)) {
+        resolvedName = getRealFileName(name);
+        Path resolvedPath = getPath(resolvedName);
+        FileStatus resolvedFileStatus = _fileSystem.getFileStatus(resolvedPath);
+        lastMod = resolvedFileStatus.getModificationTime();
+      } else {
+        resolvedName = name;
+        lastMod = fileStatus.getModificationTime();
+      }
+      length = length(resolvedName);
+      _fileStatusMap.put(resolvedName, new FStat(lastMod, length));
+    }
   }
 
   private static TimerTask getSequentialRefClosingQueueTimerTask() {
@@ -244,9 +253,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected String getRealFileName(String name) {
     if (name.endsWith(LNK)) {
       int lastIndexOf = name.lastIndexOf(LNK);
-      return name.substring(0, lastIndexOf);
-    } else if (name.endsWith(COPY)) {
-      int lastIndexOf = name.lastIndexOf('~');
       return name.substring(0, lastIndexOf);
     }
     return name;
@@ -337,35 +343,9 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     }
   }
 
-  public void runHdfsCopyFile(String name) throws IOException {
-    Path path = getPath(name);
-    FSDataInputStream inputStream = _fileSystem.open(path);
-
-    Path copyOutputTmpPath = getCopyOutputTmpPath(name);
-    FSDataOutputStream outputStream = _fileSystem.create(copyOutputTmpPath);
-    IOUtils.copy(inputStream, outputStream);
-    inputStream.close();
-    outputStream.close();
-
-    Path copyOutputPath = getCopyOutputPath(name);
-    if (_fileSystem.rename(copyOutputTmpPath, copyOutputPath)) {
-      FSDataInputStream newInput = _fileSystem.open(copyOutputPath);
-      FSDataInputRandomAccess oldInput = _inputMap.put(name, toFSDataInputRandomAccess(copyOutputPath, newInput));
-      oldInput.close();
-    } else {
-      LOG.error("Unknown error while trying to commit copy file [{0}]", copyOutputPath);
-      _fileSystem.delete(copyOutputTmpPath, false);
-    }
-  }
-
   private Path getCopyOutputTmpPath(String name) throws IOException {
     long fileModified = getFileModified(name);
     return new Path(_path, name + "~" + fileModified + "_" + System.currentTimeMillis() + TMP);
-  }
-
-  protected Path getCopyOutputPath(String name) throws IOException {
-    long fileModified = getFileModified(name);
-    return new Path(_path, name + "~" + fileModified + "_" + System.currentTimeMillis() + COPY);
   }
 
   @Override
@@ -445,8 +425,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       for (int i = 0; i < files.length; i++) {
         String name = files[i].getPath().getName();
         if (name.endsWith(LNK)) {
-          result.add(getRealFileName(name));
-        } else if (name.endsWith(COPY)) {
           result.add(getRealFileName(name));
         } else {
           result.add(name);
@@ -555,39 +533,10 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   }
 
   protected Path getPath(String name) throws IOException {
-    if (isCopyFileAvailable(name)) {
-      return getRealFilePathFromCopyFile(name);
-    } else if (isSymlink(name)) {
+    if (isSymlink(name)) {
       return getRealFilePathFromSymlink(name);
     } else {
       return new Path(_path, name);
-    }
-  }
-
-  protected Path getRealFilePathFromCopyFile(final String name) throws IOException {
-    // need to cache
-    if (_useCache) {
-      Path path = _copyFilePathMap.get(name);
-      if (path != null) {
-        return path;
-      }
-    }
-    Tracer trace = Trace.trace("filesystem - getRealFilePathFromCopyFile", Trace.param("name", name));
-    try {
-      FileStatus[] listStatus = _fileSystem.listStatus(_path, new PathFilter() {
-        @Override
-        public boolean accept(Path path) {
-          String fileName = path.getName();
-          return fileName.startsWith(name) && fileName.endsWith(COPY);
-        }
-      });
-      Path path = getRealFilePathFromCopyFileList(listStatus);
-      if (_useCache) {
-        _copyFilePathMap.put(name, path);
-      }
-      return path;
-    } finally {
-      trace.done();
     }
   }
 
@@ -597,56 +546,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     }
     Arrays.sort(listStatus);
     return listStatus[listStatus.length - 1].getPath();
-  }
-
-  protected boolean isCopyFileAvailable(final String name) throws IOException {
-    if (_useCache) {
-      Boolean b = _copyFileMap.get(name);
-      if (b != null) {
-        return b;
-      }
-    }
-    Tracer trace = Trace.trace("filesystem - isCopyFileAvailable", Trace.param("name", name));
-    try {
-      FileStatus[] listStatus;
-      int retryCount = 0;
-      while (true) {
-        try {
-          listStatus = _fileSystem.listStatus(_path, new PathFilter() {
-            @Override
-            public boolean accept(Path path) {
-              String fileName = path.getName();
-              return fileName.startsWith(name) && fileName.endsWith(COPY);
-            }
-          });
-          break;
-        } catch (FileNotFoundException e) {
-          // Wait and retry
-          if (retryCount >= 5) {
-            throw e;
-          }
-          LOG.debug("File not found exception can occur while changes are being made to the file system, retrying.", e);
-          try {
-            Thread.sleep(100 * (retryCount + 1));
-          } catch (InterruptedException ex) {
-            throw e;
-          }
-          retryCount++;
-        }
-      }
-      boolean exists;
-      if (listStatus == null || listStatus.length == 0) {
-        exists = false;
-      } else {
-        exists = true;
-      }
-      if (_useCache) {
-        _copyFileMap.put(name, exists);
-      }
-      return exists;
-    } finally {
-      trace.done();
-    }
   }
 
   protected Path getPathOrSymlinkForDelete(String name) throws IOException {
@@ -722,19 +621,11 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     Path path = getPath(name);
     Tracer trace = Trace.trace("filesystem - fileModified", Trace.param("path", path));
     try {
-      if (path.getName().endsWith(COPY)) {
-        long lastModTimeFromCopyFile = getLastModTimeFromCopyFile(path.getName());
-        if (_useCache) {
-          _fileStatusMap.put(name, new FStat(lastModTimeFromCopyFile, fileLength(name)));
-        }
-        return lastModTimeFromCopyFile;
-      } else {
-        FileStatus fileStatus = _fileSystem.getFileStatus(path);
-        if (_useCache) {
-          _fileStatusMap.put(name, new FStat(fileStatus));
-        }
-        return fileStatus.getModificationTime();
+      FileStatus fileStatus = _fileSystem.getFileStatus(path);
+      if (_useCache) {
+        _fileStatusMap.put(name, new FStat(fileStatus));
       }
+      return fileStatus.getModificationTime();
     } finally {
       trace.done();
     }

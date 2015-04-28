@@ -17,7 +17,7 @@
 package org.apache.blur.mapreduce.lib;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.Collection;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -76,7 +76,7 @@ public class GenericRecordReader {
     SegmentInfo segmentInfo = commit.info;
     if (localCachePath != null) {
       _readingDirectory = copyFilesLocally(configuration, _directory, _table.toString(), blurInputSplit.getDir(),
-          localCachePath, segmentInfo.files());
+          localCachePath, commit.files());
     } else {
       _readingDirectory = _directory;
     }
@@ -97,7 +97,7 @@ public class GenericRecordReader {
   }
 
   private static Directory copyFilesLocally(Configuration configuration, Directory dir, String table, Path shardDir,
-      Path localCachePath, Set<String> files) throws IOException {
+      Path localCachePath, Collection<String> files) throws IOException {
     LOG.info("Copying files need to local cache for faster reads [{0}].", shardDir);
     Path localShardPath = new Path(new Path(localCachePath, table), shardDir.getName());
     HdfsDirectory localDir = new HdfsDirectory(configuration, localShardPath);
@@ -145,9 +145,10 @@ public class GenericRecordReader {
       LOG.info("Cache file exists [{0}]", name);
       if (localDir.fileLength(name) == fileLength) {
         LOG.info("Cache file length matches [{0}]", name);
-        if (localDir.fileExists(name + LASTMOD)) {
+        String lastModFile = name + LASTMOD;
+        if (localDir.fileExists(lastModFile) && localDir.fileLength(lastModFile) != 8) {
           LOG.info("Cache file last mod file exists [{0}]", name);
-          IndexInput input = localDir.openInput(name + LASTMOD, IOContext.DEFAULT);
+          IndexInput input = localDir.openInput(lastModFile, IOContext.DEFAULT);
           long lastMod = input.readLong();
           if (lastMod == fileModified) {
             LOG.info("Cache file last mod matches [{0}]", name);

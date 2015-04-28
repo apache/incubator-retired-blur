@@ -298,7 +298,7 @@ public class BlurSerDeTest {
     String outputPathStr = miniCluster.getFileSystemUri().toString() + "/indexoutput";
     String blurZkConnection = miniCluster.getZkConnectionString();
 
-    assertEquals(0, driver.run(new String[] { TEST, _mrWorkingPath, outputPathStr, blurZkConnection }));
+    assertEquals(0, driver.run(new String[] { TEST, _mrWorkingPath, outputPathStr, blurZkConnection, "1" }));
 
     Iface client = BlurClient.getClientFromZooKeeperConnectionStr(blurZkConnection);
 

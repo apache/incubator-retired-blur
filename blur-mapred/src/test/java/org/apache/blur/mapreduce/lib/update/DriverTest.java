@@ -26,7 +26,6 @@ import java.util.UUID;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.mapreduce.lib.BlurRecord;
-import org.apache.blur.mapreduce.lib.update.Driver;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
@@ -122,7 +121,7 @@ public class DriverTest {
     String outputPathStr = new Path(root, "output").toString();
     String blurZkConnection = miniCluster.getZkConnectionString();
 
-    assertEquals(0, driver.run(new String[] { tableName, mrIncWorkingPathStr, outputPathStr, blurZkConnection }));
+    assertEquals(0, driver.run(new String[] { tableName, mrIncWorkingPathStr, outputPathStr, blurZkConnection, "1" }));
 
     Iface client = getClient();
     client.loadData(tableName, outputPathStr);
@@ -152,7 +151,7 @@ public class DriverTest {
     String outputPathStr = new Path(root, "output").toString();
     String blurZkConnection = miniCluster.getZkConnectionString();
 
-    assertEquals(0, driver.run(new String[] { tableName, mrIncWorkingPathStr, outputPathStr, blurZkConnection }));
+    assertEquals(0, driver.run(new String[] { tableName, mrIncWorkingPathStr, outputPathStr, blurZkConnection, "1" }));
 
     client.loadData(tableName, outputPathStr);
 
@@ -183,7 +182,7 @@ public class DriverTest {
     String outputPathStr = new Path(root, "output").toString();
     String blurZkConnection = miniCluster.getZkConnectionString();
 
-    assertEquals(0, driver.run(new String[] { tableName, mrIncWorkingPathStr, outputPathStr, blurZkConnection }));
+    assertEquals(0, driver.run(new String[] { tableName, mrIncWorkingPathStr, outputPathStr, blurZkConnection, "1" }));
     {
       Selector selector = new Selector();
       selector.setRowId(rowId);

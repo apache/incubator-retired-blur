@@ -15,15 +15,15 @@
 		<groupId>org.apache.blur</groupId>
 		<artifactId>blur</artifactId>
 		<version>0.2.4-incubating-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.apache.blur</groupId>
-	<artifactId>blur-hive</artifactId>
-	<version>${projectHiveVersion}</version>
+	<artifactId>blur-mr-update</artifactId>
+	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
-	<name>Blur Hive</name>
-	<description>The Blur hive module contains a storage handler and serde for Hive so that it can integrate with Hive.</description>
+	<name>Blur MR Update</name>
+	<description>The Blur map reduce module that can perform updates on Rows via Map Reduce.</description>
 
 	<dependencies>
 		<dependency>
@@ -105,18 +105,6 @@
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>2.2</version>
 				<executions>
@@ -183,10 +171,12 @@
 					<name>hadoop1</name>
 				</property>
 			</activation>
-			<properties>
-				<projectHiveVersion>hadoop1-${hadoop.version}-${hive.version}-${project.parent.version}</projectHiveVersion>
-			</properties>
 			<dependencies>
+				<dependency>
+					<groupId>org.apache.avro</groupId>
+					<artifactId>avro-mapred</artifactId>
+					<version>1.7.7</version>
+				</dependency>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-core</artifactId>
@@ -222,30 +212,6 @@
 					<version>${hadoop.version}</version>
 					<scope>test</scope>
 				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-exec</artifactId>
-					<version>${hive.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-serde</artifactId>
-					<version>${hive.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-cli</artifactId>
-					<version>${hive.version}</version>
-					<scope>test</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-jdbc</artifactId>
-					<version>${hive.version}</version>
-					<scope>test</scope>
-				</dependency>
 			</dependencies>
 		</profile>
 		<profile>
@@ -255,10 +221,13 @@
 					<name>hadoop2-mr1</name>
 				</property>
 			</activation>
-			<properties>
-				<projectHiveVersion>hadoop2-mr1-${hadoop.version}-${hive.version}-${project.parent.version}</projectHiveVersion>
-			</properties>
 			<dependencies>
+				<dependency>
+					<groupId>org.apache.avro</groupId>
+					<artifactId>avro-mapred</artifactId>
+					<version>1.7.7</version>
+					<classifier>hadoop2</classifier>
+				</dependency>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-client</artifactId>
@@ -294,30 +263,6 @@
 						</exclusion>
 					</exclusions>
 				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-exec</artifactId>
-					<version>${hive.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-serde</artifactId>
-					<version>${hive.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-cli</artifactId>
-					<version>${hive.version}</version>
-					<scope>test</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-jdbc</artifactId>
-					<version>${hive.version}</version>
-					<scope>test</scope>
-				</dependency>
 			</dependencies>
 		</profile>
 		<profile>
@@ -327,10 +272,13 @@
 					<name>hadoop2</name>
 				</property>
 			</activation>
-			<properties>
-				<projectHiveVersion>hadoop2-${hadoop.version}-${hive.version}-${project.parent.version}</projectHiveVersion>
-			</properties>
 			<dependencies>
+				<dependency>
+					<groupId>org.apache.avro</groupId>
+					<artifactId>avro-mapred</artifactId>
+					<version>1.7.7</version>
+					<classifier>hadoop2</classifier>
+				</dependency>
 				<dependency>
 					<groupId>org.apache.hadoop</groupId>
 					<artifactId>hadoop-common</artifactId>
@@ -377,30 +325,6 @@
 							<artifactId>jetty-webapp</artifactId>
 						</exclusion>
 					</exclusions>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-exec</artifactId>
-					<version>${hive.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-serde</artifactId>
-					<version>${hive.version}</version>
-					<scope>provided</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-cli</artifactId>
-					<version>${hive.version}</version>
-					<scope>test</scope>
-				</dependency>
-				<dependency>
-					<groupId>org.apache.hive</groupId>
-					<artifactId>hive-jdbc</artifactId>
-					<version>${hive.version}</version>
-					<scope>test</scope>
 				</dependency>
 			</dependencies>
 		</profile>

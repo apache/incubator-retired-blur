@@ -53,17 +53,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-thrift</artifactId>
-			<version>${projectVersion}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.httpcomponents</groupId>
-					<artifactId>httpclient</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>${log4j.version}</version>
@@ -72,6 +61,11 @@
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
+			<version>${projectVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.blur</groupId>
+			<artifactId>blur-thrift</artifactId>
 			<version>${projectVersion}</version>
 		</dependency>
 		<dependency>

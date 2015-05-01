@@ -41,7 +41,7 @@ public class DirectoryUtil {
           configuration, getFastDirectoryPath(hdfsDirPath));
       return new JoinDirectory(dir, shortTermStorage);
     } else {
-      LOG.info("Using regular HDFS directory.");
+      LOG.info("Using regular HDFS directory for [{0}].", hdfsDirPath);
       return dir;
     }
   }

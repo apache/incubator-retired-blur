@@ -17,6 +17,7 @@
 
 package org.apache.blur.store.hdfs;
 
+import com.yammer.metrics.core.Counter;
 import com.yammer.metrics.core.Histogram;
 import com.yammer.metrics.core.Meter;
 
@@ -28,9 +29,12 @@ public class MetricsGroup {
   final Meter readStreamThroughput;
   final Meter readStreamSeek;
   final Meter writeThroughput;
+  final Counter totalHdfsBlock;
+  final Counter localHdfsBlock;
 
   MetricsGroup(Histogram readRandomAccess, Histogram readStreamAccess, Histogram writeAccess,
-      Meter readRandomThroughput, Meter readStreamThroughput, Meter readStreamSeek, Meter writeThroughput) {
+      Meter readRandomThroughput, Meter readStreamThroughput, Meter readStreamSeek, Meter writeThroughput,
+      Counter totalHdfsBlock, Counter localHdfsBlock) {
     this.readRandomAccess = readRandomAccess;
     this.readStreamAccess = readStreamAccess;
     this.writeAccess = writeAccess;
@@ -38,5 +42,7 @@ public class MetricsGroup {
     this.readStreamThroughput = readStreamThroughput;
     this.writeThroughput = writeThroughput;
     this.readStreamSeek = readStreamSeek;
+    this.totalHdfsBlock = totalHdfsBlock;
+    this.localHdfsBlock = localHdfsBlock;
   }
 }

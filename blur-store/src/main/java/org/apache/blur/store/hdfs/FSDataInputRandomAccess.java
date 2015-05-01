@@ -19,8 +19,14 @@ package org.apache.blur.store.hdfs;
 import java.io.Closeable;
 import java.io.IOException;
 
+import org.apache.hadoop.fs.Path;
+
 public interface FSDataInputRandomAccess extends Closeable {
 
   int read(long filePointer, byte[] b, int offset, int length) throws IOException;
+
+  Path getPath();
+
+  long length();
 
 }

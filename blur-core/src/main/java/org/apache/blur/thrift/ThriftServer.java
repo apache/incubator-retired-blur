@@ -26,6 +26,9 @@ import static org.apache.blur.utils.BlurConstants.BLUR_HDFS_TRACE_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_HOME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SERVER_SECURITY_FILTER_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -76,7 +79,11 @@ import org.apache.blur.thrift.server.TThreadedSelectorServer.Args.AcceptPolicy;
 import org.apache.blur.trace.LogTraceStorage;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.trace.hdfs.HdfsTraceStorage;
+import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
@@ -484,5 +491,28 @@ public class ThriftServer {
       }
     }
     return result;
+  }
+
+  public static ZooKeeper setupZookeeper(BlurConfiguration conf, String cluster) throws IOException,
+      InterruptedException, KeeperException {
+    String zkConnectionStr = conf.getExpected(BLUR_ZOOKEEPER_CONNECTION);
+    int sessionTimeout = conf.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
+    int slash = zkConnectionStr.indexOf('/');
+
+    if ((slash != -1) && (slash != zkConnectionStr.length()-1)) {
+      ZooKeeper rootZk = ZkUtils.newZooKeeper(zkConnectionStr.substring(0, slash), sessionTimeout);
+      String rootPath = zkConnectionStr.substring(slash, zkConnectionStr.length());
+
+      if (!ZkUtils.exists(rootZk, rootPath)) {
+        LOG.info("Rooted ZooKeeper path [{0}] did not exist, creating now.", rootPath);
+        ZkUtils.mkNodesStr(rootZk, rootPath);
+      }
+      rootZk.close();
+    }
+    ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
+
+    BlurUtil.setupZookeeper(zooKeeper, cluster);
+
+    return zooKeeper;
   }
 }

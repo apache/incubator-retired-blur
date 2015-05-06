@@ -75,4 +75,8 @@ public class SuiteCluster {
     }
   }
 
+  public static String getZooKeeperConnStr() {
+    return cluster.getZkConnectionString();
+  }
+
 }

@@ -193,17 +193,12 @@ public class ThriftBlurShardServer extends ThriftServer {
     String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
     String nodeName = nodeNameHostName + ":" + instanceBindPort;
     configuration.set(BLUR_NODENAME, nodeName);
-    String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
-    int sessionTimeout = configuration.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
-
-    final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
-
     String cluster = configuration.get(BLUR_CLUSTER_NAME, BLUR_CLUSTER);
-    BlurUtil.setupZookeeper(zooKeeper, cluster);
-
+    
+    final ZooKeeper zooKeeper = setupZookeeper(configuration, cluster);
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration, config);
 
     BlurFilterCache filterCache = getFilterCache(configuration);

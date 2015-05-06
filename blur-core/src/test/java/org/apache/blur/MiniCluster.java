@@ -116,7 +116,7 @@ public class MiniCluster {
     miniCluster.startControllers(1, false, false);
     miniCluster.startShards(1, false, false);
 
-    try {
+//    try {
       Iface client = BlurClient.getClient(miniCluster.getControllerConnectionStr());
       miniCluster.createTable("test", client);
       long start = System.nanoTime();
@@ -136,12 +136,12 @@ public class MiniCluster {
         miniCluster.searchRow("test", i, client);
       }
 
-    } finally {
-      miniCluster.stopShards();
-      miniCluster.stopControllers();
-      miniCluster.shutdownZooKeeper();
-      miniCluster.shutdownDfs();
-    }
+//    } finally {
+//      miniCluster.stopShards();
+//      miniCluster.stopControllers();
+//      miniCluster.shutdownZooKeeper();
+//      miniCluster.shutdownDfs();
+//    }
   }
 
   public void startBlurCluster(String path, int controllerCount, int shardCount) {

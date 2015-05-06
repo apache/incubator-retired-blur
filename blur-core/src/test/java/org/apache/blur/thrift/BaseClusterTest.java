@@ -61,4 +61,8 @@ public class BaseClusterTest {
   public Iface getClient() throws IOException {
     return SuiteCluster.getClient();
   }
+  
+  protected String getZkConnString() {
+    return SuiteCluster.getZooKeeperConnStr();
+  }
 }

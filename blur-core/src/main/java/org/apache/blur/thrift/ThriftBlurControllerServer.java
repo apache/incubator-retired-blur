@@ -131,17 +131,12 @@ public class ThriftBlurControllerServer extends ThriftServer {
     String nodeName = getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
     nodeName = nodeName + ":" + instanceBindPort;
     configuration.set(BLUR_NODENAME, nodeName);
-    String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
+    
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
-    int sessionTimeout = configuration.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
-
-    final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
-
+    final ZooKeeper zooKeeper = setupZookeeper(configuration, null);
     
-    BlurUtil.setupZookeeper(zooKeeper, null);
-
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration, config);
 
     int timeout = configuration.getInt(BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT, 60000);

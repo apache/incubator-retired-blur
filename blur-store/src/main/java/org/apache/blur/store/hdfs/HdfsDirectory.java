@@ -201,7 +201,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
         }
       } else {
         for (String file : filesToExpose) {
-          Path filePath = getPath(file);
+          Path filePath = getPathOrSymlinkForDelete(file);
           try {
             FileStatus fileStatus = _fileSystem.getFileStatus(filePath);
             if (fileStatus != null) {

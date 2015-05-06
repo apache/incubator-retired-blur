@@ -249,7 +249,8 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     for (FSDataInputRandomAccess inputRandomAccess : values) {
       Path path = inputRandomAccess.getPath();
       long length = inputRandomAccess.length();
-      BlockLocation[] blockLocations = _fileSystem.getFileBlockLocations(path, 0, length);
+      FileStatus fileStatus = _fileSystem.getFileStatus(path);
+      BlockLocation[] blockLocations = _fileSystem.getFileBlockLocations(fileStatus, 0L, length);
       for (BlockLocation blockLocation : blockLocations) {
         if (isLocal(blockLocation)) {
           local++;

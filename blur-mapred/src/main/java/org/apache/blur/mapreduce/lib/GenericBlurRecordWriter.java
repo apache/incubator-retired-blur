@@ -325,7 +325,7 @@ public class GenericBlurRecordWriter {
 
   public void close() throws IOException {
     flush();
-    _writer.close();
+    _writer.close(false);
     if (_countersSetup) {
       _recordRateCounter.close();
       _rowRateCounter.close();

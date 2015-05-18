@@ -15,6 +15,7 @@ import org.apache.blur.command.commandtype.ServerReadCommand;
 import org.apache.blur.server.LayoutFactory;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.TableContextFactory;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -43,7 +44,7 @@ public class ControllerCommandManager extends BaseCommandManager {
 
   public Response execute(final TableContextFactory tableContextFactory, LayoutFactory layoutFactory,
       String commandName, ArgumentOverlay argumentOverlay) throws IOException, TimeoutException, ExceptionCollector {
-    final ClusterContext context = createCommandContext(tableContextFactory, layoutFactory);
+    final ControllerClusterContext context = createCommandContext(tableContextFactory, layoutFactory);
     final Command<?> command = getCommandObject(commandName, argumentOverlay);
     if (command == null) {
       throw new IOException("Command with name [" + commandName + "] not found.");
@@ -53,28 +54,32 @@ public class ControllerCommandManager extends BaseCommandManager {
       public Response call() throws Exception {
         // For those commands that do not implement cluster command, run them in
         // a base impl.
+        try {
 
-        if (command instanceof IndexReadCommand) {
-          return executeIndexReadCommand(context, command);
-        }
-        if (command instanceof ServerReadCommand) {
-          return executeIndexReadCombiningCommand(context, command);
-        }
-        if (command instanceof ClusterIndexReadCommand) {
-          throw new RuntimeException("Not implemented");
-        }
-        if (command instanceof ClusterServerReadCommand) {
-          CombiningContext combiningContext = getCombiningContext(tableContextFactory);
-          return executeClusterReadCombiningCommand(context, command, combiningContext);
-        }
-        if (command instanceof ClusterExecuteServerReadCommand) {
-          return executeClusterCommand(context, command);
-        }
-        if (command instanceof ClusterExecuteCommand) {
-          throw new RuntimeException("Not implemented");
-        }
+          if (command instanceof IndexReadCommand) {
+            return executeIndexReadCommand(context, command);
+          }
+          if (command instanceof ServerReadCommand) {
+            return executeIndexReadCombiningCommand(context, command);
+          }
+          if (command instanceof ClusterIndexReadCommand) {
+            throw new RuntimeException("Not implemented");
+          }
+          if (command instanceof ClusterServerReadCommand) {
+            CombiningContext combiningContext = getCombiningContext(tableContextFactory);
+            return executeClusterReadCombiningCommand(context, command, combiningContext);
+          }
+          if (command instanceof ClusterExecuteServerReadCommand) {
+            return executeClusterCommand(context, command);
+          }
+          if (command instanceof ClusterExecuteCommand) {
+            throw new RuntimeException("Not implemented");
+          }
 
-        throw new IOException("Command type of [" + command.getClass() + "] not supported.");
+          throw new IOException("Command type of [" + command.getClass() + "] not supported.");
+        } finally {
+          IOUtils.closeQuietly(context);
+        }
       }
 
     }, command);
@@ -120,8 +125,8 @@ public class ControllerCommandManager extends BaseCommandManager {
     return Response.createNewServerResponse(result);
   }
 
-  private ClusterContext createCommandContext(TableContextFactory tableContextFactory, LayoutFactory layoutFactory)
-      throws IOException {
+  private ControllerClusterContext createCommandContext(TableContextFactory tableContextFactory,
+      LayoutFactory layoutFactory) throws IOException {
     return new ControllerClusterContext(tableContextFactory, layoutFactory, this);
   }
 

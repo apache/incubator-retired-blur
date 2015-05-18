@@ -2,6 +2,7 @@ package org.apache.blur.command;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -51,10 +52,20 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   private final static Log LOG = LogFactory.getLog(ControllerClusterContext.class);
 
   private final TableContextFactory _tableContextFactory;
-  private final Map<Server, Client> _clientMap;
+  private final Map<Server, ClientWithConnection> _clientMap;
   private final ControllerCommandManager _manager;
   private final LayoutFactory _layoutFactory;
   private final BlurObjectSerDe _serDe = new BlurObjectSerDe();
+
+  static class ClientWithConnection {
+    final Client _client;
+    final Connection _connection;
+
+    ClientWithConnection(Client client, Connection connection) {
+      _client = client;
+      _connection = connection;
+    }
+  }
 
   public ControllerClusterContext(TableContextFactory tableContextFactory, LayoutFactory layoutFactory,
       ControllerCommandManager manager) throws IOException {
@@ -64,13 +75,15 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     _layoutFactory = layoutFactory;
   }
 
-  public Map<Server, Client> getBlurClientsForCluster(Set<Connection> serverConnections) throws IOException {
-    Map<Server, Client> clients = new HashMap<Server, Client>();
+  private Map<Server, ClientWithConnection> getBlurClientsForCluster(Set<Connection> serverConnections)
+      throws IOException {
+    Map<Server, ClientWithConnection> clients = new HashMap<Server, ClientWithConnection>();
     for (Connection serverConnection : serverConnections) {
       try {
         Client client = BlurClientManager.getClientPool().getClient(serverConnection);
         client.refresh();
-        clients.put(new Server(serverConnection.getHost() + ":" + serverConnection.getPort()), client);
+        ClientWithConnection clientWithConnection = new ClientWithConnection(client, serverConnection);
+        clients.put(new Server(serverConnection.getHost() + ":" + serverConnection.getPort()), clientWithConnection);
       } catch (TException e) {
         throw new IOException(e);
       }
@@ -100,8 +113,10 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   @Override
   public void close() throws IOException {
     ClientPool clientPool = BlurClientManager.getClientPool();
-    for (Entry<Server, Client> e : _clientMap.entrySet()) {
-      clientPool.returnClient(new Connection(e.getKey().getServer()), e.getValue());
+    Collection<ClientWithConnection> values = _clientMap.values();
+    _clientMap.clear();
+    for (ClientWithConnection clientWithConnection : values) {
+      clientPool.returnClient(clientWithConnection._connection, clientWithConnection._client);
     }
   }
 
@@ -138,10 +153,10 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
   private Map<Server, Client> getClientMap(Command<?> command, Set<String> tables, Set<Shard> shards)
       throws IOException {
     Map<Server, Client> result = new HashMap<Server, Client>();
-    for (Entry<Server, Client> e : _clientMap.entrySet()) {
+    for (Entry<Server, ClientWithConnection> e : _clientMap.entrySet()) {
       Server server = e.getKey();
       if (_layoutFactory.isValidServer(server, tables, shards)) {
-        result.put(server, e.getValue());
+        result.put(server, e.getValue()._client);
       }
     }
     return result;

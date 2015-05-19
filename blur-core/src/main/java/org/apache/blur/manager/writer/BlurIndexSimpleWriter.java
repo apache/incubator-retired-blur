@@ -59,6 +59,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.codec.Blur024Codec;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.lucene.search.IndexSearcherCloseableBase;
+import org.apache.blur.lucene.search.SuperQuery;
 import org.apache.blur.memory.MemoryLeakDetector;
 import org.apache.blur.server.IndexSearcherCloseableSecureBase;
 import org.apache.blur.server.ShardContext;
@@ -67,6 +68,7 @@ import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.store.hdfs_v2.StoreDirection;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
+import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
@@ -100,6 +102,7 @@ import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
@@ -924,7 +927,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   }
 
   protected long getRowCount(IndexSearcherCloseable searcher) throws IOException {
-    TopDocs topDocs = searcher.search(new TermQuery(BlurUtil.PRIME_DOC_TERM), 1);
+    TopDocs topDocs = searcher.search(
+        new SuperQuery(new MatchAllDocsQuery(), ScoreType.CONSTANT, _tableContext.getDefaultPrimeDocTerm()), 1);
     return topDocs.totalHits;
   }
 

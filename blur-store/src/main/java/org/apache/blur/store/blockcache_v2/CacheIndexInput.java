@@ -317,6 +317,7 @@ public class CacheIndexInput extends IndexInput {
     ensureOpen();
     if (pos >= _fileLength) {
       _position = pos;
+      releaseCache();
       return;
     }
     if (_position == pos) {

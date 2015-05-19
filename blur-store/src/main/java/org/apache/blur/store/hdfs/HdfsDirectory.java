@@ -209,6 +209,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
             }
           } catch (FileNotFoundException e) {
             // Normal hdfs behavior
+            LOG.info("Lucene file [{0}] path [{1}] was not found.", file, filePath);
           }
         }
       }

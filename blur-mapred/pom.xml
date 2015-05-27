@@ -56,6 +56,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
+			<artifactId>blur-command</artifactId>
+			<version>${projectVersion}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>

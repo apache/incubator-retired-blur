@@ -43,7 +43,6 @@ import org.apache.hadoop.io.Writable;
 
 public class BlurSerDe extends AbstractSerDe {
 
-  public static final String BLUR_MR_UPDATE_WORKING_PATH = "blur.mr.update.working.path";
   public static final String BLUR_MR_UPDATE_DISABLED = "blur.mr.update.disabled";
   public static final String BLUR_BLOCKING_APPLY = "blur.blocking.apply";
   public static final String BLUR_CONTROLLER_CONNECTION_STR = "blur.controller.connection.str";
@@ -87,10 +86,10 @@ public class BlurSerDe extends AbstractSerDe {
         TableDescriptor tableDescriptor = client.describe(table);
         Map<String, String> tableProperties = tableDescriptor.getTableProperties();
         if (tableProperties != null) {
-          String workingPath = tableProperties.get(BLUR_MR_UPDATE_WORKING_PATH);
+          String workingPath = tableProperties.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
           if (conf != null && workingPath != null) {
             if (!conf.getBoolean(BLUR_MR_UPDATE_DISABLED, false)) {
-              conf.set(BLUR_MR_UPDATE_WORKING_PATH, workingPath);
+              conf.set(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH, workingPath);
             }
           }
         }
@@ -175,7 +174,7 @@ public class BlurSerDe extends AbstractSerDe {
   }
 
   public static boolean shouldUseMRWorkingPath(Configuration configuration) {
-    String workingPath = configuration.get(BlurSerDe.BLUR_MR_UPDATE_WORKING_PATH);
+    String workingPath = configuration.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
     if (workingPath != null) {
       return true;
     }

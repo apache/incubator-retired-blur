@@ -226,6 +226,67 @@ public class DriverTest {
     }
   }
 
+  @Test
+  public void testBulkTableUpdateCommandUpdateRecordToExistingRow() throws Exception {
+    FileSystem fileSystem = miniCluster.getFileSystem();
+    Path root = new Path(fileSystem.getUri() + "/");
+
+    String tableName = "testBulkTableUpdateCommandUpdateRecordToExistingRow";
+    Iface client = getClient();
+    Path mrIncWorkingPath = new Path(new Path(root, "working"), tableName);
+    creatTable(tableName, new Path(root, "tables"), true, mrIncWorkingPath.toString());
+    String rowId = "row1";
+    String recordId = "record1";
+    addRow(client, tableName, rowId, recordId, "value1");
+
+    generateData(mrIncWorkingPath.toString(), rowId, recordId, "value2");
+
+    {
+      Selector selector = new Selector();
+      selector.setRowId(rowId);
+      FetchResult fetchRow = client.fetchRow(tableName, selector);
+      Row row = fetchRow.getRowResult().getRow();
+      assertEquals(rowId, row.getId());
+      List<Record> records = row.getRecords();
+      assertEquals(1, records.size());
+      Record record = records.get(0);
+      assertEquals(recordId, record.getRecordId());
+      List<Column> columns = record.getColumns();
+      assertEquals(1, columns.size());
+      Column column = columns.get(0);
+      assertEquals("col0", column.getName());
+      assertEquals("value1", column.getValue());
+    }
+
+    BulkTableUpdateCommand bulkTableUpdateCommand = new BulkTableUpdateCommand();
+    bulkTableUpdateCommand.setAutoLoad(true);
+    bulkTableUpdateCommand.setTable(tableName);
+    bulkTableUpdateCommand.setWaitForDataBeVisible(true);
+    bulkTableUpdateCommand.addExtraConfig(conf);
+    assertEquals(0, (int) bulkTableUpdateCommand.run(getClient()));
+
+    TableStats tableStats = client.tableStats(tableName);
+    assertEquals(1, tableStats.getRowCount());
+    assertEquals(1, tableStats.getRecordCount());
+
+    {
+      Selector selector = new Selector();
+      selector.setRowId(rowId);
+      FetchResult fetchRow = client.fetchRow(tableName, selector);
+      Row row = fetchRow.getRowResult().getRow();
+      assertEquals(rowId, row.getId());
+      List<Record> records = row.getRecords();
+      assertEquals(1, records.size());
+      Record record = records.get(0);
+      assertEquals(recordId, record.getRecordId());
+      List<Column> columns = record.getColumns();
+      assertEquals(1, columns.size());
+      Column column = columns.get(0);
+      assertEquals("col0", column.getName());
+      assertEquals("value2", column.getValue());
+    }
+  }
+
   private void addRow(Iface client, String tableName, String rowId, String recordId, String value)
       throws BlurException, TException {
     List<RecordMutation> recordMutations = new ArrayList<RecordMutation>();
@@ -266,6 +327,11 @@ public class DriverTest {
   }
 
   private void creatTable(String tableName, Path tables, boolean fastDisable) throws BlurException, TException {
+    creatTable(tableName, tables, fastDisable, null);
+  }
+
+  private void creatTable(String tableName, Path tables, boolean fastDisable, String workingPath) throws BlurException,
+      TException {
     Path tablePath = new Path(tables, tableName);
     Iface client = getClient();
     TableDescriptor tableDescriptor = new TableDescriptor();
@@ -273,6 +339,9 @@ public class DriverTest {
     tableDescriptor.setName(tableName);
     tableDescriptor.setShardCount(2);
     tableDescriptor.putToTableProperties(BlurConstants.BLUR_TABLE_DISABLE_FAST_DIR, Boolean.toString(fastDisable));
+    if (workingPath != null) {
+      tableDescriptor.putToTableProperties(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH, workingPath);
+    }
     client.createTable(tableDescriptor);
 
     ColumnDefinition colDef = new ColumnDefinition();

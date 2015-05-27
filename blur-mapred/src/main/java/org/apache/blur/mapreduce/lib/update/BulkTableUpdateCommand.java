@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.command;
+package org.apache.blur.mapreduce.lib.update;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.command.ClusterContext;
 import org.apache.blur.command.annotation.OptionalArgument;
 import org.apache.blur.command.commandtype.ClusterExecuteCommandSingleTable;
-import org.apache.blur.mapreduce.lib.update.Driver;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
@@ -39,11 +39,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ToolRunner;
 
-public class BulkTableUpdate extends ClusterExecuteCommandSingleTable<Integer> {
+public class BulkTableUpdateCommand extends ClusterExecuteCommandSingleTable<Integer> {
 
   private static final String YARN_SITE_XML = "yarn-site.xml";
   private static final String HDFS_SITE_XML = "hdfs-site.xml";
-  private static final String BLUR_BULK_UPDATE_WORKING_PATH = "blur.bulk.update.working.path";
   private static final String IMPORT = "import";
   private static final String BULK_UPDATE = "bulk-update";
 
@@ -72,9 +71,10 @@ public class BulkTableUpdate extends ClusterExecuteCommandSingleTable<Integer> {
     TableContext tableContext = context.getTableContext(table);
     TableDescriptor descriptor = tableContext.getDescriptor();
     String tableUri = descriptor.getTableUri();
-    String mrIncWorkingPathStr = blurConfiguration.get(BLUR_BULK_UPDATE_WORKING_PATH);
-    Path mrIncWorkingPath = new Path(mrIncWorkingPathStr, table);
-    String outputPathStr = new Path(new Path(tableUri), IMPORT).toString();
+    String mrIncWorkingPathStr = blurConfiguration.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
+    Path mrIncWorkingPath = new Path(mrIncWorkingPathStr);
+    String outputPathStr = new Path(new Path(new Path(tableUri), IMPORT), Long.toString(System.currentTimeMillis()))
+        .toString();
     Configuration configuration = new Configuration();
     configuration.addResource(HDFS_SITE_XML);
     configuration.addResource(YARN_SITE_XML);
@@ -92,8 +92,9 @@ public class BulkTableUpdate extends ClusterExecuteCommandSingleTable<Integer> {
     } catch (Exception e) {
       throw new IOException(e);
     }
+
     if (run == 0 && autoLoad) {
-      Iface client = BlurClient.getClient();
+      Iface client = BlurClient.getClientFromZooKeeperConnectionStr(blurZkConnection);
       try {
         client.loadData(table, outputPathStr);
         if (waitForDataBeVisible) {
@@ -125,9 +126,7 @@ public class BulkTableUpdate extends ClusterExecuteCommandSingleTable<Integer> {
     for (int i = 0; i < 5; i++) {
       INNER: while (true) {
         TableStats tableStats = client.tableStats(table);
-        if (tableStats.getSegmentImportInProgressCount() == 0) {
-          break INNER;
-        } else if (tableStats.getSegmentImportPendingCount() == 0) {
+        if (tableStats.getSegmentImportInProgressCount() == 0 && tableStats.getSegmentImportPendingCount() == 0) {
           break INNER;
         }
         Thread.sleep(1000);

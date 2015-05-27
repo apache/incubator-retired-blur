@@ -17,6 +17,7 @@
 package org.apache.blur.hive;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.apache.blur.thrift.generated.RecordMutationType;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -51,10 +53,13 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordWriter;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 
 public class BlurHiveOutputFormat implements HiveOutputFormat<Text, BlurRecord> {
 
+  private static final String BLUR = "blur";
+  private static final String BLUR_USER_NAME = "blur.user.name";
   private static final String BLUR_BULK_MUTATE_ID = "blur.bulk.mutate.id";
 
   public static String getBulkId(Configuration conf) {
@@ -87,31 +92,50 @@ public class BlurHiveOutputFormat implements HiveOutputFormat<Text, BlurRecord> 
   }
 
   private org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getMrWorkingPathWriter(
-      Configuration configuration) throws IOException {
-    String workingPathStr = configuration.get(BlurSerDe.BLUR_MR_UPDATE_WORKING_PATH);
+      final Configuration configuration) throws IOException {
+    String workingPathStr = configuration.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
     Path workingPath = new Path(workingPathStr);
     Path tmpDir = new Path(workingPath, "tmp");
-    FileSystem fileSystem = tmpDir.getFileSystem(configuration);
+    final FileSystem fileSystem = tmpDir.getFileSystem(configuration);
     String loadId = configuration.get(BlurSerDe.BLUR_MR_LOAD_ID);
-    Path loadPath = new Path(tmpDir, loadId);
+    final Path loadPath = new Path(tmpDir, loadId);
+    String user = getBlurUser(configuration);
+    UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(user, UserGroupInformation.getLoginUser());
+    try {
+      return proxyUser
+          .doAs(new PrivilegedExceptionAction<org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter>() {
+            @Override
+            public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter run() throws Exception {
+              final Writer writer = new SequenceFile.Writer(fileSystem, configuration, new Path(loadPath, UUID
+                  .randomUUID().toString()), Text.class, BlurRecord.class);
 
-    final Writer writer = new SequenceFile.Writer(fileSystem, configuration, new Path(loadPath, UUID.randomUUID()
-        .toString()), Text.class, BlurRecord.class);
+              return new org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter() {
 
-    return new org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter() {
+                @Override
+                public void write(Writable w) throws IOException {
+                  BlurRecord blurRecord = (BlurRecord) w;
+                  String rowId = blurRecord.getRowId();
+                  writer.append(new Text(rowId), blurRecord);
+                }
 
-      @Override
-      public void write(Writable w) throws IOException {
-        BlurRecord blurRecord = (BlurRecord) w;
-        String rowId = blurRecord.getRowId();
-        writer.append(new Text(rowId), blurRecord);
-      }
+                @Override
+                public void close(boolean abort) throws IOException {
+                  writer.close();
+                }
+              };
+            }
+          });
+    } catch (InterruptedException e) {
+      throw new IOException(e);
+    }
+  }
 
-      @Override
-      public void close(boolean abort) throws IOException {
-        writer.close();
-      }
-    };
+  public static String getBlurUser(Configuration configuration) {
+    return configuration.get(BLUR_USER_NAME, BLUR);
+  }
+
+  public static void setBlurUser(Configuration configuration, String blurUser) {
+    configuration.set(BLUR_USER_NAME, blurUser);
   }
 
   private org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getBulkRecordWriter(Configuration configuration)

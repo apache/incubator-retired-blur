@@ -73,7 +73,7 @@ public class ControllerCommandManager extends BaseCommandManager {
             return executeClusterCommand(context, command);
           }
           if (command instanceof ClusterExecuteCommand) {
-            throw new RuntimeException("Not implemented");
+            return executeClusterCommand(context, command);
           }
 
           throw new IOException("Command type of [" + command.getClass() + "] not supported.");
@@ -102,7 +102,7 @@ public class ControllerCommandManager extends BaseCommandManager {
 
   private Response executeClusterCommand(ClusterContext context, Command<?> command) throws IOException,
       InterruptedException {
-    ClusterExecuteServerReadCommand<Object> clusterCommand = (ClusterExecuteServerReadCommand<Object>) command;
+    ClusterExecuteCommand<Object> clusterCommand = (ClusterExecuteCommand<Object>) command;
     Object object = clusterCommand.clusterExecute(context);
     return Response.createNewAggregateResponse(object);
   }

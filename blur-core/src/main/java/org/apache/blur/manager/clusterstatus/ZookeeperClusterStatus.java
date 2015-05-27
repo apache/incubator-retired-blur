@@ -609,7 +609,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   private void assignMapReduceWorkingPath(TableDescriptor tableDescriptor) throws IOException {
     Map<String, String> tableProperties = tableDescriptor.getTableProperties();
-    String mrIncWorkingPathStr = tableProperties.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
+    String mrIncWorkingPathStr = null;
+    if (tableProperties != null) {
+      mrIncWorkingPathStr = tableProperties.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
+    }
     if (mrIncWorkingPathStr == null) {
       // If not set on the table, try to use cluster default
       mrIncWorkingPathStr = _configuration.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);

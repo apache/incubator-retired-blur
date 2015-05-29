@@ -19,6 +19,8 @@ package org.apache.blur.utils;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 
+import com.google.common.base.Strings;
+
 public class ShardUtil {
   
   public static String getShardName(int id) {
@@ -57,6 +59,9 @@ public class ShardUtil {
   }
 
   public static boolean validate(String s) {
+    if(Strings.isNullOrEmpty(s)) {
+      return false;
+    }
     int length = s.length();
     for (int i = 0; i < length; i++) {
       char c = s.charAt(i);

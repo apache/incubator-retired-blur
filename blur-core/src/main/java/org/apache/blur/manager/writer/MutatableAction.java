@@ -696,6 +696,9 @@ public class MutatableAction extends IndexAction {
   public static List<RowMutation> reduceMutates(List<RowMutation> mutations) throws BlurException {
     Map<String, RowMutation> mutateMap = new TreeMap<String, RowMutation>();
     for (RowMutation mutation : mutations) {
+      if (mutation.getRowId() == null) {
+        throw new BException("Mutation has null rowid [{0}]", mutation);
+      }
       RowMutation rowMutation = mutateMap.get(mutation.getRowId());
       if (rowMutation != null) {
         mutateMap.put(mutation.getRowId(), merge(rowMutation, mutation));

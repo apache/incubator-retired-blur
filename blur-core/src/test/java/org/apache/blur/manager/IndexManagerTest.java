@@ -1224,6 +1224,34 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testMutationReplaceRowFailureWithNullRecordId() throws Exception {
+    RowMutation mutation = newRowMutation(
+        TABLE,
+        "row-4",
+        newRecordMutation(FAMILY, null, newColumn("testcol1", "value2"), newColumn("testcol2", "value3"),
+            newColumn("testcol3", "value4")));
+    try {
+      indexManager.mutate(mutation);
+      fail();
+    } catch (BlurException e) {
+    }
+  }
+  
+  @Test
+  public void testMutationReplaceRowWithNullRowId() throws Exception {
+    RowMutation mutation = newRowMutation(
+        TABLE,
+        null,
+        newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"),
+            newColumn("testcol3", "value4")));
+    try {
+      indexManager.mutate(mutation);
+      fail();
+    } catch (BlurException e) {
+    }
+  }
+
+  @Test
   public void testMultipleMutationReplaceRecordWithInSameBatch() throws Exception {
     RowMutation mutation1 = newRowMutation(
         TABLE,

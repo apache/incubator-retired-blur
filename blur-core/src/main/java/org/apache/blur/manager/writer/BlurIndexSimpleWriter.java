@@ -24,6 +24,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WRITER_SORT_M
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH;
 
 import java.io.Closeable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -1008,5 +1009,21 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       return _indexImporter.getSegmentImportInProgressCount();
     }
     return 0l;
+  }
+
+  @Override
+  public long getOnDiskSize() throws IOException {
+    long total = 0;
+    String[] listAll = _directory.listAll();
+    for (String name : listAll) {
+      try {
+        total += _directory.fileLength(name);
+      } catch (FileNotFoundException e) {
+        // If file is not found that means that is was removed between the time
+        // we started iterating over the file names and when we asked for it's
+        // size.
+      }
+    }
+    return total;
   }
 }

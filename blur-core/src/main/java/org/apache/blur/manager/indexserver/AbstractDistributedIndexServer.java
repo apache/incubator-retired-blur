@@ -24,16 +24,12 @@ import static org.apache.blur.metrics.MetricsConstants.RECORD_COUNT;
 import static org.apache.blur.metrics.MetricsConstants.SEGMENT_COUNT;
 import static org.apache.blur.metrics.MetricsConstants.TABLE_COUNT;
 
-import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.metrics.AtomicLongGauge;
 import org.apache.blur.server.TableContext;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.ContentSummary;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.MetricName;
@@ -73,16 +69,6 @@ public abstract class AbstractDistributedIndexServer extends AbstractIndexServer
   @Override
   public final String getNodeName() {
     return _nodeName;
-  }
-
-  @Override
-  public final long getTableSize(String table) throws IOException {
-    checkTable(table);
-    String tableUri = getTableContext(table).getTablePath().toUri().toString();
-    Path tablePath = new Path(tableUri);
-    FileSystem fileSystem = tablePath.getFileSystem(_configuration);
-    ContentSummary contentSummary = fileSystem.getContentSummary(tablePath);
-    return contentSummary.getLength();
   }
 
   protected final TableContext getTableContext(final String table) {

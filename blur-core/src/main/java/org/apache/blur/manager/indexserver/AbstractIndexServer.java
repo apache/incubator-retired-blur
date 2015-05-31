@@ -64,4 +64,14 @@ public abstract class AbstractIndexServer implements IndexServer {
     return segmentImportPendingCount;
   }
 
+  @Override
+  public long getTableSize(String table) throws IOException {
+    long tableSize = 0;
+    Map<String, BlurIndex> indexes = getIndexes(table);
+    for (Map.Entry<String, BlurIndex> index : indexes.entrySet()) {
+      tableSize += index.getValue().getOnDiskSize();
+    }
+    return tableSize;
+  }
+
 }

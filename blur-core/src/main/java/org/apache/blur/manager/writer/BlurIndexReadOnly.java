@@ -94,4 +94,9 @@ public class BlurIndexReadOnly extends BlurIndex {
     return _blurIndex.getSegmentImportInProgressCount();
   }
 
+  @Override
+  public long getOnDiskSize() throws IOException {
+    return _blurIndex.getOnDiskSize();
+  }
+
 }

@@ -145,4 +145,6 @@ public abstract class BlurIndex {
 
   public abstract long getSegmentImportInProgressCount() throws IOException;
 
+  public abstract long getOnDiskSize() throws IOException;
+
 }

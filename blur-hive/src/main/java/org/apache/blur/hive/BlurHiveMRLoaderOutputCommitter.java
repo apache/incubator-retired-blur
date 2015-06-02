@@ -34,8 +34,9 @@ import org.apache.hadoop.mapred.TaskAttemptContext;
 
 public class BlurHiveMRLoaderOutputCommitter extends OutputCommitter {
 
-  private static final String YARN_SITE_XML = "yarn-site.xml";
-  private static final String HDFS_SITE_XML = "hdfs-site.xml";
+  public static final String YARN_SITE_XML = "yarn-site.xml";
+  public static final String MAPRED_SITE_XML = "mapred-site.xml";
+  public static final String HDFS_SITE_XML = "hdfs-site.xml";
 
   private static final Log LOG = LogFactory.getLog(BlurHiveMRLoaderOutputCommitter.class);
 
@@ -103,6 +104,7 @@ public class BlurHiveMRLoaderOutputCommitter extends OutputCommitter {
       Configuration config = new Configuration(false);
       config.addResource(HDFS_SITE_XML);
       config.addResource(YARN_SITE_XML);
+      config.addResource(MAPRED_SITE_XML);
 
       bulkTableUpdateCommand.addExtraConfig(config);
       if (bulkTableUpdateCommand.run(BlurClient.getClient(connectionStr)) != 0) {

@@ -43,6 +43,7 @@ public class BulkTableUpdateCommand extends ClusterExecuteCommandSingleTable<Int
 
   private static final String YARN_SITE_XML = "yarn-site.xml";
   private static final String HDFS_SITE_XML = "hdfs-site.xml";
+  private static final String MAPRED_SITE_XML = "mapred-site.xml";
   private static final String IMPORT = "import";
   private static final String BULK_UPDATE = "bulk-update";
 
@@ -78,6 +79,7 @@ public class BulkTableUpdateCommand extends ClusterExecuteCommandSingleTable<Int
     Configuration configuration = new Configuration();
     configuration.addResource(HDFS_SITE_XML);
     configuration.addResource(YARN_SITE_XML);
+    configuration.addResource(MAPRED_SITE_XML);
     for (String s : extraConfigs) {
       if (s != null) {
         InputStream inputStream = IOUtils.toInputStream(s);
@@ -90,6 +92,7 @@ public class BulkTableUpdateCommand extends ClusterExecuteCommandSingleTable<Int
       run = ToolRunner.run(configuration, new Driver(), new String[] { table, mrIncWorkingPath.toString(),
           outputPathStr, blurZkConnection, Integer.toString(reducerMultipler) });
     } catch (Exception e) {
+      e.printStackTrace();
       throw new IOException(e);
     }
 

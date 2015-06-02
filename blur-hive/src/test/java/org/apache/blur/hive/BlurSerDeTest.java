@@ -19,6 +19,8 @@ package org.apache.blur.hive;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
@@ -68,6 +70,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import com.google.common.base.Splitter;
 
 public class BlurSerDeTest {
 
@@ -292,6 +296,7 @@ public class BlurSerDeTest {
       SQLException {
 
     Configuration configuration = miniCluster.getMRConfiguration();
+    writeSiteFiles(configuration);
     HiveConf hiveConf = new HiveConf(configuration, getClass());
     hiveConf.set("hive.server2.thrift.port", "0");
     HiveServer2 hiveServer2 = new HiveServer2();
@@ -329,6 +334,27 @@ public class BlurSerDeTest {
     connection.close();
     hiveServer2.stop();
     return totalRecords;
+  }
+
+  private void writeSiteFiles(Configuration configuration) throws FileNotFoundException, IOException {
+    String name = BlurHiveMRLoaderOutputCommitter.MAPRED_SITE_XML;
+    if (miniCluster.useYarn()) {
+      name = BlurHiveMRLoaderOutputCommitter.YARN_SITE_XML;
+    }
+    String classPath = System.getProperty("java.class.path");
+    for (String path : Splitter.on(":").split(classPath)) {
+      File file = new File(path);
+      if (file.getName().equals("test-classes")) {
+        writeFile(new File(file, name), configuration);
+        return;
+      }
+    }
+  }
+
+  private void writeFile(File file, Configuration configuration) throws FileNotFoundException, IOException {
+    FileOutputStream outputStream = new FileOutputStream(file);
+    configuration.writeXml(outputStream);
+    outputStream.close();
   }
 
   private void generateData(File file, int totalRecords) throws IOException {

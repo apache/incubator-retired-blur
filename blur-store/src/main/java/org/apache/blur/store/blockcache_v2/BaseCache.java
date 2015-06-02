@@ -66,6 +66,7 @@ public class BaseCache extends Cache implements Closeable {
   class BaseCacheEvictionListener implements EvictionListener<CacheKey, CacheValue> {
     @Override
     public void onEviction(CacheKey key, CacheValue value) {
+      System.out.println("onEviction [" + key + "] [" + value + "]");
       _evictions.mark();
       _cacheValueBufferPool.returnToPool(value.detachFromCache());
     }
@@ -97,7 +98,7 @@ public class BaseCache extends Cache implements Closeable {
   private final Meter _removals;
   private final Thread _oldFileDaemonThread;
   private final AtomicBoolean _running = new AtomicBoolean(true);
-  private final CacheValueBufferPool _cacheValueBufferPool;
+  private final SimpleCacheValueBufferPool _cacheValueBufferPool;
 
   public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, FileNameFilter readFilter,
       FileNameFilter writeFilter, Quiet quiet, STORE store) {
@@ -114,7 +115,7 @@ public class BaseCache extends Cache implements Closeable {
     _evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
     _removals = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, REMOVAL), REMOVAL, TimeUnit.SECONDS);
     // @TODO make configurable
-    _cacheValueBufferPool = new CacheValueBufferPool(_store, 1000);
+    _cacheValueBufferPool = new SimpleCacheValueBufferPool(_store, 1000);
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, ENTRIES), new Gauge<Long>() {
       @Override
       public Long value() {
@@ -267,7 +268,7 @@ public class BaseCache extends Cache implements Closeable {
     CacheValue cacheValue = _cacheMap.get(key);
     if (cacheValue == null) {
       _misses.mark();
-//      System.out.println("Loud Miss [" + fileName + "] Key [" + key + "]");
+      // System.out.println("Loud Miss [" + fileName + "] Key [" + key + "]");
     } else {
       _hits.mark();
     }
@@ -280,7 +281,7 @@ public class BaseCache extends Cache implements Closeable {
     if (cacheValue != null) {
       _hits.mark();
     } else {
-//      System.out.println("Quiet Miss [" + fileName + "] Key [" + key + "]");
+      // System.out.println("Quiet Miss [" + fileName + "] Key [" + key + "]");
     }
     return cacheValue;
   }
@@ -289,7 +290,9 @@ public class BaseCache extends Cache implements Closeable {
   public void put(CacheDirectory directory, String fileName, CacheKey key, CacheValue value) {
     CacheValue cacheValue = _cacheMap.put(key, value);
     if (cacheValue != null) {
+      System.out.println("put [" + key + "] [" + value + "]");
       _evictions.mark();
+      _cacheValueBufferPool.returnToPool(cacheValue.detachFromCache());
     }
   }
 

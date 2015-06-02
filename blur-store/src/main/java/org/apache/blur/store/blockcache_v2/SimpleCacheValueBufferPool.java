@@ -16,47 +16,28 @@
  */
 package org.apache.blur.store.blockcache_v2;
 
-import static org.apache.blur.metrics.MetricsConstants.CACHE_POOL;
-import static org.apache.blur.metrics.MetricsConstants.CREATED;
-import static org.apache.blur.metrics.MetricsConstants.DESTROYED;
-import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
-import static org.apache.blur.metrics.MetricsConstants.REUSED;
-
-import java.io.Closeable;
 import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
 import org.apache.blur.store.blockcache_v2.cachevalue.ByteArrayCacheValue;
-import org.apache.blur.store.blockcache_v2.cachevalue.UnsafeCacheValue;
+import org.apache.blur.store.blockcache_v2.cachevalue.UnsafeAllocateCacheValue;
 
-import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Meter;
-import com.yammer.metrics.core.MetricName;
+public class SimpleCacheValueBufferPool extends BaseCacheValueBufferPool {
 
-public class CacheValueBufferPool implements Closeable {
+  private static final Log LOG = LogFactory.getLog(SimpleCacheValueBufferPool.class);
 
-  private static final Log LOG = LogFactory.getLog(CacheValueBufferPool.class);
-
-  private final STORE _store;
   private final ConcurrentMap<Integer, BlockingQueue<CacheValue>> _cacheValuePool = new ConcurrentHashMap<Integer, BlockingQueue<CacheValue>>();
   private final int _capacity;
-  private final Meter _reused;
-  private final Meter _detroyed;
-  private final Meter _created;
 
-  public CacheValueBufferPool(STORE store, int capacity) {
-    _store = store;
+  public SimpleCacheValueBufferPool(STORE store, int capacity) {
+    super(store);
     _capacity = capacity;
-    _created = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE_POOL, CREATED), CREATED, TimeUnit.SECONDS);
-    _reused = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE_POOL, REUSED), REUSED, TimeUnit.SECONDS);
-    _detroyed = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE_POOL, DESTROYED), DESTROYED, TimeUnit.SECONDS);
   }
 
   public CacheValue getCacheValue(int cacheBlockSize) {
@@ -90,7 +71,7 @@ public class CacheValueBufferPool implements Closeable {
     case ON_HEAP:
       return new ByteArrayCacheValue(cacheBlockSize);
     case OFF_HEAP:
-      return new UnsafeCacheValue(cacheBlockSize);
+      return new UnsafeAllocateCacheValue(cacheBlockSize);
     default:
       throw new RuntimeException("Unknown type [" + _store + "]");
     }

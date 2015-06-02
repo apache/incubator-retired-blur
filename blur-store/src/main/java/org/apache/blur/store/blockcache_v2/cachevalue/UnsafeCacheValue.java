@@ -32,17 +32,17 @@ import sun.misc.Unsafe;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.MetricName;
 
-public class UnsafeCacheValue extends BaseCacheValue {
+public abstract class UnsafeCacheValue extends BaseCacheValue {
 
-  private static final AtomicLong _neededFinalizedCall = new AtomicLong();
+  protected static final AtomicLong _neededFinalizedCall = new AtomicLong();
 
   static {
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, JVM, CACHE_VALUE_FINALIZE), new AtomicLongGauge(
         _neededFinalizedCall));
   }
 
-  private static final Unsafe _unsafe;
-  private static final AtomicLong _offHeapMemorySize = new AtomicLong();
+  protected static final Unsafe _unsafe;
+  protected static final AtomicLong _offHeapMemorySize = new AtomicLong();
 
   static {
     _unsafe = UnsafeUtil.getUnsafe();
@@ -51,61 +51,35 @@ public class UnsafeCacheValue extends BaseCacheValue {
 
   private static final int BYTE_ARRAY_BASE_OFFSET = _unsafe.arrayBaseOffset(byte[].class);
 
-  private static void copyFromArray(byte[] src, int srcOffset, int length, long destAddress) {
+  protected static void copyFromArray(byte[] src, int srcOffset, int length, long destAddress) {
     long offset = BYTE_ARRAY_BASE_OFFSET + srcOffset;
     _unsafe.copyMemory(src, offset, null, destAddress, length);
   }
 
-  private static void copyToArray(long srcAddress, byte[] dst, int dstOffset, int length) {
+  protected static void copyToArray(long srcAddress, byte[] dst, int dstOffset, int length) {
     long offset = BYTE_ARRAY_BASE_OFFSET + dstOffset;
     _unsafe.copyMemory(null, srcAddress, dst, offset, length);
   }
 
-  private final long _address;
-
   public UnsafeCacheValue(int length) {
     super(length);
-    _address = _unsafe.allocateMemory(_length);
     _offHeapMemorySize.addAndGet(_length);
   }
 
-  @Override
-  protected void writeInternal(int position, byte[] buf, int offset, int length) {
-    copyFromArray(buf, offset, length, resolveAddress(position));
+
+  protected static long resolveAddress(long address, int position) {
+    return address + position;
   }
 
   @Override
-  protected void readInternal(int position, byte[] buf, int offset, int length) {
-    copyToArray(resolveAddress(position), buf, offset, length);
-  }
-
-  @Override
-  protected byte readInternal(int position) {
-    return _unsafe.getByte(resolveAddress(position));
-  }
-
-  private long resolveAddress(int position) {
-    return _address + position;
-  }
-
-  @Override
-  public void release() {
+  public final void release() {
     if (!_released) {
-      _unsafe.freeMemory(_address);
+      releaseInternal();
       _released = true;
       _offHeapMemorySize.addAndGet(0 - _length);
     }
   }
 
-  // This is commented out normally. Add code when debugging memory related
-  // issues.
-  // @Override
-  // protected void finalize() throws Throwable {
-  // if (!_released) {
-  // new Throwable().printStackTrace();
-  // System.exit(1);
-  // release();
-  // _neededFinalizedCall.incrementAndGet();
-  // }
-  // }
+  protected abstract void releaseInternal();
+
 }

@@ -22,11 +22,11 @@ import static org.junit.Assert.*;
 import org.apache.blur.store.blockcache_v2.EvictionException;
 import org.junit.Test;
 
-public class UnsafeCacheValueTest {
+public class UnsafeAllocateCacheValueTest {
 
   @Test
   public void test1() throws EvictionException {
-    UnsafeCacheValue value = new UnsafeCacheValue(10);
+    UnsafeCacheValue value = new UnsafeAllocateCacheValue(10);
     byte[] buf = "hello world".getBytes();
     value.write(0, buf, 0, 10);
     byte[] buf2 = new byte[10];
@@ -37,7 +37,7 @@ public class UnsafeCacheValueTest {
 
   @Test
   public void test2() {
-    UnsafeCacheValue value = new UnsafeCacheValue(10);
+    UnsafeCacheValue value = new UnsafeAllocateCacheValue(10);
     byte[] buf = "hello world".getBytes();
     try {
       value.write(0, buf, 0, 11);
@@ -49,7 +49,7 @@ public class UnsafeCacheValueTest {
 
   @Test
   public void test3() {
-    UnsafeCacheValue value = new UnsafeCacheValue(10);
+    UnsafeCacheValue value = new UnsafeAllocateCacheValue(10);
     byte[] buf = "hello world".getBytes();
     try {
       value.write(8, buf, 0, 3);
@@ -61,7 +61,7 @@ public class UnsafeCacheValueTest {
 
   @Test
   public void test4() throws EvictionException {
-    UnsafeCacheValue value = new UnsafeCacheValue(10);
+    UnsafeCacheValue value = new UnsafeAllocateCacheValue(10);
     byte[] buf = "hello world".getBytes();
     value.write(8, buf, 0, 2);
 

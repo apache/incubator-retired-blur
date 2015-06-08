@@ -18,15 +18,15 @@ package org.apache.blur.manager.indexserver;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import org.apache.blur.MiniCluster;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.SuiteCluster;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -42,33 +42,30 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 @SuppressWarnings("unchecked")
-public class MasterBasedDistributedLayoutFactoryTest {
-  private static String path = "./target/test-zk-MasterBasedDistributedLayoutFactoryTest";
-  private static MiniCluster miniCluster;
+public class MasterBasedDistributedLayoutFactoryTestIT {
 
   private ZooKeeper _zooKeeper;
   private String cluster = "default";
 
   @BeforeClass
-  public static void startZooKeeper() throws IOException {
-    new File(path).mkdirs();
-    miniCluster = new MiniCluster();
-    miniCluster.startZooKeeper(path, true);
+  public static void startup() throws IOException, BlurException, TException {
+    SuiteCluster.setupMiniCluster(MasterBasedDistributedLayoutFactoryTestIT.class);
   }
 
   @AfterClass
-  public static void stopZooKeeper() throws InterruptedException {
-    miniCluster.shutdownZooKeeper();
+  public static void shutdown() throws IOException {
+    SuiteCluster.shutdownMiniCluster(MasterBasedDistributedLayoutFactoryTestIT.class);
   }
 
   @Before
   public void setup() throws IOException, KeeperException, InterruptedException {
-    _zooKeeper = new ZooKeeperClient(miniCluster.getZkConnectionString(), 50000, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
+    _zooKeeper = new ZooKeeperClient(SuiteCluster.getZooKeeperConnStr(MasterBasedDistributedLayoutFactoryTestIT.class),
+        50000, new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
 
-      }
-    });
+          }
+        });
     rmr(_zooKeeper, "/blur");
   }
 
@@ -82,8 +79,9 @@ public class MasterBasedDistributedLayoutFactoryTest {
     MasterBasedDistributedLayoutFactory factory = new MasterBasedDistributedLayoutFactory(_zooKeeper, cluster);
 
     List<String> shardList = Lists.newArrayList("shard-0", "shard-1", "shard-2", "shard-3", "shard-4", "shard-5");
-    List<String> shardServerList = Lists.newArrayList("server-0", "server-1", "server-2", "server-3", "server-4", "server-5");
-    
+    List<String> shardServerList = Lists.newArrayList("server-0", "server-1", "server-2", "server-3", "server-4",
+        "server-5");
+
     String table = "t1";
 
     DistributedLayout layout1 = factory.createDistributedLayout(table, shardList, shardServerList);
@@ -95,7 +93,7 @@ public class MasterBasedDistributedLayoutFactoryTest {
     assertEquals(expected1, actual1);
 
     List<String> newShardServerList = Lists.newArrayList("server-0", "server-1", "server-2", "server-3");
-    
+
     DistributedLayout layout2 = factory.createDistributedLayout(table, shardList, newShardServerList);
 
     Map<String, String> expected2 = map(e("shard-0", "server-0"), e("shard-1", "server-1"), e("shard-2", "server-2"),
@@ -110,7 +108,7 @@ public class MasterBasedDistributedLayoutFactoryTest {
 
     List<String> shardList = Lists.newArrayList("shard-0", "shard-1", "shard-2", "shard-3", "shard-4", "shard-5");
     List<String> shardServerList = Lists.newArrayList("server-0", "server-1", "server-2", "server-3");
-    
+
     String table = "t1";
 
     DistributedLayout layout1 = factory.createDistributedLayout(table, shardList, shardServerList);
@@ -121,8 +119,9 @@ public class MasterBasedDistributedLayoutFactoryTest {
 
     assertEquals(expected1, actual1);
 
-    List<String> newShardServerList = Lists.newArrayList("server-0", "server-1", "server-2", "server-3", "server-4", "server-5");
-    
+    List<String> newShardServerList = Lists.newArrayList("server-0", "server-1", "server-2", "server-3", "server-4",
+        "server-5");
+
     DistributedLayout layout2 = factory.createDistributedLayout(table, shardList, newShardServerList);
 
     Map<String, String> expected2 = map(e("shard-0", "server-4"), e("shard-1", "server-5"), e("shard-2", "server-2"),

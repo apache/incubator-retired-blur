@@ -29,24 +29,18 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-public class ThriftFieldManagerTest extends BaseFieldManagerTest {
+public class ThriftFieldManagerTestIT extends BaseFieldManagerTest {
 
-  private static boolean _managing;
   private static TableDescriptor _tableDescriptor;
 
   @BeforeClass
   public static void startup() throws IOException, BlurException, TException {
-    if (!SuiteCluster.isClusterSetup()) {
-      SuiteCluster.setupMiniCluster();
-      _managing = true;
-    }
+    SuiteCluster.setupMiniCluster(ThriftFieldManagerTestIT.class);
   }
 
   @AfterClass
   public static void shutdown() throws IOException {
-    if (_managing) {
-      SuiteCluster.shutdownMiniCluster();
-    }
+    SuiteCluster.shutdownMiniCluster(ThriftFieldManagerTestIT.class);
   }
 
   public Iface getClient() throws IOException {

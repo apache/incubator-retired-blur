@@ -23,7 +23,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -32,10 +31,11 @@ import java.util.TreeSet;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.server.TableContext;
-import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.SuiteCluster;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.utils.JavaHome;
 import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -51,52 +51,58 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class BlurOutputFormatTest {
+public class BlurOutputFormatTestIT {
 
-  private static Configuration _conf = new Configuration();
-  private static FileSystem _fileSystem;
+  // private static Configuration _conf = new Configuration();
+  // private static FileSystem _fileSystem;
+  // private static MiniCluster _miniCluster;
+  // private static Path _root;
+
+  // @BeforeClass
+  // public static void setupTest() throws Exception {
+  // JavaHome.checkJavaHome();
+  // File file = new File("./target/tmp/BlurOutputFormatTest_tmp");
+  // String pathStr = file.getAbsoluteFile().toURI().toString();
+  // String hdfsPath = pathStr + "/hdfs";
+  // System.setProperty("test.build.data", hdfsPath);
+  // System.setProperty("hadoop.log.dir", pathStr + "/hadoop_log");
+  //
+  // _miniCluster = new MiniCluster();
+  // _miniCluster.startDfs(hdfsPath);
+  // _fileSystem = _miniCluster.getFileSystem();
+  // _root = new Path(_fileSystem.getUri() + "/testroot");
+  // _miniCluster.startMrMiniCluster();
+  // _conf = _miniCluster.getMRConfiguration();
+  //
+  // BufferStore.initNewBuffer(128, 128 * 128);
+  // }
+  //
+  // @AfterClass
+  // public static void teardown() throws IOException {
+  // if (_miniCluster != null) {
+  // _miniCluster.shutdownMrMiniCluster();
+  // _miniCluster.shutdownDfs();
+  // }
+  // rm(new File("build"));
+  // }
+
   private static MiniCluster _miniCluster;
-
+  private static FileSystem _fileSystem;
+  private static Configuration _conf;
   private static Path _root;
 
   @BeforeClass
-  public static void setupTest() throws Exception {
-    JavaHome.checkJavaHome();
-    File file = new File("./target/tmp/BlurOutputFormatTest_tmp");
-    String pathStr = file.getAbsoluteFile().toURI().toString();
-    String hdfsPath = pathStr + "/hdfs";
-    System.setProperty("test.build.data", hdfsPath);
-    System.setProperty("hadoop.log.dir", pathStr + "/hadoop_log");
-
-    _miniCluster = new MiniCluster();
-    _miniCluster.startDfs(hdfsPath);
+  public static void startup() throws IOException, BlurException, TException {
+    SuiteCluster.setupMiniCluster(BlurOutputFormatTestIT.class);
+    _miniCluster = SuiteCluster.getMiniCluster();
     _fileSystem = _miniCluster.getFileSystem();
-    _root = new Path(_fileSystem.getUri() + "/testroot");
-    _miniCluster.startMrMiniCluster();
     _conf = _miniCluster.getMRConfiguration();
-
-    BufferStore.initNewBuffer(128, 128 * 128);
+    _root = new Path(_fileSystem.getUri() + "/testroot");
   }
 
   @AfterClass
-  public static void teardown() throws IOException {
-    if (_miniCluster != null) {
-      _miniCluster.stopMrMiniCluster();
-      _miniCluster.shutdownDfs();
-    }
-    rm(new File("build"));
-  }
-
-  private static void rm(File file) {
-    if (!file.exists()) {
-      return;
-    }
-    if (file.isDirectory()) {
-      for (File f : file.listFiles()) {
-        rm(f);
-      }
-    }
-    file.delete();
+  public static void shutdown() throws IOException {
+    SuiteCluster.shutdownMiniCluster(BlurOutputFormatTestIT.class);
   }
 
   @Before
@@ -114,7 +120,7 @@ public class BlurOutputFormatTest {
     writeRecordsFile(new Path(input, "part2"), 1, 1, 2, 1, "cf1");
 
     Job job = Job.getInstance(_conf, "blur index");
-    job.setJarByClass(BlurOutputFormatTest.class);
+    job.setJarByClass(BlurOutputFormatTestIT.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
 
@@ -190,7 +196,7 @@ public class BlurOutputFormatTest {
     writeRecordsFile(new Path(input, "part2"), 1, 50, 2000, 100, "cf1");
 
     Job job = Job.getInstance(_conf, "blur index");
-    job.setJarByClass(BlurOutputFormatTest.class);
+    job.setJarByClass(BlurOutputFormatTestIT.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
 
@@ -237,7 +243,7 @@ public class BlurOutputFormatTest {
     writeRecordsFile(new Path(input, "part2"), 1, 50, 2000, 100, "cf1");
 
     Job job = Job.getInstance(_conf, "blur index");
-    job.setJarByClass(BlurOutputFormatTest.class);
+    job.setJarByClass(BlurOutputFormatTestIT.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
 
@@ -291,7 +297,7 @@ public class BlurOutputFormatTest {
     writeRecordsFile(new Path(input, "part2"), 1, 50, 2000, 100, "cf1");
 
     Job job = Job.getInstance(_conf, "blur index");
-    job.setJarByClass(BlurOutputFormatTest.class);
+    job.setJarByClass(BlurOutputFormatTestIT.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
 
@@ -343,7 +349,7 @@ public class BlurOutputFormatTest {
     writeRecordsFile(new Path(input, "part2"), 1, 1, 2, 1, "cf1");
 
     Job job = Job.getInstance(_conf, "blur index");
-    job.setJarByClass(BlurOutputFormatTest.class);
+    job.setJarByClass(BlurOutputFormatTestIT.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
 
@@ -381,7 +387,7 @@ public class BlurOutputFormatTest {
     writeRecordsFile(new Path(input, "part2"), 1, 5000, 2000, 100, "cf1");
 
     Job job = Job.getInstance(_conf, "blur index");
-    job.setJarByClass(BlurOutputFormatTest.class);
+    job.setJarByClass(BlurOutputFormatTestIT.class);
     job.setMapperClass(CsvBlurMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
 

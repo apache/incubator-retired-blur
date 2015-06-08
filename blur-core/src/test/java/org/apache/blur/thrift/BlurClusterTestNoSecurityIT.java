@@ -24,7 +24,7 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.user.User;
 
-public class BlurClusterTestNoSecurity extends BlurClusterTestBase {
+public class BlurClusterTestNoSecurityIT extends BlurClusterTestBase {
 
   @Override
   protected void setupTableProperties(TableDescriptor tableDescriptor) {

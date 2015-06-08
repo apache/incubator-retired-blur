@@ -37,9 +37,13 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 import org.junit.Test;
 
-public class SharedMergeSchedulerThroughputTest {
+public class SharedMergeSchedulerThroughputTestIT {
 
-//  @Test
+  @Test
+  public void voidTest() {
+
+  }
+
   public void test() throws IOException {
     MiniCluster miniCluster = new MiniCluster();
     miniCluster.startDfs("./tmp/hdfs");

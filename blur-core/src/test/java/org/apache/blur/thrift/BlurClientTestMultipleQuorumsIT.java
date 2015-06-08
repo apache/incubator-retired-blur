@@ -16,9 +16,11 @@
  */
 package org.apache.blur.thrift;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -27,28 +29,44 @@ import org.apache.blur.MiniCluster;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.google.common.base.Splitter;
 
-public class BlurClientTest {
+public class BlurClientTestMultipleQuorumsIT {
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurClientTest"));
+
+  @BeforeClass
+  public static void startup() throws IOException, BlurException, TException {
+    SuiteCluster.setupMiniCluster(BlurClientTestMultipleQuorumsIT.class);
+  }
+
+  @AfterClass
+  public static void shutdown() throws IOException {
+    SuiteCluster.shutdownMiniCluster(BlurClientTestMultipleQuorumsIT.class);
+  }
+
+  @After
+  public void teadown() {
+    BlurClient.closeZooKeeper();
+  }
 
   @Test
   public void testMultipleQuorums() throws BlurException, TException {
     File testDirectory = new File(TMPDIR, "testMultipleQuorums").getAbsoluteFile();
     testDirectory.mkdirs();
-    MiniCluster cluster1 = new MiniCluster();
-    cluster1.startBlurCluster(new File(testDirectory, "cluster1").getAbsolutePath(), 1, 1, true, false);
 
     MiniCluster cluster2 = new MiniCluster();
     cluster2.startBlurCluster(new File(testDirectory, "cluster2").getAbsolutePath(), 2, 1, true, false);
 
-    Iface client1 = BlurClient.getClientFromZooKeeperConnectionStr(cluster1.getZkConnectionString());
+    Iface client1 = BlurClient.getClientFromZooKeeperConnectionStr(SuiteCluster.getZooKeeperConnStr());
     Iface client2 = BlurClient.getClientFromZooKeeperConnectionStr(cluster2.getZkConnectionString());
 
     List<String> controllerServerList1 = client1.controllerServerList();
-    List<String> controllerServerList1FromConnectionStr = getList(cluster1.getControllerConnectionStr());
+    List<String> controllerServerList1FromConnectionStr = getList(SuiteCluster.getControllerConnectionStr());
     List<String> controllerServerList2 = client2.controllerServerList();
     List<String> controllerServerList2FromConnectionStr = getList(cluster2.getControllerConnectionStr());
 
@@ -57,7 +75,6 @@ public class BlurClientTest {
     Collections.sort(controllerServerList2);
     Collections.sort(controllerServerList2FromConnectionStr);
 
-    cluster1.shutdownBlurCluster();
     cluster2.shutdownBlurCluster();
 
     assertEquals(controllerServerList1FromConnectionStr, controllerServerList1);

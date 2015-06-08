@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-public class TermsTests extends BaseClusterTest {
+public class TermsTestsIT extends BaseClusterTest {
   
   @Test
   public void testTermsList() throws BlurException, TException, IOException, InterruptedException {

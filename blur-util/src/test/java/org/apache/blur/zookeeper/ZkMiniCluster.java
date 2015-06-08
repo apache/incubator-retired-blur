@@ -168,7 +168,7 @@ public class ZkMiniCluster {
         if (zkConnectionString == null) {
           continue;
         }
-        ZooKeeper zk = new ZooKeeper(getZkConnectionString(), 30000, new Watcher() {
+        ZooKeeper zk = new ZooKeeperClient(getZkConnectionString(), 30000, new Watcher() {
           @Override
           public void process(WatchedEvent event) {
 

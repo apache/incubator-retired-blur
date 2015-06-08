@@ -21,7 +21,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.blur.MiniCluster;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.SuiteCluster;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.zookeeper.KeeperException;
@@ -42,28 +43,23 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class SafeModeTest {
-
-  private static String path = "./target/test-zk";
-  private static MiniCluster miniCluster;
+public class SafeModeTestIT {
 
   @BeforeClass
-  public static void startZooKeeper() throws IOException {
-    new File(path).mkdirs();
-    miniCluster = new MiniCluster();
-    miniCluster.startZooKeeper(path, true);
+  public static void startup() throws IOException, BlurException, TException {
+    SuiteCluster.setupMiniCluster(SafeModeTestIT.class);
   }
 
   @AfterClass
-  public static void stopZooKeeper() throws InterruptedException {
-    miniCluster.shutdownZooKeeper();
+  public static void shutdown() throws IOException {
+    SuiteCluster.shutdownMiniCluster(SafeModeTestIT.class);
   }
 
   private ZooKeeper zk;
 
   @Before
   public void setup() throws IOException {
-    zk = new ZooKeeperClient(miniCluster.getZkConnectionString(), 20000, new Watcher() {
+    zk = new ZooKeeperClient(SuiteCluster.getZooKeeperConnStr(SafeModeTestIT.class), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
@@ -181,7 +177,7 @@ public class SafeModeTest {
 
   @Test
   public void testExtraNodeStartup() throws IOException, InterruptedException, KeeperException {
-    ZooKeeper zk = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
+    ZooKeeper zk = new ZooKeeperClient(SuiteCluster.getZooKeeperConnStr(SafeModeTestIT.class), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 
@@ -204,7 +200,7 @@ public class SafeModeTest {
 
   @Test
   public void testSecondNodeStartup() throws IOException, InterruptedException, KeeperException {
-    ZooKeeper zk = new ZooKeeper(miniCluster.getZkConnectionString(), 20000, new Watcher() {
+    ZooKeeper zk = new ZooKeeperClient(SuiteCluster.getZooKeeperConnStr(SafeModeTestIT.class), 20000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
 

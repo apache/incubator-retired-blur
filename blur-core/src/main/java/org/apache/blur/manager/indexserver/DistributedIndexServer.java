@@ -75,7 +75,7 @@ import com.google.common.io.Closer;
 public class DistributedIndexServer extends AbstractDistributedIndexServer {
 
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
-  private static final long _delay = TimeUnit.SECONDS.toMillis(10);
+  private static final long _delay = TimeUnit.SECONDS.toMillis(1);
   private static final AtomicLong _pauseWarmup = new AtomicLong();
   private static final Set<String> EMPTY = new HashSet<String>();
 

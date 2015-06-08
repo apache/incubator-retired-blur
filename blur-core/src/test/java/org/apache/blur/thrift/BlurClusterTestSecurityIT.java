@@ -52,7 +52,7 @@ import org.apache.blur.user.UserContext;
 import org.apache.blur.utils.BlurConstants;
 import org.junit.Test;
 
-public class BlurClusterTestSecurity extends BlurClusterTestBase {
+public class BlurClusterTestSecurityIT extends BlurClusterTestBase {
 
   private static final String ACL_DISCOVER = "acl-discover";
   private static final String TEST = "test";

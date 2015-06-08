@@ -26,7 +26,7 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.junit.Test;
 
-public class FacetTests extends BaseClusterTest {
+public class FacetTestsIT extends BaseClusterTest {
 
   @Test
   public void testQueryWithFacets() throws BlurException, TException, IOException, InterruptedException {

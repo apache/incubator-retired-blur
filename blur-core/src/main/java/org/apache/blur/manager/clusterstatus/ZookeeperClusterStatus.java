@@ -100,22 +100,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
   }
 
-  public ZookeeperClusterStatus(String connectionStr, BlurConfiguration configuration, Configuration config)
-      throws IOException {
-    this(new ZooKeeper(connectionStr, 30000, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
-
-      }
-    }), configuration, config);
-  }
-
   public ZookeeperClusterStatus(ZooKeeper zooKeeper) throws IOException {
     this(zooKeeper, new BlurConfiguration(), new Configuration());
-  }
-
-  public ZookeeperClusterStatus(String connectionStr) throws IOException {
-    this(connectionStr, new BlurConfiguration(), new Configuration());
   }
 
   class Clusters extends OnChange {

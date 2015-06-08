@@ -79,14 +79,10 @@ import org.apache.blur.thrift.util.BlurThriftHelper;
 import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.GCWatcher;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.zookeeper.KeeperException;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -103,33 +99,52 @@ public abstract class BlurClusterTestBase {
   protected int numberOfDocs = 1000;
   protected String controllerConnectionStr;
 
+  // These setting were here before this test used the SuiteCluster class...
+  // Will remove at some point in the future once we are sure we will no longer
+  // need them.
+
+  // @BeforeClass
+  // public static void startCluster() throws IOException {
+  // GCWatcher.init(0.60);
+  // LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
+  // File testDirectory = new File(TMPDIR,
+  // "blur-cluster-test").getAbsoluteFile();
+  // testDirectory.mkdirs();
+  //
+  // Path directory = new Path(testDirectory.getPath());
+  // FsPermission dirPermissions =
+  // localFS.getFileStatus(directory).getPermission();
+  // FsAction userAction = dirPermissions.getUserAction();
+  // FsAction groupAction = dirPermissions.getGroupAction();
+  // FsAction otherAction = dirPermissions.getOtherAction();
+  //
+  // StringBuilder builder = new StringBuilder();
+  // builder.append(userAction.ordinal());
+  // builder.append(groupAction.ordinal());
+  // builder.append(otherAction.ordinal());
+  // String dirPermissionNum = builder.toString();
+  // System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
+  // testDirectory.delete();
+  // miniCluster = new MiniCluster();
+  // miniCluster.startBlurCluster(new File(testDirectory,
+  // "cluster").getAbsolutePath(), 2, 3, true, externalProcesses);
+  // }
+  //
+  // @AfterClass
+  // public static void shutdownCluster() {
+  // miniCluster.shutdownBlurCluster();
+  // }
+
   @BeforeClass
-  public static void startCluster() throws IOException {
-    GCWatcher.init(0.60);
-    LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
-    File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
-    testDirectory.mkdirs();
-
-    Path directory = new Path(testDirectory.getPath());
-    FsPermission dirPermissions = localFS.getFileStatus(directory).getPermission();
-    FsAction userAction = dirPermissions.getUserAction();
-    FsAction groupAction = dirPermissions.getGroupAction();
-    FsAction otherAction = dirPermissions.getOtherAction();
-
-    StringBuilder builder = new StringBuilder();
-    builder.append(userAction.ordinal());
-    builder.append(groupAction.ordinal());
-    builder.append(otherAction.ordinal());
-    String dirPermissionNum = builder.toString();
-    System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
-    testDirectory.delete();
-    miniCluster = new MiniCluster();
-    miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true, externalProcesses);
+  public static void startup() throws IOException, BlurException, TException {
+    SuiteCluster.setupMiniCluster(BlurClusterTestBase.class);
+    externalProcesses = SuiteCluster.externalProcesses;
+    miniCluster = SuiteCluster.getMiniCluster();
   }
 
   @AfterClass
-  public static void shutdownCluster() {
-    miniCluster.shutdownBlurCluster();
+  public static void shutdown() throws IOException {
+    SuiteCluster.shutdownMiniCluster(BlurClusterTestBase.class);
   }
 
   @Before
@@ -231,7 +246,7 @@ public abstract class BlurClusterTestBase {
     assertEquals(5, shardServerLayoutState.size());
 
     List<String> shardServerList = client.shardServerList(BlurConstants.DEFAULT);
-    assertEquals(3, shardServerList.size());
+    assertEquals(2, shardServerList.size());
   }
 
   @Test
@@ -627,6 +642,7 @@ public abstract class BlurClusterTestBase {
             client.query(tableName, blurQueryRow);
             fail.set(true);
           } catch (BlurException e) {
+            e.printStackTrace();
             error.set(e);
           } catch (TException e) {
             e.printStackTrace();
@@ -640,7 +656,7 @@ public abstract class BlurClusterTestBase {
       if (fail.get()) {
         fail("Unknown error, failing test.");
       }
-      assertEquals(blurException.getErrorType(), ErrorType.QUERY_CANCEL);
+      assertEquals(ErrorType.QUERY_CANCEL, blurException.getErrorType());
     } finally {
       setDebugRunSlow(tableName, false);
     }
@@ -799,7 +815,7 @@ public abstract class BlurClusterTestBase {
     assertEquals(numberOfDocs, results1.getTotalResults());
     assertRowResults(results1);
 
-    miniCluster.killShardServer(1);
+    miniCluster.killRandomShardServer();
 
     // make sure the WAL syncs
     Thread.sleep(TimeUnit.SECONDS.toMillis(1));
@@ -807,13 +823,13 @@ public abstract class BlurClusterTestBase {
     // This should block until shards have failed over
     client.shardServerLayout(tableName);
 
-    assertEquals("We should have lost a node.", 2, client.shardServerList(BlurConstants.DEFAULT).size());
+    assertEquals("We should have lost a node.", 1, client.shardServerList(BlurConstants.DEFAULT).size());
     assertEquals(numberOfDocs, client.query(tableName, blurQuery).getTotalResults());
 
     miniCluster.startShards(1, true, externalProcesses);
     Thread.sleep(TimeUnit.SECONDS.toMillis(1));
 
-    assertEquals("We should have the cluster back where we started.", 3, client.shardServerList(BlurConstants.DEFAULT)
+    assertEquals("We should have the cluster back where we started.", 2, client.shardServerList(BlurConstants.DEFAULT)
         .size());
   }
 

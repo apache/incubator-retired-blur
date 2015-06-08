@@ -24,15 +24,12 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 public class BaseClusterTest {
+
   protected static String TABLE_PATH = new File("./target/tmp/test-data/test-tables").getAbsolutePath();
-  private static boolean _managing;
 
   @BeforeClass
   public static void startup() throws IOException {
-    if (!SuiteCluster.isClusterSetup()) {
-      SuiteCluster.setupMiniCluster();
-      _managing = true;
-    }
+    SuiteCluster.setupMiniCluster(BaseClusterTest.class);
     File file = new File("test-data");
     if (file.exists()) {
       rmr(file);
@@ -53,15 +50,13 @@ public class BaseClusterTest {
 
   @AfterClass
   public static void shutdown() throws IOException {
-    if (_managing) {
-      SuiteCluster.shutdownMiniCluster();
-    }
+    SuiteCluster.shutdownMiniCluster(BaseClusterTest.class);
   }
 
   public Iface getClient() throws IOException {
     return SuiteCluster.getClient();
   }
-  
+
   protected String getZkConnString() {
     return SuiteCluster.getZooKeeperConnStr();
   }

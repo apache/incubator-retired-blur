@@ -15,6 +15,7 @@ package org.apache.blur.thrift;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -138,7 +139,7 @@ public class TableGen {
     return this;
   }
 
-  public void build(Iface client) throws BlurException, TException {
+  public void build(Iface client) throws BlurException, TException, IOException {
     TableDescriptor tbl = new TableDescriptor();
     tbl.setName(table);
     tbl.setShardCount(shardCount);

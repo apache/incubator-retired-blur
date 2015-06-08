@@ -20,6 +20,8 @@ import java.io.Closeable;
 
 public interface MiniClusterServer extends Closeable {
 
+  boolean isDead();
+  
   void kill();
 
   void start();

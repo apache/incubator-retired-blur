@@ -71,6 +71,7 @@ import org.apache.zookeeper.ZooKeeper;
 
 public abstract class TableAdmin implements Iface {
 
+  private static final long WAIT_BETWEEN_POLLS = 500;
   private static final Log LOG = LogFactory.getLog(TableAdmin.class);
   protected ZooKeeper _zookeeper;
   protected ClusterStatus _clusterStatus;
@@ -204,7 +205,7 @@ public abstract class TableAdmin implements Iface {
         return;
       }
       try {
-        Thread.sleep(3000);
+        Thread.sleep(WAIT_BETWEEN_POLLS);
       } catch (InterruptedException e) {
         LOG.error("Unknown error while enabling table [" + table + "]", e);
         throw new BException("Unknown error while enabling table [" + table + "]", e);
@@ -222,14 +223,7 @@ public abstract class TableAdmin implements Iface {
     LOG.info("Waiting for shards to engage on table [" + table + "]");
     while (true) {
       try {
-        Thread.sleep(3000);
-      } catch (InterruptedException e) {
-        LOG.error("Unknown error while engaging table [" + table + "]", e);
-        throw new BException("Unknown error while engaging table [" + table + "]", e);
-      }
-      try {
         Map<String, Map<String, ShardState>> shardServerLayoutState = shardServerLayoutState(table);
-
         int countNumberOfOpen = 0;
         int countNumberOfOpening = 0;
         for (Entry<String, Map<String, ShardState>> shardEntry : shardServerLayoutState.entrySet()) {
@@ -249,6 +243,12 @@ public abstract class TableAdmin implements Iface {
         if (countNumberOfOpen == shardCount && countNumberOfOpening == 0) {
           return;
         }
+        try {
+          Thread.sleep(WAIT_BETWEEN_POLLS);
+        } catch (InterruptedException e) {
+          LOG.error("Unknown error while engaging table [" + table + "]", e);
+          throw new BException("Unknown error while engaging table [" + table + "]", e);
+        }
       } catch (BlurException e) {
         LOG.info("Stilling waiting", e);
       } catch (TException e) {
@@ -264,12 +264,7 @@ public abstract class TableAdmin implements Iface {
   private void waitForTheTableToDisengage(String cluster, String table) throws BlurException, TException {
     LOG.info("Waiting for shards to disengage on table [" + table + "]");
     while (true) {
-      try {
-        Thread.sleep(3000);
-      } catch (InterruptedException e) {
-        LOG.error("Unknown error while disengaging table [" + table + "]", e);
-        throw new BException("Unknown error while disengaging table [" + table + "]", e);
-      }
+
       try {
         Map<String, Map<String, ShardState>> shardServerLayoutState = shardServerLayoutState(table);
 
@@ -277,13 +272,16 @@ public abstract class TableAdmin implements Iface {
         int countNumberOfClosing = 0;
         for (Entry<String, Map<String, ShardState>> shardEntry : shardServerLayoutState.entrySet()) {
           Map<String, ShardState> value = shardEntry.getValue();
-          for (ShardState state : value.values()) {
+          for (Entry<String, ShardState> e : value.entrySet()) {
+            String server = e.getKey();
+            ShardState state = e.getValue();
             if (state == ShardState.OPEN) {
               countNumberOfOpen++;
+              LOG.info("Shard [{0}] of table [{1}] from server [{2}] still reporting open.", shardEntry.getKey(),
+                  table, server);
             } else if (state == ShardState.CLOSING) {
               countNumberOfClosing++;
             } else if (state == ShardState.CLOSED) {
-              LOG.info("Shard [{0}] of table [{1}] now reporting closed.", shardEntry.getKey(), table);
             } else {
               LOG.warn("Unexpected state of [{0}] for shard [{1}].", state, shardEntry.getKey());
             }
@@ -293,6 +291,12 @@ public abstract class TableAdmin implements Iface {
             countNumberOfClosing, table);
         if (countNumberOfOpen == 0 && countNumberOfClosing == 0) {
           return;
+        }
+        try {
+          Thread.sleep(WAIT_BETWEEN_POLLS);
+        } catch (InterruptedException e) {
+          LOG.error("Unknown error while disengaging table [" + table + "]", e);
+          throw new BException("Unknown error while disengaging table [" + table + "]", e);
         }
       } catch (BlurException e) {
         LOG.info("Stilling waiting", e);
@@ -309,7 +313,7 @@ public abstract class TableAdmin implements Iface {
         return;
       }
       try {
-        Thread.sleep(3000);
+        Thread.sleep(WAIT_BETWEEN_POLLS);
       } catch (InterruptedException e) {
         LOG.error("Unknown error while enabling table [" + table + "]", e);
         throw new BException("Unknown error while enabling table [" + table + "]", e);

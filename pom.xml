@@ -425,6 +425,9 @@ under the License.
 						<environmentVariables>
 							<JAVA_HOME>${java.home}</JAVA_HOME>
 						</environmentVariables>
+						<excludes>
+							<exclude>**/*IT.java</exclude>
+						</excludes>
 					</configuration>
 				</plugin>
 				<!-- Ignore/Execute plugin execution -->
@@ -512,6 +515,7 @@ under the License.
 				<module>blur-util</module>
 				<module>blur-status</module>
 				<module>blur-shell</module>
+				<module>blur-integration-tests</module>
 				<module>distribution</module>
 			</modules>
 		</profile>
@@ -538,6 +542,7 @@ under the License.
 				<module>blur-util</module>
 				<module>blur-status</module>
 				<module>blur-shell</module>
+				<module>blur-integration-tests</module>
 				<module>distribution</module>
 			</modules>
 		</profile>
@@ -564,6 +569,7 @@ under the License.
 				<module>blur-util</module>
 				<module>blur-status</module>
 				<module>blur-shell</module>
+				<module>blur-integration-tests</module>
 				<module>distribution</module>
 			</modules>
 		</profile>

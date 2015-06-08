@@ -78,6 +78,8 @@ public abstract class IndexSearcherCloseableBase extends IndexSearcher implement
             Throwable cause = e.getCause();
             if (cause instanceof IOException) {
               throw (IOException) cause;
+            } else if (cause instanceof RuntimeException) {
+              throw (RuntimeException) cause;
             } else {
               throw new RuntimeException(cause);
             }

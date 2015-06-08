@@ -29,9 +29,9 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import org.apache.blur.MiniCluster;
-import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.SuiteCluster;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Column;
@@ -58,24 +58,19 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class BlurInputFormatTest {
+public class BlurInputFormatTestIT {
 
-  private static Configuration conf = new Configuration();
   private static MiniCluster miniCluster;
 
   @BeforeClass
-  public static void setupTest() throws Exception {
-    setupJavaHome();
-    File file = new File("./target/tmp/BlurInputFormatTest_tmp");
-    String pathStr = file.getAbsoluteFile().toURI().toString();
-    System.setProperty("test.build.data", pathStr + "/data");
-    System.setProperty("hadoop.log.dir", pathStr + "/hadoop_log");
-    miniCluster = new MiniCluster();
-    miniCluster.startBlurCluster(pathStr + "/blur", 2, 2);
-    miniCluster.startMrMiniCluster();
-    conf = miniCluster.getMRConfiguration();
+  public static void startup() throws IOException, BlurException, TException {
+    SuiteCluster.setupMiniCluster(BlurInputFormatTestIT.class);
+    miniCluster = SuiteCluster.getMiniCluster();
+  }
 
-    BufferStore.initNewBuffer(128, 128 * 128);
+  @AfterClass
+  public static void shutdown() throws IOException {
+    SuiteCluster.shutdownMiniCluster(BlurInputFormatTestIT.class);
   }
 
   public static void setupJavaHome() {
@@ -92,7 +87,7 @@ public class BlurInputFormatTest {
   @AfterClass
   public static void teardown() throws IOException {
     if (miniCluster != null) {
-      miniCluster.stopMrMiniCluster();
+      miniCluster.shutdownMrMiniCluster();
     }
     rm(new File("build"));
   }
@@ -167,8 +162,8 @@ public class BlurInputFormatTest {
 
     TableDescriptor tableDescriptor = client.describe(tableName);
 
-    Job job = Job.getInstance(conf, "Read Data");
-    job.setJarByClass(BlurInputFormatTest.class);
+    Job job = Job.getInstance(getMrConf(), "Read Data");
+    job.setJarByClass(BlurInputFormatTestIT.class);
     job.setMapperClass(TestMapper.class);
     job.setInputFormatClass(BlurInputFormat.class);
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
@@ -195,7 +190,7 @@ public class BlurInputFormatTest {
     }
 
     final Map<Text, TableBlurRecord> results = new TreeMap<Text, TableBlurRecord>();
-    walkOutput(output, conf, new ResultReader() {
+    walkOutput(output, getMrConf(), new ResultReader() {
       @Override
       public void read(Text rowId, TableBlurRecord tableBlurRecord) {
         results.put(new Text(rowId), new TableBlurRecord(tableBlurRecord));
@@ -216,6 +211,10 @@ public class BlurInputFormatTest {
       rowId++;
     }
     assertEquals(200, rowId);
+  }
+
+  private Configuration getMrConf() {
+    return miniCluster.getMRConfiguration();
   }
 
   public interface ResultReader {

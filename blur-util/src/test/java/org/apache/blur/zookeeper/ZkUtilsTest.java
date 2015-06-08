@@ -58,7 +58,7 @@ public class ZkUtilsTest {
   public void setUp() throws IOException, InterruptedException {
     final Object lock = new Object();
     synchronized (lock) {
-      _zooKeeper = new ZooKeeper(_zkMiniCluster.getZkConnectionString(), 10000, new Watcher() {
+      _zooKeeper = new ZooKeeperClient(_zkMiniCluster.getZkConnectionString(), 10000, new Watcher() {
         @Override
         public void process(WatchedEvent event) {
           synchronized (lock) {

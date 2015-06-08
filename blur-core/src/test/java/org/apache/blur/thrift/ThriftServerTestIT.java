@@ -28,7 +28,7 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.junit.Test;
 
-public class ThriftServerTest extends BaseClusterTest {
+public class ThriftServerTestIT extends BaseClusterTest {
 
   @Test
   public void testRootedZkPath() throws IOException, KeeperException, InterruptedException {

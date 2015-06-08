@@ -43,6 +43,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -182,7 +183,7 @@ public class MiniCluster {
     }
   }
 
-  public void stopMrMiniCluster() throws IOException {
+  public void shutdownMrMiniCluster() throws IOException {
     ScriptEngineManager manager = new ScriptEngineManager();
     ScriptEngine engine = manager.getEngineByName("js");
     if (useYarn()) {
@@ -219,7 +220,7 @@ public class MiniCluster {
     ScriptEngine engine = manager.getEngineByName("js");
 
     if (useYarn()) {
-      int nodeManagers = 2;
+      int nodeManagers = 4;
       Class<?> c = getClass();
       engine.put("c", c);
       engine.put("nodeManagers", nodeManagers);
@@ -503,6 +504,7 @@ public class MiniCluster {
 
         private Process _process;
         private AtomicBoolean _online = new AtomicBoolean();
+        private boolean _dead;
 
         @Override
         public void close() throws IOException {
@@ -555,7 +557,13 @@ public class MiniCluster {
         public void kill() {
           if (_process != null) {
             _process.destroy();
+            _dead = true;
           }
+        }
+
+        @Override
+        public boolean isDead() {
+          return _dead;
         }
       };
       Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -581,6 +589,13 @@ public class MiniCluster {
     }
     return new MiniClusterServer() {
 
+      private boolean _dead;
+
+      @Override
+      public boolean isDead() {
+        return _dead;
+      }
+
       @Override
       public void close() throws IOException {
         thriftServer.close();
@@ -604,6 +619,7 @@ public class MiniCluster {
           String path = onlineShardsPath + "/" + nodeName;
           zk.delete(path, -1);
           zk.close();
+          _dead = true;
         } catch (Exception e) {
           throw new RuntimeException(e);
         } finally {
@@ -898,6 +914,18 @@ public class MiniCluster {
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
+    }
+  }
+
+  public void killRandomShardServer() {
+    Random random = new Random();
+    for (int i = 0; i < shards.size(); i++) {
+      int index = random.nextInt(shards.size());
+      MiniClusterServer miniClusterServer = shards.get(index);
+      if (!miniClusterServer.isDead()) {
+        miniClusterServer.kill();
+        return;
+      }
     }
   }
 }

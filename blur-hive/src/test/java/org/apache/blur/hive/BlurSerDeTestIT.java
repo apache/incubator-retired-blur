@@ -19,8 +19,6 @@ package org.apache.blur.hive;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
@@ -44,6 +42,7 @@ import org.apache.blur.mapreduce.lib.BlurColumn;
 import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.SuiteCluster;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -52,13 +51,7 @@ import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.Query;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.GCWatcher;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -71,9 +64,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.common.base.Splitter;
-
-public class BlurSerDeTest {
+public class BlurSerDeTestIT {
 
   public static final File WAREHOUSE = new File("./target/tmp/warehouse");
   public static final String COLUMN_SEP = new String(new char[] { 1 });
@@ -85,40 +76,18 @@ public class BlurSerDeTest {
   private static final String YYYYMMDD = "yyyyMMdd";
   private static final String YYYY_MM_DD = "yyyy-MM-dd";
   private static final String TEST = "test";
-  private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/tmp_BlurSerDeTest"));
+
   private static MiniCluster miniCluster;
-  private static boolean externalProcesses = false;
 
   @BeforeClass
-  public static void startCluster() throws IOException {
-    System.setProperty("hadoop.log.dir", "./target/tmp_BlurSerDeTest_hadoop_log");
-    GCWatcher.init(0.60);
-    LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
-    File testDirectory = new File(TMPDIR, "blur-SerDe-test").getAbsoluteFile();
-    testDirectory.mkdirs();
-
-    Path directory = new Path(testDirectory.getPath());
-    FsPermission dirPermissions = localFS.getFileStatus(directory).getPermission();
-    FsAction userAction = dirPermissions.getUserAction();
-    FsAction groupAction = dirPermissions.getGroupAction();
-    FsAction otherAction = dirPermissions.getOtherAction();
-
-    StringBuilder builder = new StringBuilder();
-    builder.append(userAction.ordinal());
-    builder.append(groupAction.ordinal());
-    builder.append(otherAction.ordinal());
-    String dirPermissionNum = builder.toString();
-    System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
-    testDirectory.delete();
-    miniCluster = new MiniCluster();
-    miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true, externalProcesses);
-    miniCluster.startMrMiniCluster();
+  public static void startup() throws IOException, BlurException, TException {
+    SuiteCluster.setupMiniCluster(BlurSerDeTestIT.class);
+    miniCluster = SuiteCluster.getMiniCluster();
   }
 
   @AfterClass
-  public static void shutdownCluster() throws IOException {
-    miniCluster.stopMrMiniCluster();
-    miniCluster.shutdownBlurCluster();
+  public static void shutdown() throws IOException {
+    SuiteCluster.shutdownMiniCluster(BlurSerDeTestIT.class);
   }
 
   private String _mrWorkingPath;
@@ -296,7 +265,6 @@ public class BlurSerDeTest {
       SQLException {
 
     Configuration configuration = miniCluster.getMRConfiguration();
-    writeSiteFiles(configuration);
     HiveConf hiveConf = new HiveConf(configuration, getClass());
     hiveConf.set("hive.server2.thrift.port", "0");
     HiveServer2 hiveServer2 = new HiveServer2();
@@ -334,27 +302,6 @@ public class BlurSerDeTest {
     connection.close();
     hiveServer2.stop();
     return totalRecords;
-  }
-
-  private void writeSiteFiles(Configuration configuration) throws FileNotFoundException, IOException {
-    String name = BlurHiveMRLoaderOutputCommitter.MAPRED_SITE_XML;
-    if (miniCluster.useYarn()) {
-      name = BlurHiveMRLoaderOutputCommitter.YARN_SITE_XML;
-    }
-    String classPath = System.getProperty("java.class.path");
-    for (String path : Splitter.on(":").split(classPath)) {
-      File file = new File(path);
-      if (file.getName().equals("test-classes")) {
-        writeFile(new File(file, name), configuration);
-        return;
-      }
-    }
-  }
-
-  private void writeFile(File file, Configuration configuration) throws FileNotFoundException, IOException {
-    FileOutputStream outputStream = new FileOutputStream(file);
-    configuration.writeXml(outputStream);
-    outputStream.close();
   }
 
   private void generateData(File file, int totalRecords) throws IOException {

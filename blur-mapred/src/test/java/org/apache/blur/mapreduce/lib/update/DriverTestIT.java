@@ -18,7 +18,6 @@ package org.apache.blur.mapreduce.lib.update;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +25,9 @@ import java.util.UUID;
 
 import org.apache.blur.MiniCluster;
 import org.apache.blur.mapreduce.lib.BlurRecord;
-import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.SuiteCluster;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Column;
@@ -54,55 +53,21 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DriverTest {
+public class DriverTestIT {
 
-  private static Configuration conf = new Configuration();
   private static MiniCluster miniCluster;
+  private static Configuration conf;
 
   @BeforeClass
-  public static void setupTest() throws Exception {
-    setupJavaHome();
-    File file = new File("./target/tmp/BlurInputFormatTest_tmp");
-    String pathStr = file.getAbsoluteFile().toURI().toString();
-    System.setProperty("test.build.data", pathStr + "/data");
-    System.setProperty("hadoop.log.dir", pathStr + "/hadoop_log");
-    miniCluster = new MiniCluster();
-    miniCluster.startBlurCluster(pathStr + "/blur", 2, 2);
-    miniCluster.startMrMiniCluster();
+  public static void startup() throws IOException, BlurException, TException {
+    SuiteCluster.setupMiniCluster(DriverTestIT.class);
+    miniCluster = SuiteCluster.getMiniCluster();
     conf = miniCluster.getMRConfiguration();
-
-    BufferStore.initNewBuffer(128, 128 * 128);
-  }
-
-  public static void setupJavaHome() {
-    String str = System.getenv("JAVA_HOME");
-    if (str == null) {
-      String property = System.getProperty("java.home");
-      if (property != null) {
-        throw new RuntimeException("JAVA_HOME not set should probably be [" + property + "].");
-      }
-      throw new RuntimeException("JAVA_HOME not set.");
-    }
   }
 
   @AfterClass
-  public static void teardown() throws IOException {
-    if (miniCluster != null) {
-      miniCluster.stopMrMiniCluster();
-    }
-    rm(new File("build"));
-  }
-
-  private static void rm(File file) {
-    if (!file.exists()) {
-      return;
-    }
-    if (file.isDirectory()) {
-      for (File f : file.listFiles()) {
-        rm(f);
-      }
-    }
-    file.delete();
+  public static void shutdown() throws IOException {
+    SuiteCluster.shutdownMiniCluster(DriverTestIT.class);
   }
 
   @Test

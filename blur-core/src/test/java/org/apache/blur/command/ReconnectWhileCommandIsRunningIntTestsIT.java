@@ -8,6 +8,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BaseClusterTest;
 import org.apache.blur.thrift.TableGen;
 import org.apache.blur.thrift.generated.BlurException;
+import org.junit.Test;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -26,9 +27,13 @@ import org.apache.blur.thrift.generated.BlurException;
  * the License.
  */
 
-public class ReconnectWhileCommandIsRunningIntTests extends BaseClusterTest {
+public class ReconnectWhileCommandIsRunningIntTestsIT extends BaseClusterTest {
+  @Test
+  public void voidTest() {
 
-//  @Test  Slow test
+  }
+
+  // @Test Slow test
   public void testWaitForSecondsIntTest() throws BlurException, TException, IOException, InterruptedException {
     final String tableName = "testWaitForSecondsIntTest";
     TableGen.define(tableName).cols("test", "col1").addRows(100, 20, "r1", "rec-###", "value").build(getClient());

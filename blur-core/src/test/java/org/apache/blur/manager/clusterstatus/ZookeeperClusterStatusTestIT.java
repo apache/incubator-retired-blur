@@ -28,9 +28,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.blur.MiniCluster;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thrift.SuiteCluster;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.zookeeper.ZooKeeperClient;
@@ -48,13 +50,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class ZookeeperClusterStatusTest {
+public class ZookeeperClusterStatusTestIT {
 
   private static final String TEST = "test";
   private static final String DEFAULT = "default";
 
-  private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatusTest.class);
-  private static MiniCluster miniCluster;
+  private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatusTestIT.class);
   private ZooKeeper zooKeeper1;
   private ZooKeeper zooKeeper2;
   private ZookeeperClusterStatus clusterStatus1;
@@ -68,31 +69,32 @@ public class ZookeeperClusterStatusTest {
   }
 
   @BeforeClass
-  public static void setupOnce() throws InterruptedException, IOException, KeeperException {
-    miniCluster = new MiniCluster();
-    miniCluster.startZooKeeper("./target/zk_test", true);
+  public static void startup() throws IOException, BlurException, TException {
+    SuiteCluster.setupMiniCluster(ZookeeperClusterStatusTestIT.class);
   }
 
   @AfterClass
-  public static void teardownOnce() {
-    miniCluster.shutdownZooKeeper();
+  public static void shutdown() throws IOException {
+    SuiteCluster.shutdownMiniCluster(ZookeeperClusterStatusTestIT.class);
   }
 
   @Before
   public void setup() throws KeeperException, InterruptedException, IOException {
-    zooKeeper1 = new ZooKeeperClient(miniCluster.getZkConnectionString(), 30000, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
+    zooKeeper1 = new ZooKeeperClient(SuiteCluster.getZooKeeperConnStr(ZookeeperClusterStatusTestIT.class), 30000,
+        new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
 
-      }
-    });
+          }
+        });
     BlurUtil.setupZookeeper(zooKeeper1, DEFAULT);
-    zooKeeper2 = new ZooKeeperClient(miniCluster.getZkConnectionString(), 30000, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
+    zooKeeper2 = new ZooKeeperClient(SuiteCluster.getZooKeeperConnStr(ZookeeperClusterStatusTestIT.class), 30000,
+        new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
 
-      }
-    });
+          }
+        });
     BlurUtil.setupZookeeper(zooKeeper1, DEFAULT);
     BlurUtil.setupZookeeper(zooKeeper2, DEFAULT);
     clusterStatus1 = new ZookeeperClusterStatus(zooKeeper1);

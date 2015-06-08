@@ -219,7 +219,7 @@ public class MiniCluster {
     ScriptEngine engine = manager.getEngineByName("js");
 
     if (useYarn()) {
-      int nodeManagers = 2;
+      int nodeManagers = 4;
       Class<?> c = getClass();
       engine.put("c", c);
       engine.put("nodeManagers", nodeManagers);

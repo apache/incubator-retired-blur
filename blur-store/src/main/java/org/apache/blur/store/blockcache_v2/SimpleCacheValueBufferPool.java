@@ -33,11 +33,11 @@ public class SimpleCacheValueBufferPool extends BaseCacheValueBufferPool {
   private static final Log LOG = LogFactory.getLog(SimpleCacheValueBufferPool.class);
 
   private final ConcurrentMap<Integer, BlockingQueue<CacheValue>> _cacheValuePool = new ConcurrentHashMap<Integer, BlockingQueue<CacheValue>>();
-  private final int _capacity;
+  private final int _queueDepth;
 
-  public SimpleCacheValueBufferPool(STORE store, int capacity) {
+  public SimpleCacheValueBufferPool(STORE store, int queueDepth) {
     super(store);
-    _capacity = capacity;
+    _queueDepth = queueDepth;
   }
 
   public CacheValue getCacheValue(int cacheBlockSize) {
@@ -60,8 +60,8 @@ public class SimpleCacheValueBufferPool extends BaseCacheValueBufferPool {
   }
 
   private BlockingQueue<CacheValue> buildNewBlockQueue(int cacheBlockSize) {
-    LOG.info("Allocating new ArrayBlockingQueue with capacity [{0}]", _capacity);
-    BlockingQueue<CacheValue> value = new ArrayBlockingQueue<CacheValue>(_capacity);
+    LOG.info("Allocating new ArrayBlockingQueue with capacity [{0}]", _queueDepth);
+    BlockingQueue<CacheValue> value = new ArrayBlockingQueue<CacheValue>(_queueDepth);
     _cacheValuePool.putIfAbsent(cacheBlockSize, value);
     return _cacheValuePool.get(cacheBlockSize);
   }

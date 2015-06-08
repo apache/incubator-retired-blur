@@ -66,7 +66,6 @@ public class BaseCache extends Cache implements Closeable {
   class BaseCacheEvictionListener implements EvictionListener<CacheKey, CacheValue> {
     @Override
     public void onEviction(CacheKey key, CacheValue value) {
-      System.out.println("onEviction [" + key + "] [" + value + "]");
       _evictions.mark();
       _cacheValueBufferPool.returnToPool(value.detachFromCache());
     }
@@ -290,7 +289,6 @@ public class BaseCache extends Cache implements Closeable {
   public void put(CacheDirectory directory, String fileName, CacheKey key, CacheValue value) {
     CacheValue cacheValue = _cacheMap.put(key, value);
     if (cacheValue != null) {
-      System.out.println("put [" + key + "] [" + value + "]");
       _evictions.mark();
       _cacheValueBufferPool.returnToPool(cacheValue.detachFromCache());
     }

@@ -219,6 +219,11 @@ public class IndexImporterTest {
       public long getSegmentImportInProgressCount() throws IOException {
         throw new RuntimeException("Not implemented.");
       }
+
+      @Override
+      public long getOnDiskSize() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
     };
   }
 

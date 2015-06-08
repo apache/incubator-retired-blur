@@ -219,7 +219,7 @@ public class MiniCluster {
     ScriptEngine engine = manager.getEngineByName("js");
 
     if (useYarn()) {
-      int nodeManagers = 1;
+      int nodeManagers = 4;
       Class<?> c = getClass();
       engine.put("c", c);
       engine.put("nodeManagers", nodeManagers);
@@ -239,7 +239,7 @@ public class MiniCluster {
       mrMiniCluster = bindings.get("mrMiniCluster");
       return (Configuration) bindings.get("configuration");
     } else {
-      int numTaskTrackers = 1;
+      int numTaskTrackers = 2;
       int numDir = 1;
       engine.put("fileSystemUri", fileSystemUri);
       engine.put("numTaskTrackers", numTaskTrackers);
@@ -258,7 +258,7 @@ public class MiniCluster {
     }
   }
 
-  private boolean useYarn() {
+  public boolean useYarn() {
     String version = VersionInfo.getVersion();
     if (version.startsWith("0.20.") || version.startsWith("1.")) {
       return false;
@@ -270,7 +270,7 @@ public class MiniCluster {
     return true;
   }
 
-  private boolean isMr1Hadoop2() {
+  public boolean isMr1Hadoop2() {
     try {
       Enumeration<URL> e = ClassLoader.getSystemClassLoader().getResources(
           "META-INF/maven/org.apache.hadoop/hadoop-client/pom.properties");

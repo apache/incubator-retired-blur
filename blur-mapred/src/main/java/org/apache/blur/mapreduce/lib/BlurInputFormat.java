@@ -21,6 +21,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -62,6 +64,8 @@ import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
 
 public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
+  private static final String BLUR_INPUT_FORMAT_MAX_MAPS = "blur.input.format.max.maps";
+
   private static final String BLUR_INPUTFORMAT_FILE_CACHE_PATH = "blur.inputformat.file.cache.path";
 
   private static final Log LOG = LogFactory.getLog(BlurInputFormat.class);
@@ -80,7 +84,19 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     } else {
       splits = getSplits(configuration, dirs);
     }
-    return toList(splits);
+    return toList(getMaxNumberOfMaps(configuration), splits);
+  }
+
+  public static int getMaxNumberOfMaps(Configuration configuration) {
+    return configuration.getInt(BLUR_INPUT_FORMAT_MAX_MAPS, Integer.MAX_VALUE);
+  }
+
+  public static void setMaxNumberOfMaps(Configuration configuration, int maxNumberOfMaps) {
+    configuration.setInt(BLUR_INPUT_FORMAT_MAX_MAPS, maxNumberOfMaps);
+  }
+
+  public static void setMaxNumberOfMaps(Job job, int maxNumberOfMaps) {
+    setMaxNumberOfMaps(job.getConfiguration(), maxNumberOfMaps);
   }
 
   private static List<BlurInputSplit> getSplitsFromCommand(Configuration configuration, Path[] dirs) throws IOException {
@@ -168,12 +184,104 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     return configuration.get(BlurConstants.BLUR_ZOOKEEPER_CONNECTION) != null;
   }
 
-  private List<InputSplit> toList(List<BlurInputSplit> splits) {
+  private List<InputSplit> toList(int maxSplits, List<BlurInputSplit> splits) {
+    // Reduce splits number requested
+    List<BlurInputSplitColletion> collections = new ArrayList<BlurInputSplitColletion>();
+    for (BlurInputSplit blurInputSplit : splits) {
+      BlurInputSplitColletion blurInputSplitColletion;
+      if (collections.size() < maxSplits) {
+        blurInputSplitColletion = new BlurInputSplitColletion();
+        collections.add(blurInputSplitColletion);
+      } else {
+        blurInputSplitColletion = findSmallest(collections);
+      }
+      blurInputSplitColletion.add(blurInputSplit);
+    }
+
     List<InputSplit> inputSplits = new ArrayList<InputSplit>();
-    for (BlurInputSplit inputSplit : splits) {
+    for (BlurInputSplitColletion inputSplit : collections) {
       inputSplits.add(inputSplit);
     }
     return inputSplits;
+  }
+
+  private BlurInputSplitColletion findSmallest(List<BlurInputSplitColletion> collections) {
+    Collections.sort(collections, new Comparator<BlurInputSplitColletion>() {
+      @Override
+      public int compare(BlurInputSplitColletion o1, BlurInputSplitColletion o2) {
+        long l1 = o1.getLength();
+        long l2 = o2.getLength();
+        if (l1 == l2) {
+          return 0;
+        }
+        // Smallest first
+        return l1 < l2 ? -1 : 1;
+      }
+    });
+    return collections.get(0);
+  }
+
+  public static class BlurInputSplitColletion extends InputSplit implements Writable {
+
+    private List<BlurInputSplit> _splits = new ArrayList<BlurInputSplit>();
+    private long _length;
+
+    public BlurInputSplitColletion() {
+
+    }
+
+    public void add(BlurInputSplit blurInputSplit) {
+      _splits.add(blurInputSplit);
+      _length += blurInputSplit.getLength();
+    }
+
+    public BlurInputSplitColletion(List<BlurInputSplit> splits) {
+      _splits = splits;
+    }
+
+    @Override
+    public long getLength() {
+      return _length;
+    }
+
+    @Override
+    public String[] getLocations() {
+      return new String[] {};
+    }
+
+    public List<BlurInputSplit> getSplits() {
+      return _splits;
+    }
+
+    public void setSplits(List<BlurInputSplit> splits) {
+      _splits = splits;
+    }
+
+    public void setLength(long length) {
+      _length = length;
+    }
+
+    @Override
+    public void write(DataOutput out) throws IOException {
+      out.writeLong(_length);
+      out.writeInt(_splits.size());
+      for (BlurInputSplit split : _splits) {
+        split.write(out);
+      }
+    }
+
+    @Override
+    public void readFields(DataInput in) throws IOException {
+      _splits.clear();
+      _length = in.readLong();
+      int size = in.readInt();
+      for (int i = 0; i < size; i++) {
+        BlurInputSplit blurInputSplit = new BlurInputSplit();
+        blurInputSplit.readFields(in);
+        _splits.add(blurInputSplit);
+      }
+    }
+
   }
 
   public static List<BlurInputSplit> getSplits(Configuration configuration, Path[] dirs) throws IOException {
@@ -334,13 +442,13 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
   @Override
   public RecordReader<Text, TableBlurRecord> createRecordReader(InputSplit split, TaskAttemptContext context)
       throws IOException, InterruptedException {
-    final GenericRecordReader genericRecordReader = new GenericRecordReader();
-    genericRecordReader.initialize((BlurInputSplit) split, context.getConfiguration());
+    final GenericRecordReaderCollection genericRecordReader = new GenericRecordReaderCollection();
+    genericRecordReader.initialize((BlurInputSplitColletion) split, context.getConfiguration());
     return new RecordReader<Text, TableBlurRecord>() {
 
       @Override
       public void initialize(InputSplit split, TaskAttemptContext context) throws IOException, InterruptedException {
-        genericRecordReader.initialize((BlurInputSplit) split, context.getConfiguration());
+        genericRecordReader.initialize((BlurInputSplitColletion) split, context.getConfiguration());
       }
 
       @Override
@@ -400,12 +508,12 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     }
 
     @Override
-    public long getLength() throws IOException {
+    public long getLength() {
       return _fileLength;
     }
 
     @Override
-    public String[] getLocations() throws IOException {
+    public String[] getLocations() {
       // @TODO create locations for fdt file
       return new String[] {};
     }

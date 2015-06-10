@@ -50,6 +50,9 @@ import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.Reader;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Counter;
+import org.apache.hadoop.mapreduce.CounterGroup;
+import org.apache.hadoop.mapreduce.Counters;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -169,12 +172,17 @@ public class BlurInputFormatTest {
       BlurInputFormat.setLocalCachePath(job, fileCache);
     }
 
+    BlurInputFormat.setMaxNumberOfMaps(job, 1);
     BlurInputFormat.setZooKeeperConnectionStr(job, miniCluster.getZkConnectionString());
     BlurInputFormat.addTable(job, tableDescriptor, snapshot);
     FileOutputFormat.setOutputPath(job, output);
 
     try {
       assertTrue(job.waitForCompletion(true));
+      Counters counters = job.getCounters();
+      CounterGroup counterGroup = counters.getGroup("org.apache.hadoop.mapreduce.JobCounter");
+      Counter counter = counterGroup.findCounter("TOTAL_LAUNCHED_MAPS");
+      assertEquals(1, counter.getValue());
     } finally {
       client.removeSnapshot(tableName, snapshot);
     }

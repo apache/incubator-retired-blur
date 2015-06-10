@@ -21,6 +21,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
@@ -29,11 +30,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.apache.blur.command.BlurArray;
+import org.apache.blur.command.BlurObject;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.writer.SnapshotIndexDeletionPolicy;
 import org.apache.blur.store.hdfs.DirectoryUtil;
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.thrift.BlurClient;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.conf.Configuration;
@@ -68,8 +73,99 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
   @Override
   public List<InputSplit> getSplits(JobContext context) throws IOException {
     Path[] dirs = getInputPaths(context);
-    List<BlurInputSplit> splits = getSplits(context.getConfiguration(), dirs);
+    List<BlurInputSplit> splits;
+    Configuration configuration = context.getConfiguration();
+    if (isSplitCommandSupported(configuration)) {
+      splits = getSplitsFromCommand(configuration, dirs);
+    } else {
+      splits = getSplits(configuration, dirs);
+    }
     return toList(splits);
+  }
+
+  private static List<BlurInputSplit> getSplitsFromCommand(Configuration configuration, Path[] dirs) throws IOException {
+    String zkConnection = configuration.get(BlurConstants.BLUR_ZOOKEEPER_CONNECTION);
+    Iface client = BlurClient.getClientFromZooKeeperConnectionStr(zkConnection);
+    List<BlurInputSplit> splits = new ArrayList<BlurInputSplit>();
+    for (Path dir : dirs) {
+      Text table = BlurInputFormat.getTableFromPath(configuration, dir);
+      String snapshot = getSnapshotForTable(configuration, table.toString());
+      BlurInputFormatSplitCommand splitCommand = new BlurInputFormatSplitCommand();
+      splitCommand.setSnapshot(snapshot);
+      splitCommand.setTable(table.toString());
+      List<BlurInputSplit> splitsList = toSplitList(splitCommand.run(client));
+      splits.addAll(splitsList);
+    }
+    return splits;
+  }
+
+  private static List<BlurInputSplit> toSplitList(BlurObject bo) {
+    Iterator<String> keys = bo.keys();
+    List<BlurInputSplit> splits = new ArrayList<BlurInputSplit>();
+    while (keys.hasNext()) {
+      String shard = keys.next();
+      BlurArray blurArray = bo.getBlurArray(shard);
+      splits.addAll(toSplits(blurArray));
+    }
+    return splits;
+  }
+
+  public static List<BlurInputSplit> toSplits(BlurArray blurArray) {
+    List<BlurInputSplit> splits = new ArrayList<BlurInputSplit>();
+    for (int i = 0; i < blurArray.length(); i++) {
+      BlurObject blurObject = blurArray.getBlurObject(i);
+      splits.add(toSplit(blurObject));
+    }
+    return splits;
+  }
+
+  public static BlurArray toBlurArray(List<BlurInputSplit> splits) throws IOException {
+    BlurArray blurArray = new BlurArray();
+    for (BlurInputSplit inputSplit : splits) {
+      blurArray.put(toBlurObject(inputSplit));
+    }
+    return blurArray;
+  }
+
+  private static BlurInputSplit toSplit(BlurObject blurObject) {
+    Path dir = new Path(blurObject.getString("dir"));
+    String segmentsName = blurObject.getString("segmentsName");
+    String segmentInfoName = blurObject.getString("segmentInfoName");
+    long fileLength = blurObject.getLong("fileLength");
+    Text table = new Text(blurObject.getString("table"));
+    List<String> directoryFiles = toStringListFromBlurArray(blurObject.getBlurArray("directoryFiles"));
+    return new BlurInputSplit(dir, segmentsName, segmentInfoName, fileLength, table, directoryFiles);
+  }
+
+  private static List<String> toStringListFromBlurArray(BlurArray blurArray) {
+    List<String> list = new ArrayList<String>();
+    for (int i = 0; i < blurArray.length(); i++) {
+      list.add(blurArray.getString(i));
+    }
+    return list;
+  }
+
+  private static BlurArray toBlurArrayFromStringList(List<String> list) {
+    BlurArray array = new BlurArray();
+    for (String s : list) {
+      array.put(s);
+    }
+    return array;
+  }
+
+  private static BlurObject toBlurObject(BlurInputSplit inputSplit) throws IOException {
+    BlurObject blurObject = new BlurObject();
+    blurObject.put("dir", inputSplit.getDir().toString());
+    blurObject.put("segmentsName", inputSplit.getSegmentsName());
+    blurObject.put("segmentInfoName", inputSplit.getSegmentInfoName());
+    blurObject.put("fileLength", inputSplit.getLength());
+    blurObject.put("table", inputSplit.getTable().toString());
+    blurObject.put("directoryFiles", toBlurArrayFromStringList(inputSplit.getDirectoryFiles()));
+    return blurObject;
+  }
+
+  private boolean isSplitCommandSupported(Configuration configuration) {
+    return configuration.get(BlurConstants.BLUR_ZOOKEEPER_CONNECTION) != null;
   }
 
   private List<InputSplit> toList(List<BlurInputSplit> splits) {
@@ -174,45 +270,55 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
   private static List<BlurInputSplit> getSegmentSplits(Path shardDir, Configuration configuration, Text table,
       Text snapshot) throws IOException {
     final long start = System.nanoTime();
-    List<BlurInputSplit> splits = new ArrayList<BlurInputSplit>();
     Directory directory = getDirectory(configuration, table.toString(), shardDir, null);
     try {
-      SnapshotIndexDeletionPolicy policy = new SnapshotIndexDeletionPolicy(configuration,
-          SnapshotIndexDeletionPolicy.getGenerationsPath(shardDir));
-
-      Long generation = policy.getGeneration(snapshot.toString());
-      if (generation == null) {
-        throw new IOException("Snapshot [" + snapshot + "] not found in shard [" + shardDir + "]");
-      }
-
-      List<IndexCommit> listCommits = DirectoryReader.listCommits(directory);
-      IndexCommit indexCommit = findIndexCommit(listCommits, generation, shardDir);
-
-      String segmentsFileName = indexCommit.getSegmentsFileName();
-      SegmentInfos segmentInfos = new SegmentInfos();
-      segmentInfos.read(directory, segmentsFileName);
-      for (SegmentInfoPerCommit commit : segmentInfos) {
-        SegmentInfo segmentInfo = commit.info;
-        if (commit.getDelCount() == segmentInfo.getDocCount()) {
-          LOG.info("Segment [{0}] in dir [{1}] has all records deleted.", segmentInfo.name, shardDir);
-        } else {
-          String name = segmentInfo.name;
-          Collection<String> files = commit.files();
-          long fileLength = 0;
-          for (String file : files) {
-            fileLength += directory.fileLength(file);
-          }
-          List<String> dirFiles = new ArrayList<String>(files);
-          dirFiles.add(segmentsFileName);
-          splits.add(new BlurInputSplit(shardDir, segmentsFileName, name, fileLength, table, dirFiles));
-        }
-      }
-      return splits;
+      return getSplitForDirectory(shardDir, configuration, table, snapshot, directory);
     } finally {
       directory.close();
       final long end = System.nanoTime();
       LOG.info("Found split in shard [{0}] in [{1} ms].", shardDir, (end - start) / 1000000000.0);
     }
+  }
+
+  public static List<BlurInputSplit> getSplitForDirectory(Path shardDir, Configuration configuration, String table,
+      String snapshot, Directory directory) throws IOException {
+    return getSplitForDirectory(shardDir, configuration, new Text(table), new Text(snapshot), directory);
+  }
+
+  public static List<BlurInputSplit> getSplitForDirectory(Path shardDir, Configuration configuration, Text table,
+      Text snapshot, Directory directory) throws IOException {
+    List<BlurInputSplit> splits = new ArrayList<BlurInputSplit>();
+    SnapshotIndexDeletionPolicy policy = new SnapshotIndexDeletionPolicy(configuration,
+        SnapshotIndexDeletionPolicy.getGenerationsPath(shardDir));
+
+    Long generation = policy.getGeneration(snapshot.toString());
+    if (generation == null) {
+      throw new IOException("Snapshot [" + snapshot + "] not found in shard [" + shardDir + "]");
+    }
+
+    List<IndexCommit> listCommits = DirectoryReader.listCommits(directory);
+    IndexCommit indexCommit = findIndexCommit(listCommits, generation, shardDir);
+
+    String segmentsFileName = indexCommit.getSegmentsFileName();
+    SegmentInfos segmentInfos = new SegmentInfos();
+    segmentInfos.read(directory, segmentsFileName);
+    for (SegmentInfoPerCommit commit : segmentInfos) {
+      SegmentInfo segmentInfo = commit.info;
+      if (commit.getDelCount() == segmentInfo.getDocCount()) {
+        LOG.info("Segment [{0}] in dir [{1}] has all records deleted.", segmentInfo.name, shardDir);
+      } else {
+        String name = segmentInfo.name;
+        Collection<String> files = commit.files();
+        long fileLength = 0;
+        for (String file : files) {
+          fileLength += directory.fileLength(file);
+        }
+        List<String> dirFiles = new ArrayList<String>(files);
+        dirFiles.add(segmentsFileName);
+        splits.add(new BlurInputSplit(shardDir, segmentsFileName, name, fileLength, table, dirFiles));
+      }
+    }
+    return splits;
   }
 
   private static IndexCommit findIndexCommit(List<IndexCommit> listCommits, long generation, Path shardDir)
@@ -395,5 +501,13 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     boolean disableFast = !fileSystem.exists(fastPath);
     HdfsDirectory directory = new HdfsDirectory(configuration, shardDir, null, files);
     return DirectoryUtil.getDirectory(configuration, directory, disableFast, null, table, shardDir.getName(), true);
+  }
+
+  public static void setZooKeeperConnectionStr(Configuration configuration, String zk) {
+    configuration.set(BlurConstants.BLUR_ZOOKEEPER_CONNECTION, zk);
+  }
+
+  public static void setZooKeeperConnectionStr(Job job, String zk) {
+    setZooKeeperConnectionStr(job.getConfiguration(), zk);
   }
 }

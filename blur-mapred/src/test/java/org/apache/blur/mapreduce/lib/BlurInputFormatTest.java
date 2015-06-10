@@ -129,14 +129,6 @@ public class BlurInputFormatTest {
     String tableName = "testBlurInputFormatFastDisabledFileCache";
     Path fileCache = new Path(miniCluster.getFileSystemUri() + "/filecache");
     runTest(tableName, true, fileCache);
-    FileSystem fileSystem = miniCluster.getFileSystem();
-    // @TODO write some assertions.
-    // RemoteIterator<LocatedFileStatus> listFiles =
-    // fileSystem.listFiles(fileCache, true);
-    // while (listFiles.hasNext()) {
-    // LocatedFileStatus locatedFileStatus = listFiles.next();
-    // System.out.println(locatedFileStatus.getPath());
-    // }
   }
 
   @Test
@@ -145,14 +137,6 @@ public class BlurInputFormatTest {
     String tableName = "testBlurInputFormatFastEnabledFileCache";
     Path fileCache = new Path(miniCluster.getFileSystemUri() + "/filecache");
     runTest(tableName, false, fileCache);
-    FileSystem fileSystem = miniCluster.getFileSystem();
-    // @TODO write some assertions.
-    // RemoteIterator<LocatedFileStatus> listFiles =
-    // fileSystem.listFiles(fileCache, true);
-    // while (listFiles.hasNext()) {
-    // LocatedFileStatus locatedFileStatus = listFiles.next();
-    // System.out.println(locatedFileStatus.getPath());
-    // }
   }
 
   private void runTest(String tableName, boolean disableFast, Path fileCache) throws IOException, BlurException,
@@ -185,6 +169,7 @@ public class BlurInputFormatTest {
       BlurInputFormat.setLocalCachePath(job, fileCache);
     }
 
+    BlurInputFormat.setZooKeeperConnectionStr(job, miniCluster.getZkConnectionString());
     BlurInputFormat.addTable(job, tableDescriptor, snapshot);
     FileOutputFormat.setOutputPath(job, output);
 

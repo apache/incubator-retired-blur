@@ -18,6 +18,7 @@ package org.apache.blur.mapreduce.lib;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -180,9 +181,8 @@ public class BlurInputFormatTest {
     try {
       assertTrue(job.waitForCompletion(true));
       Counters counters = job.getCounters();
-      CounterGroup counterGroup = counters.getGroup("org.apache.hadoop.mapreduce.JobCounter");
-      Counter counter = counterGroup.findCounter("TOTAL_LAUNCHED_MAPS");
-      assertEquals(1, counter.getValue());
+      assertMapTask(1, counters);
+
     } finally {
       client.removeSnapshot(tableName, snapshot);
     }
@@ -209,6 +209,27 @@ public class BlurInputFormatTest {
       rowId++;
     }
     assertEquals(200, rowId);
+  }
+
+  private void assertMapTask(int i, Counters counters) {
+    for (CounterGroup counterGroup : counters) {
+      String name = counterGroup.getName();
+      boolean jobCounterGroup = false;
+      if (name.equals("org.apache.hadoop.mapreduce.JobCounter")) {
+        jobCounterGroup = true;
+      } else if (name.equals("org.apache.hadoop.mapred.JobInProgress$Counter")) {
+        jobCounterGroup = true;
+      }
+      if (jobCounterGroup) {
+        for (Counter counter : counterGroup) {
+          if (counter.getName().equals("TOTAL_LAUNCHED_MAPS")) {
+            assertEquals(1, counter.getValue());
+            return;
+          }
+        }
+      }
+    }
+    fail();
   }
 
   public interface ResultReader {

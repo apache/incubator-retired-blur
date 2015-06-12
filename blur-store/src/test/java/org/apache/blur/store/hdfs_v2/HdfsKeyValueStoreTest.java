@@ -16,7 +16,10 @@
  */
 package org.apache.blur.store.hdfs_v2;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -144,7 +147,7 @@ public class HdfsKeyValueStoreTest {
     store.close();
   }
 
-  // @Test
+  @Test
   public void testTwoKeyStoreInstancesWritingAtTheSameTime() throws IOException {
     HdfsKeyValueStore store1 = new HdfsKeyValueStore(false, _timer, _configuration, _path);
     listFiles();
@@ -169,7 +172,14 @@ public class HdfsKeyValueStoreTest {
 
     }
     store2.sync();
-    store1.close();
+
+    try {
+      store1.close();
+      fail();
+    } catch (Exception e) {
+
+    }
+
     store2.close();
 
     HdfsKeyValueStore store3 = new HdfsKeyValueStore(false, _timer, _configuration, _path);
@@ -237,7 +247,7 @@ public class HdfsKeyValueStoreTest {
 
     // Store 1 should still be able to write.
     store1.put(new BytesRef("a2"), new BytesRef(new byte[2000]));
-    
+
     // Store 2 should not be able to find.
     assertFalse(store2.get(new BytesRef("a2"), new BytesRef(new byte[2000])));
 

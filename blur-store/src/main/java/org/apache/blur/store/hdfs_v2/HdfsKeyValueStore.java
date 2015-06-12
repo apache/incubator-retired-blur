@@ -41,6 +41,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -485,9 +486,12 @@ public class HdfsKeyValueStore implements Store {
       _writeLock.lock();
       try {
         if (isOpenForWriting()) {
-          syncInternal();
-          _output.close();
-          _output = null;
+          try {
+            syncInternal();
+          } finally {
+            IOUtils.closeQuietly(_output);
+            _output = null;
+          }
         }
       } finally {
         _writeLock.unlock();
@@ -499,9 +503,7 @@ public class HdfsKeyValueStore implements Store {
     if (_readOnly) {
       throw new IOException("Key value store is set in read only mode.");
     }
-    long nextSegment = _currentFileCounter.incrementAndGet();
-    String name = buffer(nextSegment);
-    _outputPath = new Path(_path, name);
+    _outputPath = getSegmentPath(_currentFileCounter.incrementAndGet());
     LOG.info("Opening for writing [{0}].", _outputPath);
     _output = _fileSystem.create(_outputPath, false);
     _output.write(MAGIC);
@@ -509,7 +511,11 @@ public class HdfsKeyValueStore implements Store {
     syncInternal();
   }
 
-  private String buffer(long number) {
+  private Path getSegmentPath(long segment) {
+    return new Path(_path, buffer(segment));
+  }
+
+  private static String buffer(long number) {
     String s = Long.toString(number);
     StringBuilder builder = new StringBuilder();
     for (int i = s.length(); i < 12; i++) {
@@ -531,11 +537,17 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private void syncInternal() throws IOException {
+    validateNextSegmentHasNotStarted();
     _output.flush();
     _output.sync();
     _lastWrite.set(System.currentTimeMillis());
-    // System.out.println("Sync Output Path [" + _outputPath + "] Position [" +
-    // _output.getPos() + "]");
+  }
+
+  private void validateNextSegmentHasNotStarted() throws IOException {
+    Path p = getSegmentPath(_currentFileCounter.get() + 1);
+    if (_fileSystem.exists(p)) {
+      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.");
+    }
   }
 
   private void loadIndex(Path path) throws IOException {

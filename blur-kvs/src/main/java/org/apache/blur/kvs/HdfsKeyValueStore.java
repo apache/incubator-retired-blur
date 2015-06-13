@@ -14,14 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.store.hdfs_v2;
+package org.apache.blur.kvs;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -51,9 +50,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.server.namenode.LeaseExpiredException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.ipc.RemoteException;
-import org.apache.lucene.util.BytesRef;
 
 public class HdfsKeyValueStore implements Store {
 
@@ -120,13 +117,6 @@ public class HdfsKeyValueStore implements Store {
 
   }
 
-  private static final Comparator<BytesRef> COMP = new Comparator<BytesRef>() {
-    @Override
-    public int compare(BytesRef b1, BytesRef b2) {
-      return WritableComparator.compareBytes(b1.bytes, b1.offset, b1.length, b2.bytes, b2.offset, b2.length);
-    }
-  };
-
   static class Value {
     Value(BytesRef bytesRef, Path path) {
       _bytesRef = bytesRef;
@@ -137,7 +127,7 @@ public class HdfsKeyValueStore implements Store {
     Path _path;
   }
 
-  private final ConcurrentNavigableMap<BytesRef, Value> _pointers = new ConcurrentSkipListMap<BytesRef, Value>(COMP);
+  private final ConcurrentNavigableMap<BytesRef, Value> _pointers = new ConcurrentSkipListMap<BytesRef, Value>();
   private final Path _path;
   private final ReentrantReadWriteLock _readWriteLock;
   private final AtomicReference<SortedSet<FileStatus>> _fileStatus = new AtomicReference<SortedSet<FileStatus>>();

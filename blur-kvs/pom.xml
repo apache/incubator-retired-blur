@@ -19,64 +19,17 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.apache.blur</groupId>
-	<artifactId>blur-store</artifactId>
+	<artifactId>blur-kvs</artifactId>
 	<version>${projectVersion}</version>
 	<packaging>jar</packaging>
-	<name>Blur Store</name>
-	<description>The Blur store module contains all the Lucene directories and block cache for Blur.</description>
+	<name>Blur KeyValue Store</name>
+	<description>The Blur kvs module contains a transactional single writer embedded key value store.</description>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.blur</groupId>
 			<artifactId>blur-util</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-kvs</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.blur</groupId>
-			<artifactId>blur-kvs</artifactId>
-			<type>test-jar</type>
-			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-core</artifactId>
-			<version>${lucene.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-codecs</artifactId>
-			<version>${lucene.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-highlighter</artifactId>
-			<version>${lucene.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-analyzers-common</artifactId>
-			<version>${lucene.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queryparser</artifactId>
-			<version>${lucene.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-spatial</artifactId>
-			<version>${lucene.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.github.amccurry</groupId>
-			<artifactId>lucene-document-security</artifactId>
-			<version>0.1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>

@@ -18,8 +18,8 @@ package org.apache.blur.store.hdfs_v2;
 
 import java.io.IOException;
 
+import org.apache.blur.kvs.BytesRef;
 import org.apache.lucene.store.IndexInput;
-import org.apache.lucene.util.BytesRef;
 
 public class FastHdfsKeyValueIndexInput extends IndexInput {
 

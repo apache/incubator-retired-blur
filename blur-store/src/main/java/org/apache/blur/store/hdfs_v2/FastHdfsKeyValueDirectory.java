@@ -30,6 +30,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.kvs.BytesRef;
+import org.apache.blur.kvs.HdfsKeyValueStore;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.memory.MemoryLeakDetector;
@@ -41,7 +43,6 @@ import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.NoLockFactory;
-import org.apache.lucene.util.BytesRef;
 
 public class FastHdfsKeyValueDirectory extends Directory implements LastModified {
 

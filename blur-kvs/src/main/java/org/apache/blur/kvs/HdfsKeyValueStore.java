@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Timer;
@@ -141,12 +142,13 @@ public class HdfsKeyValueStore implements Store {
   private final TimerTask _oldFileCleanerTimerTask;
   private final AtomicLong _lastWrite = new AtomicLong();
   private final Timer _hdfsKeyValueTimer;
-  private final long _maxOpenForWriting;
+  private final long _maxTimeOpenForWriting;
   private final boolean _readOnly;
 
   private FSDataOutputStream _output;
   private Path _outputPath;
   private boolean _isClosed;
+  
 
   public HdfsKeyValueStore(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path)
       throws IOException {
@@ -160,9 +162,9 @@ public class HdfsKeyValueStore implements Store {
   }
 
   public HdfsKeyValueStore(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path,
-      long maxAmountAllowedPerFile, long maxOpenForWriting) throws IOException {
+      long maxAmountAllowedPerFile, long maxTimeOpenForWriting) throws IOException {
     _readOnly = readOnly;
-    _maxOpenForWriting = maxOpenForWriting;
+    _maxTimeOpenForWriting = maxTimeOpenForWriting;
     _maxAmountAllowedPerFile = maxAmountAllowedPerFile;
     _path = path;
     _fileSystem = _path.getFileSystem(configuration);
@@ -247,9 +249,9 @@ public class HdfsKeyValueStore implements Store {
     try {
       syncInternal();
     } catch (RemoteException e) {
-      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
+      throw new IOException("Another HDFS KeyStore has taken ownership of this key value store.", e);
     } catch (LeaseExpiredException e) {
-      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
+      throw new IOException("Another HDFS KeyStore has taken ownership of this key value store.", e);
     } finally {
       _writeLock.unlock();
     }
@@ -258,11 +260,29 @@ public class HdfsKeyValueStore implements Store {
   @Override
   public Iterable<Entry<BytesRef, BytesRef>> scan(BytesRef key) throws IOException {
     ensureOpen();
+    NavigableMap<BytesRef, Value> pointers = createSnapshot();
+    return getIterable(key, pointers);
+  }
+
+  private Iterable<Entry<BytesRef, BytesRef>> getIterable(BytesRef key, NavigableMap<BytesRef, Value> pointers) {
     if (key == null) {
-      key = _pointers.firstKey();
+      key = pointers.firstKey();
     }
-    ConcurrentNavigableMap<BytesRef, Value> tailMap = _pointers.tailMap(key, true);
-    final Set<Entry<BytesRef, Value>> entrySet = tailMap.entrySet();
+    NavigableMap<BytesRef, Value> tailMap = pointers.tailMap(key, true);
+    return getIterable(tailMap);
+  }
+
+  private NavigableMap<BytesRef, Value> createSnapshot() {
+    _writeLock.lock();
+    try {
+      return new ConcurrentSkipListMap<BytesRef, Value>(_pointers);
+    } finally {
+      _writeLock.unlock();
+    }
+  }
+
+  private Iterable<Entry<BytesRef, BytesRef>> getIterable(NavigableMap<BytesRef, Value> map) {
+    final Set<Entry<BytesRef, Value>> entrySet = map.entrySet();
     return new Iterable<Entry<BytesRef, BytesRef>>() {
       @Override
       public Iterator<Entry<BytesRef, BytesRef>> iterator() {
@@ -324,9 +344,9 @@ public class HdfsKeyValueStore implements Store {
         _size.addAndGet(-old._bytesRef.bytes.length);
       }
     } catch (RemoteException e) {
-      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
+      throw new IOException("Another HDFS KeyStore has taken ownership of this key value store.", e);
     } catch (LeaseExpiredException e) {
-      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
+      throw new IOException("Another HDFS KeyStore has taken ownership of this key value store.", e);
     } finally {
       _writeLock.unlock();
     }
@@ -390,7 +410,7 @@ public class HdfsKeyValueStore implements Store {
   private void closeLogFileIfIdle() throws IOException {
     _writeLock.lock();
     try {
-      if (_output != null && _lastWrite.get() + _maxOpenForWriting < System.currentTimeMillis()) {
+      if (_output != null && _lastWrite.get() + _maxTimeOpenForWriting < System.currentTimeMillis()) {
         // Close writer
         LOG.info("Closing KV log due to inactivity [{0}].", _path);
         try {
@@ -452,9 +472,9 @@ public class HdfsKeyValueStore implements Store {
         _size.addAndGet(-old._bytesRef.bytes.length);
       }
     } catch (RemoteException e) {
-      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
+      throw new IOException("Another HDFS KeyStore has taken ownership of this key value store.", e);
     } catch (LeaseExpiredException e) {
-      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.", e);
+      throw new IOException("Another HDFS KeyStore has taken ownership of this key value store.", e);
     } finally {
       _writeLock.unlock();
     }
@@ -534,9 +554,8 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private void validateNextSegmentHasNotStarted() throws IOException {
-    Path p = getSegmentPath(_currentFileCounter.get() + 1);
-    if (_fileSystem.exists(p)) {
-      throw new IOException("Another HDFS KeyStore has likely taken ownership of this key value store.");
+    if (!isOwner()) {
+      throw new IOException("Another HDFS KeyStore has taken ownership of this key value store.");
     }
   }
 
@@ -596,10 +615,24 @@ public class HdfsKeyValueStore implements Store {
     if (_fileSystem.exists(p)) {
       FileStatus[] listStatus = _fileSystem.listStatus(p);
       if (listStatus != null) {
-        return new TreeSet<FileStatus>(Arrays.asList(listStatus));
+        TreeSet<FileStatus> result = new TreeSet<FileStatus>();
+        for (FileStatus fileStatus : listStatus) {
+          if (!fileStatus.isDir()) {
+            result.add(fileStatus);
+          }
+        }
+        return result;
       }
     }
     return new TreeSet<FileStatus>();
   }
 
+  @Override
+  public boolean isOwner() throws IOException {
+    Path p = getSegmentPath(_currentFileCounter.get() + 1);
+    if (_fileSystem.exists(p)) {
+      return false;
+    }
+    return true;
+  }
 }

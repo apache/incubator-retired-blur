@@ -22,6 +22,8 @@ import java.util.Map.Entry;
 
 public interface Store extends Closeable {
 
+  boolean isOwner() throws IOException;
+  
   void sync() throws IOException;
 
   Iterable<Entry<BytesRef, BytesRef>> scan(BytesRef key) throws IOException;

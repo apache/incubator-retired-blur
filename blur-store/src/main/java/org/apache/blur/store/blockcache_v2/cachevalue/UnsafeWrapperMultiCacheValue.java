@@ -56,7 +56,7 @@ public abstract class UnsafeWrapperMultiCacheValue extends UnsafeCacheValue {
       int chunkPos = getChunkPosition(position);
       int len = Math.min(length, _chunkSize - chunkPos);
       long address = _chunkAddresses[chunkIndex];
-      copyToArray(resolveAddress(address, position), buf, offset, len);
+      copyToArray(resolveAddress(address, chunkPos), buf, offset, len);
       position += len;
       offset += len;
       length -= len;

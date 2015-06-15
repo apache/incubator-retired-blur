@@ -85,7 +85,6 @@ public class BaseCache extends Cache implements Closeable {
   private final ConcurrentLinkedHashMap<CacheKey, CacheValue> _cacheMap;
   private final FileNameFilter _readFilter;
   private final FileNameFilter _writeFilter;
-  private final STORE _store;
   private final Size _cacheBlockSize;
   private final Size _fileBufferSize;
   private final Map<FileIdKey, Long> _fileNameToId = new ConcurrentHashMap<FileIdKey, Long>();
@@ -97,24 +96,22 @@ public class BaseCache extends Cache implements Closeable {
   private final Meter _removals;
   private final Thread _oldFileDaemonThread;
   private final AtomicBoolean _running = new AtomicBoolean(true);
-  private final SimpleCacheValueBufferPool _cacheValueBufferPool;
+  private final BaseCacheValueBufferPool _cacheValueBufferPool;
 
   public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, FileNameFilter readFilter,
-      FileNameFilter writeFilter, Quiet quiet, STORE store) {
+      FileNameFilter writeFilter, Quiet quiet, BaseCacheValueBufferPool cacheValueBufferPool) {
     _cacheMap = new ConcurrentLinkedHashMap.Builder<CacheKey, CacheValue>().weigher(new BaseCacheWeigher())
         .maximumWeightedCapacity(totalNumberOfBytes).listener(new BaseCacheEvictionListener()).build();
     _fileBufferSize = fileBufferSize;
     _readFilter = readFilter;
     _writeFilter = writeFilter;
-    _store = store;
     _cacheBlockSize = cacheBlockSize;
     _quiet = quiet;
     _hits = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, HIT), HIT, TimeUnit.SECONDS);
     _misses = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, MISS), MISS, TimeUnit.SECONDS);
     _evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
     _removals = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, REMOVAL), REMOVAL, TimeUnit.SECONDS);
-    // @TODO make configurable
-    _cacheValueBufferPool = new SimpleCacheValueBufferPool(_store, 1000);
+    _cacheValueBufferPool = cacheValueBufferPool;
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, ENTRIES), new Gauge<Long>() {
       @Override
       public Long value() {

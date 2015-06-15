@@ -19,9 +19,13 @@ package org.apache.blur.store;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_FILE_BUFFER_SIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_POOL_CACHE_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_READ_DEFAULT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_READ_NOCACHE_EXT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_SLAB_CHUNK_SIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_SLAB_ENABLED;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_SLAB_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_STORE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_WRITE_CACHE_EXT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_WRITE_DEFAULT;
@@ -43,17 +47,22 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache_v2.BaseCache;
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
+import org.apache.blur.store.blockcache_v2.BaseCacheValueBufferPool;
 import org.apache.blur.store.blockcache_v2.Cache;
 import org.apache.blur.store.blockcache_v2.CacheDirectory;
 import org.apache.blur.store.blockcache_v2.CachePoolStrategy;
 import org.apache.blur.store.blockcache_v2.FileNameFilter;
 import org.apache.blur.store.blockcache_v2.PooledCache;
 import org.apache.blur.store.blockcache_v2.Quiet;
+import org.apache.blur.store.blockcache_v2.SimpleCacheValueBufferPool;
 import org.apache.blur.store.blockcache_v2.SingleCachePoolStrategy;
 import org.apache.blur.store.blockcache_v2.Size;
+import org.apache.blur.store.blockcache_v2.SlabAllocationCacheValueBufferPool;
 import org.apache.lucene.store.Directory;
 
 public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
+
+
 
   private static final Log LOG = LogFactory.getLog(BlockCacheDirectoryFactoryV2.class);
 
@@ -165,8 +174,18 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
       }
     };
 
+    BaseCacheValueBufferPool pool;
+    if (configuration.getBoolean(BLUR_SHARD_BLOCK_CACHE_V2_SLAB_ENABLED, true)) {
+      int slabSize = configuration.getInt(BLUR_SHARD_BLOCK_CACHE_V2_SLAB_SIZE, 134217728);
+      int chunkSize = configuration.getInt(BLUR_SHARD_BLOCK_CACHE_V2_SLAB_CHUNK_SIZE, 8192);
+      pool = new SlabAllocationCacheValueBufferPool(chunkSize, slabSize);
+    } else {
+      int queueDepth = configuration.getInt(BLUR_SHARD_BLOCK_CACHE_V2_POOL_CACHE_SIZE, 10000);
+      pool = new SimpleCacheValueBufferPool(store, queueDepth);
+    }
+
     BaseCache baseCache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,
-        quiet, store);
+        quiet, pool);
     CachePoolStrategy cachePoolStrategy = new SingleCachePoolStrategy(baseCache);
     _cache = new PooledCache(cachePoolStrategy);
   }

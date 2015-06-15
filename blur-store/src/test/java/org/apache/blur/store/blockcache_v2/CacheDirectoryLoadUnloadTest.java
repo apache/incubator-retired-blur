@@ -30,14 +30,12 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.SimpleFSDirectory;
 import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 public class CacheDirectoryLoadUnloadTest {
 
   private BaseCache _cache;
 
-//  @Before
+  // @Before
   public void setup() throws IOException {
     long totalNumberOfBytes = 2000000000L;
     final int fileBufferSizeInt = 8192;
@@ -72,8 +70,9 @@ public class CacheDirectoryLoadUnloadTest {
         return false;
       }
     };
+    SimpleCacheValueBufferPool simpleCacheValueBufferPool = new SimpleCacheValueBufferPool(STORE.OFF_HEAP, 1000);
     _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
-        STORE.OFF_HEAP);
+        simpleCacheValueBufferPool);
   }
 
   @After
@@ -98,7 +97,7 @@ public class CacheDirectoryLoadUnloadTest {
 
   }
 
-//  @Test
+  // @Test
   public void test1() throws IOException {
     int i = 0;
     long length = 100000000;

@@ -16,18 +16,23 @@ package org.apache.blur.store;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
+import org.apache.blur.store.blockcache_v2.BaseCacheValueBufferPool;
+import org.apache.blur.store.blockcache_v2.SlabAllocationCacheValueBufferPool;
 import org.junit.Test;
 
-public class CacheDirectoryTestSuiteOffHeap extends CacheDirectoryTestSuite {
+public class CacheDirectoryTestSuiteSlabPool extends CacheDirectoryTestSuite {
+
+  private int _slabSize;
+  private int _chunkSize = 1000;
 
   @Test
   public void runsTheTests() {
   }
 
   @Override
-  protected STORE getStore() {
-    return STORE.OFF_HEAP;
+  protected BaseCacheValueBufferPool getPool() {
+    _chunkSize = random.nextInt(50000) + 1000;
+    _slabSize = (random.nextInt(100) + 1) * _chunkSize;
+    return new SlabAllocationCacheValueBufferPool(_chunkSize, _slabSize);
   }
-
 }

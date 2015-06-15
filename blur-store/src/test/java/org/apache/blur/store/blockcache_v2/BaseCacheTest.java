@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import org.apache.blur.store.blockcache.LastModified;
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
-import org.apache.blur.store.blockcache_v2.CacheDirectoryTest.RDir;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
@@ -66,8 +65,9 @@ public class BaseCacheTest {
         return false;
       }
     };
+    SimpleCacheValueBufferPool simpleCacheValueBufferPool = new SimpleCacheValueBufferPool(STORE.ON_HEAP, 1000);
     _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
-        STORE.ON_HEAP);
+        simpleCacheValueBufferPool);
 
     Directory directory = newDirectory();
     BufferStore.initNewBuffer(1024, 1024 * 128);

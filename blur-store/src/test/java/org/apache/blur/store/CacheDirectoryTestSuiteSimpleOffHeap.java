@@ -17,17 +17,19 @@ package org.apache.blur.store;
  * limitations under the License.
  */
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
+import org.apache.blur.store.blockcache_v2.BaseCacheValueBufferPool;
+import org.apache.blur.store.blockcache_v2.SimpleCacheValueBufferPool;
 import org.junit.Test;
 
-public class CacheDirectoryTestSuiteOnHeap extends CacheDirectoryTestSuite {
-
-  @Override
-  protected STORE getStore() {
-    return STORE.ON_HEAP;
-  }
+public class CacheDirectoryTestSuiteSimpleOffHeap extends CacheDirectoryTestSuite {
 
   @Test
   public void runsTheTests() {
+  }
+
+  @Override
+  protected BaseCacheValueBufferPool getPool() {
+    return new SimpleCacheValueBufferPool(STORE.OFF_HEAP, 1000);
   }
 
 }

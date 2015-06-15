@@ -81,6 +81,8 @@ public abstract class BaseDirectoryTestSuite {
     rm(file);
     rm(fileControl);
     seed = new Random().nextLong();
+    System.out.println("Seed [" + seed + "]");
+    seed = 4975561783806198199L;
     random = new Random(seed);
     directory = setupDirectory();
   }

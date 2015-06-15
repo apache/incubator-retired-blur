@@ -87,8 +87,9 @@ public class CacheDirectoryTest {
         return false;
       }
     };
+    SimpleCacheValueBufferPool simpleCacheValueBufferPool = new SimpleCacheValueBufferPool(STORE.ON_HEAP, 1000);
     _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
-        STORE.ON_HEAP);
+        simpleCacheValueBufferPool);
     Directory directory = newDirectory();
     BufferStore.initNewBuffer(1024, 1024 * 128);
     BufferStore.initNewBuffer(8192, 8192 * 128);

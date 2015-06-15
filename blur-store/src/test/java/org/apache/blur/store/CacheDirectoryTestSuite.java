@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.blur.store.blockcache_v2.BaseCache;
-import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
+import org.apache.blur.store.blockcache_v2.BaseCacheValueBufferPool;
 import org.apache.blur.store.blockcache_v2.CacheDirectory;
 import org.apache.blur.store.blockcache_v2.FileNameFilter;
 import org.apache.blur.store.blockcache_v2.Quiet;
@@ -72,7 +72,7 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
       }
     };
     _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
-        getStore());
+        getPool());
     Directory dir = FSDirectory.open(new File(file, "cache"));
 
     BufferStore.initNewBuffer(1024, 1024 * 128);
@@ -80,7 +80,7 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
     return new CacheDirectory("test", "test", wrapLastModified(dir), _cache, null);
   }
 
-  protected abstract STORE getStore();
+  protected abstract BaseCacheValueBufferPool getPool();
 
   public void close() throws IOException {
     _cache.close();

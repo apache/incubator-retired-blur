@@ -55,18 +55,30 @@ public class SlabAllocationCacheValueBufferPool extends BaseCacheValueBufferPool
     final BlockLocks _locks;
     final int _chunkSize;
     final long _maxAddress;
+    final int _maxChunks;
 
-    Slab(long address, int numberOfChunks, int chunkSize) {
+    Slab(long address, int maxChunks, int chunkSize) {
+      _maxChunks = maxChunks;
       _address = address;
-      _maxAddress = _address + ((long) numberOfChunks * (long) chunkSize);
-      _locks = new BlockLocks(numberOfChunks);
+      _maxAddress = _address + ((long) maxChunks * (long) chunkSize);
+      _locks = new BlockLocks(maxChunks);
       _chunkSize = chunkSize;
+    }
+
+    void dumpSlabPopulation() {
+      System.out.println("Address [" + _address + "] MaxAddress [" + _maxAddress + "] Clear:[");
+      int index = 0;
+      while ((index = _locks.nextClearBit(index)) != -1) {
+        System.out.println(index);
+        index++;
+      }
+      System.out.println("]");
     }
 
     long findChunk() {
       while (true) {
         int chunkId = _locks.nextClearBit(0);
-        if (chunkId < 0) {
+        if (chunkId < 0 || chunkId>=_maxChunks) {
           return -1L;
         }
         if (_locks.set(chunkId)) {
@@ -87,6 +99,7 @@ public class SlabAllocationCacheValueBufferPool extends BaseCacheValueBufferPool
     void release() {
       _unsafe.freeMemory(_address);
     }
+
   }
 
   @Override
@@ -202,5 +215,18 @@ public class SlabAllocationCacheValueBufferPool extends BaseCacheValueBufferPool
       return chunks;
     }
     return chunks + 1;
+  }
+
+  public long getCurrentSize() {
+    Collection<Slab> slabs = getSlabs();
+    return (long) slabs.size() * (long) _slabSize;
+  }
+
+  public void dumpSlabPopulation() {
+    Collection<Slab> slabs = getSlabs();
+    for (Slab slab : slabs) {
+      slab.dumpSlabPopulation();
+    }
+
   }
 }

@@ -22,10 +22,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import lucene.security.index.AccessControlFactory;
-import lucene.security.search.SecureIndexSearcher;
-
 import org.apache.blur.lucene.search.SuperQuery;
+import org.apache.blur.lucene.security.index.AccessControlFactory;
+import org.apache.blur.lucene.security.search.SecureIndexSearcher;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;

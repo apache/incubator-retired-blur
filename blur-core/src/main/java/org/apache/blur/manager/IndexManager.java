@@ -46,8 +46,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import lucene.security.index.SecureDirectoryReader;
-
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.index.AtomicReaderUtil;
@@ -60,6 +58,7 @@ import org.apache.blur.lucene.search.FacetExecutor;
 import org.apache.blur.lucene.search.FacetQuery;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.lucene.search.StopExecutionCollector.StopExecutionCollectorException;
+import org.apache.blur.lucene.security.index.SecureDirectoryReader;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.results.BlurResultIterable;
 import org.apache.blur.manager.results.BlurResultIterableSearcher;

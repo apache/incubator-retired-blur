@@ -25,10 +25,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import lucene.security.index.AccessControlFactory;
-import lucene.security.index.FilterAccessControlFactory;
-
 import org.apache.blur.lucene.search.SuperQuery;
+import org.apache.blur.lucene.security.index.AccessControlFactory;
+import org.apache.blur.lucene.security.index.FilterAccessControlFactory;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;

@@ -194,6 +194,7 @@ under the License.
 		<servlet-api.version>3.0.1</servlet-api.version>
 		<hive.version>0.13.1</hive.version>
 		<java-allocation-instrumenter.version>3.0</java-allocation-instrumenter.version>
+		<commons-codec.version>1.9</commons-codec.version>
 	</properties>
 
     <dependencyManagement>
@@ -513,6 +514,7 @@ under the License.
 				<module>blur-status</module>
 				<module>blur-shell</module>
 				<module>blur-kvs</module>
+				<module>blur-document-security</module>
 				<module>distribution</module>
 			</modules>
 		</profile>
@@ -540,6 +542,7 @@ under the License.
 				<module>blur-status</module>
 				<module>blur-shell</module>
 				<module>blur-kvs</module>
+				<module>blur-document-security</module>
 				<module>distribution</module>
 			</modules>
 		</profile>
@@ -567,6 +570,7 @@ under the License.
 				<module>blur-status</module>
 				<module>blur-shell</module>
 				<module>blur-kvs</module>
+				<module>blur-document-security</module>
 				<module>distribution</module>
 			</modules>
 		</profile>

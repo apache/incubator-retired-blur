@@ -18,9 +18,8 @@ package org.apache.blur.index;
 
 import java.io.IOException;
 
-import lucene.security.index.SecureAtomicReader;
-
 import org.apache.blur.index.ExitableReader.ExitableFilterAtomicReader;
+import org.apache.blur.lucene.security.index.SecureAtomicReader;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.SegmentReader;

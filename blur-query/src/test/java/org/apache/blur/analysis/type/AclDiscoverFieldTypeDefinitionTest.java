@@ -27,14 +27,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import lucene.security.index.AccessControlFactory;
-import lucene.security.index.FilterAccessControlFactory;
-import lucene.security.search.SecureIndexSearcher;
-
 import org.apache.blur.analysis.BaseFieldManager;
 import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
 import org.apache.blur.lucene.search.SuperParser;
+import org.apache.blur.lucene.security.index.AccessControlFactory;
+import org.apache.blur.lucene.security.index.FilterAccessControlFactory;
+import org.apache.blur.lucene.security.search.SecureIndexSearcher;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.ScoreType;

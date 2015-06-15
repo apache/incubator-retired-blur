@@ -27,10 +27,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import lucene.security.DocumentVisibility;
-
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.security.DocumentVisibility;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;

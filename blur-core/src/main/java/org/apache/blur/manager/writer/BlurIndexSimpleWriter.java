@@ -49,8 +49,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
-import lucene.security.index.AccessControlFactory;
-
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.index.ExitableReader;
@@ -61,6 +59,7 @@ import org.apache.blur.lucene.codec.Blur024Codec;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.lucene.search.IndexSearcherCloseableBase;
 import org.apache.blur.lucene.search.SuperQuery;
+import org.apache.blur.lucene.security.index.AccessControlFactory;
 import org.apache.blur.memory.MemoryLeakDetector;
 import org.apache.blur.server.IndexSearcherCloseableSecureBase;
 import org.apache.blur.server.ShardContext;

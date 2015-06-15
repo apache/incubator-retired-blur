@@ -22,9 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import lucene.security.document.DocumentVisiblityField;
-
 import org.apache.blur.analysis.FieldTypeDefinition;
+import org.apache.blur.lucene.security.document.DocumentVisiblityField;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;

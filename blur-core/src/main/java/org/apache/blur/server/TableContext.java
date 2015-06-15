@@ -39,9 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import lucene.security.index.AccessControlFactory;
-import lucene.security.index.FilterAccessControlFactory;
-
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.analysis.FieldTypeDefinition;
@@ -51,6 +48,8 @@ import org.apache.blur.analysis.ThriftFieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
+import org.apache.blur.lucene.security.index.AccessControlFactory;
+import org.apache.blur.lucene.security.index.FilterAccessControlFactory;
 import org.apache.blur.manager.ReadInterceptor;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;

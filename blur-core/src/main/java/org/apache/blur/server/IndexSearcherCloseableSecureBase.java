@@ -27,10 +27,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import lucene.security.index.AccessControlFactory;
-
 import org.apache.blur.lucene.search.CloneableCollector;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.lucene.security.index.AccessControlFactory;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
 import org.apache.lucene.index.AtomicReaderContext;

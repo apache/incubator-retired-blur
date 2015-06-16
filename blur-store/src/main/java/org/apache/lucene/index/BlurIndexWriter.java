@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 
 import org.apache.blur.index.ExitableReader;
+import org.apache.blur.lucene.index.FencedDirectory;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
@@ -46,13 +47,25 @@ public class BlurIndexWriter extends org.apache.lucene.index.IndexWriter {
 
   public BlurIndexWriter(Directory d, IndexWriterConfig conf, boolean makeReaderExitable) throws CorruptIndexException,
       LockObtainFailedException, IOException {
-    super(d, conf);
+    super(fence(d), conf);
     try {
-      internalLock = getInternalLock();
+      internalLock = findInternalLock();
     } catch (Exception e) {
       throw new RuntimeException("Could not get the write lock instance.", e);
     }
     _makeReaderExitable = makeReaderExitable;
+  }
+
+  private static Directory fence(Directory directory) {
+    if (directory instanceof FencedDirectory) {
+      return directory;
+    } else {
+      return new FencedDirectory(directory);
+    }
+  }
+
+  public Lock getInternalLock() {
+    return internalLock;
   }
 
   @Override
@@ -72,7 +85,7 @@ public class BlurIndexWriter extends org.apache.lucene.index.IndexWriter {
     return reader;
   }
 
-  private Lock getInternalLock() throws SecurityException, NoSuchFieldException, IllegalArgumentException,
+  private Lock findInternalLock() throws SecurityException, NoSuchFieldException, IllegalArgumentException,
       IllegalAccessException {
     Field field = org.apache.lucene.index.IndexWriter.class.getDeclaredField("writeLock");
     field.setAccessible(true);

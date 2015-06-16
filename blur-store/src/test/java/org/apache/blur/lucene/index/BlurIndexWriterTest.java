@@ -74,6 +74,7 @@ public class BlurIndexWriterTest {
           writer1.prepareCommit();
           fail1.set(true);
         } catch (IOException e) {
+          e.printStackTrace();
           if (writer1 != null) {
             try {
               writer1.rollback();

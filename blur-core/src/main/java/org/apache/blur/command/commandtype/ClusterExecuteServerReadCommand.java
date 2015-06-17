@@ -22,16 +22,15 @@ import java.util.Map;
 
 import org.apache.blur.command.ClusterContext;
 import org.apache.blur.command.CombiningContext;
-import org.apache.blur.command.Command;
 import org.apache.blur.command.CommandRunner;
 import org.apache.blur.command.IndexContext;
-import org.apache.blur.command.ServerRead;
 import org.apache.blur.command.Location;
+import org.apache.blur.command.ServerRead;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
 
-public abstract class ClusterExecuteServerReadCommand<T> extends Command<T> implements ServerRead<T, T> {
+public abstract class ClusterExecuteServerReadCommand<T> extends ClusterExecuteCommand<T> implements ServerRead<T, T> {
 
   public abstract T execute(IndexContext context) throws IOException, InterruptedException;
 

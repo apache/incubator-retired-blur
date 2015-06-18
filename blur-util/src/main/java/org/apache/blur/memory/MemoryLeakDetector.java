@@ -18,24 +18,24 @@ package org.apache.blur.memory;
 
 import java.text.MessageFormat;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentMap;
+import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 
-import com.google.common.collect.MapMaker;
-
 public class MemoryLeakDetector {
 
   private static final Log LOG = LogFactory.getLog(MemoryLeakDetector.class);
-  
+
   private static boolean _enabled = false;
-  private static final ConcurrentMap<Object, Info> _map;
+  private static final Map<Object, Info> _map;
   private static Timer _timer;
 
   static class Info {
@@ -54,9 +54,17 @@ public class MemoryLeakDetector {
 
   }
 
+  public static boolean isEnabled() {
+    return _enabled;
+  }
+
+  public static void setEnabled(boolean enabled) {
+    MemoryLeakDetector._enabled = enabled;
+  }
+
   static {
-    _map = new MapMaker().weakKeys().makeMap();
-    _timer = new Timer("MemoryLeakDetector",true);
+    _map = Collections.synchronizedMap(new WeakHashMap<Object, Info>());
+    _timer = new Timer("MemoryLeakDetector", true);
     _timer.schedule(new TimerTask() {
       @Override
       public void run() {
@@ -76,13 +84,23 @@ public class MemoryLeakDetector {
 
   public static void dump() {
     Set<Entry<Object, Info>> entrySet = _map.entrySet();
+    int count = 0;
     for (Entry<Object, Info> e : entrySet) {
       Object o = e.getKey();
       if (o != null) {
         Info info = e.getValue();
-        LOG.info("Object [{0}] Info [{1}]", o, info);
+        LOG.info("Id [{0}] Hashcode [{1}] Object [{2}] Info [{3}]", count, System.identityHashCode(o), o, info);
+        count++;
       }
     }
+  }
+
+  public static boolean isEmpty() {
+    return _map.isEmpty();
+  }
+
+  public static int getCount() {
+    return _map.size();
   }
 
 }

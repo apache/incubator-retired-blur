@@ -73,11 +73,6 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
       _sequentialReadControl.incrReadDetector();
     } else {
       if (_sequentialReadControl.isEnabled()) {
-        // System.out.println("Sequential Read OFF clone [" + _isClone + "] ["
-        // + _path + "] count ["
-        // + (_sequentialReadDetectorCounter - _sequentialReadThreshold) +
-        // "]");
-
         if (_sequentialReadControl.shouldSkipInput(filePointer, _prevFilePointer)) {
           _sequentialInput.skip(filePointer - _prevFilePointer);
         } else {

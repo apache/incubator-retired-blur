@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.memory.MemoryLeakDetector;
 import org.apache.blur.store.blockcache.LastModified;
 import org.apache.blur.store.hdfs_v2.HdfsUtils;
 import org.apache.blur.trace.Trace;
@@ -150,6 +151,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected final SequentialReadControl _sequentialReadControl;
   protected final String _hostname;
   protected final TimerTask _reportOnBlockLocality;
+  protected final boolean _resourceTracking;
 
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
     this(configuration, path, new SequentialReadControl(new BlurConfiguration()));
@@ -162,6 +164,12 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   public HdfsDirectory(Configuration configuration, Path path, SequentialReadControl sequentialReadControl,
       Collection<String> filesToExpose) throws IOException {
+    this(configuration, path, sequentialReadControl, filesToExpose, false);
+  }
+
+  public HdfsDirectory(Configuration configuration, Path path, SequentialReadControl sequentialReadControl,
+      Collection<String> filesToExpose, boolean resourceTracking) throws IOException {
+    _resourceTracking = resourceTracking;
     if (sequentialReadControl == null) {
       _sequentialReadControl = new SequentialReadControl(new BlurConfiguration());
     } else {
@@ -318,7 +326,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
           if (closeable == null) {
             return;
           }
-          LOG.debug("Closing [{0}]", closeable);
+          LOG.info("Closing [{0}] [{1}]", System.identityHashCode(closeable), closeable);
           org.apache.hadoop.io.IOUtils.cleanup(LOG, closeable);
         }
       }
@@ -373,6 +381,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), 0L));
     }
     final FSDataOutputStream outputStream = openForOutput(name);
+    trackObject(outputStream, "Outputstream", name, _path);
     return new BufferedIndexOutput() {
 
       @Override
@@ -414,6 +423,12 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     };
   }
 
+  protected <T> void trackObject(T t, String message, Object... args) {
+    if (_resourceTracking) {
+      MemoryLeakDetector.record(t, message, args);
+    }
+  }
+
   protected FSDataOutputStream openForOutput(String name) throws IOException {
     Path path = getPath(name);
     Tracer trace = Trace.trace("filesystem - create", Trace.param("path", path));
@@ -439,14 +454,15 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   protected synchronized FSDataInputRandomAccess openForInput(String name, long length) throws IOException {
     final Path path = getPath(name);
-    FSDataInputRandomAccess input = _inputMap.get(path);
+    FSDataInputRandomAccess input = _inputMap.get(name);
     if (input != null) {
       return input;
     }
     Tracer trace = Trace.trace("filesystem - open", Trace.param("path", path));
     try {
       final FSDataInputStream inputStream = _fileSystem.open(path);
-      FSDataInputRandomAccess randomInputStream = toFSDataInputRandomAccess(path, inputStream, length);
+      trackObject(inputStream, "Random Inputstream", name, path);
+      FSDataInputRandomAccess randomInputStream = new HdfsFSDataInputRandomAccess(inputStream, path, length);
       _inputMap.put(name, randomInputStream);
       return randomInputStream;
     } finally {
@@ -454,37 +470,41 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     }
   }
 
-  protected FSDataInputRandomAccess toFSDataInputRandomAccess(final Path path, final FSDataInputStream inputStream,
-      final long length) {
-    FSDataInputRandomAccess randomInputStream = new FSDataInputRandomAccess() {
+  static class HdfsFSDataInputRandomAccess implements FSDataInputRandomAccess {
+    private final FSDataInputStream _inputStream;
+    private final Path _path;
+    private final long _length;
 
-      @Override
-      public void close() throws IOException {
-        inputStream.close();
-      }
+    HdfsFSDataInputRandomAccess(FSDataInputStream inputStream, Path path, long length) {
+      _inputStream = inputStream;
+      _path = path;
+      _length = length;
+    }
 
-      @Override
-      public int read(long filePointer, byte[] b, int offset, int length) throws IOException {
-        return inputStream.read(filePointer, b, offset, length);
-      }
+    @Override
+    public void close() throws IOException {
+      _inputStream.close();
+    }
 
-      @Override
-      public String toString() {
-        return path.toString();
-      }
+    @Override
+    public int read(long filePointer, byte[] b, int offset, int length) throws IOException {
+      return _inputStream.read(filePointer, b, offset, length);
+    }
 
-      @Override
-      public Path getPath() {
-        return path;
-      }
+    @Override
+    public String toString() {
+      return _path.toString();
+    }
 
-      @Override
-      public long length() {
-        return length;
-      }
+    @Override
+    public Path getPath() {
+      return _path;
+    }
 
-    };
-    return randomInputStream;
+    @Override
+    public long length() {
+      return _length;
+    }
   }
 
   @Override
@@ -560,6 +580,8 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     Tracer trace = Trace.trace("filesystem - delete", Trace.param("path", getPath(name)));
     if (inputStream != null) {
       IOUtils.closeQuietly(inputStream);
+    } else {
+      LOG.error("Strange problem, random access input was not found for [{0}]", name);
     }
     if (_useCache) {
       _symlinkMap.remove(name);
@@ -765,7 +787,15 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       throws IOException {
     final Path path = getPath(name);
     final FSDataInputStream input = fileSystem.open(path);
-    FSDataInputSequentialAccess sequentialAccess = new FSDataInputSequentialAccess() {
+    trackObject(input, "Sequential Inputstream", name, _path);
+    FSDataInputSequentialAccess sequentialAccess = toFSDataInputSequentialAccess(path, input);
+    WEAK_CLOSING_QUEUE.add(new WeakRef(sequentialAccess, key));
+    return sequentialAccess;
+  }
+
+  private static FSDataInputSequentialAccess toFSDataInputSequentialAccess(final Path path,
+      final FSDataInputStream input) {
+    return new FSDataInputSequentialAccess() {
 
       @Override
       public void close() throws IOException {
@@ -798,8 +828,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       }
 
     };
-    WEAK_CLOSING_QUEUE.add(new WeakRef(sequentialAccess, key));
-    return sequentialAccess;
   }
 
   static class WeakRef {

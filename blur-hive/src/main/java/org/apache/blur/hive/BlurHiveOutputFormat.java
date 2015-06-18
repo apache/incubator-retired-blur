@@ -58,6 +58,7 @@ import org.apache.hadoop.util.Progressable;
 
 public class BlurHiveOutputFormat implements HiveOutputFormat<Text, BlurRecord> {
 
+  private static final String BLUR_USER_PROXY = "blur.user.proxy";
   private static final String BLUR = "blur";
   private static final String BLUR_USER_NAME = "blur.user.name";
   private static final String BLUR_BULK_MUTATE_ID = "blur.bulk.mutate.id";
@@ -93,41 +94,65 @@ public class BlurHiveOutputFormat implements HiveOutputFormat<Text, BlurRecord> 
 
   private org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getMrWorkingPathWriter(
       final Configuration configuration) throws IOException {
-    String workingPathStr = configuration.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
-    Path workingPath = new Path(workingPathStr);
-    Path tmpDir = new Path(workingPath, "tmp");
-    final FileSystem fileSystem = tmpDir.getFileSystem(configuration);
-    String loadId = configuration.get(BlurSerDe.BLUR_MR_LOAD_ID);
-    final Path loadPath = new Path(tmpDir, loadId);
-    String user = getBlurUser(configuration);
-    UserGroupInformation proxyUser = UserGroupInformation.createProxyUser(user, UserGroupInformation.getLoginUser());
+    PrivilegedExceptionAction<org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter> privilegedExceptionAction = new PrivilegedExceptionAction<org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter>() {
+      @Override
+      public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter run() throws Exception {
+        String workingPathStr = configuration.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
+        Path workingPath = new Path(workingPathStr);
+        Path tmpDir = new Path(workingPath, "tmp");
+        FileSystem fileSystem = tmpDir.getFileSystem(configuration);
+        String loadId = configuration.get(BlurSerDe.BLUR_MR_LOAD_ID);
+        Path loadPath = new Path(tmpDir, loadId);
+        final Writer writer = new SequenceFile.Writer(fileSystem, configuration, new Path(loadPath, UUID.randomUUID()
+            .toString()), Text.class, BlurRecord.class);
+
+        return new org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter() {
+
+          @Override
+          public void write(Writable w) throws IOException {
+            BlurRecord blurRecord = (BlurRecord) w;
+            String rowId = blurRecord.getRowId();
+            writer.append(new Text(rowId), blurRecord);
+          }
+
+          @Override
+          public void close(boolean abort) throws IOException {
+            writer.close();
+          }
+        };
+      }
+    };
+
+    UserGroupInformation userGroupInformation = getUGI(configuration);
     try {
-      return proxyUser
-          .doAs(new PrivilegedExceptionAction<org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter>() {
-            @Override
-            public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter run() throws Exception {
-              final Writer writer = new SequenceFile.Writer(fileSystem, configuration, new Path(loadPath, UUID
-                  .randomUUID().toString()), Text.class, BlurRecord.class);
-
-              return new org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter() {
-
-                @Override
-                public void write(Writable w) throws IOException {
-                  BlurRecord blurRecord = (BlurRecord) w;
-                  String rowId = blurRecord.getRowId();
-                  writer.append(new Text(rowId), blurRecord);
-                }
-
-                @Override
-                public void close(boolean abort) throws IOException {
-                  writer.close();
-                }
-              };
-            }
-          });
+      return userGroupInformation.doAs(privilegedExceptionAction);
     } catch (InterruptedException e) {
       throw new IOException(e);
     }
+  }
+
+  public static UserGroupInformation getUGI(final Configuration configuration) throws IOException {
+    String user = getBlurUser(configuration);
+    UserGroupInformation userGroupInformation;
+    UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+    if (user.equals(currentUser.getUserName())) {
+      userGroupInformation = currentUser;
+    } else {
+      if (BlurHiveOutputFormat.isBlurUserAsProxy(configuration)) {
+        userGroupInformation = UserGroupInformation.createProxyUser(user, currentUser);
+      } else {
+        userGroupInformation = UserGroupInformation.createRemoteUser(user);
+      }
+    }
+    return userGroupInformation;
+  }
+
+  public static boolean isBlurUserAsProxy(Configuration configuration) {
+    return configuration.getBoolean(BLUR_USER_PROXY, false);
+  }
+
+  public static void setBlurUserAsProxy(Configuration configuration, boolean blurUserProxy) {
+    configuration.setBoolean(BLUR_USER_PROXY, blurUserProxy);
   }
 
   public static String getBlurUser(Configuration configuration) {

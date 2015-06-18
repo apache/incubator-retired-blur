@@ -53,6 +53,7 @@ import org.apache.blur.zookeeper.ZookeeperPathConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -609,10 +610,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   private void assignMapReduceWorkingPath(TableDescriptor tableDescriptor) throws IOException {
     Map<String, String> tableProperties = tableDescriptor.getTableProperties();
-    String mrIncWorkingPathStr = null;
-    if (tableProperties != null) {
-      mrIncWorkingPathStr = tableProperties.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
-    }
+    String mrIncWorkingPathStr = getProperty(tableProperties, BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
     if (mrIncWorkingPathStr == null) {
       // If not set on the table, try to use cluster default
       mrIncWorkingPathStr = _configuration.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
@@ -626,18 +624,37 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
 
     Path mrIncWorkingPath = new Path(mrIncWorkingPathStr);
+
+    FileSystem fileSystem = mrIncWorkingPath.getFileSystem(_config);
+
     Path newData = new Path(mrIncWorkingPath, NEW);
     Path tmpData = new Path(mrIncWorkingPath, TMP);
     Path inprogressData = new Path(mrIncWorkingPath, INPROGRESS);
     Path completeData = new Path(mrIncWorkingPath, COMPLETE);
     Path fileCache = new Path(mrIncWorkingPath, CACHE);
 
-    FileSystem fileSystem = mrIncWorkingPath.getFileSystem(_config);
-    fileSystem.mkdirs(newData);
-    fileSystem.mkdirs(tmpData);
-    fileSystem.mkdirs(inprogressData);
-    fileSystem.mkdirs(completeData);
-    fileSystem.mkdirs(fileCache);
+    String permission = getProperty(tableProperties, BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH_PERMISSION);
+    FsPermission fsPermission;
+    if (permission == null || permission.isEmpty()) {
+      fsPermission = FsPermission.getDirDefault();
+    } else {
+      fsPermission = new FsPermission(permission);
+    }
+
+    fileSystem.mkdirs(mrIncWorkingPath, fsPermission);
+    fileSystem.mkdirs(newData, fsPermission);
+    fileSystem.mkdirs(tmpData, fsPermission);
+    fileSystem.mkdirs(inprogressData, fsPermission);
+    fileSystem.mkdirs(completeData, fsPermission);
+    fileSystem.mkdirs(fileCache, fsPermission);
+  }
+
+  private String getProperty(Map<String, String> tableProperties, String name) {
+    String value = null;
+    if (tableProperties != null) {
+      value = tableProperties.get(name);
+    }
+    return value;
   }
 
   @Override

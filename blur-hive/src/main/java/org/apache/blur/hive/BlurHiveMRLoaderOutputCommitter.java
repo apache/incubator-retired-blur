@@ -17,6 +17,7 @@
 package org.apache.blur.hive;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 
 import org.apache.blur.mapreduce.lib.BlurOutputFormat;
 import org.apache.blur.mapreduce.lib.update.BulkTableUpdateCommand;
@@ -31,6 +32,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.OutputCommitter;
 import org.apache.hadoop.mapred.TaskAttemptContext;
+import org.apache.hadoop.security.UserGroupInformation;
 
 public class BlurHiveMRLoaderOutputCommitter extends OutputCommitter {
 
@@ -77,41 +79,53 @@ public class BlurHiveMRLoaderOutputCommitter extends OutputCommitter {
     finishBulkJob(context, true);
   }
 
-  private void finishBulkJob(JobContext context, boolean apply) throws IOException {
-    Configuration configuration = context.getConfiguration();
-    String workingPathStr = configuration.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
-    Path workingPath = new Path(workingPathStr);
-    Path tmpDir = new Path(workingPath, "tmp");
-    FileSystem fileSystem = tmpDir.getFileSystem(configuration);
-    String loadId = configuration.get(BlurSerDe.BLUR_MR_LOAD_ID);
-    Path loadPath = new Path(tmpDir, loadId);
+  private void finishBulkJob(JobContext context, final boolean apply) throws IOException {
+    final Configuration configuration = context.getConfiguration();
+    PrivilegedExceptionAction<Void> action = new PrivilegedExceptionAction<Void>() {
+      @Override
+      public Void run() throws Exception {
+        String workingPathStr = configuration.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
+        Path workingPath = new Path(workingPathStr);
+        Path tmpDir = new Path(workingPath, "tmp");
+        FileSystem fileSystem = tmpDir.getFileSystem(configuration);
+        String loadId = configuration.get(BlurSerDe.BLUR_MR_LOAD_ID);
+        Path loadPath = new Path(tmpDir, loadId);
 
-    if (apply) {
-      Path newDataPath = new Path(workingPath, "new");
-      Path dst = new Path(newDataPath, loadId);
-      if (!fileSystem.rename(loadPath, dst)) {
-        LOG.error("Could not move data from src [" + loadPath + "] to dst [" + dst + "]");
-        throw new IOException("Could not move data from src [" + loadPath + "] to dst [" + dst + "]");
+        if (apply) {
+          Path newDataPath = new Path(workingPath, "new");
+          Path dst = new Path(newDataPath, loadId);
+          if (!fileSystem.rename(loadPath, dst)) {
+            LOG.error("Could not move data from src [" + loadPath + "] to dst [" + dst + "]");
+            throw new IOException("Could not move data from src [" + loadPath + "] to dst [" + dst + "]");
+          }
+
+          TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
+          String connectionStr = configuration.get(BlurSerDe.BLUR_CONTROLLER_CONNECTION_STR);
+          BulkTableUpdateCommand bulkTableUpdateCommand = new BulkTableUpdateCommand();
+          bulkTableUpdateCommand.setAutoLoad(true);
+          bulkTableUpdateCommand.setTable(tableDescriptor.getName());
+          bulkTableUpdateCommand.setWaitForDataBeVisible(true);
+
+          Configuration config = new Configuration(false);
+          config.addResource(HDFS_SITE_XML);
+          config.addResource(YARN_SITE_XML);
+          config.addResource(MAPRED_SITE_XML);
+
+          bulkTableUpdateCommand.addExtraConfig(config);
+          if (bulkTableUpdateCommand.run(BlurClient.getClient(connectionStr)) != 0) {
+            throw new IOException("Unknown error occured duing load.");
+          }
+        } else {
+          fileSystem.delete(loadPath, true);
+        }
+        return null;
       }
-
-      TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(configuration);
-      String connectionStr = configuration.get(BlurSerDe.BLUR_CONTROLLER_CONNECTION_STR);
-      BulkTableUpdateCommand bulkTableUpdateCommand = new BulkTableUpdateCommand();
-      bulkTableUpdateCommand.setAutoLoad(true);
-      bulkTableUpdateCommand.setTable(tableDescriptor.getName());
-      bulkTableUpdateCommand.setWaitForDataBeVisible(true);
-
-      Configuration config = new Configuration(false);
-      config.addResource(HDFS_SITE_XML);
-      config.addResource(YARN_SITE_XML);
-      config.addResource(MAPRED_SITE_XML);
-
-      bulkTableUpdateCommand.addExtraConfig(config);
-      if (bulkTableUpdateCommand.run(BlurClient.getClient(connectionStr)) != 0) {
-        throw new IOException("Unknown error occured duing load.");
-      }
-    } else {
-      fileSystem.delete(loadPath, true);
+    };
+    UserGroupInformation userGroupInformation = BlurHiveOutputFormat.getUGI(configuration);
+    try {
+      userGroupInformation.doAs(action);
+    } catch (InterruptedException e) {
+      throw new IOException(e);
     }
   }
 

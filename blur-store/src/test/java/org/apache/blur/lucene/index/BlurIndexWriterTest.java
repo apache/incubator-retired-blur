@@ -62,28 +62,29 @@ public class BlurIndexWriterTest {
     Thread thread1 = new Thread(new Runnable() {
       @Override
       public void run() {
-        BlurIndexWriter writer1 = null;
+        BlurIndexWriter writer = null;
         try {
           BlurLockFactory blurLockFactory = new BlurLockFactory(_configuration, hdfsDirPath, "node1", "1");
           directory.setLockFactory(blurLockFactory);
           IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
           conf.setInfoStream(getInfoStream());
-          writer1 = new BlurIndexWriter(directory, conf);
-          writer1.addIndexes(addDir("1"));
+          writer = new BlurIndexWriter(directory, conf);
+          writer.addIndexes(addDir("1"));
           waitToLooseLock();
-          writer1.prepareCommit();
+          writer.prepareCommit();
           fail1.set(true);
         } catch (IOException e) {
-          if (writer1 != null) {
+          e.printStackTrace();
+          if (writer != null) {
             try {
-              writer1.rollback();
+              writer.rollback();
             } catch (IOException e1) {
               e1.printStackTrace();
             }
           }
-          if (writer1 != null) {
+          if (writer != null) {
             try {
-              writer1.close();
+              writer.close();
             } catch (IOException e1) {
               e1.printStackTrace();
             }
@@ -101,11 +102,11 @@ public class BlurIndexWriterTest {
           directory.setLockFactory(blurLockFactory);
           IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
           conf.setInfoStream(getInfoStream());
-          BlurIndexWriter writer1 = new BlurIndexWriter(directory, conf);
+          BlurIndexWriter writer = new BlurIndexWriter(directory, conf);
           obtainLock();
-          writer1.addIndexes(addDir("2"));
-          writer1.commit();
-          writer1.close();
+          writer.addIndexes(addDir("2"));
+          writer.commit();
+          writer.close();
         } catch (IOException e) {
           e.printStackTrace();
           fail2.set(true);

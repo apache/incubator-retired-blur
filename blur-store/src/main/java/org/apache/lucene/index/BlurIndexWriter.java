@@ -54,6 +54,7 @@ public class BlurIndexWriter extends org.apache.lucene.index.IndexWriter {
       throw new RuntimeException("Could not get the write lock instance.", e);
     }
     _makeReaderExitable = makeReaderExitable;
+    deleteUnusedFiles();
   }
 
   private static Directory fence(Directory directory) {
@@ -66,6 +67,12 @@ public class BlurIndexWriter extends org.apache.lucene.index.IndexWriter {
 
   public Lock getInternalLock() {
     return internalLock;
+  }
+
+  @Override
+  public synchronized void deleteUnusedFiles() throws IOException {
+    deleter.refresh();
+    super.deleteUnusedFiles();
   }
 
   @Override

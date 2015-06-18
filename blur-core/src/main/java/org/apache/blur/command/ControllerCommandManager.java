@@ -7,7 +7,6 @@ import java.util.concurrent.Callable;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.command.commandtype.ClusterExecuteCommand;
-import org.apache.blur.command.commandtype.ClusterExecuteServerReadCommand;
 import org.apache.blur.command.commandtype.ClusterIndexReadCommand;
 import org.apache.blur.command.commandtype.ClusterServerReadCommand;
 import org.apache.blur.command.commandtype.IndexReadCommand;
@@ -68,9 +67,6 @@ public class ControllerCommandManager extends BaseCommandManager {
           if (command instanceof ClusterServerReadCommand) {
             CombiningContext combiningContext = getCombiningContext(tableContextFactory);
             return executeClusterReadCombiningCommand(context, command, combiningContext);
-          }
-          if (command instanceof ClusterExecuteServerReadCommand) {
-            return executeClusterCommand(context, command);
           }
           if (command instanceof ClusterExecuteCommand) {
             return executeClusterCommand(context, command);

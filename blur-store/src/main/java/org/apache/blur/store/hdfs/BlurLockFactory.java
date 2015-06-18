@@ -46,6 +46,7 @@ public class BlurLockFactory extends LockFactory {
     _dir = dir;
     _baseLockKey = host + "/" + pid;
     _fileSystem = _dir.getFileSystem(_configuration);
+    _fileSystem.mkdirs(_dir);
   }
 
   static class BlurLock extends Lock {

@@ -101,11 +101,13 @@ public class SnapshotIndexDeletionPolicy extends IndexDeletionPolicy {
     }
     writer.close();
     outputStream.close();
-    cleanupOldFiles();
+    cleanupOldFiles(fileSystem, existing);
   }
 
-  private void cleanupOldFiles() {
-
+  private void cleanupOldFiles(FileSystem fileSystem, SortedSet<FileStatus> existing) throws IOException {
+    for (FileStatus fileStatus : existing) {
+      fileSystem.delete(fileStatus.getPath(), false);
+    }
   }
 
   private String buffer(long number) {
@@ -140,7 +142,8 @@ public class SnapshotIndexDeletionPolicy extends IndexDeletionPolicy {
       names.add(name);
     }
     reader.close();
-    cleanupOldFiles();
+    existing.remove(last);
+    cleanupOldFiles(fileSystem, existing);
   }
 
   public void createSnapshot(String name, DirectoryReader reader, String context) throws IOException {
@@ -183,7 +186,7 @@ public class SnapshotIndexDeletionPolicy extends IndexDeletionPolicy {
   public Path getSnapshotsDirectoryPath() {
     return _path;
   }
-  
+
   public Long getGeneration(String name) {
     return _namesToGenerations.get(name);
   }

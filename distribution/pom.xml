@@ -58,8 +58,28 @@ under the License.
 	</dependencies>
 
 	<build>
-		<plugins>
-			<plugin>
+		<plugins>						<plugin>
+							<groupId>org.codehaus.mojo</groupId>
+							<artifactId>exec-maven-plugin</artifactId>
+							<version>1.2.1</version>
+							<executions>
+								<execution>
+									<id>create-service-descriptor</id>
+									<phase>package</phase>
+									<goals>
+										<goal>java</goal>
+									</goals>
+								</execution>
+							</executions>
+							<configuration>
+								<mainClass>org.apache.blur.doc.CreateCSDDescriptor</mainClass>
+								<arguments>
+									<argument>${project.build.scriptSourceDirectory}/../../assemble/cdh/csd/descriptor/service.sdl.template</argument>
+									<argument>${project.build.directory}/service.sdl</argument>
+								</arguments>
+							</configuration>
+						</plugin>		
+						<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<executions>
 					<execution>
@@ -87,6 +107,35 @@ under the License.
 							</descriptors>
 						</configuration>
 					</execution>
+										<execution>
+											<id>distro-assembly-parcel</id>
+											<phase>package</phase>
+											<goals>
+												<goal>single</goal>
+											</goals>
+											<configuration>
+												<descriptors>
+													<descriptor>${parcel.assembly.file}</descriptor>
+												</descriptors>
+												<finalName>blur-${project.version}-el6.parcel</finalName>
+												<appendAssemblyId>false</appendAssemblyId>
+												<ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
+											</configuration>
+										</execution>
+										<execution>
+											<id>distro-assembly-csd</id>
+											<phase>package</phase>
+											<goals>
+												<goal>single</goal>
+											</goals>
+											<configuration>
+												<descriptors>
+													<descriptor>${csd.assembly.file}</descriptor>
+												</descriptors>
+												<finalName>BLUR-0.2.4</finalName>
+												<appendAssemblyId>false</appendAssemblyId>
+											</configuration>
+										</execution>
 				</executions>
 			</plugin>
 		</plugins>
@@ -124,6 +173,9 @@ under the License.
 			</activation>
 			<properties>
                 <bin.assembly.file>src/assemble/bin-hadoop2.xml</bin.assembly.file>
+
+								<csd.assembly.file>src/assemble/csd-hadoop2.xml</csd.assembly.file>
+								<parcel.assembly.file>src/assemble/parcel-hadoop2.xml</parcel.assembly.file>
 			</properties>
 		</profile>
 	</profiles>

@@ -1,5 +1,3 @@
-package org.apache.blur.doc;
-
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -16,6 +14,8 @@ package org.apache.blur.doc;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.blur.doc;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;

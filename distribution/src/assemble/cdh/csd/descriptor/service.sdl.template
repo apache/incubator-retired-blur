@@ -1,0 +1,191 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+{
+  "name"  : "BLUR",
+  "label" : "Blur",
+  "description": "Apache Blur Search Service",
+  "version" : "0.2.4",
+  "runAs" : {
+    "user"  : "blur",
+    "group" : "blur"
+  },
+  "rolesWithExternalLinks":["BLUR_CONTROLLER","BLUR_SHARD"],
+  "hdfsDirs" : [
+  	{
+  		"name" : "CreateBlurTablesDir",
+  		"label": "Create Blur Tables Directory",
+  		"description" : "Creates the Blur Tables Directory",
+  		"directoryDescription": "Location of Blur tables.",
+  		"path":"/user/${user}/${blur_cluster_name}/tables",
+  		"permissions":"0755"
+  	},
+  	{
+  		"name" : "CreateBlurCommandsDir",
+  		"label": "Create Blur Commands Directory",
+  		"description" : "Creates the Blur Commands Directory",
+  		"directoryDescription": "Path that Blur will look for installed commands.",
+  		"path":"/user/${user}/${blur_cluster_name}/commands",
+  		"permissions":"0755"
+  	}
+  ],
+  "serviceInit": {
+  	"preStartSteps": [
+		{"commandName":"CreateBlurTablesDir"},
+		{"commandName":"CreateBlurCommandsDir"}  	
+  	]
+  },
+  
+  "parameters": [
+    
+    {
+      "name":"blur_cluster_name",
+      "label":"Blur Cluster Name",
+      "description": "Name of Blur Cluster",
+      "configName":"blur.cluster.name",
+      "required":"true",
+      "type":"string",
+      "default":"default",
+      "configurableInWizard":true
+    },
+    {
+      "name":"blur_zookeeper_root",
+      "label":"Zookeeper Root",
+      "description": "Advanced: Root ZK connection to alternate path.",
+      "configName":"blur.zookeeper.root",
+      "required":"false",
+      "type":"string",
+      "default":"",
+      "configurableInWizard":true
+    },    
+   
+|||General-Server-Properties|||
+  ],
+  
+  "roles" : [
+    {
+      "name" : "BLUR_CONTROLLER",
+      "label" : "Blur Controller Server",
+      "pluralLabel" : "Blur Controller Servers",
+      "startRunner" : {
+        "program" : "scripts/control.sh",
+        "args" : [ "start-controller" ],
+        "environmentVariables" : {
+            "BLUR_ZK_ROOT": "${blur_zookeeper_root}",
+            "BLUR_DEFAULT_TABLE_PATH": "/user/${user}/${blur_cluster_name}/tables",
+            "BLUR_COMMAND_PATH":"/user/${user}/${blur_cluster_name}/commands",
+            "BLUR_CLUSTER_NAME":"${blur_cluster_name}",
+            "BLUR_CONTROLLER_JVM_OPTIONS":"${blur_controller_jvm_options}"
+        }
+      },
+      "externalLink" : {
+      	"name":"blur_controller_ui",
+      	"label":"Blur Controller Status UI",
+      	"url":"http://${host}:${blur_gui_controller_port}"
+      },
+      "logging": {
+    	  "dir":"/var/log/blur",
+    	  "filename": "blur--controller-server-${host}-0_main.log",
+    	  "configName" :"blur.log.dir",    	  
+    	  "isModifiable":true,
+    	  "loggingType":"log4j"
+      },
+      "configWriter" : {
+      	"generators" : [
+      		{
+      			"filename" : "blur-site.properties",
+            	"configFormat" : "properties",
+            	"excludedParams": ["blur_controller_jvm_options"]
+      		}
+      	 ]
+      },
+	  "parameters": [
+	    {
+          "name":"blur_controller_jvm_options",
+          "label":"JVM Options for Controllers",
+          "description": "JAVA JVM OPTIONS for the controller servers, jvm tuning parameters are placed here.",
+          "configName":"blur.controller.jvm.options",
+	      "required":"false",
+	      "type":"string",
+	      "default":"-Xmx1024m -Djava.net.preferIPv4Stack=true",
+	      "configurableInWizard":true
+      },
+|||Controller-Server-Properties|||
+                 ]
+   },
+   {
+	   "name" : "BLUR_SHARD",
+	   "label" : "Blur Shard Server",
+	   "pluralLabel" : "Blur Shard Servers",
+	   "startRunner" : {
+	     "program" : "scripts/control.sh",
+	     "args" : [ "start-shard" ],
+	     "environmentVariables" : {
+            "BLUR_ZK_ROOT": "${blur_zookeeper_root}",
+            "BLUR_DEFAULT_TABLE_PATH": "/user/${user}/${blur_cluster_name}/tables",
+            "BLUR_COMMAND_PATH":"/user/${user}/${blur_cluster_name}/commands",
+            "BLUR_CLUSTER_NAME":"${blur_cluster_name}",
+            "BLUR_SHARD_JVM_OPTIONS":"${blur_shard_jvm_options}"
+          }
+	    },
+      "externalLink" : {
+      	"name":"blur_shard_ui",
+      	"label":"Blur Shard Status UI",
+      	"url":"http://${host}:${blur_gui_shard_port}"
+      },
+	     "logging": {
+	    	  "dir":"/var/log/blur",
+	    	  "filename": "blur--shard-server-${host}-0_main.log",
+	    	  "configName" :"blur.log.dir",
+	    	  "isModifiable":true,
+	    	  "loggingType":"log4j"
+	     },
+      "configWriter" : {
+      	"generators" : [
+      		{
+      			"filename" : "blur-site.properties",
+            	"configFormat" : "properties",
+            	"excludedParams": ["blur_shard_jvm_options"]
+      		}
+      	 ]
+      },
+	     "parameters": [
+		    {
+	          "name":"blur_shard_jvm_options",
+	          "label":"JVM OPTIONS for Shards",
+	          "description": "JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.",
+	          "configName":"blur.shard.jvm.options",
+		      "required":"false",
+		      "type":"string",
+		      "default":"-Xmx1024m -Djava.net.preferIPv4Stack=true -XX:MaxDirectMemorySize=256m",
+		      "configurableInWizard":true
+	      	},
+|||Shard-Server-Properties|||
+                 ]
+	}   
+  ],
+  "parcel" : {
+  	"requiredTags": ["blurcontroller"],
+  	"optionalTags": ["blurcontroller", "blurshard", "blurconsole"]
+  },
+  "serviceDependencies" : [
+        {"name":"HDFS", "required":"true"},
+        {"name":"ZOOKEEPER", "required":"true"},
+        {"name":"YARN", "required":"true"}
+   ]
+  	
+  
+}

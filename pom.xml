@@ -389,6 +389,8 @@ under the License.
 
 						<!-- Used to create empty directories in git -->
                         <exclude>**/.empty</exclude>
+
+                        <exclude>**/test/**/prop.doc.base.html</exclude>
 					</excludes>
 				</configuration>
 				<executions>

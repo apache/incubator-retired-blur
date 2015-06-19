@@ -51,7 +51,7 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<version>${servlet-api.version}</version>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 
@@ -149,14 +149,6 @@
 					<name>hadoop2-mr1</name>
 				</property>
 			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>javax.servlet</groupId>
-					<artifactId>javax.servlet-api</artifactId>
-					<version>${servlet-api.version}</version>
-					<scope>provided</scope>
-				</dependency>
-			</dependencies>
 		</profile>
 		<profile>
 			<id>hadoop2</id>
@@ -165,14 +157,6 @@
 					<name>hadoop2</name>
 				</property>
 			</activation>
-			<dependencies>
-				<dependency>
-					<groupId>javax.servlet</groupId>
-					<artifactId>javax.servlet-api</artifactId>
-					<version>${servlet-api.version}</version>
-					<scope>provided</scope>
-				</dependency>
-			</dependencies>
 		</profile>
 	</profiles>
 </project>

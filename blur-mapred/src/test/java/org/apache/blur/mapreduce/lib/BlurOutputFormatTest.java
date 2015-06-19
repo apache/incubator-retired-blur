@@ -320,7 +320,7 @@ public class BlurOutputFormatTest {
     for (int i = 0; i < tableDescriptor.getShardCount(); i++) {
       Path path = new Path(output, ShardUtil.getShardName(i));
       Collection<Path> commitedTasks = getCommitedTasks(path);
-      assertTrue(multiple >= commitedTasks.size());
+      assertTrue(commitedTasks.size() >= multiple);
       for (Path p : commitedTasks) {
         DirectoryReader reader = DirectoryReader.open(new HdfsDirectory(_conf, p));
         total += reader.numDocs();

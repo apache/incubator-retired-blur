@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -29,12 +28,14 @@ import java.util.Map;
 
 import org.apache.blur.doc.BlurPropertyParser.BlurProp;
 
-public class CreateBlurServerSetupHtmlPage {
+public class CreateCSDDescriptor {
 
   public static void main(String[] args) throws IOException {
     BlurPropertyParser parser = new BlurPropertyParser();
     Map<String, List<BlurProp>> props = parser.parse();
     Map<String, StringBuffer> map = new HashMap<String, StringBuffer>();
+
+    JsonPropertyFormatter formatter = new JsonPropertyFormatter();
 
     for (Map.Entry<String, List<BlurProp>> prop : props.entrySet()) {
 
@@ -43,19 +44,21 @@ public class CreateBlurServerSetupHtmlPage {
         buffer = new StringBuffer();
         map.put(prop.getKey(), buffer);
       }
-      for (BlurProp p : prop.getValue()) {
+      boolean first = true;
 
-        buffer.append("<tr><td>").append(p.getName());
-        if (!p.getDefaultVal().trim().isEmpty()) {
-          buffer.append(" (").append(p.getDefaultVal()).append(")");
+      for (BlurProp p : prop.getValue()) {
+        if (!first) {
+          buffer.append(formatter.separator());
         }
-        buffer.append("</td><td>").append(p.getDescription()).append("</td></tr>");
+        buffer.append(formatter.format(p));
+        first = false;
       }
 
     }
 
     String source = args[0];
     String dest = args[1];
+
     replaceValuesInFile(source, dest, map);
   }
 
@@ -64,13 +67,15 @@ public class CreateBlurServerSetupHtmlPage {
 
     File source = new File(s);
     File output = new File(o);
-
+    System.out.println("Source[" + source.getAbsolutePath() + "]");
+    System.out.println("Output[" + output.getAbsolutePath() + "]");
     PrintWriter writer = new PrintWriter(output);
 
     BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(source)));
     String line;
     while ((line = reader.readLine()) != null) {
-      StringBuffer newData = replacements.get(line);
+      StringBuffer newData = replacements.get(line.trim());
+
       if (newData != null) {
         writer.println(newData.toString());
       } else {
@@ -79,7 +84,6 @@ public class CreateBlurServerSetupHtmlPage {
     }
     writer.close();
     reader.close();
-
   }
 
 }

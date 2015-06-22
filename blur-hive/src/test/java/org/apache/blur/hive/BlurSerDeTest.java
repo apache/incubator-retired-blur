@@ -309,6 +309,9 @@ public class BlurSerDeTest {
     String userName = UserGroupInformation.getCurrentUser().getShortUserName();
     Connection connection = DriverManager.getConnection("jdbc:hive2://localhost:" + port, userName, "");
 
+    UserGroupInformation currentUser = UserGroupInformation.getCurrentUser();
+
+    run(connection, "set blur.user.proxy=" + currentUser.getUserName());
     run(connection, "set blur.mr.update.disabled=" + disableMrUpdate);
     run(connection, "set hive.metastore.warehouse.dir=" + WAREHOUSE.toURI().toString());
     run(connection, "create database if not exists testdb");

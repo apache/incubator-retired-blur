@@ -635,18 +635,23 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
     String permission = getProperty(tableProperties, BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH_PERMISSION);
     FsPermission fsPermission;
+    // Kinda junky coding, but Hadoop1 prevents me from using a better method.  @TODO cleanup when only supporting hadoop2.
     if (permission == null || permission.isEmpty()) {
-      fsPermission = FsPermission.getDirDefault();
+      fileSystem.mkdirs(mrIncWorkingPath);
+      fileSystem.mkdirs(newData);
+      fileSystem.mkdirs(tmpData);
+      fileSystem.mkdirs(inprogressData);
+      fileSystem.mkdirs(completeData);
+      fileSystem.mkdirs(fileCache);
     } else {
       fsPermission = new FsPermission(permission);
+      fileSystem.mkdirs(mrIncWorkingPath, fsPermission);
+      fileSystem.mkdirs(newData, fsPermission);
+      fileSystem.mkdirs(tmpData, fsPermission);
+      fileSystem.mkdirs(inprogressData, fsPermission);
+      fileSystem.mkdirs(completeData, fsPermission);
+      fileSystem.mkdirs(fileCache, fsPermission);
     }
-
-    fileSystem.mkdirs(mrIncWorkingPath, fsPermission);
-    fileSystem.mkdirs(newData, fsPermission);
-    fileSystem.mkdirs(tmpData, fsPermission);
-    fileSystem.mkdirs(inprogressData, fsPermission);
-    fileSystem.mkdirs(completeData, fsPermission);
-    fileSystem.mkdirs(fileCache, fsPermission);
   }
 
   private String getProperty(Map<String, String> tableProperties, String name) {

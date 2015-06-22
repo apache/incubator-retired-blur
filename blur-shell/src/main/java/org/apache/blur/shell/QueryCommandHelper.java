@@ -21,6 +21,7 @@ package org.apache.blur.shell;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -40,7 +41,8 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 public class QueryCommandHelper {
-  
+
+  public static final String QUERY = "query";
   public static final String WIDTH = "width";
   public static final String SORT = "sort";
   public static final String FACET = "facet";
@@ -56,12 +58,12 @@ public class QueryCommandHelper {
 
   @SuppressWarnings("unchecked")
   public static BlurQuery getBlurQuery(CommandLine commandLine) {
-    List<String> argList = commandLine.getArgList();
     Option[] options = commandLine.getOptions();
-
     Query query = new Query();
-    // Start at 2 because 1st arg is command 2nd is table
-    query.setQuery(join(argList.subList(2, argList.size()), " "));
+    if (commandLine.hasOption(QUERY)) {
+      String queryString = join(Arrays.asList(commandLine.getOptionValues(QUERY)), " ");
+      query.setQuery(queryString);
+    }
     if (commandLine.hasOption(DISABLE_ROW_QUERY)) {
       query.setRowQuery(false);
     }
@@ -154,7 +156,7 @@ public class QueryCommandHelper {
     }
 
     return blurQuery;
-  } 
+  }
 
   private static String join(List<String> argList, String sep) {
     StringBuilder builder = new StringBuilder();
@@ -170,81 +172,35 @@ public class QueryCommandHelper {
   @SuppressWarnings("static-access")
   public static CommandLine parse(String[] otherArgs, Writer out) {
     Options options = new Options();
-    options.addOption(
-        OptionBuilder
-        .withDescription("Disables row query. (Enabled by default)")
-        .create(DISABLE_ROW_QUERY));
-    options.addOption(
-        OptionBuilder
-        .hasArg()
-        .withArgName(SCORE_TYPE)
-        .withDescription("Specify the scoring type.")
+    options.addOption(OptionBuilder.hasArgs().withDescription("Query string.").isRequired().create(QUERY));
+    options.addOption(OptionBuilder.withDescription("Disables row query. (Enabled by default)").create(
+        DISABLE_ROW_QUERY));
+    options.addOption(OptionBuilder.hasArg().withArgName(SCORE_TYPE).withDescription("Specify the scoring type.")
         .create(SCORE_TYPE));
-    options.addOption(
-        OptionBuilder
-        .hasArgs()
-        .withArgName(ROW_FILTER)
-        .withDescription("Specify row filter.")
+    options.addOption(OptionBuilder.hasArgs().withArgName(ROW_FILTER).withDescription("Specify row filter.")
         .create(ROW_FILTER));
-    options.addOption(
-        OptionBuilder
-        .hasArgs()
-        .withArgName(RECORD_FILTER)
-        .withDescription("Specify record filter.")
+    options.addOption(OptionBuilder.hasArgs().withArgName(RECORD_FILTER).withDescription("Specify record filter.")
         .create(RECORD_FILTER));
-    options.addOption(
-        OptionBuilder
-        .hasArg()
-        .withArgName(START)
-        .withDescription("Specify the starting position (paging).")
-        .create(START));
-    options.addOption(
-        OptionBuilder
-        .hasArg()
-        .withArgName(FETCH)
-        .withDescription("Specify the number of elements to fetch in a single page.")
-        .create(FETCH));
-    options.addOption(
-        OptionBuilder
-        .hasArg()
-        .withArgName(MAX_QUERY_TIME)
-        .withDescription("Specify the maximum amount of time to allow query to execute.")
-        .create(MAX_QUERY_TIME));
-    options.addOption(
-        OptionBuilder
-        .hasArg()
-        .withArgName(MINIMUM_NUMBER_OF_RESULTS)
+    options.addOption(OptionBuilder.hasArg().withArgName(START)
+        .withDescription("Specify the starting position (paging).").create(START));
+    options.addOption(OptionBuilder.hasArg().withArgName(FETCH)
+        .withDescription("Specify the number of elements to fetch in a single page.").create(FETCH));
+    options.addOption(OptionBuilder.hasArg().withArgName(MAX_QUERY_TIME)
+        .withDescription("Specify the maximum amount of time to allow query to execute.").create(MAX_QUERY_TIME));
+    options.addOption(OptionBuilder.hasArg().withArgName(MINIMUM_NUMBER_OF_RESULTS)
         .withDescription("Specify the minimum number of results required before returning from query.")
         .create(MINIMUM_NUMBER_OF_RESULTS));
-    options.addOption(
-        OptionBuilder
-        .hasArg()
-        .withArgName(ROW_ID)
+    options.addOption(OptionBuilder.hasArg().withArgName(ROW_ID)
         .withDescription("Specify the rowId to execute the query against (this reduces the spray to other shards).")
         .create(ROW_ID));
-    options.addOption(
-        OptionBuilder
-        .withArgName(FACET)
-        .hasArgs()
-        .withDescription("Specify facet to be executed with this query.")
-        .create(FACET));
-    options.addOption(
-        OptionBuilder
-        .withArgName(SORT)
-        .hasArgs()
-        .withDescription("Specify a sort to be applied to this query <family> <column> [<reverse>].")
-        .create(SORT));
-    options.addOption(
-        OptionBuilder
-        .withDescription("Displays help for this command.")
-        .create("h"));
-    options.addOption(
-        OptionBuilder
-        .withArgName(WIDTH)
-        .hasArgs()
-        .withDescription("Specify max column width for display.")
-        .create(WIDTH));
-    
+    options.addOption(OptionBuilder.withArgName(FACET).hasArgs()
+        .withDescription("Specify facet to be executed with this query.").create(FACET));
+    options.addOption(OptionBuilder.withArgName(SORT).hasArgs()
+        .withDescription("Specify a sort to be applied to this query <family> <column> [<reverse>].").create(SORT));
+    options.addOption(OptionBuilder.withDescription("Displays help for this command.").create("h"));
+    options.addOption(OptionBuilder.withArgName(WIDTH).hasArgs()
+        .withDescription("Specify max column width for display.").create(WIDTH));
+
     CommandLineParser parser = new PosixParser();
     CommandLine cmd = null;
     try {
@@ -252,15 +208,15 @@ public class QueryCommandHelper {
       if (cmd.hasOption("h")) {
         HelpFormatter formatter = new HelpFormatter();
         PrintWriter pw = new PrintWriter(out, true);
-        formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "query", null, options,
-            HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null, false);
+        formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "query", null, options, HelpFormatter.DEFAULT_LEFT_PAD,
+            HelpFormatter.DEFAULT_DESC_PAD, null, false);
         return null;
       }
     } catch (ParseException e) {
       HelpFormatter formatter = new HelpFormatter();
       PrintWriter pw = new PrintWriter(out, true);
-      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "query", null, options,
-          HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null, false);
+      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "query", null, options, HelpFormatter.DEFAULT_LEFT_PAD,
+          HelpFormatter.DEFAULT_DESC_PAD, null, false);
       return null;
     }
     return cmd;

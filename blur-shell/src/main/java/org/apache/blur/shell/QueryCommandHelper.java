@@ -18,6 +18,7 @@
 
 package org.apache.blur.shell;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -170,9 +171,9 @@ public class QueryCommandHelper {
   }
 
   @SuppressWarnings("static-access")
-  public static CommandLine parse(String[] otherArgs, Writer out) {
+  public static CommandLine parse(String[] otherArgs, Writer out, String usage) {
     Options options = new Options();
-    options.addOption(OptionBuilder.hasArgs().withDescription("Query string.").isRequired().create(QUERY));
+    options.addOption(OptionBuilder.hasArgs().withDescription("* Query string.").isRequired().create(QUERY));
     options.addOption(OptionBuilder.withDescription("Disables row query. (Enabled by default)").create(
         DISABLE_ROW_QUERY));
     options.addOption(OptionBuilder.hasArg().withArgName(SCORE_TYPE).withDescription("Specify the scoring type.")
@@ -208,14 +209,14 @@ public class QueryCommandHelper {
       if (cmd.hasOption("h")) {
         HelpFormatter formatter = new HelpFormatter();
         PrintWriter pw = new PrintWriter(out, true);
-        formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "query", null, options, HelpFormatter.DEFAULT_LEFT_PAD,
+        formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, usage, null, options, HelpFormatter.DEFAULT_LEFT_PAD,
             HelpFormatter.DEFAULT_DESC_PAD, null, false);
         return null;
       }
     } catch (ParseException e) {
       HelpFormatter formatter = new HelpFormatter();
       PrintWriter pw = new PrintWriter(out, true);
-      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, "query", null, options, HelpFormatter.DEFAULT_LEFT_PAD,
+      formatter.printHelp(pw, HelpFormatter.DEFAULT_WIDTH, usage, null, options, HelpFormatter.DEFAULT_LEFT_PAD,
           HelpFormatter.DEFAULT_DESC_PAD, null, false);
       return null;
     }

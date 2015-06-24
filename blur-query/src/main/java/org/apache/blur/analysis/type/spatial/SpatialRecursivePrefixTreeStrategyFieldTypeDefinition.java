@@ -52,7 +52,7 @@ public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinition extends BaseS
   @Override
   public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
     _ctx = SpatialContext.GEO;
-    _grid = getSpatialPrefixTree(properties);
+    _grid = getSpatialPrefixTree(fieldNameForThisInstance, properties);
     boolean docValue = false;
     if (properties.get(DOC_VALUE) != null) {
       docValue = true;

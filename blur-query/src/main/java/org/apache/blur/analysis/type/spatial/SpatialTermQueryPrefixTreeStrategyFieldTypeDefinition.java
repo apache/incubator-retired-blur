@@ -56,7 +56,7 @@ public class SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition extends BaseS
     if (properties.get(DOC_VALUE) != null) {
       docValue = true;
     }
-    _grid = getSpatialPrefixTree(properties);
+    _grid = getSpatialPrefixTree(fieldNameForThisInstance, properties);
     _strategy = new TermQueryPrefixTreeStrategy(_grid, fieldNameForThisInstance, docValue);
     _shapeReadWriter = new ShapeReadWriter<SpatialContext>(_ctx);
     addSupportedIndexedShapes(Point.class);

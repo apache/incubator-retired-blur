@@ -28,6 +28,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
 import org.apache.lucene.spatial.prefix.tree.QuadPrefixTree;
 import org.apache.lucene.spatial.query.SpatialOperation;
+import org.apache.lucene.util.BytesRef;
 
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Shape;
@@ -51,7 +52,7 @@ public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinition extends BaseS
   @Override
   public void configure(String fieldNameForThisInstance, Map<String, String> properties, Configuration configuration) {
     _ctx = SpatialContext.GEO;
-    _grid = getSpatialPrefixTree(properties);
+    _grid = getSpatialPrefixTree(fieldNameForThisInstance, properties);
     boolean docValue = false;
     if (properties.get(DOC_VALUE) != null) {
       docValue = true;
@@ -83,4 +84,8 @@ public class SpatialRecursivePrefixTreeStrategyFieldTypeDefinition extends BaseS
     return super.getCustomQuery(text);
   }
 
+  @Override
+  public String readTerm(BytesRef byteRef) {
+    return byteRef.utf8ToString();
+  }
 }

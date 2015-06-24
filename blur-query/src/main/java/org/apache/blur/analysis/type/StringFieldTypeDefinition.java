@@ -126,4 +126,9 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
     }
     return new SortField(getFieldName(), Type.STRING);
   }
+
+  @Override
+  public String readTerm(BytesRef byteRef) {
+	return byteRef.utf8ToString();
+  }
 }

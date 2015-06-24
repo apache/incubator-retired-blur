@@ -28,6 +28,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.util.BytesRef;
 
 public abstract class FieldTypeDefinition {
 
@@ -259,11 +260,26 @@ public abstract class FieldTypeDefinition {
   }
 
   /**
-   * If true this will allow the same alternate field name(s) across instances of the same {@link FieldTypeDefinition}.
+   * If true this will allow the same alternate field name(s) across instances
+   * of the same {@link FieldTypeDefinition}.
+   * 
    * @return booelan.
    */
   public boolean isAlternateFieldNamesSharedAcrossInstances() {
     return false;
   }
+
+  /**
+   * Method that will convert whatever internal lucene format a term was stored
+   * into something that could be used as a type-ahead or term listing for a
+   * given field. (by default numeric fields are not readable with a simple
+   * toUtf8String())
+   * 
+   * @param byteRef
+   *          the term that need converting into human readable form
+   * @return String representation of the BytesRef or null if the term is not a
+   *         real term (ie, a numeric offset for range querying)
+   */
+  public abstract String readTerm(BytesRef byteRef);
 
 }

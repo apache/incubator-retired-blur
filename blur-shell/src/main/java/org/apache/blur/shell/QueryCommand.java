@@ -62,10 +62,6 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
   @Override
   public void doit(PrintWriter outPw, Blur.Iface client, String[] args) throws CommandException, TException,
       BlurException {
-    if (args.length < 3) {
-      throw new CommandException("Invalid args: " + help());
-    }
-
     try {
       doItInternal(client, args, outPw);
     } catch (FinishedException e) {
@@ -77,8 +73,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
 
   private void doItInternal(Blur.Iface client, String[] args, PrintWriter out) throws FinishedException, BlurException,
       TException {
-    String tablename = args[1];
-    CommandLine commandLine = QueryCommandHelper.parse(args, out);
+    CommandLine commandLine = QueryCommandHelper.parse(args, out, name() + " " + usage());
     if (commandLine == null) {
       return;
     }
@@ -90,7 +85,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
     if (commandLine.hasOption(QueryCommandHelper.WIDTH)) {
       _width = Integer.parseInt(commandLine.getOptionValue(QueryCommandHelper.WIDTH));
     }
-
+    String tablename = args[1];
     long s = System.nanoTime();
     BlurResults blurResults = client.query(tablename, blurQuery);
     long e = System.nanoTime();
@@ -546,7 +541,7 @@ public class QueryCommand extends Command implements TableFirstArgCommand {
 
   @Override
   public String usage() {
-    return "<tablename> <query> [<options>]";
+    return "<tablename> [<options>]";
   }
 
   @Override

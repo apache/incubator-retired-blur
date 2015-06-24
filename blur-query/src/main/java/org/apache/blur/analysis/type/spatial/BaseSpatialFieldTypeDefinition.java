@@ -122,9 +122,12 @@ public abstract class BaseSpatialFieldTypeDefinition extends CustomFieldTypeDefi
     return _shapeReadWriter.readShape(column.getValue());
   }
 
-  protected SpatialPrefixTree getSpatialPrefixTree(Map<String, String> properties) {
+  protected SpatialPrefixTree getSpatialPrefixTree(String field, Map<String, String> properties) {
     String spatialPrefixTreeStr = properties.get(SPATIAL_PREFIX_TREE);
-    if (spatialPrefixTreeStr.equals(GEOHASH_PREFIX_TREE)) {
+    if (spatialPrefixTreeStr == null) {
+      throw new IllegalArgumentException("Property [" + SPATIAL_PREFIX_TREE + "] is missing from type def for field ["
+          + field + "]");
+    } else if (spatialPrefixTreeStr.equals(GEOHASH_PREFIX_TREE)) {
       int maxLevels = getMaxLevels(properties);
       return new GeohashPrefixTree(_ctx, maxLevels);
     } else if (spatialPrefixTreeStr.equals(QUAD_PREFIX_TREE)) {

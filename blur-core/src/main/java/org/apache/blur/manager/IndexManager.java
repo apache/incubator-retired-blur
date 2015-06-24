@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.analysis.FieldManager;
+import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.index.AtomicReaderUtil;
 import org.apache.blur.index.ExitableReader;
@@ -981,6 +982,11 @@ public class IndexManager {
       LOG.error("Unknown error while trying to fetch index readers.", e);
       throw new BException(e.getMessage(), e);
     }
+
+    TableContext tableContext = getTableContext(table);
+    FieldManager fieldManager = tableContext.getFieldManager();
+    // TODO: isn't there a util or something available to concat these?
+    final FieldTypeDefinition typeDefinition = fieldManager.getFieldTypeDefinition(columnFamily + "." + columnName);
     return ForkJoin.execute(_executor, blurIndexes.entrySet(),
         new ParallelCall<Entry<String, BlurIndex>, List<String>>() {
           @Override
@@ -988,7 +994,7 @@ public class IndexManager {
             BlurIndex index = input.getValue();
             IndexSearcherCloseable searcher = index.getIndexSearcher();
             try {
-              return terms(searcher.getIndexReader(), columnFamily, columnName, startWith, size);
+              return terms(searcher.getIndexReader(), typeDefinition, columnFamily, columnName, startWith, size);
             } finally {
               // this will allow for closing of index
               searcher.close();
@@ -1013,8 +1019,8 @@ public class IndexManager {
     return reader.docFreq(getTerm(columnFamily, columnName, value));
   }
 
-  public static List<String> terms(IndexReader reader, String columnFamily, String columnName, String startWith,
-      short size) throws IOException {
+  public static List<String> terms(IndexReader reader, FieldTypeDefinition typeDef, String columnFamily,
+      String columnName, String startWith, short size) throws IOException {
     if (startWith == null) {
       startWith = "";
     }
@@ -1037,6 +1043,9 @@ public class IndexManager {
     BytesRef currentTermText = termEnum.term();
     do {
       terms.add(currentTermText.utf8ToString());
+      String readTerm = typeDef.readTerm(currentTermText);
+      if (readTerm != null)
+        terms.add(readTerm);
       if (terms.size() >= size) {
         return terms;
       }

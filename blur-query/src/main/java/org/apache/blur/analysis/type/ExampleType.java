@@ -28,6 +28,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.util.BytesRef;
 
 public class ExampleType extends CustomFieldTypeDefinition {
 
@@ -111,6 +112,11 @@ public class ExampleType extends CustomFieldTypeDefinition {
   @Override
   public SortField getSortField(boolean reverse) {
     throw new RuntimeException("Sort not supported.");
+  }
+
+  @Override
+  public String readTerm(BytesRef byteRef) {
+	return byteRef.utf8ToString();
   }
 
 }

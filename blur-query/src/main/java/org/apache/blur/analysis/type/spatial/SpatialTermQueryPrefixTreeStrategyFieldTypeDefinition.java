@@ -28,6 +28,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
 import org.apache.lucene.spatial.prefix.tree.QuadPrefixTree;
 import org.apache.lucene.spatial.query.SpatialOperation;
+import org.apache.lucene.util.BytesRef;
 
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.shape.Point;
@@ -55,7 +56,7 @@ public class SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition extends BaseS
     if (properties.get(DOC_VALUE) != null) {
       docValue = true;
     }
-    _grid = getSpatialPrefixTree(properties);
+    _grid = getSpatialPrefixTree(fieldNameForThisInstance, properties);
     _strategy = new TermQueryPrefixTreeStrategy(_grid, fieldNameForThisInstance, docValue);
     _shapeReadWriter = new ShapeReadWriter<SpatialContext>(_ctx);
     addSupportedIndexedShapes(Point.class);
@@ -78,5 +79,10 @@ public class SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition extends BaseS
       }
     }
     return super.getCustomQuery(text);
+  }
+
+  @Override
+  public String readTerm(BytesRef byteRef) {
+    return byteRef.utf8ToString();
   }
 }

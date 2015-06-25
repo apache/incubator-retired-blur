@@ -144,7 +144,9 @@ public class Driver extends Configured implements Tool {
         LOG.error("Indexing job failed!");
         movePathList(fileSystem, newData, inprogressPathList);
       }
-      client.removeSnapshot(table, MRUPDATE_SNAPSHOT);
+      if (client != null) {
+        client.removeSnapshot(table, MRUPDATE_SNAPSHOT);
+      }
     }
 
     if (success) {

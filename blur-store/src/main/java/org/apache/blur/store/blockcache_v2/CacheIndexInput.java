@@ -36,6 +36,7 @@ public class CacheIndexInput extends IndexInput {
   private final String _fileName;
   private final Cache _cache;
   private final Store _store;
+  private final IndexInputCache _indexInputCache;
 
   private IndexInput _indexInput;
   private CacheKey _key = new CacheKey();
@@ -58,6 +59,7 @@ public class CacheIndexInput extends IndexInput {
 
     _fileId = _cache.getFileId(_directory, _fileName);
     _cacheBlockSize = _cache.getCacheBlockSize(_directory, _fileName);
+    _indexInputCache = _cache.createIndexInputCache(_directory, _fileName, _fileLength);
     _bufferSize = _cache.getFileBufferSize(_directory, _fileName);
     _quiet = _cache.shouldBeQuiet(_directory, _fileName);
     _key.setFileId(_fileId);
@@ -297,6 +299,7 @@ public class CacheIndexInput extends IndexInput {
       _isClosed = true;
       _indexInput.close();
       releaseCache();
+      _indexInputCache.close();
     }
   }
 
@@ -390,7 +393,7 @@ public class CacheIndexInput extends IndexInput {
 
   private void fillQuietly() throws IOException {
     _key.setBlockId(getBlockId());
-    _cacheValue = _cache.getQuietly(_directory, _fileName, _key);
+    _cacheValue = lookup(true);
     if (_cacheValue == null) {
       if (_cacheValueQuietRefCannotBeReleased == null) {
         // @TODO this could be improved.
@@ -417,7 +420,7 @@ public class CacheIndexInput extends IndexInput {
 
   private void fillNormally() throws IOException {
     _key.setBlockId(getBlockId());
-    _cacheValue = _cache.get(_directory, _fileName, _key);
+    _cacheValue = lookup(false);
     if (_cacheValue == null) {
       _cacheValue = _cache.newInstance(_directory, _fileName);
       long filePosition = getFilePosition();
@@ -436,6 +439,21 @@ public class CacheIndexInput extends IndexInput {
       _cache.put(_directory, _fileName, _key.clone(), _cacheValue);
     }
     _blockPosition = getBlockPosition();
+  }
+
+  private CacheValue lookup(boolean quietly) {
+    CacheValue cacheValue = _indexInputCache.get(_key.getBlockId());
+    if (cacheValue == null) {
+      if (quietly) {
+        cacheValue = _cache.getQuietly(_directory, _fileName, _key);
+      } else {
+        cacheValue = _cache.get(_directory, _fileName, _key);
+      }
+    }
+    if (cacheValue != null) {
+      _indexInputCache.put(_key.getBlockId(), cacheValue);
+    }
+    return cacheValue;
   }
 
   private void fill() throws IOException {

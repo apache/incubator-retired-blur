@@ -265,6 +265,11 @@ public class CacheIndexInputTest {
 
       }
 
+      @Override
+      public IndexInputCache createIndexInputCache(CacheDirectory directory, String fileName, long fileLength) {
+        return NoIndexInputCache.instance();
+      }
+
     };
     return cacheFactory;
   }

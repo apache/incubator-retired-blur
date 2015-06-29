@@ -35,7 +35,7 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
 
   @Override
   protected Directory setupDirectory() throws IOException {
-    int totalNumberOfBytes = 1000000;
+    final int totalNumberOfBytes = 1000000;
     final int fileBufferSizeInt = numberBetween(113, 215);
     final int cacheBlockSizeInt = numberBetween(111, 251);
 
@@ -50,6 +50,13 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
       @Override
       public int getSize(CacheDirectory directory, String fileName) {
         return cacheBlockSizeInt;
+      }
+    };
+    
+    Size directLocalCacheLimit = new Size() {
+      @Override
+      public int getSize(CacheDirectory directory, String fileName) {
+        return totalNumberOfBytes;
       }
     };
 
@@ -71,7 +78,7 @@ public abstract class CacheDirectoryTestSuite extends BaseDirectoryTestSuite {
         return false;
       }
     };
-    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
+    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, directLocalCacheLimit, readFilter, writeFilter, quiet,
         getPool());
     Directory dir = FSDirectory.open(new File(file, "cache"));
 

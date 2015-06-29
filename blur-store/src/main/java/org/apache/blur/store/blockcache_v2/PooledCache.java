@@ -117,4 +117,10 @@ public class PooledCache extends Cache {
     return _cachePoolStrategy;
   }
 
+  @Override
+  public IndexInputCache createIndexInputCache(CacheDirectory directory, String fileName, long fileLength) {
+    Cache cache = _cachePoolStrategy.getCache(directory, fileName);
+    return cache.createIndexInputCache(directory, fileName, fileLength);
+  }
+
 }

@@ -43,6 +43,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache_v2.cachevalue.DetachableCacheValue;
+import org.apache.commons.io.IOUtils;
 import org.apache.lucene.store.IOContext;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
@@ -50,7 +51,6 @@ import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 import com.googlecode.concurrentlinkedhashmap.Weigher;
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
-import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
 public class BaseCache extends Cache implements Closeable {
@@ -87,30 +87,34 @@ public class BaseCache extends Cache implements Closeable {
   private final FileNameFilter _writeFilter;
   private final Size _cacheBlockSize;
   private final Size _fileBufferSize;
+  private final Size _directLocalCacheRefLimit;
   private final Map<FileIdKey, Long> _fileNameToId = new ConcurrentHashMap<FileIdKey, Long>();
   private final AtomicLong _fileId = new AtomicLong();
   private final Quiet _quiet;
-  private final Meter _hits;
-  private final Meter _misses;
-  private final Meter _evictions;
-  private final Meter _removals;
+  private final MeterWrapper _hits;
+  private final MeterWrapper _misses;
+  private final MeterWrapper _evictions;
+  private final MeterWrapper _removals;
   private final Thread _oldFileDaemonThread;
   private final AtomicBoolean _running = new AtomicBoolean(true);
   private final BaseCacheValueBufferPool _cacheValueBufferPool;
 
-  public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, FileNameFilter readFilter,
-      FileNameFilter writeFilter, Quiet quiet, BaseCacheValueBufferPool cacheValueBufferPool) {
+  public BaseCache(long totalNumberOfBytes, Size fileBufferSize, Size cacheBlockSize, Size directLocalCacheRefLimit,
+      FileNameFilter readFilter, FileNameFilter writeFilter, Quiet quiet, BaseCacheValueBufferPool cacheValueBufferPool) {
     _cacheMap = new ConcurrentLinkedHashMap.Builder<CacheKey, CacheValue>().weigher(new BaseCacheWeigher())
         .maximumWeightedCapacity(totalNumberOfBytes).listener(new BaseCacheEvictionListener()).build();
     _fileBufferSize = fileBufferSize;
     _readFilter = readFilter;
     _writeFilter = writeFilter;
     _cacheBlockSize = cacheBlockSize;
+    _directLocalCacheRefLimit = directLocalCacheRefLimit;
     _quiet = quiet;
-    _hits = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, HIT), HIT, TimeUnit.SECONDS);
-    _misses = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, MISS), MISS, TimeUnit.SECONDS);
-    _evictions = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, EVICTION), EVICTION, TimeUnit.SECONDS);
-    _removals = Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, REMOVAL), REMOVAL, TimeUnit.SECONDS);
+    _hits = MeterWrapper.wrap(Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, HIT), HIT, TimeUnit.SECONDS));
+    _misses = MeterWrapper.wrap(Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, MISS), MISS, TimeUnit.SECONDS));
+    _evictions = MeterWrapper.wrap(Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, EVICTION), EVICTION,
+        TimeUnit.SECONDS));
+    _removals = MeterWrapper.wrap(Metrics.newMeter(new MetricName(ORG_APACHE_BLUR, CACHE, REMOVAL), REMOVAL,
+        TimeUnit.SECONDS));
     _cacheValueBufferPool = cacheValueBufferPool;
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, ENTRIES), new Gauge<Long>() {
       @Override
@@ -143,6 +147,10 @@ public class BaseCache extends Cache implements Closeable {
     _oldFileDaemonThread.start();
   }
 
+  public MeterWrapper getHitsMeter() {
+    return _hits;
+  }
+
   public int getEntryCount() {
     return _cacheMap.size();
   }
@@ -172,6 +180,10 @@ public class BaseCache extends Cache implements Closeable {
     closeCachMap();
     _oldFileDaemonThread.interrupt();
     _cacheValueBufferPool.close();
+    IOUtils.closeQuietly(_evictions);
+    IOUtils.closeQuietly(_hits);
+    IOUtils.closeQuietly(_misses);
+    IOUtils.closeQuietly(_removals);
   }
 
   private void closeCachMap() {
@@ -347,6 +359,18 @@ public class BaseCache extends Cache implements Closeable {
       if (_lastModified != other._lastModified)
         return false;
       return true;
+    }
+  }
+
+  @Override
+  public IndexInputCache createIndexInputCache(CacheDirectory directory, String fileName, long fileLength) {
+    int cacheBlockSize = getCacheBlockSize(directory, fileName);
+    int limit = _directLocalCacheRefLimit.getSize(directory, fileName);
+    if (fileLength > limit) {
+      int entries = limit / cacheBlockSize;
+      return new LRUIndexInputCache(fileLength, cacheBlockSize, entries, _hits);
+    } else {
+      return new DirectIndexInputCache(fileLength, cacheBlockSize, _hits);
     }
   }
 

@@ -105,10 +105,8 @@ public class Driver extends Configured implements Tool {
       inprogressPathList = movePathList(fileSystem, inprogressData, srcPathList);
 
       Job job = Job.getInstance(getConf(), "Blur Row Updater for table [" + table + "]");
-
-      waitForOtherSnapshotsToBeRemoved(client, table, MRUPDATE_SNAPSHOT);
-
       client = BlurClient.getClientFromZooKeeperConnectionStr(blurZkConnection);
+      waitForOtherSnapshotsToBeRemoved(client, table, MRUPDATE_SNAPSHOT);
       client.createSnapshot(table, MRUPDATE_SNAPSHOT);
       TableDescriptor descriptor = client.describe(table);
       Path tablePath = new Path(descriptor.getTableUri());
@@ -144,7 +142,9 @@ public class Driver extends Configured implements Tool {
         LOG.error("Indexing job failed!");
         movePathList(fileSystem, newData, inprogressPathList);
       }
-      client.removeSnapshot(table, MRUPDATE_SNAPSHOT);
+      if (client != null) {
+        client.removeSnapshot(table, MRUPDATE_SNAPSHOT);
+      }
     }
 
     if (success) {

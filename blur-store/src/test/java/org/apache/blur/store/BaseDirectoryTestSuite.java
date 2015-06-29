@@ -56,6 +56,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public abstract class BaseDirectoryTestSuite {
+  private static final String OUT_DAT = "out.dat";
+
   protected static final File TMPDIR = new File(System.getProperty("blur.tmp.dir",
       "./target/tmp/BaseDirectoryTestSuite"));
 
@@ -230,6 +232,33 @@ public abstract class BaseDirectoryTestSuite {
     reader.close();
     long e = System.nanoTime();
     System.out.println("Total time [" + (e - s) / 1000000.0 + " ms]");
+  }
+  
+  @Test
+  public void testLongReadAndClone() throws IOException {
+    FSDirectory control = FSDirectory.open(fileControl);
+    Directory dir = getControlDir(control, directory);
+    String name = writeFile(dir,10*1000*1000);
+    IndexInput input = dir.openInput(name, IOContext.DEFAULT);
+    readFile(input,1000*1000);
+    IndexInput clone = input.clone();
+    clone.readByte();
+    input.close();
+  }
+
+  private void readFile(IndexInput input, long length) throws IOException {
+    for (long l = 0;l<length;l++) {
+      input.readByte();
+    }
+  }
+
+  private String writeFile(Directory dir, long length) throws IOException {
+    IndexOutput output = dir.createOutput(OUT_DAT, IOContext.DEFAULT);
+    for (long l = 0;l<length;l++) {
+      output.writeByte((byte) 1);
+    }
+    output.close();
+    return OUT_DAT;
   }
 
   private void addDocuments(IndexWriter writer, int numDocs) throws IOException {

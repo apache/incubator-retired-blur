@@ -78,11 +78,11 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
         } else {
           LOG.debug("Current Pos [{0}] Prev Pos [{1}] Diff [{2}]", filePointer, _prevFilePointer, filePointer
               - _prevFilePointer);
+          _sequentialReadControl.reset();
         }
       }
     }
     if (_sequentialReadControl.switchToSequentialRead()) {
-
       _sequentialReadControl.setEnabled(true);
       if (_sequentialInput == null) {
         Tracer trace = Trace.trace("filesystem - read - openForSequentialInput", Trace.param("file", toString()),
@@ -131,6 +131,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
     HdfsIndexInput clone = (HdfsIndexInput) super.clone();
     clone._sequentialInput = null;
     clone._sequentialReadControl = _sequentialReadControl.clone();
+    clone._sequentialReadControl.reset();
     return clone;
   }
 

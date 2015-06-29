@@ -27,11 +27,12 @@ import org.apache.blur.utils.BlurConstants;
 public class SequentialReadControl implements Cloneable {
 
   private final BlurConfiguration _configuration;
+  private final boolean _sequentialReadAllowed = true;
 
   private long _sequentialReadThreshold;
   private long _sequentialReadSkipThreshold;
+
   private int _sequentialReadDetectorCounter = 0;
-  private boolean _sequentialReadAllowed = true;
   private boolean _sequentialRead;
 
   public SequentialReadControl(BlurConfiguration configuration) {
@@ -87,6 +88,11 @@ public class SequentialReadControl implements Cloneable {
 
   public void setEnabled(boolean sequentialRead) {
     _sequentialRead = sequentialRead;
+  }
+
+  public void reset() {
+    _sequentialRead = false;
+    _sequentialReadDetectorCounter = 0;
   }
 
 }

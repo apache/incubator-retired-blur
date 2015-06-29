@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.mapreduce.lib.BlurOutputFormat;
 import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
@@ -35,6 +37,7 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.hive.serde2.NullStructSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -42,6 +45,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Writable;
 
 public class BlurSerDe extends AbstractSerDe {
+  
+  private static final Log LOG = LogFactory.getLog(BlurSerDe.class);
 
   public static final String BLUR_MR_UPDATE_DISABLED = "blur.mr.update.disabled";
   public static final String BLUR_BLOCKING_APPLY = "blur.blocking.apply";
@@ -66,9 +71,10 @@ public class BlurSerDe extends AbstractSerDe {
     _family = tbl.getProperty(FAMILY);
     nullCheck(FAMILY, _family);
     BlurConfiguration configuration;
+    String zkConnectionStr;
     try {
       configuration = new BlurConfiguration();
-      String zkConnectionStr = tbl.getProperty(ZK);
+      zkConnectionStr = tbl.getProperty(ZK);
       nullCheck(ZK, zkConnectionStr);
       configuration.set(ZK, zkConnectionStr);
     } catch (IOException e) {
@@ -80,7 +86,9 @@ public class BlurSerDe extends AbstractSerDe {
     try {
       List<String> tableList = client.tableList();
       if (!tableList.contains(table)) {
-        throw new SerDeException("Table [" + table + "] does not exist.");
+        LOG.warn("Table [{0}] from zk [{1}] does not exist.", table, zkConnectionStr);
+        _objectInspector = new NullStructSerDe.NullStructSerDeObjectInspector();
+        return;
       }
       if (conf != null) {
         TableDescriptor tableDescriptor = client.describe(table);

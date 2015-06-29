@@ -37,6 +37,9 @@ import org.junit.Test;
 
 public class HdfsDirectoryResourceTest {
 
+  private static final long WRITE_SIZE = 10000000L;
+  private static final long READ_SIZE = 2000000L;
+
   private static final int WAIT_TIME_IN_SECONDS = 10000;
 
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir",
@@ -69,54 +72,46 @@ public class HdfsDirectoryResourceTest {
     HdfsDirectory dir = new HdfsDirectory(_configuration, path, null, null, resourceTracking);
     try {
       String name = "_1.file";
-      exeucteWrites(dir, name);
+      executeWrites(dir, name);
       executeReads(dir, name);
-      assertTrue(waitForSeqReadsToClose());
+      assertResourceCount(0);
       dir.deleteFile(name);
-      assertTrue(waitForRandomAccessToClose());
     } finally {
       dir.close();
     }
   }
 
-  private void exeucteWrites(HdfsDirectory dir, String name) throws IOException {
+  private void executeWrites(HdfsDirectory dir, String name) throws IOException {
     IndexOutput output = dir.createOutput(name, IOContext.DEFAULT);
-    writeData(output, 100000000L);
+    writeData(output, WRITE_SIZE);
     output.close();
   }
 
-  private void executeReads(HdfsDirectory dir, String name) throws IOException {
+  private void executeReads(HdfsDirectory dir, String name) throws IOException, InterruptedException {
     IndexInput input = dir.openInput(name, IOContext.READ);
+    assertResourceCount(1);
     input.readLong();
     input.seek(0L);
     for (int i = 0; i < 2; i++) {
-      readSeq(input.clone(), 20000000L);
+      readSeq(input.clone(), READ_SIZE);
+      assertResourceCount(1 + i + 1);
     }
     input.close();
   }
 
-  private boolean waitForRandomAccessToClose() throws InterruptedException {
+  private void assertResourceCount(int count) throws InterruptedException {
     for (int i = 0; i < WAIT_TIME_IN_SECONDS; i++) {
       Thread.sleep(1000);
       Runtime.getRuntime().gc();
       Runtime.getRuntime().gc();
-      if (MemoryLeakDetector.isEmpty()) {
-        return true;
+      int memLeakDet = MemoryLeakDetector.getCount();
+      if (memLeakDet == count) {
+        return;
+      } else {
+        System.out.println("MemoryLeakDetector [" + memLeakDet + "] assertion [" + count + "]");
       }
     }
-    return false;
-  }
-
-  private boolean waitForSeqReadsToClose() throws InterruptedException {
-    for (int i = 0; i < WAIT_TIME_IN_SECONDS; i++) {
-      Thread.sleep(1000);
-      Runtime.getRuntime().gc();
-      Runtime.getRuntime().gc();
-      if (MemoryLeakDetector.getCount() == 1) {
-        return true;
-      }
-    }
-    return false;
+    fail();
   }
 
   private void readSeq(IndexInput input, long read) throws IOException {

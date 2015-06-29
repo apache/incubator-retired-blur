@@ -18,6 +18,8 @@ package org.apache.blur.store;
 
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_DIRECT_REF_LIMIT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_DIRECT_REF_LIMIT_PREFIX;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_FILE_BUFFER_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_POOL_CACHE_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT;
@@ -62,8 +64,6 @@ import org.apache.lucene.store.Directory;
 
 public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
 
-
-
   private static final Log LOG = LogFactory.getLog(BlockCacheDirectoryFactoryV2.class);
 
   private final Cache _cache;
@@ -74,23 +74,14 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_FILE_BUFFER_SIZE, fileBufferSizeInt);
     final int cacheBlockSizeInt = configuration.getInt(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE, 8192);
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE, cacheBlockSizeInt);
+    final int directLocalCacheRefLimitInt = configuration.getInt(BLUR_SHARD_BLOCK_CACHE_V2_DIRECT_REF_LIMIT,
+        64 * 1024 * 1024);
+    LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_DIRECT_REF_LIMIT, directLocalCacheRefLimitInt);
 
-    final Map<String, Integer> cacheBlockSizeMap = new HashMap<String, Integer>();
-    Map<String, String> properties = configuration.getProperties();
-    for (Entry<String, String> prop : properties.entrySet()) {
-      String key = prop.getKey();
-      String value = prop.getValue();
-      if (value == null || value.isEmpty()) {
-        continue;
-      }
-      if (key.startsWith(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX)) {
-        int cacheBlockSizeForFile = Integer.parseInt(value);
-        String fieldType = key.substring(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX.length());
-
-        cacheBlockSizeMap.put(fieldType, cacheBlockSizeForFile);
-        LOG.info("{0}={1} for file type [{2}]", key, cacheBlockSizeForFile, fieldType);
-      }
-    }
+    final Map<String, Integer> cacheBlockSizeMap = getIntMap(configuration,
+        BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX);
+    final Map<String, Integer> directLocalCacheRefLimitMap = getIntMap(configuration,
+        BLUR_SHARD_BLOCK_CACHE_V2_DIRECT_REF_LIMIT_PREFIX);
 
     final STORE store = STORE.valueOf(configuration.get(BLUR_SHARD_BLOCK_CACHE_V2_STORE, OFF_HEAP));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_STORE, store);
@@ -133,6 +124,18 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
           return size;
         }
         return cacheBlockSizeInt;
+      }
+    };
+
+    Size directLocalCacheRefLimit = new Size() {
+      @Override
+      public int getSize(CacheDirectory directory, String fileName) {
+        String ext = getExt(fileName);
+        Integer size = directLocalCacheRefLimitMap.get(ext);
+        if (size != null) {
+          return size;
+        }
+        return directLocalCacheRefLimitInt;
       }
     };
 
@@ -184,10 +187,29 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
       pool = new SimpleCacheValueBufferPool(store, queueDepth);
     }
 
-    BaseCache baseCache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,
-        quiet, pool);
+    BaseCache baseCache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, directLocalCacheRefLimit,
+        readFilter, writeFilter, quiet, pool);
     CachePoolStrategy cachePoolStrategy = new SingleCachePoolStrategy(baseCache);
     _cache = new PooledCache(cachePoolStrategy);
+  }
+
+  private Map<String, Integer> getIntMap(BlurConfiguration configuration, String prefix) {
+    final Map<String, Integer> map = new HashMap<String, Integer>();
+    Map<String, String> properties = configuration.getProperties();
+    for (Entry<String, String> prop : properties.entrySet()) {
+      String key = prop.getKey();
+      String value = prop.getValue();
+      if (value == null || value.isEmpty()) {
+        continue;
+      }
+      if (key.startsWith(prefix)) {
+        int i = Integer.parseInt(value);
+        String fieldType = key.substring(prefix.length());
+        map.put(fieldType, i);
+        LOG.info("{0}={1} for file type [{2}]", key, i, fieldType);
+      }
+    }
+    return map;
   }
 
   private Set<String> getSet(String value) {

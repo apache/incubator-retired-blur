@@ -54,7 +54,7 @@ public class CacheDirectoryTest {
 
   @Before
   public void setup() {
-    int totalNumberOfBytes = 1000000;
+    final int totalNumberOfBytes = 1000000;
     final int fileBufferSizeInt = 127;
     final int cacheBlockSizeInt = 131;
     Size fileBufferSize = new Size() {
@@ -67,6 +67,12 @@ public class CacheDirectoryTest {
       @Override
       public int getSize(CacheDirectory directory, String fileName) {
         return cacheBlockSizeInt;
+      }
+    };
+    Size directLocalCacheLimit = new Size() {
+      @Override
+      public int getSize(CacheDirectory directory, String fileName) {
+        return totalNumberOfBytes;
       }
     };
     FileNameFilter writeFilter = new FileNameFilter() {
@@ -88,7 +94,7 @@ public class CacheDirectoryTest {
       }
     };
     SimpleCacheValueBufferPool simpleCacheValueBufferPool = new SimpleCacheValueBufferPool(STORE.ON_HEAP, 1000);
-    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
+    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, directLocalCacheLimit, readFilter, writeFilter, quiet,
         simpleCacheValueBufferPool);
     Directory directory = newDirectory();
     BufferStore.initNewBuffer(1024, 1024 * 128);

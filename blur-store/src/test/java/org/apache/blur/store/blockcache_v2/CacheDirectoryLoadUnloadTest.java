@@ -38,6 +38,7 @@ public class CacheDirectoryLoadUnloadTest {
   // @Before
   public void setup() throws IOException {
     long totalNumberOfBytes = 2000000000L;
+    final int directLocalCacheLimitBytes = 64 * 1024 * 1024;
     final int fileBufferSizeInt = 8192;
     final int cacheBlockSizeInt = 8192;
     Size fileBufferSize = new Size() {
@@ -50,6 +51,12 @@ public class CacheDirectoryLoadUnloadTest {
       @Override
       public int getSize(CacheDirectory directory, String fileName) {
         return cacheBlockSizeInt;
+      }
+    };
+    Size directLocalCacheLimit = new Size() {
+      @Override
+      public int getSize(CacheDirectory directory, String fileName) {
+        return directLocalCacheLimitBytes;
       }
     };
     FileNameFilter writeFilter = new FileNameFilter() {
@@ -71,7 +78,7 @@ public class CacheDirectoryLoadUnloadTest {
       }
     };
     SimpleCacheValueBufferPool simpleCacheValueBufferPool = new SimpleCacheValueBufferPool(STORE.OFF_HEAP, 1000);
-    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet,
+    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, directLocalCacheLimit, readFilter, writeFilter, quiet,
         simpleCacheValueBufferPool);
   }
 

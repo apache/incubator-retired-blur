@@ -99,7 +99,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES = "blur.shard.thrift.max.read.buffer.bytes";
   public static final String BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD = "blur.shard.thrift.accept.queue.size.per.thread";
   public static final String BLUR_SHARD_DEEP_PAGING_CACHE_SIZE = "blur.shard.deep.paging.cache.size";
-  
+
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_POOL_CACHE_SIZE = "blur.shard.block.cache.v2.pool.cache.size";
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_SLAB_CHUNK_SIZE = "blur.shard.block.cache.v2.slab.chunk.size";
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_SLAB_SIZE = "blur.shard.block.cache.v2.slab.size";
@@ -114,14 +114,16 @@ public class BlurConstants {
   public static final String OFF_HEAP = "OFF_HEAP";
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_STORE = "blur.shard.block.cache.v2.store";
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX = "blur.shard.block.cache.v2.cacheBlockSize.";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_DIRECT_REF_LIMIT_PREFIX = "blur.shard.block.cache.v2.directRefLimit.";
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_FILE_BUFFER_SIZE = "blur.shard.block.cache.v2.fileBufferSize";
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE = "blur.shard.block.cache.v2.cacheBlockSize";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_DIRECT_REF_LIMIT = "blur.shard.block.cache.v2.directRefLimit";
   public static final String BLUR_SHARD_BLURINDEX_CLASS = "blur.shard.blurindex.class";
   public static final String BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT = "blur.shard.server.minimum.before.safemode.exit";
   public static final String BLUR_SHARD_SMALL_MERGE_THRESHOLD = "blur.shard.small.merge.threshold";
   public static final String BLUR_SHARD_REQUEST_CACHE_SIZE = "blur.shard.request.cache.size";
   public static final String BLUR_GC_BACK_PRESSURE_HEAP_RATIO = "blur.gc.back.pressure.heap.ratio";
-  
+
   public static final String BLUR_SHARD_DEFAULT_READ_SEQUENTIAL_SKIP_THRESHOLD = "blur.shard.default.read.sequential.skip.threshold";
   public static final String BLUR_SHARD_DEFAULT_READ_SEQUENTIAL_THRESHOLD = "blur.shard.default.read.sequential.threshold";
   public static final String BLUR_SHARD_MERGE_READ_SEQUENTIAL_SKIP_THRESHOLD = "blur.shard.merge.read.sequential.skip.threshold";

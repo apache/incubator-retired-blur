@@ -186,4 +186,20 @@ public abstract class Cache implements Closeable {
    */
   public abstract void fileClosedForWriting(CacheDirectory directory, String fileName, long fileId) throws IOException;
 
+  /**
+   * This method creates a local index input cache per file handle to try and
+   * reduce load on the main block cache lookup system.
+   * 
+   * 
+   * @param directory
+   *          the directory.
+   * @param fileName
+   *          the file name.
+   * @param fileLength
+   *          the file length.
+   * 
+   * @return the IndexInputCache instance.
+   */
+  public abstract IndexInputCache createIndexInputCache(CacheDirectory directory, String fileName, long fileLength);
+
 }

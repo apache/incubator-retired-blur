@@ -30,25 +30,21 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
   private static final Log LOG = LogFactory.getLog(HdfsIndexInput.class);
 
   private final long _length;
-  private final FSDataInputRandomAccess _input;
   private final MetricsGroup _metricsGroup;
-  private final String _name;
-  private final HdfsDirectory _dir;
+  private final FSInputFileHandle _inputFileHandle;
 
   private SequentialReadControl _sequentialReadControl;
-
-  private long _prevFilePointer;
   private FSDataInputSequentialAccess _sequentialInput;
+  private boolean _clone;
+  private long _prevFilePointer;
 
-  public HdfsIndexInput(HdfsDirectory dir, FSDataInputRandomAccess input, long length, MetricsGroup metricsGroup,
+  public HdfsIndexInput(HdfsDirectory dir, FSInputFileHandle inputFileHandle, long length, MetricsGroup metricsGroup,
       String name, SequentialReadControl sequentialReadControl) throws IOException {
-    super("HdfsIndexInput(" + name + "@" + "" + input + ")");
+    super("HdfsIndexInput(" + name + "@" + "" + inputFileHandle + ")");
     _sequentialReadControl = sequentialReadControl;
-    _dir = dir;
-    _input = input;
     _length = length;
     _metricsGroup = metricsGroup;
-    _name = name;
+    _inputFileHandle = inputFileHandle;
   }
 
   @Override
@@ -79,6 +75,8 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
           LOG.debug("Current Pos [{0}] Prev Pos [{1}] Diff [{2}]", filePointer, _prevFilePointer, filePointer
               - _prevFilePointer);
           _sequentialReadControl.reset();
+          _inputFileHandle.sequentialInputReset(_sequentialInput);
+          _sequentialInput = null;
         }
       }
     }
@@ -87,7 +85,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
       if (_sequentialInput == null) {
         Tracer trace = Trace.trace("filesystem - read - openForSequentialInput", Trace.param("file", toString()),
             Trace.param("location", getFilePointer()));
-        _sequentialInput = _dir.openForSequentialInput(_name, this);
+        _sequentialInput = _inputFileHandle.openForSequentialInput();
         trace.done();
       }
     }
@@ -112,7 +110,7 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
       int olen = length;
       while (length > 0) {
         int amount;
-        amount = _input.read(filePointer, b, offset, length);
+        amount = _inputFileHandle.getRandomAccess().read(filePointer, b, offset, length);
         length -= amount;
         offset += amount;
         filePointer += amount;
@@ -132,11 +130,14 @@ public class HdfsIndexInput extends ReusedBufferedIndexInput {
     clone._sequentialInput = null;
     clone._sequentialReadControl = _sequentialReadControl.clone();
     clone._sequentialReadControl.reset();
+    clone._clone = true;
     return clone;
   }
 
   @Override
   protected void closeInternal() throws IOException {
-
+    if (!_clone) {
+      _inputFileHandle.close();
+    }
   }
 }

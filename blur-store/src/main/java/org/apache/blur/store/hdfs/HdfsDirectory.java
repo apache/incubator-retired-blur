@@ -24,13 +24,10 @@ import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.ref.WeakReference;
-import java.net.InetAddress;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -42,7 +39,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
@@ -54,7 +50,6 @@ import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -92,7 +87,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   private static final Timer TIMER;
   private static final BlockingQueue<Closeable> CLOSING_QUEUE = new LinkedBlockingQueue<Closeable>();
-  private static final BlockingQueue<WeakRef> WEAK_CLOSING_QUEUE = new LinkedBlockingQueue<WeakRef>();
 
   static class FStat {
     FStat(FileStatus fileStatus) {
@@ -108,33 +102,9 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     final long _length;
   }
 
-  static class StreamPair {
-
-    final FSDataInputStream _random;
-    final FSDataInputStream _stream;
-
-    StreamPair(FSDataInputStream random, FSDataInputStream stream) {
-      _random = random;
-      _stream = stream;
-    }
-
-    void close() {
-      IOUtils.closeQuietly(_random);
-      IOUtils.closeQuietly(_stream);
-    }
-
-    FSDataInputStream getInputStream(boolean stream) {
-      if (stream) {
-        return _stream;
-      }
-      return _random;
-    }
-  }
-
   static {
     TIMER = new Timer("HdfsDirectory-Timer", true);
     TIMER.schedule(getClosingQueueTimerTask(), TimeUnit.SECONDS.toMillis(3), TimeUnit.SECONDS.toMillis(3));
-    TIMER.schedule(getSequentialRefClosingQueueTimerTask(), TimeUnit.SECONDS.toMillis(3), TimeUnit.SECONDS.toMillis(3));
   }
 
   protected final Path _path;
@@ -145,12 +115,9 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected final Map<String, Path> _symlinkPathMap = new ConcurrentHashMap<String, Path>();
   protected final Map<String, Boolean> _copyFileMap = new ConcurrentHashMap<String, Boolean>();
   protected final Map<String, Path> _copyFilePathMap = new ConcurrentHashMap<String, Path>();
-  protected final Map<String, FSDataInputRandomAccess> _inputMap = new ConcurrentHashMap<String, FSDataInputRandomAccess>();
   protected final boolean _useCache = true;
   protected final boolean _asyncClosing;
   protected final SequentialReadControl _sequentialReadControl;
-  protected final String _hostname;
-  protected final TimerTask _reportOnBlockLocality;
   protected final boolean _resourceTracking;
 
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
@@ -196,11 +163,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       _metricsGroup = metricsGroup;
     }
 
-    _hostname = InetAddress.getLocalHost().getHostName();
-    LOG.info("Using hostname [{0}] for data locality checks directory [{1}].", _hostname, _path);
-    _reportOnBlockLocality = reportOnBlockLocality();
-    TIMER.schedule(_reportOnBlockLocality, TimeUnit.SECONDS.toMillis(30), TimeUnit.SECONDS.toMillis(30));
-
     if (_useCache) {
       if (filesToExpose == null) {
         FileStatus[] listStatus = _fileSystem.listStatus(_path);
@@ -224,62 +186,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     }
   }
 
-  protected TimerTask reportOnBlockLocality() {
-    final Counter totalHdfsBlock = _metricsGroup.totalHdfsBlock;
-    final Counter localHdfsBlock = _metricsGroup.localHdfsBlock;
-    final AtomicLong prevTotalCount = new AtomicLong();
-    final AtomicLong prevLocalCount = new AtomicLong();
-    return new TimerTask() {
-      @Override
-      public void run() {
-        try {
-          long[] counts = runReport();
-          long total = counts[0];
-          long local = counts[1];
-          long prevTotal = prevTotalCount.get();
-          long prevLocal = prevLocalCount.get();
-
-          totalHdfsBlock.inc(total - prevTotal);
-          localHdfsBlock.inc(local - prevLocal);
-
-          prevTotalCount.set(total);
-          prevLocalCount.set(local);
-        } catch (Exception e) {
-          LOG.error("Unknown error.", e);
-        }
-      }
-    };
-  }
-
-  protected long[] runReport() throws IOException {
-    long total = 0;
-    long local = 0;
-    Collection<FSDataInputRandomAccess> values = _inputMap.values();
-    for (FSDataInputRandomAccess inputRandomAccess : values) {
-      Path path = inputRandomAccess.getPath();
-      long length = inputRandomAccess.length();
-      FileStatus fileStatus = _fileSystem.getFileStatus(path);
-      BlockLocation[] blockLocations = _fileSystem.getFileBlockLocations(fileStatus, 0L, length);
-      for (BlockLocation blockLocation : blockLocations) {
-        if (isLocal(blockLocation)) {
-          local++;
-        }
-        total++;
-      }
-    }
-    return new long[] { total, local };
-  }
-
-  private boolean isLocal(BlockLocation blockLocation) throws IOException {
-    String[] hosts = blockLocation.getHosts();
-    for (String host : hosts) {
-      if (host.equals(_hostname)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
   private void addToCache(FileStatus fileStatus) throws IOException {
     if (!fileStatus.isDir()) {
       Path p = fileStatus.getPath();
@@ -299,22 +205,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       length = length(resolvedName);
       _fileStatusMap.put(resolvedName, new FStat(lastMod, length));
     }
-  }
-
-  private static TimerTask getSequentialRefClosingQueueTimerTask() {
-    return new TimerTask() {
-      @Override
-      public void run() {
-        Iterator<WeakRef> iterator = WEAK_CLOSING_QUEUE.iterator();
-        while (iterator.hasNext()) {
-          WeakRef weakRef = iterator.next();
-          if (weakRef.isClosable()) {
-            iterator.remove();
-            CLOSING_QUEUE.add(weakRef._closeable);
-          }
-        }
-      }
-    };
   }
 
   private static TimerTask getClosingQueueTimerTask() {
@@ -413,7 +303,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
         } else {
           outputStream.close();
         }
-        openForInput(name, length);
       }
 
       @Override
@@ -446,65 +335,11 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       throw new FileNotFoundException("File [" + name + "] not found.");
     }
     long fileLength = fileLength(name);
-    FSDataInputRandomAccess inputRandomAccess = openForInput(name, fileLength);
-    HdfsIndexInput input = new HdfsIndexInput(this, inputRandomAccess, fileLength, _metricsGroup, name,
+    Path path = getPath(name);
+    FSInputFileHandle fsInputFileHandle = new FSInputFileHandle(_fileSystem, path, fileLength, name, _resourceTracking);
+    HdfsIndexInput input = new HdfsIndexInput(this, fsInputFileHandle, fileLength, _metricsGroup, name,
         _sequentialReadControl.clone());
     return input;
-  }
-
-  protected synchronized FSDataInputRandomAccess openForInput(String name, long length) throws IOException {
-    final Path path = getPath(name);
-    FSDataInputRandomAccess input = _inputMap.get(name);
-    if (input != null) {
-      return input;
-    }
-    Tracer trace = Trace.trace("filesystem - open", Trace.param("path", path));
-    try {
-      final FSDataInputStream inputStream = _fileSystem.open(path);
-      trackObject(inputStream, "Random Inputstream", name, path);
-      FSDataInputRandomAccess randomInputStream = new HdfsFSDataInputRandomAccess(inputStream, path, length);
-      _inputMap.put(name, randomInputStream);
-      return randomInputStream;
-    } finally {
-      trace.done();
-    }
-  }
-
-  static class HdfsFSDataInputRandomAccess implements FSDataInputRandomAccess {
-    private final FSDataInputStream _inputStream;
-    private final Path _path;
-    private final long _length;
-
-    HdfsFSDataInputRandomAccess(FSDataInputStream inputStream, Path path, long length) {
-      _inputStream = inputStream;
-      _path = path;
-      _length = length;
-    }
-
-    @Override
-    public void close() throws IOException {
-      _inputStream.close();
-    }
-
-    @Override
-    public int read(long filePointer, byte[] b, int offset, int length) throws IOException {
-      return _inputStream.read(filePointer, b, offset, length);
-    }
-
-    @Override
-    public String toString() {
-      return _path.toString();
-    }
-
-    @Override
-    public Path getPath() {
-      return _path;
-    }
-
-    @Override
-    public long length() {
-      return _length;
-    }
   }
 
   @Override
@@ -576,13 +411,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   }
 
   protected void delete(String name) throws IOException {
-    FSDataInputRandomAccess inputStream = _inputMap.remove(name);
     Tracer trace = Trace.trace("filesystem - delete", Trace.param("path", getPath(name)));
-    if (inputStream != null) {
-      IOUtils.closeQuietly(inputStream);
-    } else {
-      LOG.error("Strange problem, random access input was not found for [{0}]", name);
-    }
     if (_useCache) {
       _symlinkMap.remove(name);
       _symlinkPathMap.remove(name);
@@ -634,7 +463,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   @Override
   public void close() throws IOException {
-    _reportOnBlockLocality.cancel();
     TIMER.purge();
   }
 
@@ -777,73 +605,6 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   @Override
   public HdfsDirectory getSymlinkDirectory() {
     return this;
-  }
-
-  protected FSDataInputSequentialAccess openForSequentialInput(String name, Object key) throws IOException {
-    return openInputStream(name, key, _fileSystem);
-  }
-
-  protected FSDataInputSequentialAccess openInputStream(String name, Object key, FileSystem fileSystem)
-      throws IOException {
-    final Path path = getPath(name);
-    final FSDataInputStream input = fileSystem.open(path);
-    trackObject(input, "Sequential Inputstream", name, _path);
-    FSDataInputSequentialAccess sequentialAccess = toFSDataInputSequentialAccess(path, input);
-    WEAK_CLOSING_QUEUE.add(new WeakRef(sequentialAccess, key));
-    return sequentialAccess;
-  }
-
-  private static FSDataInputSequentialAccess toFSDataInputSequentialAccess(final Path path,
-      final FSDataInputStream input) {
-    return new FSDataInputSequentialAccess() {
-
-      @Override
-      public void close() throws IOException {
-        input.close();
-      }
-
-      @Override
-      public void skip(long amount) throws IOException {
-        input.skip(amount);
-      }
-
-      @Override
-      public void seek(long filePointer) throws IOException {
-        input.seek(filePointer);
-      }
-
-      @Override
-      public void readFully(byte[] b, int offset, int length) throws IOException {
-        input.readFully(b, offset, length);
-      }
-
-      @Override
-      public long getPos() throws IOException {
-        return input.getPos();
-      }
-
-      @Override
-      public String toString() {
-        return path.toString();
-      }
-
-    };
-  }
-
-  static class WeakRef {
-
-    final Closeable _closeable;
-    final WeakReference<Object> _ref;
-
-    WeakRef(Closeable closeable, Object key) {
-      _closeable = closeable;
-      _ref = new WeakReference<Object>(key);
-    }
-
-    boolean isClosable() {
-      return _ref.get() == null ? true : false;
-    }
-
   }
 
 }

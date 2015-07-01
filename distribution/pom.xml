@@ -58,7 +58,8 @@ under the License.
 	</dependencies>
 
 	<build>
-		<plugins>						<plugin>
+		<plugins>
+			<plugin>
 							<groupId>org.codehaus.mojo</groupId>
 							<artifactId>exec-maven-plugin</artifactId>
 							<version>1.2.1</version>
@@ -69,15 +70,31 @@ under the License.
 									<goals>
 										<goal>java</goal>
 									</goals>
+									<configuration>
+										<mainClass>org.apache.blur.doc.CreateCSDDescriptor</mainClass>
+										<arguments>
+											<argument>${project.build.scriptSourceDirectory}/../../assemble/cdh/csd/descriptor/service.sdl.template</argument>
+											<argument>${project.build.directory}/service.sdl</argument>
+											<argument>${project.version}</argument>
+										</arguments>
+									</configuration>
+								</execution>
+								<execution>
+									<id>create-parcel-json</id>
+									<phase>package</phase>
+									<goals>
+										<goal>java</goal>
+									</goals>
+									<configuration>
+										<mainClass>org.apache.blur.doc.ParcelJsonTemplate</mainClass>
+										<arguments>
+											<argument>${project.build.scriptSourceDirectory}/../../assemble/cdh/parcel/meta/parcel.json.template</argument>
+											<argument>${project.build.directory}/parcel.json</argument>
+											<argument>${project.version}</argument>
+										</arguments>
+									</configuration>
 								</execution>
 							</executions>
-							<configuration>
-								<mainClass>org.apache.blur.doc.CreateCSDDescriptor</mainClass>
-								<arguments>
-									<argument>${project.build.scriptSourceDirectory}/../../assemble/cdh/csd/descriptor/service.sdl.template</argument>
-									<argument>${project.build.directory}/service.sdl</argument>
-								</arguments>
-							</configuration>
 						</plugin>		
 						<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -117,7 +134,7 @@ under the License.
 												<descriptors>
 													<descriptor>${parcel.assembly.file}</descriptor>
 												</descriptors>
-												<finalName>blur-${project.version}-el6.parcel</finalName>
+												<finalName>blur-${project.version}.parcel</finalName>
 												<appendAssemblyId>false</appendAssemblyId>
 												<ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
 											</configuration>
@@ -132,7 +149,7 @@ under the License.
 												<descriptors>
 													<descriptor>${csd.assembly.file}</descriptor>
 												</descriptors>
-												<finalName>BLUR-0.2.4</finalName>
+												<finalName>BLUR-${project.version}</finalName>
 												<appendAssemblyId>false</appendAssemblyId>
 											</configuration>
 										</execution>

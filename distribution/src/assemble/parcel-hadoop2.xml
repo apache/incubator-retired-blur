@@ -74,6 +74,7 @@ under the License.
       <outputDirectory>blur-${project.version}/meta</outputDirectory>
       <excludes>
         <exclude>**/.empty</exclude>
+        <exclude>**/parcel.json.template</exclude>
       </excludes>
     </fileSet>
     <fileSet>
@@ -87,6 +88,11 @@ under the License.
   </fileSets>
 
   <files>
+    <file>
+      <source>${project.build.directory}/parcel.json</source>
+      <outputDirectory>blur-${project.version}/meta</outputDirectory>
+      <destName>parcel.json</destName>
+    </file>
     <file>
       <source>${project.build.scriptSourceDirectory}/../resources-hadoop2/NOTICE-bin.txt</source>
       <outputDirectory>blur-${project.version}</outputDirectory>

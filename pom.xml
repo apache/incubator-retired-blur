@@ -391,6 +391,8 @@ under the License.
                         <exclude>**/.empty</exclude>
 
                         <exclude>**/test/**/prop.doc.base.html</exclude>
+                        <exclude>**/parcel.json.template</exclude>
+                        <exclude>**/service.sdl.template</exclude>
 					</excludes>
 				</configuration>
 				<executions>

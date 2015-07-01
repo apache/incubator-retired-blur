@@ -22,55 +22,21 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import org.apache.blur.doc.BlurPropertyParser.BlurProp;
-
-public class CreateCSDDescriptor {
+public class ParcelJsonTemplate {
 
   private static final String BLUR_VERSION = "|||BLUR-VERSION|||";
 
   public static void main(String[] args) throws IOException {
-    BlurPropertyParser parser = new BlurPropertyParser();
-    Map<String, List<BlurProp>> props = parser.parse();
-    Map<String, StringBuffer> map = new HashMap<String, StringBuffer>();
-
-    JsonPropertyFormatter formatter = new JsonPropertyFormatter();
-
-    for (Map.Entry<String, List<BlurProp>> prop : props.entrySet()) {
-
-      StringBuffer buffer = map.get(prop.getKey());
-      if (buffer == null) {
-        buffer = new StringBuffer();
-        map.put(prop.getKey(), buffer);
-      }
-      boolean first = true;
-
-      for (BlurProp p : prop.getValue()) {
-        if (!first) {
-          buffer.append(formatter.separator());
-        }
-        buffer.append(formatter.format(p));
-        first = false;
-      }
-    }
 
     String source = args[0];
     String dest = args[1];
     String blurVersion = args[2];
 
-    replaceValuesInFile(source, dest, map, formatVersion(blurVersion));
+    replaceValuesInFile(source, dest, blurVersion);
   }
 
-  public static String formatVersion(String blurVersion) {
-    return blurVersion.replace("-", ".");
-  }
-
-  private static void replaceValuesInFile(String s, String o, Map<String, StringBuffer> replacements, String blurVersion)
-      throws IOException {
-
+  private static void replaceValuesInFile(String s, String o, String blurVersion) throws IOException {
     File source = new File(s);
     File output = new File(o);
     System.out.println("Source[" + source.getAbsolutePath() + "]");
@@ -80,11 +46,8 @@ public class CreateCSDDescriptor {
     BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(source)));
     String line;
     while ((line = reader.readLine()) != null) {
-      StringBuffer newData = replacements.get(line.trim());
       if (line.contains(BLUR_VERSION)) {
         writer.println(line.replace(BLUR_VERSION, blurVersion));
-      } else if (newData != null) {
-        writer.println(newData.toString());
       } else {
         writer.println(line);
       }

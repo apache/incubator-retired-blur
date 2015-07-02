@@ -43,7 +43,6 @@ EOF
   exit 1
 fi
 
-
 version=$(java -version 2>&1 | awk -F '"' '/version/ {print $2}')
 if [[ "$version" == "1.6."* ]]; then
   echo Java Version is 1.6 ["$version"]
@@ -80,7 +79,7 @@ else
   stopOnError rm $OUTPUT_DIR/test
 fi
 
-PROFILE_FILE='release_profiles.txt'
+PROFILE_FILE="$RELEASE_SCRIPTS_DIR/release_profiles.txt"
 PROFILE_LINES=`cat $PROFILE_FILE | grep -v \#`
 
 for PROFILE in $PROFILE_LINES ; do

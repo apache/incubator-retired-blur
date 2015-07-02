@@ -101,6 +101,7 @@
 <li><a href="#shell_command_create-snapshot">&nbsp;&nbsp;create-snapshot</a></li>
 <li><a href="#shell_command_remove-snapshot">&nbsp;&nbsp;remove-snapshot</a></li>
 <li><a href="#shell_command_list-snapshots">&nbsp;&nbsp;list-snapshots</a></li>
+<li><a href="#shell_command_import">&nbsp;&nbsp;import</a></li>
 </ul></li>
 <li><a href="#shell_cluster_commands">Cluster Commands</a>
 <ul class="nav">
@@ -455,8 +456,8 @@ The following rules are used when interacting with the shell:
 <p>Description: Parse a query and return string representation.<br/>
 <pre><code class="bash">parse &lt;tablename&gt; &lt;query&gt;</code></pre></p>
 <h4 id="shell_command_definecolumn">definecolumn</h4>
-<p>Description: Defines a new column in the named table. '-F' option is for fieldless searching and the '-S' is for sortability.<br/>
-<pre><code class="bash">definecolumn &lt;table name&gt; &lt;family&gt; &lt;column name&gt; &lt;type&gt; [-s &lt;sub column name&gt;] [-F] [-S] [-p name value]*</code></pre></p>
+<p>Description: Defines a new column in the named table. '-F' option is for fieldless searching, the '-S' is for sortability and '-M' is for allowing multiple values per column.<br/>
+<pre><code class="bash">definecolumn &lt;table name&gt; &lt;family&gt; &lt;column name&gt; &lt;type&gt; [-s &lt;sub column name&gt;] [-F] [-S] [-M] [-p name value]*</code></pre></p>
 <h4 id="shell_command_optimize">optimize</h4>
 <p>Description: Optimize the named table.<br/>
 <pre><code class="bash">optimize &lt;tablename&gt; &lt;number of segments per shard&gt;</code></pre></p>
@@ -466,7 +467,7 @@ The following rules are used when interacting with the shell:
 <h3 id="shell_data_commands">Data Commands</h3>
 <h4 id="shell_command_query">query</h4>
 <p>Description: Query the named table.  Run -h for full argument list.<br/>
-<pre><code class="bash">query &lt;tablename&gt; &lt;query&gt; [&lt;options&gt;]</code></pre></p>
+<pre><code class="bash">query &lt;tablename&gt; [&lt;options&gt;]</code></pre></p>
 <h4 id="shell_command_get">get</h4>
 <p>Description: display the specified row<br/>
 <pre><code class="bash">get &lt;tablename&gt; &lt;rowid&gt;</code></pre></p>
@@ -494,6 +495,9 @@ The following rules are used when interacting with the shell:
 <h4 id="shell_command_list-snapshots">list-snapshots</h4>
 <p>Description: List the existing snapshots of a table<br/>
 <pre><code class="bash">list-snapshots &lt;tablename&gt;</code></pre></p>
+<h4 id="shell_command_import">import</h4>
+<p>Description: Import data from external location.<br/>
+<pre><code class="bash">import &lt;table&gt; &lt;path location&gt;</code></pre></p>
 <h3 id="shell_cluster_commands">Cluster Commands</h3>
 <h4 id="shell_command_controllers">controllers</h4>
 <p>Description: List controllers.<br/>

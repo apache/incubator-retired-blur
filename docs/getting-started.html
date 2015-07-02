@@ -99,9 +99,8 @@ cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys</code></pre>
             <h3>Download Source and Binary Artifacts</h3>
             <p>
 	Both the source and binary artifacts are provided via mirrors here:<br/><br/>
-              <a href="http://www.apache.org/dyn/closer.cgi/incubator/blur/0.2.4-incubating-SNAPSHOT/apache-blur-0.2.4-incubating-src.tar.gz" class="btn btn-large btn-primary">Apache Blur 0.2.4 Source</a>
-              <a href="http://www.apache.org/dyn/closer.cgi/incubator/blur/0.2.4-incubating-SNAPSHOT/apache-blur-0.2.4-incubating-hadoop1-bin.tar.gz" class="btn btn-large btn-primary">Apache Blur 0.2.4 Hadoop1 Binary</a>
-              <a href="http://www.apache.org/dyn/closer.cgi/incubator/blur/0.2.4-incubating-SNAPSHOT/apache-blur-0.2.4-incubating-hadoop2-bin.tar.gz" class="btn btn-large btn-primary">Apache Blur 0.2.4 Hadoop2 Binary</a>
+              <a href="http://www.apache.org/dyn/closer.cgi/incubator/blur/0.2.4-incubating/apache-blur-0.2.4-incubating-src.tar.gz" class="btn btn-large btn-primary">Apache Blur 0.2.4 Source</a>
+              <a href="http://www.apache.org/dyn/closer.cgi/incubator/blur/0.2.4-incubating/apache-blur-hadoop2-2.6.0-0.2.4-incubating-bin.tar.gz" class="btn btn-large btn-primary">Apache Blur 0.2.4 Hadoop2 Binary</a>
             </p>
           </section>
           <section>
@@ -117,13 +116,13 @@ cat ~/.ssh/id_dsa.pub >> ~/.ssh/authorized_keys</code></pre>
             <p>Build the artifacts for Hadoop 1 (if you want to run the tests remove the "-DskipTests")</p>
             <pre><code class="bash">cd incubator-blur/
 mvn install -DskipTests -Dhadoop1</code></pre>
-            <p>The binary artifact is located <code>distribution/target/apache-blur-0.2.4-incubating-SNAPSHOT-hadoop1-bin.tar.gz</code>.</p>
+            <p>The binary artifact is located <code>distribution/target/apache-blur-hadoop1-1.2.1-0.2.4-incubating-bin.tar.gz</code>.</p>
             <h4>Hadoop 2</h4>
             <div class="bs-callout bs-callout-info"><h4>Heads Up!</h4><p>While all the tests pass on Hadoop 2, Blur has not be tested at scale on Hadoop 2 and bin/blur-config.sh script will likely require modification to include the correct Hadoop 2 libraries.</p></div>
             <p>Build the artifacts for Hadoop 2 (if you want to run the tests remove the "-DskipTests")</p>
 			<pre><code class="bash">cd incubator-blur/
 mvn install -DskipTests -Dhadoop2</code></pre>
-			<p>The binary artifact is located <code>distribution/target/apache-blur-0.2.4-incubating-SNAPSHOT-hadoop2-bin.tar.gz</code>.</p>
+			<p>The binary artifact is located <code>distribution/target/apache-blur-hadoop2-2.6.0-0.2.4-incubating-bin.tar.gz</code>.</p>
           </section>
           <section>
             <div class="page-header">
@@ -164,12 +163,12 @@ mvn install -DskipTests -Dhadoop2</code></pre>
             <p>
               You should see:
             </p>
-            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.4-incubating-SNAPSHOT/bin/start-all.sh
+            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.4-incubating/bin/start-all.sh
 localhost: ZooKeeper starting as process 6650.
 localhost: Shard [0] starting as process 6783.
 localhost: Controller [0] starting as process 6933.</code></pre>
             <p>If you run the start command again you should see:</p>
-            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.4-incubating-SNAPSHOT/bin/stop-all.sh
+            <pre><code class="bash">blur@blurvm:~$ apache-blur-0.2.4-incubating/bin/stop-all.sh
 localhost: Stopping Controller [0] server with pid [6933].
 localhost: Stopping Shard [0] server with pid [6783].
 localhost: Stopping ZooKeeper with pid [6650].</code></pre>

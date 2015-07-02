@@ -16,4 +16,4 @@
 # limitations under the License.
 
 
-mvn exec:java -Dhadoop1 -Dexec.mainClass="org.apache.blur.shell.GenerateDoc" -Dexec.args="../docs/using-blur.base.html ../docs/using-blur.html"
+mvn exec:java -Dhadoop2 -Dexec.mainClass="org.apache.blur.shell.GenerateDoc" -Dexec.args="../docs/using-blur.base.html ../docs/using-blur.html"

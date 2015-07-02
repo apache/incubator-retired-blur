@@ -29,7 +29,7 @@ under the License.
 
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur</artifactId>
-	<version>0.2.4-incubating-SNAPSHOT</version>
+	<version>0.2.4-incubating</version>
 	<packaging>pom</packaging>
 
 	<name>Blur</name>

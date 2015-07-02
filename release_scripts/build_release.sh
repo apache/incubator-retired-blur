@@ -82,6 +82,8 @@ fi
 PROFILE_FILE="$RELEASE_SCRIPTS_DIR/release_profiles.txt"
 PROFILE_LINES=`cat $PROFILE_FILE | grep -v \#`
 
+export MAVEN_OPTS="-Xmx1g"
+
 for PROFILE in $PROFILE_LINES ; do
   cd $PROJECT_BASE
   HADOOP_VERSIONS_FILE="$RELEASE_SCRIPTS_DIR/${PROFILE}.versions"

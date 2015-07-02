@@ -214,7 +214,7 @@ blur> mutate testtable rowid1 recordid1 fam0 col1:value1
 <h3 id="shell-query">Query</h3>
 <p>
 <pre><code class="bash">blur> #Runs a query on testtable
-blur> query testtable fam0.col1:value1
+blur> query testtable -q fam0.col1:value1
  - Results Summary -
     total : 1
     time  : 7.874 ms
@@ -241,7 +241,7 @@ highlight of query command is now on
 <h3 id="shell-query-highlight">Query with Highlights</h3>
 <p>
 <pre><code class="bash">blur> #Runs a query on testtable with highlighting on, notice &lt;&lt;&lt;value1&gt;&gt;&gt; is highlighted
-blur> query testtable2 fam0.col1:value1
+blur> query testtable2 -q fam0.col1:value1
  - Results Summary -
     total : 1
     time  : 13.395 ms

@@ -57,53 +57,42 @@
         <p>
 <!-- Header for Release Notes -->
 
-        Release Notes - Apache Blur - Version 0.2.3<br/><br/>
 
-<b>** Apache Blur 0.2.3 is a re-release of 0.2.2 with a few bug fixes and a new version of Apache Blur Console.</b><br/>
-<br/>
-
-
-
-        Release Notes - Apache Blur - Version 0.2.2
-
+        Release Notes - Apache Blur - Version 0.2.4
+    
+<h2>        Sub-task
+</h2>
+<ul>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-29'>BLUR-29</a>] -         Create a Thrift based InputFormat that reads the output of a query into a MR job
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-295'>BLUR-295</a>] -         Long pauses during NRT updates
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-358'>BLUR-358</a>] -         Create a factory pattern for setting up Blur Thrift connections
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-359'>BLUR-359</a>] -         Blur user authentication
+</li>
+</ul>
+                            
 <h2>        Bug
 </h2>
 <ul>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-297'>BLUR-297</a>] -         The ShardServerEventHandler class is log noisy when clients disconnect
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-7'>BLUR-7</a>] -         Better validation of the row mutation during mutation.
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-298'>BLUR-298</a>] -         ZooKeeperClusterStatus has several methods that are not working
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-59'>BLUR-59</a>] -         During table creation re-read the field types from the index.
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-299'>BLUR-299</a>] -         Custom types at the system/cluster level aren&#39;t registered when the OutputFormat creates the table.
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-60'>BLUR-60</a>] -         NPE - ReusedBufferedIndexInput
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-300'>BLUR-300</a>] -         System types need to be registered before the tablecontext is loaded
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-243'>BLUR-243</a>] -         maven build not working
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-301'>BLUR-301</a>] -         List command should be sorted
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-303'>BLUR-303</a>] -         Change class sig for DefaultBlurReducer
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-305'>BLUR-305</a>] -         Blur CombineInputFormat doesn&#39;t work at all
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-275'>BLUR-275</a>] -         Blur Hadoop 2.x build has hadoop 1.x dependancies still.
 </li>
 <li>[<a href='https://issues.apache.org/jira/browse/BLUR-306'>BLUR-306</a>] -         Tables with the same name errors
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-307'>BLUR-307</a>] -         CsvBlurMapper not does work with combined input format
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-313'>BLUR-313</a>] -         Let Blur run against CDH4/Hadoop 2.x
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-308'>BLUR-308</a>] -         The MR jobs tmpjars contains more jar than needed
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-309'>BLUR-309</a>] -         CsvBlurMapper has an extra comma in the error message
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-310'>BLUR-310</a>] -         Remove the index size gathering code
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-318'>BLUR-318</a>] -         Bug in TypeDefinitions while having separate analyzers for index and query
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-319'>BLUR-319</a>] -         Custom TypeDef&#39;s can get Blur into a state where one cannot make new tables.
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-324'>BLUR-324</a>] -         SpatialPointVectorStrategyFieldTypeDefinition is throwing an exception during indexing
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-316'>BLUR-316</a>] -         Blur Shell not handling backslashes properly
 </li>
 <li>[<a href='https://issues.apache.org/jira/browse/BLUR-325'>BLUR-325</a>] -         The MasterBasedDistributedLayout is not removing the layout when a table is deleted
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-326'>BLUR-326</a>] -         The thrift call shardServerList is failing
-</li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-328'>BLUR-328</a>] -         Index curruption during mutateBatch calls
 </li>
 <li>[<a href='https://issues.apache.org/jira/browse/BLUR-329'>BLUR-329</a>] -         Shard server query cache bug
 </li>
@@ -113,33 +102,147 @@
 </li>
 <li>[<a href='https://issues.apache.org/jira/browse/BLUR-332'>BLUR-332</a>] -         FileNotFoundException during stats call
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-337'>BLUR-337</a>] -         Shard server should fail hard on a bad misconfiguration
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-341'>BLUR-341</a>] -         Fix term enumeration
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-347'>BLUR-347</a>] -         Cleanup of LICENSE and NOTICE files per IPMC feedback
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-351'>BLUR-351</a>] -         Spatial field definitions should give a helpful error when misconfigured
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-352'>BLUR-352</a>] -         Blur Console doesn&#39;t start due to wrong web context path in production mode
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-353'>BLUR-353</a>] -         Query command in shell doesn&#39;t print usage help
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-355'>BLUR-355</a>] -         Blur Console is taking advantage of a transitive dependency with commons-collections
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-356'>BLUR-356</a>] -         Blur console should ignore queries when table is disabled
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-370'>BLUR-370</a>] -         Memory leak when using facets in 0.2.3
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-372'>BLUR-372</a>] -         Cancel query is broken
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-373'>BLUR-373</a>] -         Allow queries in the shell to contain a minus &quot;-&quot; character
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-375'>BLUR-375</a>] -         PrimeDoc moves during MR indexing overflow
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-383'>BLUR-383</a>] -         Change blur console urls in jetty
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-384'>BLUR-384</a>] -         Remove dependency on blur-core and handle offline shards
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-388'>BLUR-388</a>] -         Potential divide by 0 in LoadDataContinuously#main()
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-389'>BLUR-389</a>] -         InputStream may not be closed upon return from EnqueueDataAsync#loadWords()
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-399'>BLUR-399</a>] -         Issue with table truncate call
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-400'>BLUR-400</a>] -         FastHdfsKeyValueDirectory has a problem with dropping commits
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-401'>BLUR-401</a>] -         Can&#39;t execute query from command line
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-406'>BLUR-406</a>] -         NPE in BaseConsoleServlet sendError
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-407'>BLUR-407</a>] -         ConcurrentModificationException on the table list
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-408'>BLUR-408</a>] -         Console queries experience 404
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-409'>BLUR-409</a>] -         tables call needs to handle if one table is in error state
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-413'>BLUR-413</a>] -         Add a entry count metric to the thrift cache
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-414'>BLUR-414</a>] -         Format numbers on the metrics page in blur-status project
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-415'>BLUR-415</a>] -         Setup client once in metrics page in blur-status
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-416'>BLUR-416</a>] -         Row Fetch Issue
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-417'>BLUR-417</a>] -         Thrift Cache Key Issue
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-418'>BLUR-418</a>] -         Leading wildcard issue in the super parser
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-419'>BLUR-419</a>] -         The reducer multiplier setting fails on the csv loader program.
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-420'>BLUR-420</a>] -         Csv loader program should call import on the table after completing MR job
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-421'>BLUR-421</a>] -         Csv loader program needs to have output path added as an argument
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-422'>BLUR-422</a>] -         Random duplicate detection during row overflow
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-423'>BLUR-423</a>] -         ./blur shell NoClassDefFoundError
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-425'>BLUR-425</a>] -         can&#39;t run when export BLUR_MANAGE_ZK=false
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-427'>BLUR-427</a>] -         Race condition in Blur&#39;s disk based doc values
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-433'>BLUR-433</a>] -         Block Cache creating process fragmentation
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-434'>BLUR-434</a>] -         Relocate the lucene-document-security project as a Blur project
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-435'>BLUR-435</a>] -         Create a per table lock for BulkTableUpdateCommand
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-437'>BLUR-437</a>] -         Snaphots not releasing their segments after the snapshot is removed
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-438'>BLUR-438</a>] -         Snapshot meta data files in the generations directory not being cleaned up
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-439'>BLUR-439</a>] -         HDFSDirectory fencing issue
 </li>
 </ul>
-
+                        
 <h2>        Improvement
 </h2>
 <ul>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-302'>BLUR-302</a>] -         start-all script sometimes causes errors
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-21'>BLUR-21</a>] -         In the Selector Thrift object add the ability to only fetch the records in a Row that were Hits
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-317'>BLUR-317</a>] -         Enable Changing of Compression alg and chunk size in Codec
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-105'>BLUR-105</a>] -         Index Import rollback
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-323'>BLUR-323</a>] -         Improve error message on CustomFieldTypeDefinition
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-211'>BLUR-211</a>] -         Allow for third party field types
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-327'>BLUR-327</a>] -         Schedule a daily optimize of each shard
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-227'>BLUR-227</a>] -         Remove deprecated BlurReducer in the blur-maperd project
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-333'>BLUR-333</a>] -         Remove polling from the index importer
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-354'>BLUR-354</a>] -         Add documentation for Blur Console
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-334'>BLUR-334</a>] -         Add sorting
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-357'>BLUR-357</a>] -         Include the blur-console in the start-all stop-all scripts
 </li>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-335'>BLUR-335</a>] -         Field existence query
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-362'>BLUR-362</a>] -         format row &amp; record counts
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-363'>BLUR-363</a>] -         implement plugin system for user authentication/authorization
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-365'>BLUR-365</a>] -         Add copy table function to console
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-366'>BLUR-366</a>] -         Add search history to the search page
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-367'>BLUR-367</a>] -         Add facets to the search page
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-380'>BLUR-380</a>] -         Console should support ssl
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-381'>BLUR-381</a>] -         upgrade jetty
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-394'>BLUR-394</a>] -         Use classifiers in pom for Hadoop profile variants
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-397'>BLUR-397</a>] -         Improve data loading from M/R
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-410'>BLUR-410</a>] -         truncate queries
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-411'>BLUR-411</a>] -         Show query time after running a query via the console
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-428'>BLUR-428</a>] -         Create rooted ZK path if it doesn&#39;t exist
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-432'>BLUR-432</a>] -         Explain tradeoffs in bulk mutate docs
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-436'>BLUR-436</a>] -         Build blur command to create input splits for BlurInputFormat
 </li>
 </ul>
-
+            
 <h2>        New Feature
 </h2>
 <ul>
-<li>[<a href='https://issues.apache.org/jira/browse/BLUR-314'>BLUR-314</a>] -         Allow configurable Thrift frame size
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-210'>BLUR-210</a>] -         Add the ability to create index snapshots from the shell
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-276'>BLUR-276</a>] -         Create an API the allows for server side manipulation of requests
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-342'>BLUR-342</a>] -         Support full cluster operations on random ports
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-348'>BLUR-348</a>] -         new Copy command in the shell
+</li>
+<li>[<a href='https://issues.apache.org/jira/browse/BLUR-387'>BLUR-387</a>] -         Blur Spark Connector
 </li>
 </ul>
 

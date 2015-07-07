@@ -1,3 +1,98 @@
+Release 0.2.4 - 2015-07-02
+
+Release Notes - Apache Blur - Version 0.2.4
+
+** Sub-task
+    * [BLUR-29] - Create a Thrift based InputFormat that reads the output of a query into a MR job
+    * [BLUR-295] - Long pauses during NRT updates
+    * [BLUR-358] - Create a factory pattern for setting up Blur Thrift connections
+    * [BLUR-359] - Blur user authentication
+
+** Bug
+    * [BLUR-7] - Better validation of the row mutation during mutation.
+    * [BLUR-59] - During table creation re-read the field types from the index.
+    * [BLUR-60] - NPE - ReusedBufferedIndexInput
+    * [BLUR-243] - maven build not working
+    * [BLUR-275] - Blur Hadoop 2.x build has hadoop 1.x dependancies still.
+    * [BLUR-306] - Tables with the same name errors
+    * [BLUR-313] - Let Blur run against CDH4/Hadoop 2.x
+    * [BLUR-316] - Blur Shell not handling backslashes properly
+    * [BLUR-325] - The MasterBasedDistributedLayout is not removing the layout when a table is deleted
+    * [BLUR-329] - Shard server query cache bug
+    * [BLUR-330] - Remove the ZooKeeper trace store
+    * [BLUR-331] - Large Row Paging issue
+    * [BLUR-332] - FileNotFoundException during stats call
+    * [BLUR-341] - Fix term enumeration
+    * [BLUR-347] - Cleanup of LICENSE and NOTICE files per IPMC feedback
+    * [BLUR-351] - Spatial field definitions should give a helpful error when misconfigured
+    * [BLUR-352] - Blur Console doesn't start due to wrong web context path in production mode
+    * [BLUR-353] - Query command in shell doesn't print usage help
+    * [BLUR-355] - Blur Console is taking advantage of a transitive dependency with commons-collections
+    * [BLUR-356] - Blur console should ignore queries when table is disabled
+    * [BLUR-370] - Memory leak when using facets in 0.2.3
+    * [BLUR-372] - Cancel query is broken
+    * [BLUR-373] - Allow queries in the shell to contain a minus "-" character
+    * [BLUR-375] - PrimeDoc moves during MR indexing overflow
+    * [BLUR-383] - Change blur console urls in jetty
+    * [BLUR-384] - Remove dependency on blur-core and handle offline shards
+    * [BLUR-388] - Potential divide by 0 in LoadDataContinuously#main()
+    * [BLUR-389] - InputStream may not be closed upon return from EnqueueDataAsync#loadWords()
+    * [BLUR-399] - Issue with table truncate call
+    * [BLUR-400] - FastHdfsKeyValueDirectory has a problem with dropping commits
+    * [BLUR-401] - Can't execute query from command line
+    * [BLUR-406] - NPE in BaseConsoleServlet sendError
+    * [BLUR-407] - ConcurrentModificationException on the table list
+    * [BLUR-408] - Console queries experience 404
+    * [BLUR-409] - tables call needs to handle if one table is in error state
+    * [BLUR-413] - Add a entry count metric to the thrift cache
+    * [BLUR-414] - Format numbers on the metrics page in blur-status project
+    * [BLUR-415] - Setup client once in metrics page in blur-status
+    * [BLUR-416] - Row Fetch Issue
+    * [BLUR-417] - Thrift Cache Key Issue
+    * [BLUR-418] - Leading wildcard issue in the super parser
+    * [BLUR-419] - The reducer multiplier setting fails on the csv loader program.
+    * [BLUR-420] - Csv loader program should call import on the table after completing MR job
+    * [BLUR-421] - Csv loader program needs to have output path added as an argument
+    * [BLUR-422] - Random duplicate detection during row overflow
+    * [BLUR-423] - ./blur shell NoClassDefFoundError
+    * [BLUR-425] - can't run when export BLUR_MANAGE_ZK=false
+    * [BLUR-427] - Race condition in Blur's disk based doc values
+    * [BLUR-433] - Block Cache creating process fragmentation
+    * [BLUR-434] - Relocate the lucene-document-security project as a Blur project
+    * [BLUR-435] - Create a per table lock for BulkTableUpdateCommand
+    * [BLUR-437] - Snaphots not releasing their segments after the snapshot is removed
+    * [BLUR-438] - Snapshot meta data files in the generations directory not being cleaned up
+    * [BLUR-439] - HDFSDirectory fencing issue
+
+** Improvement
+    * [BLUR-21] - In the Selector Thrift object add the ability to only fetch the records in a Row that were Hits
+    * [BLUR-105] - Index Import rollback
+    * [BLUR-211] - Allow for third party field types
+    * [BLUR-227] - Remove deprecated BlurReducer in the blur-maperd project
+    * [BLUR-354] - Add documentation for Blur Console
+    * [BLUR-357] - Include the blur-console in the start-all stop-all scripts
+    * [BLUR-362] - format row & record counts
+    * [BLUR-363] - implement plugin system for user authentication/authorization
+    * [BLUR-365] - Add copy table function to console
+    * [BLUR-366] - Add search history to the search page
+    * [BLUR-367] - Add facets to the search page
+    * [BLUR-380] - Console should support ssl
+    * [BLUR-381] - upgrade jetty
+    * [BLUR-394] - Use classifiers in pom for Hadoop profile variants
+    * [BLUR-397] - Improve data loading from M/R
+    * [BLUR-410] - truncate queries
+    * [BLUR-411] - Show query time after running a query via the console
+    * [BLUR-428] - Create rooted ZK path if it doesn't exist
+    * [BLUR-432] - Explain tradeoffs in bulk mutate docs
+    * [BLUR-436] - Build blur command to create input splits for BlurInputFormat
+
+** New Feature
+    * [BLUR-210] - Add the ability to create index snapshots from the shell
+    * [BLUR-276] - Create an API the allows for server side manipulation of requests
+    * [BLUR-342] - Support full cluster operations on random ports
+    * [BLUR-348] - new Copy command in the shell
+    * [BLUR-387] - Blur Spark Connector
+
 Release 0.2.3 - 2014-07-11
 
 ** Apache Blur 0.2.3 is a re-release of 0.2.2 with a few bug fixes and a new version of Apache Blur Console.

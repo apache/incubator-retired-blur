@@ -82,9 +82,7 @@
       },
       "logging": {
     	  "dir":"/var/log/blur",
-    	  "filename": "blur--controller-server-${host}-0_main.log",
-    	  "configName" :"blur.log.dir",    	  
-    	  "isModifiable":true,
+    	  "filename": "blur-controller-server-${host}.log",
     	  "loggingType":"log4j"
       },
       "configWriter" : {
@@ -132,9 +130,7 @@
       },
 	     "logging": {
 	    	  "dir":"/var/log/blur",
-	    	  "filename": "blur--shard-server-${host}-0_main.log",
-	    	  "configName" :"blur.log.dir",
-	    	  "isModifiable":true,
+	    	  "filename": "blur-shard-server-${host}.log",
 	    	  "loggingType":"log4j"
 	     },
       "configWriter" : {
@@ -167,8 +163,7 @@
   },
   "serviceDependencies" : [
         {"name":"HDFS", "required":"true"},
-        {"name":"ZOOKEEPER", "required":"true"},
-        {"name":"YARN", "required":"true"}
+        {"name":"ZOOKEEPER", "required":"true"}
    ]
   	
   

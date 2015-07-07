@@ -33,11 +33,7 @@ under the License.
       <includes>
         <include>org.apache.blur:*</include>
 
-        <include>org.apache.zookeeper:zookeeper</include>
-        <include>org.slf4j:slf4j-api</include>
-        <include>org.slf4j:slf4j-log4j12</include>
         <include>org.json:json</include>
-        <include>log4j:log4j</include>
         <include>com.yammer.metrics:*</include>
         <include>com.google.guava:guava</include>
         <include>org.apache.httpcomponents:*</include>
@@ -48,7 +44,6 @@ under the License.
         <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
         <include>jline:jline</include>
         <include>com.fasterxml.jackson.core:*</include>
-        <include>com.github.amccurry:lucene-document-security</include>
         <include>javax.servlet:*</include>        
       </includes>
     </dependencySet>
@@ -60,6 +55,7 @@ under the License.
       <outputDirectory>blur-${project.version}/conf</outputDirectory>
       <excludes>
         <exclude>**/.empty</exclude>
+        <exclude>**/log4j*.xml</exclude>
       </excludes>
     </fileSet> 
     <fileSet>

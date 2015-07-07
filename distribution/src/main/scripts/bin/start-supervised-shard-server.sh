@@ -21,7 +21,7 @@ bin=`cd "$bin"; pwd`
 echo "Sourcing configs.."
 . $BLUR_HOME/bin/blur-supervised-config.sh
 
-  PROC_NAME=shard-server-$HOSTNAME-0
-  echo "Launching shard [$PROC_NAME] now..."
-  echo "Using BLUR_CLASSPATH: ${BLUR_CLASSPATH}"
- exec "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH -Dblur-shard-$INSTANCE $BLUR_SHARD_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -cp "$BLUR_CLASSPATH" org.apache.blur.thrift.ThriftBlurShardServer -s 0 
+PROC_NAME=shard-server-$HOSTNAME-0
+echo "Launching shard [$PROC_NAME] now..."
+echo "Using BLUR_CLASSPATH: ${BLUR_CLASSPATH}"
+exec "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Dblur-shard -Dlog4j.configuration=log4j.properties $BLUR_SHARD_JVM_OPTIONS -Djava.library.path=$JAVA_LIBRARY_PATH -cp "$BLUR_CLASSPATH" org.apache.blur.thrift.ThriftBlurShardServer -s 0 

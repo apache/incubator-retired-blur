@@ -21,8 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import com.google.common.collect.Lists;
 
@@ -35,6 +38,8 @@ public class BlurPropertyParser {
     String prevLine = null;
 
     String key = "|||General-Server-Properties|||";
+
+    Set<String> requiredProperties = getRequiredProperties();
 
     Map<String, List<BlurProp>> map = new HashMap<String, List<BlurProp>>();
     while ((line = reader.readLine()) != null) {
@@ -59,11 +64,24 @@ public class BlurPropertyParser {
         p.setDefaultVal(value);
         p.setDescription(desc);
         p.setType(type); // infer type...
+        p.setRequired(requiredProperties.contains(name));
         props.add(p);
       }
       prevLine = line;
     }
     return map;
+  }
+
+  private Set<String> getRequiredProperties() throws IOException {
+    InputStream inputStream = getClass().getResourceAsStream("/blur-site.properties");
+    Properties properties = new Properties();
+    properties.load(inputStream);
+    inputStream.close();
+    Set<String> result = new HashSet<String>();
+    for (Object o : properties.keySet()) {
+      result.add(o.toString());
+    }
+    return result;
   }
 
   String getType(String value) {
@@ -135,7 +153,7 @@ public class BlurPropertyParser {
     private String description;
     private String defaultVal;
     private String type;
-    private boolean isRequired;
+    private boolean required;
 
     public String getName() {
       return name;
@@ -169,10 +187,14 @@ public class BlurPropertyParser {
       this.type = type;
     }
 
-    // We'll have a default if it is.
     public boolean isRequired() {
-      return ((defaultVal != null) && (!defaultVal.isEmpty()));
+      return required;
     }
+
+    public void setRequired(boolean required) {
+      this.required = required;
+    }
+
   }
 
 }

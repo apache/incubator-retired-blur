@@ -69,7 +69,7 @@ setup_environment() {
 	
 	BLUR_SITE=${blur_conf_dir}/blur-site.properties
 	
-	cp ${BLUR_HOME}/conf/log* ${blur_conf_dir}/
+#	cp ${BLUR_HOME}/conf/log* ${blur_conf_dir}/
 	
 	if [ -z "$BLUR_ZK_ROOT" ]; then
 	  echo "Rooting zookeeper at [${BLUR_ZK_ROOT}]"

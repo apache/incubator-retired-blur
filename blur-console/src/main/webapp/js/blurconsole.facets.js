@@ -44,8 +44,9 @@ blurconsole.facets = (function () {
               + '</div>'
               + '<div class="col-md-6">'
                 + '<div class="form-group">'
-                  + '<label for="facetTerms">Terms</label>'
-                  + '<input type="text" name="facetTerms" class="form-control tm-input" id="facetTerms" autocomplete="off"/>'
+                  + '<label>Terms</label>'
+                  + '<span id="facetTerms"></span>'
+                  // + '<input type="text" name="facetTerms" class="form-control tm-input" id="facetTerms" autocomplete="off"/>'
                   + '<div class="facetTermList"></div>'
                 + '</div>'
                 + '<div class="form-group">'
@@ -101,8 +102,9 @@ blurconsole.facets = (function () {
       jqueryMap.facetResults = $('.facetResults', jqueryMap.modal);
       jqueryMap.terms = $('#facetTerms', jqueryMap.modal);
 
-      jqueryMap.terms.tagsManager({
-        tagsContainer: $('.facetTermList', jqueryMap.modal)
+      jqueryMap.terms.selectivity({
+        inputType: 'Email',
+        placeholder: 'Enter in terms'
       });
 
       $('#facetSubmit', jqueryMap.modal).on('click', _runFacetCounts);
@@ -142,12 +144,7 @@ blurconsole.facets = (function () {
   function _runFacetCounts() {
     var family = jqueryMap.familyChooser.val();
     var column = jqueryMap.columnChooser.val();
-    var terms = jqueryMap.terms.tagsManager('tags');
-
-    if (jqueryMap.terms.val()) {
-      jqueryMap.terms.tagsManager('pushTag', jqueryMap.terms.val());
-      terms = jqueryMap.terms.tagsManager('tags');
-    }
+    var terms = jqueryMap.terms.selectivity('value');
 
     if (family && column && terms.length > 0) {
       $('.facetWarning', jqueryMap.modal).hide();

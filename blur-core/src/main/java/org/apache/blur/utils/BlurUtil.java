@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -156,6 +157,8 @@ public class BlurUtil {
   public static final Comparator<? super PeekableIterator<BlurResult, BlurException>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
   public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
   public static final Term PRIME_DOC_TERM = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
+
+  private static final String HADOOP_CONF = "hadoop_conf.";
 
   static class LoggerArgsState {
 
@@ -703,7 +706,7 @@ public class BlurUtil {
     FileSystem fileSystem = tablePath.getFileSystem(configuration);
     if (createPath(fileSystem, tablePath)) {
       LOG.info("Table uri existed.");
-//      validateShardCount(shardCount, fileSystem, tablePath);
+      // validateShardCount(shardCount, fileSystem, tablePath);
     }
     ThreadWatcher.resetStatus();
   }
@@ -1286,14 +1289,26 @@ public class BlurUtil {
       throw new RuntimeException(e);
     }
   }
-  
-  public static Configuration newHadoopConfiguration() {
-    return addHdfsConfig(new Configuration());
+
+  public static Configuration newHadoopConfiguration(BlurConfiguration blurConfiguration) {
+    return addHdfsConfig(new Configuration(), blurConfiguration);
   }
 
-  public static Configuration addHdfsConfig(Configuration configuration) {
+  public static Configuration addHdfsConfig(Configuration configuration, BlurConfiguration blurConfiguration) {
     configuration.addResource("hdfs-default.xml");
     configuration.addResource("hdfs-site.xml");
+    if (blurConfiguration != null) {
+      Map<String, String> properties = blurConfiguration.getProperties();
+      for (Entry<String, String> e : properties.entrySet()) {
+        String key = e.getKey();
+        if (key.startsWith(HADOOP_CONF)) {
+          String hadoopKey = key.substring(HADOOP_CONF.length());
+          String hadoopValue = e.getValue();
+          LOG.info("Adding hadoop configuration item [{0}] [{1}]", hadoopKey, hadoopValue);
+          configuration.set(hadoopKey, hadoopValue);
+        }
+      }
+    }
     return configuration;
   }
 

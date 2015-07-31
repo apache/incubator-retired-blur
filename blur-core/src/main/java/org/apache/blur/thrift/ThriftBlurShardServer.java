@@ -53,9 +53,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_MAX_READ_BUF
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_SELECTOR_THREADS;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import java.io.Closeable;
@@ -112,7 +109,6 @@ import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.blur.utils.MemoryReporter;
-import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.zookeeper.ZooKeeper;
@@ -148,7 +144,7 @@ public class ThriftBlurShardServer extends ThriftServer {
   }
 
   public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
-    Configuration config = BlurUtil.newHadoopConfiguration();
+    Configuration config = BlurUtil.newHadoopConfiguration(configuration);
     TableContext.setSystemBlurConfiguration(configuration);
     TableContext.setSystemConfiguration(config);
 

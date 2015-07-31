@@ -46,9 +46,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_NODENAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
 import java.io.File;
@@ -81,7 +78,6 @@ import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.GCWatcher;
 import org.apache.blur.utils.MemoryReporter;
-import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.zookeeper.ZooKeeper;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -111,7 +107,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
   }
 
   public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
-    Configuration config = BlurUtil.newHadoopConfiguration();
+    Configuration config = BlurUtil.newHadoopConfiguration(configuration);
     TableContext.setSystemBlurConfiguration(configuration);
     TableContext.setSystemConfiguration(config);
     

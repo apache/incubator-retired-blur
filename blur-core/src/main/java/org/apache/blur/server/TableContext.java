@@ -343,7 +343,7 @@ public class TableContext implements Cloneable {
 
   public static synchronized Configuration getSystemConfiguration() {
     if (_systemConfiguration == null) {
-      _systemConfiguration = BlurUtil.newHadoopConfiguration();
+      _systemConfiguration = BlurUtil.newHadoopConfiguration(null);
     }
     return new Configuration(_systemConfiguration);
   }

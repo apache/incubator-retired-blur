@@ -123,11 +123,11 @@
             "BLUR_SHARD_JVM_OPTIONS":"${blur_shard_jvm_options}"
           }
 	    },
-      "externalLink" : {
+      "additionalExternalLinks" : [{
       	"name":"blur_shard_ui",
       	"label":"Blur Shard Status UI",
       	"url":"http://${host}:${blur_gui_shard_port}"
-      },
+      }],
 	     "logging": {
 	    	  "dir":"/var/log/blur",
 	    	  "filename": "blur-shard-server-${host}.log",

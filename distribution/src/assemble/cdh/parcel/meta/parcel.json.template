@@ -2,7 +2,7 @@
 	"schema_version": 1,
 	"name": "blur",
 	"version" : "|||BLUR-VERSION|||",
-	"setActiveSymlink": false,
+	"setActiveSymlink": true,
 	
 	"depends": "",
 	"replaces":"blur",

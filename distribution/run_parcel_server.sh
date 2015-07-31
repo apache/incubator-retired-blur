@@ -18,7 +18,8 @@
 PROJECT_DIR=`dirname "$0"`
 PROJECT_DIR=`cd "$PROJECT_DIR"; pwd`
 
-BLUR_VERSION=`mvn org.apache.maven.plugins:maven-help-plugin:2.1.1:evaluate -Dexpression=project.version -Dhadoop2 | grep -Ev '(^\[|Download\w+:)'`
+BLUR_VERSION=`mvn help:evaluate -Dexpression=project.version -Dhadoop2 | grep -Ev '(^\[|Download\w+:)'`
+echo "BLUR_VERSION=${BLUR_VERSION}"
 TARGET="${PROJECT_DIR}/target"
 
 LAST_UPDATED_SEC=`date +%s`
@@ -34,7 +35,7 @@ MANIFEST="${HTTP_DIR}/manifest.json"
 rm -r $HTTP_DIR
 mkdir $HTTP_DIR
 
-shasum $PARCEL | awk '{print $1}' > $PARCEL_SHA
+sha1sum $PARCEL | awk '{print $1}' > $PARCEL_SHA
 HASH=`cat $PARCEL_SHA`
 echo "{\"lastUpdated\":${LAST_UPDATED},\"parcels\": [" > $MANIFEST
 for DISTRO in el5 el6 sles11 lucid precise trusty squeeze wheezy

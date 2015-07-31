@@ -30,17 +30,22 @@ import org.apache.blur.utils.RowDocumentUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
+import org.apache.lucene.codecs.Codec;
+import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.codecs.StoredFieldsReader;
 import org.apache.lucene.document.DocumentStoredFieldVisitor;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.SegmentInfo;
 import org.apache.lucene.index.SegmentInfoPerCommit;
 import org.apache.lucene.index.SegmentInfos;
+import org.apache.lucene.store.ChecksumIndexInput;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.IOUtils;
 
 public class GenericRecordReader {
 
@@ -71,9 +76,8 @@ public class GenericRecordReader {
     LOG.info("Local cache path [{0}]", localCachePath);
     _directory = BlurInputFormat.getDirectory(configuration, _table.toString(), blurInputSplit.getDir(), files);
 
-    SegmentInfos segmentInfos = new SegmentInfos();
-    segmentInfos.read(_directory, blurInputSplit.getSegmentsName());
-    SegmentInfoPerCommit commit = findSegmentInfoPerCommit(segmentInfos, blurInputSplit);
+    SegmentInfoPerCommit commit = segmentInfosRead(_directory, blurInputSplit.getSegmentsName(),
+        blurInputSplit.getSegmentInfoName());
 
     SegmentInfo segmentInfo = commit.info;
     if (localCachePath != null) {
@@ -96,6 +100,50 @@ public class GenericRecordReader {
         iocontext);
 
     _maxDoc = commit.info.getDocCount();
+  }
+
+  private SegmentInfoPerCommit segmentInfosRead(Directory directory, String segmentFileName, String segmentInfoName)
+      throws IOException {
+    boolean success = false;
+
+    ChecksumIndexInput input = new ChecksumIndexInput(directory.openInput(segmentFileName, IOContext.READ));
+    try {
+      final int format = input.readInt();
+      if (format == CodecUtil.CODEC_MAGIC) {
+        // 4.0+
+        CodecUtil.checkHeaderNoMagic(input, "segments", SegmentInfos.VERSION_40, SegmentInfos.VERSION_40);
+        input.readLong();// read version
+        input.readInt(); // read counter
+        int numSegments = input.readInt();
+        if (numSegments < 0) {
+          throw new CorruptIndexException("invalid segment count: " + numSegments + " (resource: " + input + ")");
+        }
+        for (int seg = 0; seg < numSegments; seg++) {
+          String segName = input.readString();
+          Codec codec = Codec.forName(input.readString());
+          SegmentInfo info = codec.segmentInfoFormat().getSegmentInfoReader().read(directory, segName, IOContext.READ);
+          info.setCodec(codec);
+          long delGen = input.readLong();
+          int delCount = input.readInt();
+          if (delCount < 0 || delCount > info.getDocCount()) {
+            throw new CorruptIndexException("invalid deletion count: " + delCount + " (resource: " + input + ")");
+          }
+          if (segName.equals(segmentInfoName)) {
+            success = true;
+            return new SegmentInfoPerCommit(info, delCount, delGen);
+          }
+        }
+      } else {
+        throw new IOException("Legacy Infos not supported for dir [" + directory + "].");
+      }
+      throw new IOException("Segment [" + segmentInfoName + "] nout found in dir [" + directory + "]");
+    } finally {
+      if (!success) {
+        IOUtils.closeWhileHandlingException(input);
+      } else {
+        input.close();
+      }
+    }
   }
 
   private static Directory copyFilesLocally(Configuration configuration, Directory dir, String table, Path shardDir,
@@ -168,17 +216,6 @@ public class GenericRecordReader {
       LOG.info("Cache file does not exist [{0}]", name);
     }
     return false;
-  }
-
-  private SegmentInfoPerCommit findSegmentInfoPerCommit(SegmentInfos segmentInfos, BlurInputSplit blurInputSplit)
-      throws IOException {
-    String segmentInfoName = blurInputSplit.getSegmentInfoName();
-    for (SegmentInfoPerCommit commit : segmentInfos) {
-      if (commit.info.name.equals(segmentInfoName)) {
-        return commit;
-      }
-    }
-    throw new IOException("SegmentInfoPerCommit of [" + segmentInfoName + "] not found.");
   }
 
   public boolean nextKeyValue() throws IOException {

@@ -43,7 +43,7 @@ module.exports = function (grunt) {
         'libs/flot/jquery.flot.categories.js',
         'libs/flot/jquery.flot.stack.js',
         'libs/typeahead/typeahead.jquery.js',
-        'libs/tagmanager/tagmanager.js',
+        'libs/selectivity/selectivity-full.js',
         'libs/moment/moment.js',
         'js/blurconsole.js',
         'js/*\.js'
@@ -203,6 +203,7 @@ module.exports = function (grunt) {
             main: {
                 files: [
                     {expand: true, src: ['index.html','img/*','views/*'], dest: 'public/'},
+                    {expand: true, flatten: true, src: ['less/*.css'], dest: 'public/css'},
                     {expand: true, flatten: true, src: ['libs/modernizr/modernizr.js'], dest: 'public/js'},
                     {expand: true, flatten: true, src: ['libs/bootstrap/fonts/*'], dest: 'public/css/fonts'}
                 ]

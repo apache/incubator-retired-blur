@@ -16,8 +16,17 @@
  */
 package org.apache.blur.lucene.search;
 
+import static org.apache.blur.utils.BlurConstants.FAMILY;
+import static org.apache.blur.utils.BlurConstants.FIELDS;
+import static org.apache.blur.utils.BlurConstants.PRIME_DOC;
+import static org.apache.blur.utils.BlurConstants.RECORD_ID;
+import static org.apache.blur.utils.BlurConstants.ROW_ID;
+
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
@@ -27,13 +36,13 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.util.Version;
 
 public class SuperParser extends BlurQueryParser {
@@ -45,6 +54,8 @@ public class SuperParser extends BlurQueryParser {
   }
 
   private static final String SEP = ".";
+  private static final Set<String> SYSTEM_FIELDS = new HashSet<String>(Arrays.asList(ROW_ID, RECORD_ID, SUPER,
+      PRIME_DOC, FIELDS, FAMILY));
   private final boolean _superSearch;
   private final Filter _queryFilter;
   private final ScoreType _scoreType;
@@ -280,11 +291,15 @@ public class SuperParser extends BlurQueryParser {
     } else {
       String fieldName = _fieldNames.get(query);
       String currentGroupName = getGroupName(fieldName);
-      if (groupName.equals(currentGroupName)) {
+      if (groupName.equals(currentGroupName) || isSystemField(fieldName)) {
         return true;
       }
       return false;
     }
+  }
+
+  private boolean isSystemField(String fieldName) {
+    return SYSTEM_FIELDS.contains(fieldName);
   }
 
   private String getGroupName(String fieldName) {

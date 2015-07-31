@@ -200,7 +200,7 @@
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-   
+
 ==========================================================================
 The Apache License, Version 2.0 applies to the following libraries:
 
@@ -370,6 +370,13 @@ moment.js
 ./blur-console/src/main/webapp/libs/moment/moment.js
 Copyright (c) 2011-2014 Tim Wood, Iskren Chernev, Moment.js contributors
 
+selectivity.js
+./blur-console/src/main/webapp/libs/selectivity/selectivity-full.js
+./blur-console/src/main/webapp/less/selectivity-full.css
+Copyright (c) 2014-2015 Arend van Beelen jr.
+          (c) 2015 Speakap BV
+https://github.com/arendjr/selectivity/blob/master/LICENSE
+
 ==========================================================================
 The following license applies to the following libraries: d3
 ./blur-gui/src/main/webapp/js/d3.v2.js
@@ -401,11 +408,4 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
 OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-===========================================================================
-The following license applies to the following libraries: tagmanager
-./blur-console/src/main/webapp/libs/tagmanager/tagmanager.js
----------------------------------------------------------------------------
-Copyright 2012 MaxFavilli.com
-Licensed under the Mozilla Public License, Version 2.0
 

@@ -513,6 +513,13 @@ public class SuperParserTest {
     assertQuery(q1, q2);
   }
 
+  @Test
+  public void test44() throws ParseException {
+    Query q1 = parseSq("<f.c:abc recordid:123>");
+    Query q2 = sq(bq(bc(tq("f.c", "abc")), bc(new TermQuery(new Term("recordid", "123")))));
+    assertQuery(q1, q2);
+  }
+
   public static BooleanClause bc_m(Query q) {
     return new BooleanClause(q, Occur.MUST);
   }

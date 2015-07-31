@@ -170,9 +170,10 @@ public class BlurQueryParser extends QueryParser {
     if ("*".equals(t.text())) {
       String fieldName = t.field();
       if (SUPER.equals(fieldName)) {
-        return new MatchAllDocsQuery();
+        return addField(new MatchAllDocsQuery(), fieldName);
       } else {
-        return new TermQuery(new Term(BlurConstants.FIELDS, fieldName));
+        String resolvedField = _fieldManager.resolveField(t.field());
+        return addField(new TermQuery(new Term(BlurConstants.FIELDS, fieldName)), resolvedField);
       }
     }
     String resolvedField = _fieldManager.resolveField(t.field());

@@ -63,4 +63,9 @@ public class IndexValue implements Writable {
     this._blurRecord = blurRecord;
   }
 
+  @Override
+  public String toString() {
+    return "IndexValue [_blurRecord=" + _blurRecord + "]";
+  }
+
 }

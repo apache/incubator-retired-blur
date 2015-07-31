@@ -21,6 +21,7 @@ import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.metrics.MetricsConstants.THRIFT_CALLS;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_FILTERED_SERVER_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FILTERED_SERVER_CLASS;
+import static org.apache.blur.utils.BlurConstants.HADOOP_CONF;
 import static org.apache.blur.utils.BlurConstants.SHARD_PREFIX;
 
 import java.io.ByteArrayInputStream;
@@ -157,8 +158,6 @@ public class BlurUtil {
   public static final Comparator<? super PeekableIterator<BlurResult, BlurException>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
   public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
   public static final Term PRIME_DOC_TERM = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
-
-  private static final String HADOOP_CONF = "hadoop_conf.";
 
   static class LoggerArgsState {
 

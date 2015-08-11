@@ -48,7 +48,6 @@ import org.apache.blur.store.blockcache.LastModified;
 import org.apache.blur.store.hdfs_v2.HdfsUtils;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
-import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;

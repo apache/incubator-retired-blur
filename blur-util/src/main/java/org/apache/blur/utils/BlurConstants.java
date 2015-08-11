@@ -123,6 +123,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_SMALL_MERGE_THRESHOLD = "blur.shard.small.merge.threshold";
   public static final String BLUR_SHARD_REQUEST_CACHE_SIZE = "blur.shard.request.cache.size";
   public static final String BLUR_GC_BACK_PRESSURE_HEAP_RATIO = "blur.gc.back.pressure.heap.ratio";
+  public static final String BLUR_SHARD_BLOCK_CACHE_V2_QUIET_MERGES = "blur.shard.block.cache.v2.quiet.merges";
 
   public static final String BLUR_SHARD_DEFAULT_READ_SEQUENTIAL_SKIP_THRESHOLD = "blur.shard.default.read.sequential.skip.threshold";
   public static final String BLUR_SHARD_DEFAULT_READ_SEQUENTIAL_THRESHOLD = "blur.shard.default.read.sequential.threshold";

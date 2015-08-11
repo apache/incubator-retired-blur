@@ -22,6 +22,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_DIRE
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_DIRECT_REF_LIMIT_PREFIX;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_FILE_BUFFER_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_POOL_CACHE_SIZE;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_QUIET_MERGES;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_READ_DEFAULT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_READ_NOCACHE_EXT;
@@ -63,6 +64,8 @@ import org.apache.blur.store.blockcache_v2.SlabAllocationCacheValueBufferPool;
 import org.apache.lucene.store.Directory;
 
 public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
+
+  
 
   private static final Log LOG = LogFactory.getLog(BlockCacheDirectoryFactoryV2.class);
 
@@ -165,13 +168,17 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
       }
     };
 
+    final boolean quietMerges = configuration.getBoolean(BLUR_SHARD_BLOCK_CACHE_V2_QUIET_MERGES, true);
+
     Quiet quiet = new Quiet() {
       @Override
       public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
-        Thread thread = Thread.currentThread();
-        String name = thread.getName();
-        if (name.startsWith(SHARED_MERGE_SCHEDULER_PREFIX)) {
-          return true;
+        if (quietMerges) {
+          Thread thread = Thread.currentThread();
+          String name = thread.getName();
+          if (name.startsWith(SHARED_MERGE_SCHEDULER_PREFIX)) {
+            return true;
+          }
         }
         return false;
       }

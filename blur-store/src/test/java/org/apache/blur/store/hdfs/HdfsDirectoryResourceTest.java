@@ -69,7 +69,7 @@ public class HdfsDirectoryResourceTest {
   public void testResourceTracking() throws IOException, InterruptedException {
     Path path = new Path(_root, "testResourceTracking");
     boolean resourceTracking = true;
-    HdfsDirectory dir = new HdfsDirectory(_configuration, path, null, null, resourceTracking);
+    HdfsDirectory dir = new HdfsDirectory(_configuration, path, null, resourceTracking);
     try {
       String name = "_1.file";
       executeWrites(dir, name);

@@ -65,6 +65,7 @@ public class Driver extends Configured implements Tool {
     if (args.length < 5) {
       System.err
           .println("Usage Driver <table> <mr inc working path> <output path> <zk connection> <reducer multipler> <extra config files...>");
+      return 1;
     }
     String table = args[c++];
     String mrIncWorkingPathStr = args[c++];

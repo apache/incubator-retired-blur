@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Timer;
@@ -39,6 +40,9 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
@@ -109,7 +113,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected final Path _path;
   protected final FileSystem _fileSystem;
   protected final MetricsGroup _metricsGroup;
-  protected final Map<String, FStat> _fileStatusMap = new ConcurrentHashMap<String, FStat>();
+  protected final FStatusCache _fileStatusCache;
   protected final Map<String, Boolean> _symlinkMap = new ConcurrentHashMap<String, Boolean>();
   protected final Map<String, Path> _symlinkPathMap = new ConcurrentHashMap<String, Path>();
   protected final Map<String, Boolean> _copyFileMap = new ConcurrentHashMap<String, Boolean>();
@@ -119,22 +123,157 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   protected final SequentialReadControl _sequentialReadControl;
   protected final boolean _resourceTracking;
 
+  static class FStatusCache {
+
+    final Map<String, FStat> _cache = new ConcurrentHashMap<String, FStat>();
+    final Path _path;
+    final FileSystem _fileSystem;
+    final Path _newManifest;
+    final Path _manifest;
+    final WriteLock _writeLock;
+    final ReadLock _readLock;
+    final Path _newManifestTmp;
+
+    public FStatusCache(FileSystem fileSystem, Path path) {
+      _fileSystem = fileSystem;
+      _path = path;
+      _newManifest = new Path(_path, "file_manifest.new");
+      _newManifestTmp = new Path(_path, "file_manifest.tmp");
+      _manifest = new Path(_path, "file_manifest");
+      ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
+      _writeLock = lock.writeLock();
+      _readLock = lock.readLock();
+    }
+
+    public void putFStat(String name, FStat fStat) throws IOException {
+      _writeLock.lock();
+      try {
+        _cache.put(name, fStat);
+        syncFileCache();
+      } finally {
+        _writeLock.unlock();
+      }
+    }
+
+    public void removeFStat(String name) throws IOException {
+      _writeLock.lock();
+      try {
+        _cache.remove(name);
+        syncFileCache();
+      } finally {
+        _writeLock.unlock();
+      }
+    }
+
+    public Set<String> getNames() {
+      _readLock.lock();
+      try {
+        return new HashSet<String>(_cache.keySet());
+      } finally {
+        _readLock.unlock();
+      }
+    }
+
+    public boolean containsFile(String name) {
+      _readLock.lock();
+      try {
+        return _cache.containsKey(name);
+      } finally {
+        _readLock.unlock();
+      }
+    }
+
+    public FStat getFStat(String name) {
+      _readLock.lock();
+      try {
+        return _cache.get(name);
+      } finally {
+        _readLock.unlock();
+      }
+    }
+
+    public boolean loadCacheFromManifest() throws IOException {
+      // Check file_manifest.new first, if is doesn't check file_manifest, if it
+      // doesn't exist can't load cache.
+      if (_fileSystem.exists(_newManifest)) {
+        loadCacheFromManifest(_newManifest);
+        return true;
+      } else if (_fileSystem.exists(_manifest)) {
+        loadCacheFromManifest(_manifest);
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    private void syncFileCache() throws IOException {
+      FSDataOutputStream outputStream = _fileSystem.create(_newManifestTmp, true);
+      writeFileCache(outputStream);
+      outputStream.close();
+      _fileSystem.delete(_newManifest, false);
+      if (_fileSystem.rename(_newManifestTmp, _newManifest)) {
+        _fileSystem.delete(_manifest, false);
+        if (_fileSystem.rename(_newManifest, _manifest)) {
+          LOG.info("Manifest sync complete for [{0}]", _manifest);
+        } else {
+          throw new IOException("Could not rename [" + _newManifest + "] to [" + _manifest + "]");
+        }
+      } else {
+        throw new IOException("Could not rename [" + _newManifestTmp + "] to [" + _newManifest + "]");
+      }
+    }
+
+    private void writeFileCache(FSDataOutputStream outputStream) throws IOException {
+      Set<Entry<String, FStat>> entrySet = _cache.entrySet();
+      outputStream.writeInt(_cache.size());
+      for (Entry<String, FStat> e : entrySet) {
+        String name = e.getKey();
+        FStat fstat = e.getValue();
+        writeString(outputStream, name);
+        outputStream.writeLong(fstat._lastMod);
+        outputStream.writeLong(fstat._length);
+      }
+    }
+
+    private void loadCacheFromManifest(Path manifest) throws IOException {
+      FSDataInputStream inputStream = _fileSystem.open(manifest);
+      int count = inputStream.readInt();
+      for (int i = 0; i < count; i++) {
+        String name = readString(inputStream);
+        long lastMod = inputStream.readLong();
+        long length = inputStream.readLong();
+        FStat fstat = new FStat(lastMod, length);
+        _cache.put(name, fstat);
+      }
+      inputStream.close();
+    }
+
+    private String readString(FSDataInputStream inputStream) throws IOException {
+      int length = inputStream.readInt();
+      byte[] buf = new byte[length];
+      inputStream.readFully(buf);
+      return new String(buf, UTF_8);
+    }
+
+    private void writeString(FSDataOutputStream outputStream, String s) throws IOException {
+      byte[] bs = s.getBytes(UTF_8);
+      outputStream.writeInt(bs.length);
+      outputStream.write(bs);
+    }
+
+  }
+
   public HdfsDirectory(Configuration configuration, Path path) throws IOException {
     this(configuration, path, new SequentialReadControl(new BlurConfiguration()));
   }
 
   public HdfsDirectory(Configuration configuration, Path path, SequentialReadControl sequentialReadControl)
       throws IOException {
-    this(configuration, path, sequentialReadControl, null);
+    this(configuration, path, sequentialReadControl, false);
   }
 
   public HdfsDirectory(Configuration configuration, Path path, SequentialReadControl sequentialReadControl,
-      Collection<String> filesToExpose) throws IOException {
-    this(configuration, path, sequentialReadControl, filesToExpose, false);
-  }
-
-  public HdfsDirectory(Configuration configuration, Path path, SequentialReadControl sequentialReadControl,
-      Collection<String> filesToExpose, boolean resourceTracking) throws IOException {
+      boolean resourceTracking) throws IOException {
     _resourceTracking = resourceTracking;
     if (sequentialReadControl == null) {
       _sequentialReadControl = new SequentialReadControl(new BlurConfiguration());
@@ -163,25 +302,15 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     }
 
     if (_useCache) {
-      if (filesToExpose == null) {
+      _fileStatusCache = new FStatusCache(_fileSystem, _path);
+      if (!_fileStatusCache.loadCacheFromManifest()) {
         FileStatus[] listStatus = _fileSystem.listStatus(_path);
         for (FileStatus fileStatus : listStatus) {
           addToCache(fileStatus);
         }
-      } else {
-        for (String file : filesToExpose) {
-          Path filePath = getPathOrSymlinkForDelete(file);
-          try {
-            FileStatus fileStatus = _fileSystem.getFileStatus(filePath);
-            if (fileStatus != null) {
-              addToCache(fileStatus);
-            }
-          } catch (FileNotFoundException e) {
-            // Normal hdfs behavior
-            LOG.info("Lucene file [{0}] path [{1}] was not found.", file, filePath);
-          }
-        }
       }
+    } else {
+      _fileStatusCache = null;
     }
   }
 
@@ -202,7 +331,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
         lastMod = fileStatus.getModificationTime();
       }
       length = length(resolvedName);
-      _fileStatusMap.put(resolvedName, new FStat(lastMod, length));
+      _fileStatusCache.putFStat(resolvedName, new FStat(lastMod, length));
     }
   }
 
@@ -267,7 +396,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       deleteFile(name);
     }
     if (_useCache) {
-      _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), 0L));
+      _fileStatusCache.putFStat(name, new FStat(System.currentTimeMillis(), 0L));
     }
     final FSDataOutputStream outputStream = openForOutput(name);
     trackObject(outputStream, "Outputstream", name, _path);
@@ -292,7 +421,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
         super.close();
         long length = outputStream.getPos();
         if (_useCache) {
-          _fileStatusMap.put(name, new FStat(System.currentTimeMillis(), length));
+          _fileStatusCache.putFStat(name, new FStat(System.currentTimeMillis(), length));
         }
         // This exists because HDFS is so slow to close files. There are
         // built-in sleeps during the close call.
@@ -346,7 +475,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     LOG.debug("listAll [{0}]", getPath());
 
     if (_useCache) {
-      Set<String> names = new HashSet<String>(_fileStatusMap.keySet());
+      Set<String> names = _fileStatusCache.getNames();
       return names.toArray(new String[names.size()]);
     }
 
@@ -381,7 +510,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   public boolean fileExists(String name) throws IOException {
     LOG.debug("fileExists [{0}] [{1}]", name, getPath());
     if (_useCache) {
-      return _fileStatusMap.containsKey(name);
+      return _fileStatusCache.containsFile(name);
     }
     return exists(name);
   }
@@ -401,7 +530,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     LOG.debug("deleteFile [{0}] [{1}]", name, getPath());
     if (fileExists(name)) {
       if (_useCache) {
-        _fileStatusMap.remove(name);
+        _fileStatusCache.removeFStat(name);
       }
       delete(name);
     } else {
@@ -427,7 +556,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
   public long fileLength(String name) throws IOException {
     LOG.debug("fileLength [{0}] [{1}]", name, getPath());
     if (_useCache) {
-      FStat fStat = _fileStatusMap.get(name);
+      FStat fStat = _fileStatusCache.getFStat(name);
       if (fStat == null) {
         throw new FileNotFoundException(name);
       }
@@ -545,7 +674,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
 
   public long getFileModified(String name) throws IOException {
     if (_useCache) {
-      FStat fStat = _fileStatusMap.get(name);
+      FStat fStat = _fileStatusCache.getFStat(name);
       if (fStat == null) {
         throw new FileNotFoundException("File [" + name + "] not found");
       }
@@ -560,7 +689,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     try {
       FileStatus fileStatus = _fileSystem.getFileStatus(path);
       if (_useCache) {
-        _fileStatusMap.put(name, new FStat(fileStatus));
+        _fileStatusCache.putFStat(name, new FStat(fileStatus));
       }
       return fileStatus.getModificationTime();
     } finally {
@@ -592,7 +721,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     outputStream.write(srcPath.toString().getBytes(UTF_8));
     outputStream.close();
     if (_useCache) {
-      to._fileStatusMap.put(dest, _fileStatusMap.get(src));
+      to._fileStatusCache.putFStat(dest, _fileStatusCache.getFStat(src));
     }
     return true;
   }

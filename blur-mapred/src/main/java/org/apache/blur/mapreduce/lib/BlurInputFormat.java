@@ -161,14 +161,6 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     return list;
   }
 
-  private static BlurArray toBlurArrayFromStringList(List<String> list) {
-    BlurArray array = new BlurArray();
-    for (String s : list) {
-      array.put(s);
-    }
-    return array;
-  }
-
   private static BlurObject toBlurObject(BlurInputSplit inputSplit) throws IOException {
     BlurObject blurObject = new BlurObject();
     blurObject.put("dir", inputSplit.getDir().toString());
@@ -176,7 +168,6 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     blurObject.put("segmentInfoName", inputSplit.getSegmentInfoName());
     blurObject.put("fileLength", inputSplit.getLength());
     blurObject.put("table", inputSplit.getTable().toString());
-    blurObject.put("directoryFiles", toBlurArrayFromStringList(inputSplit.getDirectoryFiles()));
     return blurObject;
   }
 
@@ -378,7 +369,7 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
   private static List<BlurInputSplit> getSegmentSplits(Path shardDir, Configuration configuration, Text table,
       Text snapshot) throws IOException {
     final long start = System.nanoTime();
-    Directory directory = getDirectory(configuration, table.toString(), shardDir, null);
+    Directory directory = getDirectory(configuration, table.toString(), shardDir);
     try {
       return getSplitForDirectory(shardDir, configuration, table, snapshot, directory);
     } finally {
@@ -500,11 +491,6 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
       _segmentInfoName = segmentInfoName;
       _table = table;
       _dir = dir;
-      _directoryFiles = directoryFiles;
-    }
-
-    public List<String> getDirectoryFiles() {
-      return _directoryFiles;
     }
 
     @Override
@@ -602,12 +588,11 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     putSnapshotForTable(job.getConfiguration(), tableName, snapshot);
   }
 
-  public static Directory getDirectory(Configuration configuration, String table, Path shardDir, List<String> files)
-      throws IOException {
+  public static Directory getDirectory(Configuration configuration, String table, Path shardDir) throws IOException {
     Path fastPath = DirectoryUtil.getFastDirectoryPath(shardDir);
     FileSystem fileSystem = shardDir.getFileSystem(configuration);
     boolean disableFast = !fileSystem.exists(fastPath);
-    HdfsDirectory directory = new HdfsDirectory(configuration, shardDir, null, files);
+    HdfsDirectory directory = new HdfsDirectory(configuration, shardDir, null);
     return DirectoryUtil.getDirectory(configuration, directory, disableFast, null, table, shardDir.getName(), true);
   }
 

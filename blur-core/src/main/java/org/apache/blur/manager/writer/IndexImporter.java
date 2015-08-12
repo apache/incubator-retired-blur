@@ -41,6 +41,7 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.store.hdfs.DirectoryDecorator;
 import org.apache.blur.store.hdfs.HdfsDirectory;
+import org.apache.blur.store.hdfs_v2.JoinDirectory;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -105,6 +106,9 @@ public class IndexImporter extends TimerTask implements Closeable {
     } else if (dir instanceof DirectoryDecorator) {
       DirectoryDecorator decorator = (DirectoryDecorator) dir;
       return getHdfsDirectory(decorator.getOriginalDirectory());
+    } else if (dir instanceof JoinDirectory) {
+      JoinDirectory directory = (JoinDirectory) dir;
+      return directory.getSymlinkDirectory();
     } else {
       throw new IOException("Directory [" + dir + "] is not HdfsDirectory or DirectoryDecorator");
     }

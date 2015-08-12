@@ -149,16 +149,7 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     String segmentInfoName = blurObject.getString("segmentInfoName");
     long fileLength = blurObject.getLong("fileLength");
     Text table = new Text(blurObject.getString("table"));
-    List<String> directoryFiles = toStringListFromBlurArray(blurObject.getBlurArray("directoryFiles"));
-    return new BlurInputSplit(dir, segmentsName, segmentInfoName, fileLength, table, directoryFiles);
-  }
-
-  private static List<String> toStringListFromBlurArray(BlurArray blurArray) {
-    List<String> list = new ArrayList<String>();
-    for (int i = 0; i < blurArray.length(); i++) {
-      list.add(blurArray.getString(i));
-    }
-    return list;
+    return new BlurInputSplit(dir, segmentsName, segmentInfoName, fileLength, table);
   }
 
   private static BlurObject toBlurObject(BlurInputSplit inputSplit) throws IOException {
@@ -412,9 +403,7 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
         for (String file : files) {
           fileLength += directory.fileLength(file);
         }
-        List<String> dirFiles = new ArrayList<String>(files);
-        dirFiles.add(segmentsFileName);
-        splits.add(new BlurInputSplit(shardDir, segmentsFileName, name, fileLength, table, dirFiles));
+        splits.add(new BlurInputSplit(shardDir, segmentsFileName, name, fileLength, table));
       }
     }
     return splits;
@@ -478,14 +467,12 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
     private Path _dir;
     private String _segmentInfoName;
     private Text _table = new Text();
-    private List<String> _directoryFiles;
 
     public BlurInputSplit() {
 
     }
 
-    public BlurInputSplit(Path dir, String segmentsName, String segmentInfoName, long fileLength, Text table,
-        List<String> directoryFiles) {
+    public BlurInputSplit(Path dir, String segmentsName, String segmentInfoName, long fileLength, Text table) {
       _fileLength = fileLength;
       _segmentsName = segmentsName;
       _segmentInfoName = segmentInfoName;
@@ -527,11 +514,6 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
       writeString(out, _segmentInfoName);
       _table.write(out);
       out.writeLong(_fileLength);
-      int size = _directoryFiles.size();
-      out.writeInt(size);
-      for (String s : _directoryFiles) {
-        writeString(out, s);
-      }
     }
 
     @Override
@@ -541,11 +523,6 @@ public class BlurInputFormat extends FileInputFormat<Text, TableBlurRecord> {
       _segmentInfoName = readString(in);
       _table.readFields(in);
       _fileLength = in.readLong();
-      int size = in.readInt();
-      _directoryFiles = new ArrayList<String>();
-      for (int i = 0; i < size; i++) {
-        _directoryFiles.add(readString(in));
-      }
     }
 
     private void writeString(DataOutput out, String s) throws IOException {

@@ -197,96 +197,96 @@ under the License.
 		<commons-codec.version>1.9</commons-codec.version>
 	</properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-              <groupId>commons-logging</groupId>
-              <artifactId>commons-logging</artifactId>
-              <version>${commons-logging.version}</version>
-            </dependency>
-            <dependency>
-              <groupId>commons-io</groupId>
-              <artifactId>commons-io</artifactId>
-              <version>2.1</version>
-            </dependency>
-            <dependency>
-              <groupId>org.eclipse.jetty</groupId>
-              <artifactId>jetty-webapp</artifactId>
-              <version>8.1.16.v20140903</version>
-            </dependency>
-            <dependency>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-jsp</artifactId>
-                <version>8.1.16.v20140903</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-test</artifactId>
-                <version>${hadoop.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-client</artifactId>
-                <version>${hadoop.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.hadoop</groupId>
-                <artifactId>hadoop-minicluster</artifactId>
-                <version>${hadoop.version}</version>
-            </dependency>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>commons-logging</groupId>
+				<artifactId>commons-logging</artifactId>
+				<version>${commons-logging.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>2.1</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-webapp</artifactId>
+				<version>8.1.16.v20140903</version>
+			</dependency>
+			<dependency>
+				<groupId>org.eclipse.jetty</groupId>
+				<artifactId>jetty-jsp</artifactId>
+				<version>8.1.16.v20140903</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-test</artifactId>
+				<version>${hadoop.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-client</artifactId>
+				<version>${hadoop.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.hadoop</groupId>
+				<artifactId>hadoop-minicluster</artifactId>
+				<version>${hadoop.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>com.google.code.java-allocation-instrumenter</groupId>
 				<artifactId>java-allocation-instrumenter</artifactId>
 				<version>${java-allocation-instrumenter.version}</version>
 			</dependency>
-            <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>${log4j.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.mail</groupId>
-                        <artifactId>mail</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.jms</groupId>
-                        <artifactId>jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.jdmk</groupId>
-                        <artifactId>jmxtools</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.jmx</groupId>
-                        <artifactId>jmxri</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.zookeeper</groupId>
-                <artifactId>zookeeper</artifactId>
-                <version>${zookeeper.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>javax.mail</groupId>
-                        <artifactId>mail</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.jms</groupId>
-                        <artifactId>jms</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.jdmk</groupId>
-                        <artifactId>jmxtools</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.jmx</groupId>
-                        <artifactId>jmxri</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+			<dependency>
+				<groupId>log4j</groupId>
+				<artifactId>log4j</artifactId>
+				<version>${log4j.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.mail</groupId>
+						<artifactId>mail</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>javax.jms</groupId>
+						<artifactId>jms</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jdmk</groupId>
+						<artifactId>jmxtools</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jmx</groupId>
+						<artifactId>jmxri</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.zookeeper</groupId>
+				<artifactId>zookeeper</artifactId>
+				<version>${zookeeper.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>javax.mail</groupId>
+						<artifactId>mail</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>javax.jms</groupId>
+						<artifactId>jms</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jdmk</groupId>
+						<artifactId>jmxtools</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.sun.jmx</groupId>
+						<artifactId>jmxri</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
@@ -333,10 +333,11 @@ under the License.
 						<exclude>**/.idea/**</exclude>
 						<exclude>**/*.iml</exclude>
 						<exclude>**/target/**</exclude>
-                        <exclude>**/build/**</exclude>
-                        <exclude>**/.codio</exclude>
+						<exclude>**/build/**</exclude>
+						<exclude>**/.codio</exclude>
 
-						<!-- These javascript libs are added at build time but are not included in the src -->
+						<!-- These javascript libs are added at build time but are not included 
+							in the src -->
 						<exclude>**/src/main/webapp/libs/**</exclude>
 						<exclude>**/node_modules/**</exclude>
 
@@ -361,12 +362,12 @@ under the License.
 						<!-- Legacy blur console -->
 						<exclude>contrib/blur-console-v1/**</exclude>
 
-						<!-- Contains a list of english words that are used for load testing, adding a header
-						would make the simple parsers more complex -->
+						<!-- Contains a list of english words that are used for load testing, 
+							adding a header would make the simple parsers more complex -->
 						<exclude>**/src/main/resources/org/apache/blur/thrift/util/words.txt</exclude>
 
-						<!-- These javascript libs are accounted for in the
-						LICENSE file in root of the project -->
+						<!-- These javascript libs are accounted for in the LICENSE file in 
+							root of the project -->
 						<exclude>**/js/d3.v2.js</exclude>
 						<exclude>**/js/d3.v2.min.js</exclude>
 
@@ -381,11 +382,11 @@ under the License.
 						<exclude>**/src/main/scripts/interface/gen-html/index.html</exclude>
 
 						<!-- Used to create empty directories in git -->
-                        <exclude>**/.empty</exclude>
+						<exclude>**/.empty</exclude>
 
-                        <exclude>**/test/**/prop.doc.base.html</exclude>
-                        <exclude>**/parcel.json.template</exclude>
-                        <exclude>**/service.sdl.template</exclude>
+						<exclude>**/test/**/prop.doc.base.html</exclude>
+						<exclude>**/parcel.json.template</exclude>
+						<exclude>**/service.sdl.template</exclude>
 					</excludes>
 				</configuration>
 				<executions>
@@ -413,7 +414,8 @@ under the License.
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<configuration>
-						<argLine>-XX:+UseConcMarkSweepGC -Xmx1g -Xms1g -XX:MaxPermSize=256m</argLine>
+						<argLine>-XX:+UseConcMarkSweepGC -Xmx1g -Xms1g
+							-XX:MaxPermSize=256m</argLine>
 						<forkCount>2</forkCount>
 						<forkMode>always</forkMode>
 						<reuseForks>false</reuseForks>
@@ -496,7 +498,7 @@ under the License.
 			</activation>
 			<properties>
 				<hadoop.version>1.2.1</hadoop.version>
-                <projectVersion>hadoop1-${hadoop.version}-${project.parent.version}</projectVersion>
+				<projectVersion>hadoop1-${hadoop.version}-${project.parent.version}</projectVersion>
 			</properties>
 			<modules>
 				<module>blur-command</module>
@@ -524,7 +526,7 @@ under the License.
 			</activation>
 			<properties>
 				<hadoop.version>2.5.0-mr1-cdh5.3.0</hadoop.version>
-                <projectVersion>hadoop2-mr1-${hadoop.version}-${project.parent.version}</projectVersion>
+				<projectVersion>hadoop2-mr1-${hadoop.version}-${project.parent.version}</projectVersion>
 			</properties>
 			<modules>
 				<module>blur-command</module>
@@ -552,7 +554,7 @@ under the License.
 			</activation>
 			<properties>
 				<hadoop.version>2.6.0</hadoop.version>
-                <projectVersion>hadoop2-${hadoop.version}-${project.parent.version}</projectVersion>
+				<projectVersion>hadoop2-${hadoop.version}-${project.parent.version}</projectVersion>
 			</properties>
 			<modules>
 				<module>blur-command</module>

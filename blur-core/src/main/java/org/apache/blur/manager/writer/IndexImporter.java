@@ -39,6 +39,7 @@ import org.apache.blur.manager.BlurPartitioner;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.cache.ThriftCache;
+import org.apache.blur.store.hdfs.DirectoryDecorator;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.ShardUtil;
@@ -78,15 +79,17 @@ public class IndexImporter extends TimerTask implements Closeable {
   private final long _cleanupDelay;
   private final Timer _inindexImporterTimer;
   private final ThriftCache _thriftCache;
+  private final HdfsDirectory _directory;
 
   private long _lastCleanup;
   private Runnable _testError;
 
   public IndexImporter(Timer indexImporterTimer, BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit,
-      long refreshAmount, ThriftCache thriftCache) {
+      long refreshAmount, ThriftCache thriftCache, Directory dir) throws IOException {
     _thriftCache = thriftCache;
     _blurIndex = blurIndex;
     _shardContext = shardContext;
+    _directory = getHdfsDirectory(dir);
 
     long period = refreshUnit.toMillis(refreshAmount);
     indexImporterTimer.schedule(this, period, period);
@@ -94,6 +97,17 @@ public class IndexImporter extends TimerTask implements Closeable {
     _table = _shardContext.getTableContext().getTable();
     _shard = _shardContext.getShard();
     _cleanupDelay = TimeUnit.MINUTES.toMillis(10);
+  }
+
+  private HdfsDirectory getHdfsDirectory(Directory dir) throws IOException {
+    if (dir instanceof HdfsDirectory) {
+      return (HdfsDirectory) dir;
+    } else if (dir instanceof DirectoryDecorator) {
+      DirectoryDecorator decorator = (DirectoryDecorator) dir;
+      return getHdfsDirectory(decorator.getOriginalDirectory());
+    } else {
+      throw new IOException("Directory [" + dir + "] is not HdfsDirectory or DirectoryDecorator");
+    }
   }
 
   @Override
@@ -362,7 +376,8 @@ public class IndexImporter extends TimerTask implements Closeable {
     });
 
     for (FileStatus status : listStatus) {
-      Path realPath = HdfsDirectory.readRealPathDataFromSymlinkPath(fileSystem, status.getPath());
+      String realFileName = HdfsDirectory.getRealFileName(status.getPath().getName());
+      Path realPath = _directory.getRealFilePathFromSymlink(realFileName);
       Path inuseDir = inuseFileToDir.get(realPath);
       inuseDirs.remove(inuseDir);
       // if the inuse dir has an inprogress file then remove it because there

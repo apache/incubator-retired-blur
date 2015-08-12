@@ -122,7 +122,7 @@ public class IndexImporterTest {
     BufferStore.initNewBuffer(128, 128 * 128);
 
     _indexImporter = new IndexImporter(_timer, getBlurIndex(shardContext, _mainDirectory), shardContext,
-        TimeUnit.MINUTES, 10, null);
+        TimeUnit.MINUTES, 10, null, _mainDirectory);
   }
 
   private BlurIndex getBlurIndex(ShardContext shardContext, final Directory mainDirectory) throws IOException {

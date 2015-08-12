@@ -351,7 +351,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     };
   }
 
-  protected String getRealFileName(String name) {
+  public static String getRealFileName(String name) {
     if (name.endsWith(LNK)) {
       int lastIndexOf = name.lastIndexOf(LNK);
       return name.substring(0, lastIndexOf);
@@ -621,7 +621,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     return new Path(_path, name);
   }
 
-  protected Path getRealFilePathFromSymlink(String name) throws IOException {
+  public Path getRealFilePathFromSymlink(String name) throws IOException {
     // need to cache
     if (_useCache) {
       Path path = _symlinkPathMap.get(name);

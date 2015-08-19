@@ -165,11 +165,12 @@ public class BlurOutputFormatMiniClusterTest {
     Path tablePath = new Path(tableUri);
     Path shardPath = new Path(tablePath, ShardUtil.getShardName(0));
     FileStatus[] listStatus = fileSystem.listStatus(shardPath);
-    assertEquals(3, listStatus.length);
+    
     System.out.println("======" + listStatus.length);
     for (FileStatus fileStatus : listStatus) {
       System.out.println(fileStatus.getPath());
     }
+    assertEquals(4, listStatus.length);
 
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();

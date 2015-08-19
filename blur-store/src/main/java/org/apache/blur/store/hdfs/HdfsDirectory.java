@@ -27,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -143,6 +144,16 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
       _writeLock = lock.writeLock();
       _readLock = lock.readLock();
+    }
+
+    public void putAllFStat(Map<String, FStat> bulk) throws IOException {
+      _writeLock.lock();
+      try {
+        _cache.putAll(bulk);
+        syncFileCache();
+      } finally {
+        _writeLock.unlock();
+      }
     }
 
     public void putFStat(String name, FStat fStat) throws IOException {
@@ -305,34 +316,37 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       _fileStatusCache = new FStatusCache(_fileSystem, _path);
       if (!_fileStatusCache.loadCacheFromManifest()) {
         FileStatus[] listStatus = _fileSystem.listStatus(_path);
-        for (FileStatus fileStatus : listStatus) {
-          addToCache(fileStatus);
-        }
+        addToCache(listStatus);
       }
     } else {
       _fileStatusCache = null;
     }
   }
 
-  private void addToCache(FileStatus fileStatus) throws IOException {
-    if (!fileStatus.isDir()) {
-      Path p = fileStatus.getPath();
-      String name = p.getName();
-      long lastMod;
-      long length;
-      String resolvedName;
-      if (name.endsWith(LNK)) {
-        resolvedName = getRealFileName(name);
-        Path resolvedPath = getPath(resolvedName);
-        FileStatus resolvedFileStatus = _fileSystem.getFileStatus(resolvedPath);
-        lastMod = resolvedFileStatus.getModificationTime();
-      } else {
-        resolvedName = name;
-        lastMod = fileStatus.getModificationTime();
+  private void addToCache(FileStatus[] listStatus) throws IOException {
+    Map<String, FStat> bulk = new HashMap<String, FStat>();
+    for (FileStatus fileStatus : listStatus) {
+      if (!fileStatus.isDir()) {
+        Path p = fileStatus.getPath();
+        String name = p.getName();
+        long lastMod;
+        long length;
+        String resolvedName;
+        if (name.endsWith(LNK)) {
+          resolvedName = getRealFileName(name);
+          Path resolvedPath = getPath(resolvedName);
+          FileStatus resolvedFileStatus = _fileSystem.getFileStatus(resolvedPath);
+          lastMod = resolvedFileStatus.getModificationTime();
+        } else {
+          resolvedName = name;
+          lastMod = fileStatus.getModificationTime();
+        }
+        length = length(resolvedName);
+        bulk.put(resolvedName, new FStat(lastMod, length));
       }
-      length = length(resolvedName);
-      _fileStatusCache.putFStat(resolvedName, new FStat(lastMod, length));
     }
+    LOG.info("Bulk cache update for [{0}] complete", _path);
+    _fileStatusCache.putAllFStat(bulk);
   }
 
   private static TimerTask getClosingQueueTimerTask() {

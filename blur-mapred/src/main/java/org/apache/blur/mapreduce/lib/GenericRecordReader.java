@@ -80,7 +80,7 @@ public class GenericRecordReader {
     SegmentInfo segmentInfo = commit.info;
     if (localCachePath != null) {
       _readingDirectory = copyFilesLocally(configuration, _directory, _table.toString(), blurInputSplit.getDir(),
-          localCachePath, commit.files());
+          localCachePath, commit.files(), blurInputSplit.getSegmentInfoName());
     } else {
       _readingDirectory = _directory;
     }
@@ -145,9 +145,9 @@ public class GenericRecordReader {
   }
 
   private static Directory copyFilesLocally(Configuration configuration, Directory dir, String table, Path shardDir,
-      Path localCachePath, Collection<String> files) throws IOException {
+      Path localCachePath, Collection<String> files, String segmentName) throws IOException {
     LOG.info("Copying files need to local cache for faster reads [{0}].", shardDir);
-    Path localShardPath = new Path(new Path(localCachePath, table), shardDir.getName());
+    Path localShardPath = new Path(new Path(new Path(localCachePath, table), shardDir.getName()), segmentName);
     HdfsDirectory localDir = new HdfsDirectory(configuration, localShardPath, null);
     for (String name : files) {
       if (!isValidFileToCache(name)) {

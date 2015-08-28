@@ -1041,4 +1041,20 @@ public abstract class BlurClusterTestBase {
     }
   }
 
+  @Test
+  public void testBurnInTest() throws BlurException, TException, IOException {
+    String tableName = "testBurnInTest";
+
+    Blur.Iface client = getClient();
+    TableDescriptor tableDescriptor = new TableDescriptor();
+    tableDescriptor.setName(tableName);
+    tableDescriptor.setShardCount(1);
+    tableDescriptor.setTableUri(miniCluster.getFileSystemUri().toString() + "/blur/" + tableName);
+
+    client.createTable(tableDescriptor);
+
+    BlurMutationBug blurMutationBug = new BlurMutationBug(getClient(), tableName, 14);
+    blurMutationBug.runTest(2, TimeUnit.MINUTES);
+  }
+
 }

@@ -1195,7 +1195,7 @@ public class IndexManagerTest {
 
   @Test
   public void testTerms2() throws Exception {
-    List<String> terms = indexManager.terms(TABLE, FAMILY, "rowid", "", (short) 100);
+    List<String> terms = indexManager.terms(TABLE, null, "rowid", "", (short) 100);
     assertEquals(Arrays.asList("row-1", "row-2", "row-3", "row-4", "row-5", "row-6", "row-7"), terms);
   }
 

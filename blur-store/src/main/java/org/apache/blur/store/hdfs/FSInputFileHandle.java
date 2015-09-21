@@ -21,15 +21,21 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.memory.MemoryLeakDetector;
+import org.apache.blur.store.hdfs_v2.HdfsUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 public class FSInputFileHandle implements Closeable {
+
+  private static final Log LOG = LogFactory.getLog(FSInputFileHandle.class);
 
   private final FileSystem _fileSystem;
   private final Path _path;
@@ -39,16 +45,50 @@ public class FSInputFileHandle implements Closeable {
   private final boolean _resourceTracking;
   private final String _name;
 
-  public FSInputFileHandle(FileSystem fileSystem, Path path, long length, String name, boolean resourceTracking)
-      throws IOException {
+  public FSInputFileHandle(FileSystem fileSystem, Path path, long expectedLength, String name,
+      boolean resourceTracking, boolean checkFileLength) throws IOException {
     _resourceTracking = resourceTracking;
     _fileSystem = fileSystem;
     _path = path;
     _name = name;
     _seqAccessInputs = new ConcurrentHashMap<String, ManagedFSDataInputSequentialAccess>();
-    FSDataInputStream inputStream = _fileSystem.open(_path);
-    _randomAccess = new ManagedFSDataInputRandomAccess(inputStream, _path, length);
+    FSDataInputStream inputStream;
+    if (checkFileLength) {
+      final long start = System.nanoTime();
+      while (true) {
+        inputStream = _fileSystem.open(_path);
+        long actualLength = getFileLength(inputStream);
+        if (actualLength < expectedLength) {
+          inputStream.close();
+          if (start + TimeUnit.SECONDS.toNanos(30) < System.nanoTime()) {
+            throw new IOException("File path [" + path
+                + "] has taken too long to update file length in namenode, expected [" + expectedLength + "] actual ["
+                + actualLength + "].");
+          }
+          LOG.info("Input stream length is incorrect for file [{0}], expected [{1}] actual [{2}]", path,
+              expectedLength, actualLength);
+          try {
+            Thread.sleep(250);
+          } catch (InterruptedException e) {
+            throw new IOException(e);
+          }
+        } else if (actualLength == expectedLength) {
+          // We are good !
+          break;
+        } else {
+          throw new IOException("File length expected [" + expectedLength + "] is less than the actual file length ["
+              + actualLength + "] for file [" + path + "]");
+        }
+      }
+    } else {
+      inputStream = _fileSystem.open(_path);
+    }
+    _randomAccess = new ManagedFSDataInputRandomAccess(inputStream, _path, expectedLength);
     trackObject(inputStream, "Random Inputstream", name, path);
+  }
+
+  private long getFileLength(FSDataInputStream inputStream) throws IOException {
+    return HdfsUtils.getDFSLength(inputStream);
   }
 
   public FSDataInputSequentialAccess openForSequentialInput() throws IOException {

@@ -225,7 +225,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
       if (_fileSystem.rename(_newManifestTmp, _newManifest)) {
         _fileSystem.delete(_manifest, false);
         if (_fileSystem.rename(_newManifest, _manifest)) {
-          LOG.info("Manifest sync complete for [{0}]", _manifest);
+          LOG.debug("Manifest sync complete for [{0}]", _manifest);
         } else {
           throw new IOException("Could not rename [" + _newManifest + "] to [" + _manifest + "]");
         }
@@ -478,7 +478,7 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     }
     long fileLength = fileLength(name);
     Path path = getPath(name);
-    FSInputFileHandle fsInputFileHandle = new FSInputFileHandle(_fileSystem, path, fileLength, name, _resourceTracking);
+    FSInputFileHandle fsInputFileHandle = new FSInputFileHandle(_fileSystem, path, fileLength, name, _resourceTracking, _asyncClosing && _useCache);
     HdfsIndexInput input = new HdfsIndexInput(this, fsInputFileHandle, fileLength, _metricsGroup, name,
         _sequentialReadControl.clone());
     return input;

@@ -17,14 +17,18 @@
 package org.apache.blur.lucene.security.search;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.blur.lucene.security.index.SecureAtomicReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReader.ReaderClosedListener;
+import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.util.BytesRef;
@@ -72,7 +76,9 @@ public class BitSetDocumentVisibilityFilterCacheStrategy extends DocumentVisibil
 
       @Override
       public DocIdSet getDocIdSet() throws IOException {
-        reader.addReaderClosedListener(new ReaderClosedListener() {
+        LOG.debug("Building bitset for key [" + key + "]");
+        SegmentReader segmentReader = getSegmentReader(reader);
+        segmentReader.addReaderClosedListener(new ReaderClosedListener() {
           @Override
           public void onClose(IndexReader reader) {
             LOG.debug("Removing old bitset for key [" + key + "]");
@@ -86,6 +92,32 @@ public class BitSetDocumentVisibilityFilterCacheStrategy extends DocumentVisibil
         return bitSet;
       }
     };
+  }
+
+  public static SegmentReader getSegmentReader(IndexReader indexReader) throws IOException {
+    if (indexReader instanceof SegmentReader) {
+      return (SegmentReader) indexReader;
+    } else if (indexReader instanceof SecureAtomicReader) {
+      SecureAtomicReader atomicReader = (SecureAtomicReader) indexReader;
+      AtomicReader originalReader = atomicReader.getOriginalReader();
+      return getSegmentReader(originalReader);
+    } else {
+      try {
+        Method method = indexReader.getClass().getDeclaredMethod("getOriginalReader", new Class[] {});
+        return getSegmentReader((IndexReader) method.invoke(indexReader, new Object[] {}));
+      } catch (NoSuchMethodException e) {
+        LOG.error("IndexReader cannot find method [getOriginalReader]");
+      } catch (SecurityException e) {
+        throw new IOException(e);
+      } catch (IllegalAccessException e) {
+        throw new IOException(e);
+      } catch (IllegalArgumentException e) {
+        throw new IOException(e);
+      } catch (InvocationTargetException e) {
+        throw new IOException(e);
+      }
+    }
+    throw new IOException("SegmentReader could not be found [" + indexReader + "].");
   }
 
   private static class Key {

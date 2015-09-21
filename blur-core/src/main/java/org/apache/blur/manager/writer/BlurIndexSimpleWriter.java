@@ -75,7 +75,6 @@ import org.apache.blur.trace.Tracer;
 import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -103,7 +102,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 
@@ -537,9 +535,17 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       } finally {
         _indexRefreshWriteLock.unlock();
       }
-      _indexCloser.close(currentReader);
+      _indexCloser.close(getRealReader(currentReader));
     }
     trace3.done();
+  }
+
+  private IndexReader getRealReader(DirectoryReader reader) {
+    if (reader instanceof ExitableReader) {
+      ExitableReader exitableReader = (ExitableReader) reader;
+      return getRealReader(exitableReader.getIn());
+    }
+    return reader;
   }
 
   @Override

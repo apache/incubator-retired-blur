@@ -194,7 +194,7 @@ public class GenericRecordReader {
       if (localDir.fileLength(name) == fileLength) {
         LOG.info("Cache file length matches [{0}]", name);
         String lastModFile = name + LASTMOD;
-        if (localDir.fileExists(lastModFile) && localDir.fileLength(lastModFile) != 8) {
+        if (localDir.fileExists(lastModFile) && localDir.fileLength(lastModFile) == 8) {
           LOG.info("Cache file last mod file exists [{0}]", name);
           IndexInput input = localDir.openInput(lastModFile, IOContext.DEFAULT);
           long lastMod = input.readLong();

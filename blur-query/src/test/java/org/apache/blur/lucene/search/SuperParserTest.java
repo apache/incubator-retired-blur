@@ -520,6 +520,51 @@ public class SuperParserTest {
     assertQuery(q1, q2);
   }
 
+  @Test
+  public void test45() throws ParseException {
+    SpatialContext ctx = SpatialContext.GEO;
+    int maxLevels = 11;
+    SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
+    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis", false);
+    Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_MI));
+    SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
+
+    Query q1 = sq(bq(bc_m(strategy.makeQuery(args))));
+    Query q = parseSq("<+a.id_gis:\"Intersects(Circle(33.000000,-80.000000 d=10.0m))\">");
+    boolean equals = q1.equals(q);
+    assertTrue(equals);
+  }
+
+  @Test
+  public void test46() throws ParseException {
+    SpatialContext ctx = SpatialContext.GEO;
+    int maxLevels = 11;
+    SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
+    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis", false);
+    Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_MI));
+    SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
+
+    Query q1 = sq(bq(bc_m(strategy.makeQuery(args)), bc(tq("rowid", "12345"))));
+    Query q = parseSq("<+a.id_gis:\"Intersects(Circle(33.000000,-80.000000 d=10.0m))\" rowid:12345>");
+    boolean equals = q1.equals(q);
+    assertTrue(equals);
+  }
+
+  @Test
+  public void test47() throws ParseException {
+    SpatialContext ctx = SpatialContext.GEO;
+    int maxLevels = 11;
+    SpatialPrefixTree grid = new GeohashPrefixTree(ctx, maxLevels);
+    RecursivePrefixTreeStrategy strategy = new RecursivePrefixTreeStrategy(grid, "a.id_gis", false);
+    Circle circle = ctx.makeCircle(-80.0, 33.0, DistanceUtils.dist2Degrees(10, DistanceUtils.EARTH_MEAN_RADIUS_MI));
+    SpatialArgs args = new SpatialArgs(SpatialOperation.Intersects, circle);
+
+    Query q1 = sq(strategy.makeQuery(args));
+    Query q = parseSq("<a.id_gis:\"Intersects(Circle(33.000000,-80.000000 d=10.0m))\">");
+    boolean equals = q1.equals(q);
+    assertTrue(equals);
+  }
+
   public static BooleanClause bc_m(Query q) {
     return new BooleanClause(q, Occur.MUST);
   }

@@ -147,7 +147,7 @@ public class BlurQueryParser extends QueryParser {
     try {
       Boolean b = _fieldManager.checkSupportForCustomQuery(resolvedField);
       if (b != null && b) {
-        return _fieldManager.getCustomQuery(resolvedField, term.text());
+        return addField(_fieldManager.getCustomQuery(resolvedField, term.text()), resolvedField);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

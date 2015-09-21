@@ -1042,15 +1042,22 @@ public class IndexManager {
 
     BytesRef currentTermText = termEnum.term();
     do {
-      terms.add(currentTermText.utf8ToString());
-      String readTerm = typeDef.readTerm(currentTermText);
-      if (readTerm != null)
-        terms.add(readTerm);
+      terms.add(convert(typeDef, currentTermText));
       if (terms.size() >= size) {
         return terms;
       }
     } while ((currentTermText = termEnum.next()) != null);
     return terms;
+  }
+
+  private static String convert(FieldTypeDefinition typeDef, BytesRef currentTermText) {
+    if (typeDef != null) {
+      String readTerm = typeDef.readTerm(currentTermText);
+      if (readTerm != null) {
+        return readTerm;
+      }
+    }
+    return currentTermText.utf8ToString();
   }
 
   private static Term getTerm(String columnFamily, String columnName, String value) {

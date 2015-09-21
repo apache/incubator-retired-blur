@@ -1194,6 +1194,12 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testTerms2() throws Exception {
+    List<String> terms = indexManager.terms(TABLE, FAMILY, "rowid", "", (short) 100);
+    assertEquals(Arrays.asList("row-1", "row-2", "row-3", "row-4", "row-5", "row-6", "row-7"), terms);
+  }
+
+  @Test
   public void testTermsNonExistentField() throws Exception {
     List<String> terms = indexManager.terms(TABLE, FAMILY, "nonexistentfield", "", (short) 100);
     assertNotNull("Non-existent fields should not return null.", terms);
@@ -1236,7 +1242,7 @@ public class IndexManagerTest {
     } catch (BlurException e) {
     }
   }
-  
+
   @Test
   public void testMutationReplaceRowWithNullRowId() throws Exception {
     RowMutation mutation = newRowMutation(

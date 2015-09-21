@@ -274,9 +274,28 @@ public class SuperParser extends BlurQueryParser {
   private boolean isSameGroupName(BooleanQuery booleanQuery) {
     String groupName = findFirstGroupName(booleanQuery);
     if (groupName == null) {
+      if (allFieldQueriesAreSystemFields(booleanQuery)) {
+        return true;
+      }
       return false;
     }
     return isSameGroupName(booleanQuery, groupName);
+  }
+
+  private boolean allFieldQueriesAreSystemFields(Query query) {
+    if (query instanceof BooleanQuery) {
+      BooleanQuery booleanQuery = (BooleanQuery) query;
+      for (BooleanClause clause : booleanQuery.clauses()) {
+        if (!allFieldQueriesAreSystemFields(clause.getQuery())) {
+          return false;
+        }
+      }
+      return true;
+    } else if (query instanceof SuperQuery) {
+      return allFieldQueriesAreSystemFields(((SuperQuery) query).getQuery());
+    } else {
+      return isSystemField(_fieldNames.get(query));
+    }
   }
 
   private boolean isSameGroupName(Query query, String groupName) {
@@ -317,7 +336,10 @@ public class SuperParser extends BlurQueryParser {
     if (query instanceof BooleanQuery) {
       BooleanQuery booleanQuery = (BooleanQuery) query;
       for (BooleanClause clause : booleanQuery.clauses()) {
-        return findFirstGroupName(clause.getQuery());
+        String groupName = findFirstGroupName(clause.getQuery());
+        if (groupName != null) {
+          return groupName;
+        }
       }
       return null;
     } else if (query instanceof SuperQuery) {

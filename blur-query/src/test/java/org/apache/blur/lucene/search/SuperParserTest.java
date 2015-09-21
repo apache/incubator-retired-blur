@@ -22,8 +22,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -41,12 +43,18 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.search.AutomatonQuery;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.FuzzyQuery;
 import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.PhraseQuery;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.RegexpQuery;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.search.WildcardQuery;
@@ -96,6 +104,7 @@ public class SuperParserTest {
     fieldManager.addColumnDefinitionDouble("a", "id_d");
     fieldManager.addColumnDefinitionFloat("a", "id_f");
     fieldManager.addColumnDefinitionLong("a", "id_l");
+    fieldManager.addColumnDefinitionString("a", "id_s");
     fieldManager.addColumnDefinitionDate("a", "id_date", "yyyy-MM-dd");
     fieldManager.addColumnDefinitionGisRecursivePrefixTree("a", "id_gis");
     return fieldManager;
@@ -565,6 +574,84 @@ public class SuperParserTest {
     assertTrue(equals);
   }
 
+  @Test
+  public void test48() throws ParseException {
+    Query q = parseSq("<a.id_s:ABC*>");
+    Query q1 = sq(pq("a.id_s", "ABC"));
+    assertQuery(q, q1);
+  }
+
+  @Test
+  public void test49() throws ParseException {
+    Query q = parseSq("<the cow Jumped Over the moon>");
+    Query q1 = sq(bq(bc(tq("super", "the")), bc(tq("super", "cow")), bc(tq("super", "jumped")),
+        bc(tq("super", "over")), bc(tq("super", "the")), bc(tq("super", "moon"))));
+    assertQuery(q, q1);
+  }
+
+  @Test
+  public void test50() throws ParseException {
+    Query q = parseSq("<the cow Jumped Over the moon a.id_s:ABC>");
+    Query q1 = sq(bq(bc(tq("super", "the")), bc(tq("super", "cow")), bc(tq("super", "jumped")),
+        bc(tq("super", "over")), bc(tq("super", "the")), bc(tq("super", "moon")), bc(tq("a.id_s", "ABC"))));
+    assertQuery(q, q1);
+  }
+
+  @Test
+  public void test51() throws ParseException {
+    Query q = parseSq("<Here* We Go*>");
+    Query q1 = sq(bq(bc(pq("super", "here")), bc(tq("super", "we")), bc(pq("super", "go"))));
+    assertQuery(q, q1);
+  }
+
+  @Test
+  public void test52() throws ParseException {
+    Query q = parseSq("<He?e We Go*>");
+    Query q1 = sq(bq(bc(wq("super", "he?e")), bc(tq("super", "we")), bc(pq("super", "go"))));
+    assertQuery(q, q1);
+  }
+
+  @Test
+  public void test53() throws ParseException {
+    Query q = parseSq("</He[rR]e/ We Go*>");
+    Query q1 = sq(bq(bc(rxq("super", "he[rR]e")), bc(tq("super", "we")), bc(pq("super", "go"))));
+    assertQuery(q, q1);
+  }
+
+  @Test
+  public void test54() throws ParseException {
+    Query q = parseSq("<Here~1 We Go*>");
+    Query q1 = sq(bq(bc(fzq("super", "here", 1)), bc(tq("super", "we")), bc(pq("super", "go"))));
+    assertQuery(q, q1);
+  }
+
+  private Query fzq(String field, String text, int maxEdits) {
+    return new FuzzyQuery(new Term(field, text), maxEdits);
+  }
+
+  @Test
+  public void test55() throws ParseException {
+    Query q = parseSq("<a.id_s:[A TO Z}>");
+    Query q1 = sq(rq_ie("a.id_s", "A", "Z"));
+    assertQuery(q, q1);
+  }
+
+  private Query rq_ie(String field, String part1, String part2) {
+    return TermRangeQuery.newStringRange(field, part1, part2, true, false);
+  }
+
+  private RegexpQuery rxq(String field, String text) {
+    return new RegexpQuery(new Term(field, text));
+  }
+
+  private WildcardQuery wq(String field, String text) {
+    return new WildcardQuery(new Term(field, text));
+  }
+
+  private PrefixQuery pq(String field, String text) {
+    return new PrefixQuery(new Term(field, text));
+  }
+
   public static BooleanClause bc_m(Query q) {
     return new BooleanClause(q, Occur.MUST);
   }
@@ -591,11 +678,77 @@ public class SuperParserTest {
       assertEqualsSuperQuery((SuperQuery) expected, (SuperQuery) actual);
     } else if (expected instanceof TermQuery) {
       assertEqualsTermQuery((TermQuery) expected, (TermQuery) actual);
+    } else if (expected instanceof PrefixQuery) {
+      assertEqualsPrefixQuery((PrefixQuery) expected, (PrefixQuery) actual);
+    } else if (expected instanceof WildcardQuery) {
+      assertEqualsWildcardQuery((WildcardQuery) expected, (WildcardQuery) actual);
+    } else if (expected instanceof FuzzyQuery) {
+      assertEqualsFuzzyQuery((FuzzyQuery) expected, (FuzzyQuery) actual);
+    } else if (expected instanceof RegexpQuery) {
+      assertEqualsRegexpQuery((RegexpQuery) expected, (RegexpQuery) actual);
+    } else if (expected instanceof TermRangeQuery) {
+      assertEqualsTermRangeQuery((TermRangeQuery) expected, (TermRangeQuery) actual);
+    } else if (expected instanceof MatchAllDocsQuery) {
+      assertEqualsMatchAllDocsQuery((MatchAllDocsQuery) expected, (MatchAllDocsQuery) actual);
+    } else if (expected instanceof MultiPhraseQuery) {
+      assertEqualsMultiPhraseQuery((MultiPhraseQuery) expected, (MultiPhraseQuery) actual);
+    } else if (expected instanceof PhraseQuery) {
+      assertEqualsPhraseQuery((PhraseQuery) expected, (PhraseQuery) actual);
     } else if (expected instanceof NumericRangeQuery<?>) {
       assertEqualsNumericRangeQuery((NumericRangeQuery<?>) expected, (NumericRangeQuery<?>) actual);
     } else {
       fail("Type [" + expected.getClass() + "] not supported");
     }
+  }
+
+  private static void assertEqualsFuzzyQuery(FuzzyQuery expected, FuzzyQuery actual) {
+    assertEquals(expected.getField(), actual.getField());
+    assertEquals(expected.getTerm(), actual.getTerm());
+    assertEquals(expected.getMaxEdits(), actual.getMaxEdits());
+  }
+
+  private static void assertEqualsPhraseQuery(PhraseQuery expected, PhraseQuery actual) {
+    assertTrue(Arrays.equals(expected.getTerms(), actual.getTerms()));
+    assertTrue(Arrays.equals(expected.getPositions(), actual.getPositions()));
+  }
+
+  private static void assertEqualsMultiPhraseQuery(MultiPhraseQuery expected, MultiPhraseQuery actual) {
+    throw new RuntimeException("Not Implemented");
+  }
+
+  private static void assertEqualsMatchAllDocsQuery(MatchAllDocsQuery expected, MatchAllDocsQuery actual) {
+    // do nothing
+  }
+
+  private static void assertEqualsTermRangeQuery(TermRangeQuery expected, TermRangeQuery actual) {
+    assertEquals(expected.getField(), actual.getField());
+    assertEquals(expected.getLowerTerm(), actual.getLowerTerm());
+    assertEquals(expected.getUpperTerm(), actual.getUpperTerm());
+  }
+
+  private static void assertEqualsRegexpQuery(RegexpQuery expected, RegexpQuery actual) {
+    assertEquals(expected.getField(), actual.getField());
+    assertEquals(getTerm(expected), getTerm(actual));
+  }
+
+  private static Term getTerm(RegexpQuery regexpQuery) {
+    try {
+      Field field = AutomatonQuery.class.getDeclaredField("term");
+      field.setAccessible(true);
+      return (Term) field.get(regexpQuery);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static void assertEqualsWildcardQuery(WildcardQuery expected, WildcardQuery actual) {
+    assertEquals(expected.getField(), actual.getField());
+    assertEquals(expected.getTerm(), actual.getTerm());
+  }
+
+  private static void assertEqualsPrefixQuery(PrefixQuery expected, PrefixQuery actual) {
+    assertEquals(expected.getField(), actual.getField());
+    assertEquals(expected.getPrefix(), actual.getPrefix());
   }
 
   public static void assertEqualsTermQuery(TermQuery expected, TermQuery actual) {
@@ -609,7 +762,7 @@ public class SuperParserTest {
   }
 
   public static void assertEqualsSuperQuery(SuperQuery expected, SuperQuery actual) {
-    assertEquals(expected.getQuery(), actual.getQuery());
+    assertEqualsQuery(expected.getQuery(), actual.getQuery());
   }
 
   public static void assertEqualsBooleanQuery(BooleanQuery expected, BooleanQuery actual) {

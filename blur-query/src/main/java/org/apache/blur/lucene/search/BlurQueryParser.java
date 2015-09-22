@@ -313,7 +313,7 @@ public class BlurQueryParser extends QueryParser {
   }
 
   private boolean isEscaped(String text, int pos) {
-    if (pos == 0) {
+    if (pos <= 0) {
       return false;
     }
     return text.charAt(pos) == '\\';

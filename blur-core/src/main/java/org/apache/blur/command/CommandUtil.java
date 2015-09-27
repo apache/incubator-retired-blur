@@ -155,7 +155,8 @@ public class CommandUtil {
     Map<String, ValueObject> values = arguments.getValues();
     Set<Entry<String, ValueObject>> entrySet = values.entrySet();
     for (Entry<String, ValueObject> e : entrySet) {
-      blurObject.put(e.getKey(), toObject(e.getValue()));
+      Object o = toObject(e.getValue());
+      blurObject.put(e.getKey(), (Object) o);
     }
     return blurObject;
   }

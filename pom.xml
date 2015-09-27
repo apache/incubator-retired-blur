@@ -29,7 +29,7 @@ under the License.
 
 	<groupId>org.apache.blur</groupId>
 	<artifactId>blur</artifactId>
-	<version>0.2.4-incubating-SNAPSHOT</version>
+	<version>0.3.0.incubating</version>
 	<packaging>pom</packaging>
 
 	<name>Blur</name>
@@ -195,6 +195,9 @@ under the License.
 		<hive.version>0.13.1</hive.version>
 		<java-allocation-instrumenter.version>3.0</java-allocation-instrumenter.version>
 		<commons-codec.version>1.9</commons-codec.version>
+		<spark.version>1.5.0</spark.version>
+		<hadoop.version>2.6.0</hadoop.version>
+		<projectVersion>h.${hadoop.version}.b.${project.parent.version}</projectVersion>
 	</properties>
 
 	<dependencyManagement>
@@ -378,15 +381,16 @@ under the License.
 						<exclude>**/src/main/resources*/notices/*.src</exclude>
 
 						<!-- Generate by Thrift -->
-						<exclude>**/src/main/scripts/interface/gen-html/Blur.html</exclude>
-						<exclude>**/src/main/scripts/interface/gen-html/index.html</exclude>
+						<exclude>**/scripts/interface/gen-html/Blur.html</exclude>
+						<exclude>**/scripts/interface/gen-html/index.html</exclude>
 
 						<!-- Used to create empty directories in git -->
 						<exclude>**/.empty</exclude>
 
 						<exclude>**/test/**/prop.doc.base.html</exclude>
-						<exclude>**/parcel.json.template</exclude>
+						<exclude>**/parcel.json</exclude>
 						<exclude>**/service.sdl.template</exclude>
+						<exclude>**/service.sdl</exclude>
 					</excludes>
 				</configuration>
 				<executions>
@@ -406,8 +410,8 @@ under the License.
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<configuration>
-						<source>1.6</source>
-						<target>1.6</target>
+						<source>1.8</source>
+						<target>1.8</target>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -474,6 +478,24 @@ under the License.
 			</plugins>
 		</pluginManagement>
 	</build>
+	
+	<modules>
+		<module>blur-command</module>
+		<module>blur-console</module>
+		<module>blur-core</module>
+		<module>blur-hive</module>
+		<module>blur-thrift</module>
+		<module>blur-spark</module>
+		<module>blur-query</module>
+		<module>blur-store</module>
+		<module>blur-mapred</module>
+		<module>blur-util</module>
+		<module>blur-status</module>
+		<module>blur-shell</module>
+		<module>blur-kvs</module>
+		<module>blur-document-security</module>
+		<module>distribution-src</module>
+	</modules>
 
 	<reporting>
 		<plugins>
@@ -487,90 +509,13 @@ under the License.
 			</plugin>
 		</plugins>
 	</reporting>
-
 	<profiles>
 		<profile>
-			<id>hadoop1</id>
-			<activation>
-				<property>
-					<name>hadoop1</name>
-				</property>
-			</activation>
-			<properties>
-				<hadoop.version>1.2.1</hadoop.version>
-				<projectVersion>hadoop1-${hadoop.version}-${project.parent.version}</projectVersion>
-			</properties>
+			<id>binary</id>
 			<modules>
-				<module>blur-command</module>
-				<module>blur-console</module>
-				<module>blur-core</module>
-				<module>blur-hive</module>
-				<module>blur-thrift</module>
-				<module>blur-query</module>
-				<module>blur-store</module>
-				<module>blur-mapred</module>
-				<module>blur-util</module>
-				<module>blur-status</module>
-				<module>blur-shell</module>
-				<module>blur-kvs</module>
-				<module>blur-document-security</module>
-				<module>distribution</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>hadoop2-mr1</id>
-			<activation>
-				<property>
-					<name>hadoop2-mr1</name>
-				</property>
-			</activation>
-			<properties>
-				<hadoop.version>2.5.0-mr1-cdh5.3.0</hadoop.version>
-				<projectVersion>hadoop2-mr1-${hadoop.version}-${project.parent.version}</projectVersion>
-			</properties>
-			<modules>
-				<module>blur-command</module>
-				<module>blur-console</module>
-				<module>blur-core</module>
-				<module>blur-hive</module>
-				<module>blur-thrift</module>
-				<module>blur-query</module>
-				<module>blur-store</module>
-				<module>blur-mapred</module>
-				<module>blur-util</module>
-				<module>blur-status</module>
-				<module>blur-shell</module>
-				<module>blur-kvs</module>
-				<module>blur-document-security</module>
-				<module>distribution</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>hadoop2</id>
-			<activation>
-				<property>
-					<name>hadoop2</name>
-				</property>
-			</activation>
-			<properties>
-				<hadoop.version>2.6.0</hadoop.version>
-				<projectVersion>hadoop2-${hadoop.version}-${project.parent.version}</projectVersion>
-			</properties>
-			<modules>
-				<module>blur-command</module>
-				<module>blur-console</module>
-				<module>blur-core</module>
-				<module>blur-hive</module>
-				<module>blur-thrift</module>
-				<module>blur-query</module>
-				<module>blur-store</module>
-				<module>blur-mapred</module>
-				<module>blur-util</module>
-				<module>blur-status</module>
-				<module>blur-shell</module>
-				<module>blur-kvs</module>
-				<module>blur-document-security</module>
-				<module>distribution</module>
+				<module>distribution-bin</module>
+				<module>cdh-csd</module>
+				<module>cdh-parcel</module>
 			</modules>
 		</profile>
 	</profiles>

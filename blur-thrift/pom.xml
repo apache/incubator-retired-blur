@@ -15,7 +15,7 @@
 	<parent>
 		<groupId>org.apache.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.2.4-incubating-SNAPSHOT</version>
+		<version>0.3.0.incubating</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.apache.blur</groupId>
@@ -132,31 +132,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<profiles>
-		<profile>
-			<id>hadoop1</id>
-			<activation>
-				<property>
-					<name>hadoop1</name>
-				</property>
-			</activation>
-		</profile>
-		<profile>
-			<id>hadoop2-mr1</id>
-			<activation>
-				<property>
-					<name>hadoop2-mr1</name>
-				</property>
-			</activation>
-		</profile>
-		<profile>
-			<id>hadoop2</id>
-			<activation>
-				<property>
-					<name>hadoop2</name>
-				</property>
-			</activation>
-		</profile>
-	</profiles>
 </project>

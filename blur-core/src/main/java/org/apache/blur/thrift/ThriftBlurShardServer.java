@@ -51,6 +51,8 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SMALL_MERGE_THRESHO
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_SELECTOR_THREADS;
+import static org.apache.blur.utils.BlurConstants.BLUR_STREAM_SERVER_RUNNING_PORT;
+import static org.apache.blur.utils.BlurConstants.BLUR_STREAM_SERVER_THREADS;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurUtil.quietClose;
@@ -66,6 +68,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.command.ShardCommandManager;
+import org.apache.blur.command.stream.StreamProcessor;
+import org.apache.blur.command.stream.StreamServer;
 import org.apache.blur.concurrent.SimpleUncaughtExceptionHandler;
 import org.apache.blur.concurrent.ThreadWatcher;
 import org.apache.blur.gui.HttpJettyServer;
@@ -193,7 +197,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
     String cluster = configuration.get(BLUR_CLUSTER_NAME, BLUR_CLUSTER);
-    
+
     final ZooKeeper zooKeeper = setupZookeeper(configuration, cluster);
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration, config);
 
@@ -301,6 +305,18 @@ public class ThriftBlurShardServer extends ThriftServer {
       instanceGuiPort = 0;
     }
 
+    StreamServer streamServer;
+    int streamThreadCount = configuration.getInt(BLUR_STREAM_SERVER_THREADS, 100);
+    if (streamThreadCount > 0) {
+      StreamProcessor streamProcessor = new StreamProcessor(indexServer, tmpPath);
+      streamServer = new StreamServer(0, streamThreadCount, streamProcessor);
+      streamServer.start();
+      configuration.setInt(BLUR_STREAM_SERVER_RUNNING_PORT, streamServer.getPort());
+      LOG.info("Stream server started on port [{0}]", streamServer.getPort());
+    } else {
+      streamServer = null;
+    }
+
     final HttpJettyServer httpServer;
     if (configGuiPort >= 0) {
       httpServer = new HttpJettyServer(HttpJettyServer.class, instanceGuiPort);
@@ -339,9 +355,9 @@ public class ThriftBlurShardServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(makeCloseable(hdfsKeyValueTimer), makeCloseable(indexImporterTimer), makeCloseable(indexBulkTimer),
-            blockCacheDirectoryFactory, commandManager, traceStorage, server, shardServer, indexManager, indexServer,
-            threadWatcher, clusterStatus, zooKeeper, httpServer);
+        quietClose(streamServer, makeCloseable(hdfsKeyValueTimer), makeCloseable(indexImporterTimer),
+            makeCloseable(indexBulkTimer), blockCacheDirectoryFactory, commandManager, traceStorage, server,
+            shardServer, indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);

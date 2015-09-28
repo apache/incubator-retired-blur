@@ -170,6 +170,8 @@ public class BlurConstants {
   public static final String BLUR_CLUSTER_NAME = "blur.cluster.name";
   public static final String BLUR_CLUSTER;
   public static final String BLUR_HTTP_STATUS_RUNNING_PORT = "blur.http.status.running.port";
+  public static final String BLUR_STREAM_SERVER_RUNNING_PORT = "blur.stream.server.running.port";
+  public static final String BLUR_STREAM_SERVER_THREADS = "blur.stream.server.threads";
 
   public static final String BLUR_SHARD_COMMAND_DRIVER_THREADS = "blur.shard.command.driver.threads";
   public static final String BLUR_SHARD_COMMAND_WORKER_THREADS = "blur.shard.command.worker.threads";

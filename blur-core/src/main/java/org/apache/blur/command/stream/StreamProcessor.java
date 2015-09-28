@@ -60,7 +60,7 @@ public class StreamProcessor {
   public StreamProcessor(IndexServer indexServer, File tmpFile) {
     _indexServer = indexServer;
     _classLoaderMap = CacheBuilder.newBuilder().concurrencyLevel(4).maximumSize(128)
-        .expireAfterAccess(45, TimeUnit.SECONDS).removalListener(new RemovalListener<String, ClassLoader>() {
+        .expireAfterAccess(60, TimeUnit.MINUTES).removalListener(new RemovalListener<String, ClassLoader>() {
           @Override
           public void onRemoval(RemovalNotification<String, ClassLoader> notification) {
             String key = notification.getKey();

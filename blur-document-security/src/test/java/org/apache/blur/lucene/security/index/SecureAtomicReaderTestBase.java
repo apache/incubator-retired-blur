@@ -295,14 +295,10 @@ public abstract class SecureAtomicReaderTestBase {
     Directory dir = new RAMDirectory();
     IndexWriter writer = new IndexWriter(dir, conf);
     AccessControlWriter accessControlWriter = getAccessControlFactory().getWriter();
-    writer.addDocument(accessControlWriter.addDiscoverVisiblity("d1",
-        accessControlWriter.addReadVisiblity("r1", getDoc(0))));
-    writer.addDocument(accessControlWriter.addDiscoverVisiblity("d1",
-        accessControlWriter.addReadVisiblity("r2", getDoc(1))));
-    writer.addDocument(accessControlWriter.addDiscoverVisiblity("d2",
-        accessControlWriter.addReadVisiblity("r1", getDoc(2))));
-    writer.addDocument(accessControlWriter.addDiscoverVisiblity("d2",
-        accessControlWriter.addReadVisiblity("r2", getDoc(3))));
+    addDoc(writer, accessControlWriter, "r1", "d1", 0);
+    addDoc(writer, accessControlWriter, "r2", "d1", 1);
+    addDoc(writer, accessControlWriter, "r1", "d2", 2);
+    addDoc(writer, accessControlWriter, "r2", "d2", 3);
     writer.close();
 
     DirectoryReader reader = DirectoryReader.open(dir);
@@ -310,11 +306,11 @@ public abstract class SecureAtomicReaderTestBase {
     return leaves.get(0).reader();
   }
 
-  // private Iterable<? extends IndexableField> debug(Iterable<IndexableField>
-  // doc) {
-  // System.out.println(doc);
-  // return doc;
-  // }
+  private void addDoc(IndexWriter writer, AccessControlWriter accessControlWriter, String read, String discover, int doc)
+      throws IOException {
+    writer.addDocument(accessControlWriter.addDiscoverVisiblity(discover,
+        accessControlWriter.addReadVisiblity(read, getDoc(doc))));
+  }
 
   private Iterable<IndexableField> getDoc(int i) {
     Document document = new Document();

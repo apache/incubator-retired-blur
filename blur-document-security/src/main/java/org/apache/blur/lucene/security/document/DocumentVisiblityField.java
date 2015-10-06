@@ -25,9 +25,8 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.index.FieldInfo.IndexOptions;
-import org.apache.lucene.index.IndexableField;
 
-public class DocumentVisiblityField extends Field implements IndexableField {
+public class DocumentVisiblityField extends Field {
 
   public static final FieldType TYPE_NOT_STORED = new FieldType();
   public static final FieldType TYPE_STORED = new FieldType();

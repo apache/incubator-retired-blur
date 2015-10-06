@@ -24,6 +24,10 @@ public abstract class AccessControlFactory {
   public abstract String getDiscoverFieldName();
   
   public abstract String getReadFieldName();
+  
+  public abstract String getReadMaskFieldName();
+  
+  public abstract String getReadMaskFieldSuffix();
 
   public abstract AccessControlWriter getWriter();
 

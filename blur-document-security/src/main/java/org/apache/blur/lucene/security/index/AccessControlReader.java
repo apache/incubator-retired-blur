@@ -25,11 +25,13 @@ public abstract class AccessControlReader implements Cloneable {
 
   public final boolean hasAccess(ReadType type, int docID) throws IOException {
     switch (type) {
-    case DOCS_ENUM:
+    
     case LIVEDOCS:
       return readOrDiscoverAccess(docID);
     case DOCUMENT_FETCH_DISCOVER:
       return discoverAccess(docID);
+    case DOCS_ENUM:
+    case TERMS_ENUM:
     case BINARY_DOC_VALUE:
     case DOCUMENT_FETCH_READ:
     case NORM_VALUE:

@@ -18,6 +18,7 @@ package org.apache.blur.lucene.security.index;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.lucene.index.AtomicReader;
@@ -33,6 +34,7 @@ import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.CompiledAutomaton;
@@ -108,11 +110,17 @@ public class SecureAtomicReader extends FilterAtomicReader {
   @Override
   public void document(int docID, final StoredFieldVisitor visitor) throws IOException {
     if (_accessControl.hasAccess(ReadType.DOCUMENT_FETCH_READ, docID)) {
-      in.document(docID, visitor);
+      GetReadMaskFields getReadMaskFields = new GetReadMaskFields();
+      in.document(docID, getReadMaskFields);
+      Set<String> readMaskFields = getReadMaskFields.getReadMaskFields();
+      if (readMaskFields.isEmpty()) {
+        in.document(docID, visitor);
+      } else {
+        in.document(docID, new ReadMaskStoredFieldVisitor(visitor, readMaskFields));
+      }
       return;
     }
     if (_accessControl.hasAccess(ReadType.DOCUMENT_FETCH_DISCOVER, docID)) {
-      // TODO add way to perform code when visitor runs here....
       in.document(docID, new StoredFieldVisitor() {
         @Override
         public Status needsField(FieldInfo fieldInfo) throws IOException {
@@ -156,6 +164,79 @@ public class SecureAtomicReader extends FilterAtomicReader {
       });
       return;
     }
+  }
+
+  private static class ReadMaskStoredFieldVisitor extends StoredFieldVisitor {
+
+    private final StoredFieldVisitor _visitor;
+    private final Set<String> _readMaskFields;
+
+    public ReadMaskStoredFieldVisitor(StoredFieldVisitor visitor, Set<String> readMaskFields) {
+      _visitor = visitor;
+      _readMaskFields = readMaskFields;
+    }
+
+    @Override
+    public Status needsField(FieldInfo fieldInfo) throws IOException {
+      if (_readMaskFields.contains(fieldInfo.name)) {
+        return Status.NO;
+      }
+      return Status.YES;
+    }
+
+    @Override
+    public void binaryField(FieldInfo fieldInfo, byte[] value) throws IOException {
+      _visitor.binaryField(fieldInfo, value);
+    }
+
+    @Override
+    public void stringField(FieldInfo fieldInfo, String value) throws IOException {
+      _visitor.stringField(fieldInfo, value);
+    }
+
+    @Override
+    public void intField(FieldInfo fieldInfo, int value) throws IOException {
+      _visitor.intField(fieldInfo, value);
+    }
+
+    @Override
+    public void longField(FieldInfo fieldInfo, long value) throws IOException {
+      _visitor.longField(fieldInfo, value);
+    }
+
+    @Override
+    public void floatField(FieldInfo fieldInfo, float value) throws IOException {
+      _visitor.floatField(fieldInfo, value);
+    }
+
+    @Override
+    public void doubleField(FieldInfo fieldInfo, double value) throws IOException {
+      _visitor.doubleField(fieldInfo, value);
+    }
+
+  }
+
+  private static class GetReadMaskFields extends StoredFieldVisitor {
+
+    private Set<String> _fields = new HashSet<String>();
+
+    @Override
+    public Status needsField(FieldInfo fieldInfo) throws IOException {
+      if (fieldInfo.name.equals(FilterAccessControlFactory.READ_MASK_FIELD)) {
+        return Status.YES;
+      }
+      return Status.NO;
+    }
+
+    @Override
+    public void stringField(FieldInfo fieldInfo, String value) throws IOException {
+      _fields.add(value);
+    }
+
+    Set<String> getReadMaskFields() {
+      return _fields;
+    }
+
   }
 
   @Override
@@ -315,7 +396,40 @@ public class SecureAtomicReader extends FilterAtomicReader {
       if (terms == null) {
         return null;
       }
-      return new SecureTerms(terms, _accessControlReader, _maxDoc);
+      Terms readMask = getReadMaskTerms(in, field);
+      SecureTerms secureTerms = new SecureTerms(terms, _accessControlReader, _maxDoc);
+      if (readMask == null) {
+        return secureTerms;
+      } else {
+        return new ReadMaskTerms(secureTerms, readMask);
+      }
+    }
+
+    private Terms getReadMaskTerms(Fields in, String field) throws IOException {
+      return in.terms(field + FilterAccessControlFactory.READ_MASK_SUFFIX);
+    }
+
+  }
+
+  static class ReadMaskTerms extends FilterTerms {
+
+    private final Terms _readMask;
+
+    public ReadMaskTerms(Terms in, Terms readMask) {
+      super(in);
+      _readMask = readMask;
+    }
+
+    @Override
+    public TermsEnum iterator(TermsEnum reuse) throws IOException {
+      TermsEnum maskTermsEnum = _readMask.iterator(null);
+      return new ReadMaskTermsEnum(maskTermsEnum, in.iterator(reuse));
+    }
+
+    @Override
+    public TermsEnum intersect(CompiledAutomaton compiled, BytesRef startTerm) throws IOException {
+      TermsEnum maskTermsEnum = _readMask.intersect(compiled, startTerm);
+      return new ReadMaskTermsEnum(maskTermsEnum, in.intersect(compiled, startTerm));
     }
 
   }
@@ -342,6 +456,44 @@ public class SecureAtomicReader extends FilterAtomicReader {
     }
   }
 
+  static class ReadMaskTermsEnum extends FilterTermsEnum {
+
+    private final TermsEnum _maskTermsEnum;
+
+    public ReadMaskTermsEnum(TermsEnum maskTermsEnum, TermsEnum realTermsEnum) {
+      super(realTermsEnum);
+      _maskTermsEnum = maskTermsEnum;
+    }
+
+    @Override
+    public BytesRef next() throws IOException {
+      while (true) {
+        BytesRef ref = in.next();
+        if (ref == null) {
+          return null;
+        }
+        if (!_maskTermsEnum.seekExact(ref, true)) {
+          return ref;
+        }
+        if (checkDocs()) {
+          return ref;
+        }
+      }
+    }
+
+    private boolean checkDocs() throws IOException {
+      DocsEnum maskDocsEnum = _maskTermsEnum.docs(null, null, DocsEnum.FLAG_NONE);
+      DocsEnum docsEnum = in.docs(null, null, DocsEnum.FLAG_NONE);
+      int docId;
+      while ((docId = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+        if (maskDocsEnum.advance(docId) != docId) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
   static class SecureTermsEnum extends FilterTermsEnum {
 
     private final int _maxDoc;
@@ -351,6 +503,28 @@ public class SecureAtomicReader extends FilterAtomicReader {
       super(in);
       _accessControlReader = accessControlReader;
       _maxDoc = maxDoc;
+    }
+
+    @Override
+    public BytesRef next() throws IOException {
+      BytesRef t;
+      while ((t = in.next()) != null) {
+        if (hasAccess(t)) {
+          return t;
+        }
+      }
+      return null;
+    }
+
+    private boolean hasAccess(BytesRef term) throws IOException {
+      DocsEnum docsEnum = in.docs(null, null, DocsEnum.FLAG_NONE);
+      int docId;
+      while ((docId = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+        if (_accessControlReader.hasAccess(ReadType.TERMS_ENUM, docId)) {
+          return true;
+        }
+      }
+      return false;
     }
 
     @Override

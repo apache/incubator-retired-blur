@@ -28,10 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.blur.lucene.security.index.AccessControlFactory;
-import org.apache.blur.lucene.security.index.AccessControlReader;
-import org.apache.blur.lucene.security.index.AccessControlWriter;
-import org.apache.blur.lucene.security.index.SecureAtomicReader;
+import org.apache.blur.lucene.security.search.SecureIndexSearcher;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.Document;
@@ -44,7 +41,6 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -56,8 +52,6 @@ import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.DocIdSetIterator;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
@@ -69,17 +63,23 @@ import org.junit.Test;
 
 public abstract class SecureAtomicReaderTestBase {
 
+  private Set<String> discoverableFields = new HashSet<String>(Arrays.asList("info"));
+  private List<String> readAuthorizations = Arrays.asList("r1");
+  private List<String> discoverAuthorizations = Arrays.asList("d1");
+
   public abstract AccessControlFactory getAccessControlFactory();
 
   @Test
   public void testLiveDocs() throws IOException {
     SecureAtomicReader secureReader = getSecureReader();
     Bits liveDocs = secureReader.getLiveDocs();
-    assertEquals(4, liveDocs.length());
+    assertEquals(6, liveDocs.length());
     assertTrue(liveDocs.get(0));
     assertTrue(liveDocs.get(1));
     assertTrue(liveDocs.get(2));
     assertFalse(liveDocs.get(3));
+    assertTrue(liveDocs.get(4));
+    assertTrue(liveDocs.get(5));
     secureReader.close();
   }
 
@@ -232,30 +232,45 @@ public abstract class SecureAtomicReaderTestBase {
   public void testTermWalk() throws IOException, ParseException {
     SecureAtomicReader secureReader = getSecureReader();
     Fields fields = secureReader.fields();
-    for (String field : fields) {
-      Terms terms = fields.terms(field);
-      TermsEnum termsEnum = terms.iterator(null);
-      BytesRef ref;
-      while ((ref = termsEnum.next()) != null) {
-        System.out.println(field + " " + ref.utf8ToString());
-        DocsEnum docsEnum = termsEnum.docs(null, null);
-        int doc;
-        while ((doc = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-          System.out.println(field + " " + ref.utf8ToString() + " " + doc);
-        }
-      }
-    }
+    // for (String field : fields) {
+    // Terms terms = fields.terms(field);
+    // TermsEnum termsEnum = terms.iterator(null);
+    // BytesRef ref;
+    // while ((ref = termsEnum.next()) != null) {
+    // System.out.println(field + " " + ref.utf8ToString());
+    // DocsEnum docsEnum = termsEnum.docs(null, null);
+    // int doc;
+    // while ((doc = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
+    // System.out.println(field + " " + ref.utf8ToString() + " " + doc);
+    // }
+    // }
+    // }
+
+    assertEquals(0, getTermCount(fields, "termmask")); //read mask
+    assertEquals(0, getTermCount(fields, "shouldnotsee")); //discover
+    assertEquals(1, getTermCount(fields, "test"));
+
     secureReader.close();
+  }
+
+  private int getTermCount(Fields fields, String field) throws IOException {
+    Terms terms = fields.terms(field);
+    TermsEnum termsEnum = terms.iterator(null);
+    int count = 0;
+    while (termsEnum.next() != null) {
+      count++;
+    }
+    return count;
   }
 
   @Test
   public void testQuery() throws IOException, ParseException {
-    SecureAtomicReader secureReader = getSecureReader();
+    SecureIndexSearcher searcher = getSecureIndexSearcher();
     QueryParser parser = new QueryParser(Version.LUCENE_43, "nothing", new KeywordAnalyzer());
     Query query = parser.parse("test:test");
-    IndexSearcher searcher = new IndexSearcher(secureReader);
+
     TopDocs topDocs = searcher.search(query, 10);
-    assertEquals(3, topDocs.totalHits);
+    assertEquals(5, topDocs.totalHits);
     {
       int doc = topDocs.scoreDocs[0].doc;
       assertEquals(0, doc);
@@ -277,20 +292,42 @@ public abstract class SecureAtomicReaderTestBase {
       assertEquals("test", document.get("test"));
       assertEquals("info", document.get("info"));
     }
+    {
+      int doc = topDocs.scoreDocs[3].doc;
+      assertEquals(4, doc);
+      Document document = searcher.doc(doc);
+      assertNull(document.get("test"));
+      assertEquals("info", document.get("info"));
+    }
+    {
+      int doc = topDocs.scoreDocs[4].doc;
+      assertEquals(5, doc);
+      Document document = searcher.doc(doc);
+      assertEquals("test", document.get("test"));
+      assertEquals("info", document.get("info"));
+    }
+  }
 
-    secureReader.close();
+  private SecureIndexSearcher getSecureIndexSearcher() throws IOException {
+    DirectoryReader reader = createReader();
+    return new SecureIndexSearcher(reader, getAccessControlFactory(), Arrays.asList("r1"), Arrays.asList("d1"),
+        discoverableFields);
   }
 
   private SecureAtomicReader getSecureReader() throws IOException {
-    AtomicReader baseReader = createReader();
-    Set<String> dicoverableFields = new HashSet<String>();
-    dicoverableFields.add("info");
-    AccessControlReader accessControlReader = getAccessControlFactory().getReader(Arrays.asList("r1"),
-        Arrays.asList("d1"), dicoverableFields);
+    AtomicReader baseReader = createAtomicReader();
+    AccessControlReader accessControlReader = getAccessControlFactory().getReader(readAuthorizations,
+        discoverAuthorizations, discoverableFields);
     return new SecureAtomicReader(baseReader, accessControlReader);
   }
 
-  private AtomicReader createReader() throws IOException {
+  private AtomicReader createAtomicReader() throws IOException {
+    DirectoryReader reader = createReader();
+    List<AtomicReaderContext> leaves = reader.leaves();
+    return leaves.get(0).reader();
+  }
+
+  private DirectoryReader createReader() throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer());
     Directory dir = new RAMDirectory();
     IndexWriter writer = new IndexWriter(dir, conf);
@@ -299,17 +336,24 @@ public abstract class SecureAtomicReaderTestBase {
     addDoc(writer, accessControlWriter, "r2", "d1", 1);
     addDoc(writer, accessControlWriter, "r1", "d2", 2);
     addDoc(writer, accessControlWriter, "r2", "d2", 3);
+    addDoc(writer, accessControlWriter, "r1", "d1", 4, "test");
+    addDoc(writer, accessControlWriter, "r1", "d1", 5, "termmask");
     writer.close();
 
-    DirectoryReader reader = DirectoryReader.open(dir);
-    List<AtomicReaderContext> leaves = reader.leaves();
-    return leaves.get(0).reader();
+    return DirectoryReader.open(dir);
   }
 
-  private void addDoc(IndexWriter writer, AccessControlWriter accessControlWriter, String read, String discover, int doc)
-      throws IOException {
-    writer.addDocument(accessControlWriter.addDiscoverVisiblity(discover,
-        accessControlWriter.addReadVisiblity(read, getDoc(doc))));
+  private void addDoc(IndexWriter writer, AccessControlWriter accessControlWriter, String read, String discover,
+      int doc, String... readMaskFields) throws IOException {
+    Iterable<IndexableField> fields = getDoc(doc);
+    fields = accessControlWriter.addReadVisiblity(read, fields);
+    fields = accessControlWriter.addDiscoverVisiblity(discover, fields);
+    if (readMaskFields != null) {
+      for (String readMaskField : readMaskFields) {
+        fields = accessControlWriter.addReadMask(readMaskField, fields);
+      }
+    }
+    writer.addDocument(accessControlWriter.lastStepBeforeIndexing(fields));
   }
 
   private Iterable<IndexableField> getDoc(int i) {
@@ -318,6 +362,9 @@ public abstract class SecureAtomicReaderTestBase {
     document.add(new StringField("info", "info", Store.YES));
     if (i == 3) {
       document.add(new StringField("shouldnotsee", "shouldnotsee", Store.YES));
+    }
+    if (i == 5) {
+      document.add(new StringField("termmask", "term", Store.YES));
     }
     document.add(new NumericDocValuesField("number", i));
     document.add(new BinaryDocValuesField("bin", new BytesRef(Integer.toString(i).getBytes())));

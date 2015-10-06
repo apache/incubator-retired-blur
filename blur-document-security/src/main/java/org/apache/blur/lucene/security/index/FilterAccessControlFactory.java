@@ -17,7 +17,11 @@
 package org.apache.blur.lucene.security.index;
 
 import java.io.IOException;
+import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.blur.lucene.security.DocumentAuthorizations;
@@ -25,7 +29,19 @@ import org.apache.blur.lucene.security.document.DocumentVisiblityField;
 import org.apache.blur.lucene.security.search.BitSetDocumentVisibilityFilterCacheStrategy;
 import org.apache.blur.lucene.security.search.DocumentVisibilityFilter;
 import org.apache.blur.lucene.security.search.DocumentVisibilityFilterCacheStrategy;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.document.BinaryDocValuesField;
+import org.apache.lucene.document.DoubleField;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.FloatField;
+import org.apache.lucene.document.IntField;
+import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.NumericDocValuesField;
+import org.apache.lucene.document.SortedDocValuesField;
+import org.apache.lucene.document.SortedSetDocValuesField;
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexableField;
@@ -38,6 +54,8 @@ public class FilterAccessControlFactory extends AccessControlFactory {
 
   public static final String DISCOVER_FIELD = "_discover_";
   public static final String READ_FIELD = "_read_";
+  public static final String READ_MASK_FIELD = "_readmask_";
+  public static final String READ_MASK_SUFFIX = "$" + READ_MASK_FIELD;
 
   @Override
   public String getDiscoverFieldName() {
@@ -47,6 +65,16 @@ public class FilterAccessControlFactory extends AccessControlFactory {
   @Override
   public String getReadFieldName() {
     return READ_FIELD;
+  }
+
+  @Override
+  public String getReadMaskFieldName() {
+    return READ_MASK_FIELD;
+  }
+
+  @Override
+  public String getReadMaskFieldSuffix() {
+    return READ_MASK_SUFFIX;
   }
 
   @Override
@@ -283,6 +311,111 @@ public class FilterAccessControlFactory extends AccessControlFactory {
       return addField(fields, new DocumentVisiblityField(DISCOVER_FIELD, discover, Store.YES));
     }
 
+    @Override
+    public Iterable<IndexableField> addReadMask(String fieldToMask, Iterable<IndexableField> fields) {
+      return addField(fields, new StoredField(READ_MASK_FIELD, fieldToMask));
+    }
+
+    @Override
+    public Iterable<IndexableField> lastStepBeforeIndexing(Iterable<IndexableField> fields) {
+      Set<String> fieldsToMask = getFieldsToMask(fields);
+      if (fieldsToMask.isEmpty()) {
+        return fields;
+      }
+      List<IndexableField> result = new ArrayList<IndexableField>();
+      for (IndexableField field : fields) {
+        if (fieldsToMask.contains(field.name())) {
+          // If field is a doc value, then don't bother indexing.
+          if (!isDocValue(field)) {
+            if (isStoredField(field)) {
+              // Stored fields are not indexed, and the document fetch check
+              // handles the mask.
+              result.add(field);
+            } else {
+              IndexableField mask = createMaskField(field);
+              result.add(field);
+              result.add(mask);
+            }
+          }
+        } else {
+          result.add(field);
+        }
+      }
+      return result;
+    }
+
+    private static Set<String> getFieldsToMask(Iterable<IndexableField> fields) {
+      Set<String> result = new HashSet<String>();
+      for (IndexableField field : fields) {
+        if (field.name().equals(READ_MASK_FIELD)) {
+          result.add(field.stringValue());
+        }
+      }
+      return result;
+    }
+
+    private static boolean isStoredField(IndexableField field) {
+      if (field instanceof StoredField) {
+        return true;
+      }
+      return false;
+    }
+
+    private static IndexableField createMaskField(IndexableField field) {
+      if (field instanceof DoubleField) {
+        DoubleField f = (DoubleField) field;
+        return new DoubleField(field.name() + READ_MASK_SUFFIX, (double) f.numericValue(), f.fieldType());
+      } else if (field instanceof FloatField) {
+        FloatField f = (FloatField) field;
+        return new FloatField(field.name() + READ_MASK_SUFFIX, (float) f.numericValue(), f.fieldType());
+      } else if (field instanceof IntField) {
+        IntField f = (IntField) field;
+        return new IntField(field.name() + READ_MASK_SUFFIX, (int) f.numericValue(), f.fieldType());
+      } else if (field instanceof LongField) {
+        LongField f = (LongField) field;
+        return new LongField(field.name() + READ_MASK_SUFFIX, (long) f.numericValue(), f.fieldType());
+      } else if (field instanceof StringField) {
+        StringField f = (StringField) field;
+        if (f.fieldType() == StringField.TYPE_NOT_STORED) {
+          return new StringField(field.name() + READ_MASK_SUFFIX, f.stringValue(), Store.NO);
+        } else {
+          return new StringField(field.name() + READ_MASK_SUFFIX, f.stringValue(), Store.YES);
+        }
+      } else if (field instanceof StringField) {
+        TextField f = (TextField) field;
+        Reader readerValue = f.readerValue();
+        if (readerValue != null) {
+          return new TextField(field.name() + READ_MASK_SUFFIX, readerValue);
+        }
+        TokenStream tokenStreamValue = f.tokenStreamValue();
+        if (tokenStreamValue != null) {
+          return new TextField(field.name() + READ_MASK_SUFFIX, tokenStreamValue);
+        }
+        Store s;
+        if (f.fieldType() == StringField.TYPE_NOT_STORED) {
+          s = Store.NO;
+        } else {
+          s = Store.YES;
+        }
+        return new TextField(field.name() + READ_MASK_SUFFIX, f.stringValue(), s);
+      } else {
+        throw new RuntimeException("Field [" + field + "] with type [" + field.getClass() + "] is not supported.");
+      }
+    }
+
+    private static boolean isDocValue(IndexableField field) {
+      if (field instanceof BinaryDocValuesField) {
+        return true;
+      } else if (field instanceof NumericDocValuesField) {
+        return true;
+      } else if (field instanceof SortedDocValuesField) {
+        return true;
+      } else if (field instanceof SortedSetDocValuesField) {
+        return true;
+      } else {
+        return false;
+      }
+    }
   }
 
 }

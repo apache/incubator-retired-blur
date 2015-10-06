@@ -24,16 +24,38 @@ import org.apache.lucene.index.IndexableField;
 
 public abstract class AccessControlWriter {
 
+  /**
+   * Adds document read visibility rule to document.
+   */
   public abstract Iterable<IndexableField> addReadVisiblity(String read, Iterable<IndexableField> fields);
 
+  /**
+   * Adds document discover visibility rule to document.
+   */
   public abstract Iterable<IndexableField> addDiscoverVisiblity(String discover, Iterable<IndexableField> fields);
+
+  /**
+   * Adds a read mask to document. If a field has been masked the value can not
+   * be viewed, but if a search utilizes the tokens from the field the document
+   * can be found.
+   */
+  public abstract Iterable<IndexableField> addReadMask(String fieldToMask, Iterable<IndexableField> fields);
+
+  /**
+   * This method should be called as the document is being added to the index
+   * writer.
+   * 
+   * @param fields
+   * @return
+   */
+  public abstract Iterable<IndexableField> lastStepBeforeIndexing(Iterable<IndexableField> fields);
 
   protected Iterable<IndexableField> addField(Iterable<IndexableField> fields, IndexableField... fieldsToAdd) {
     if (fields instanceof Document) {
       Document document = (Document) fields;
       if (fieldsToAdd != null) {
         for (IndexableField field : fieldsToAdd) {
-          document.add(field);    
+          document.add(field);
         }
       }
       return document;
@@ -44,9 +66,10 @@ public abstract class AccessControlWriter {
     }
     if (fieldsToAdd != null) {
       for (IndexableField field : fieldsToAdd) {
-        list.add(field);    
+        list.add(field);
       }
     }
     return list;
   }
+
 }

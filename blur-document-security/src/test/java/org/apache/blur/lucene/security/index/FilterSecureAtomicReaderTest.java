@@ -16,8 +16,12 @@
  */
 package org.apache.blur.lucene.security.index;
 
+import java.io.IOException;
+
 import org.apache.blur.lucene.security.index.AccessControlFactory;
 import org.apache.blur.lucene.security.index.FilterAccessControlFactory;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.junit.Test;
 
 public class FilterSecureAtomicReaderTest extends SecureAtomicReaderTestBase {
 
@@ -26,6 +30,11 @@ public class FilterSecureAtomicReaderTest extends SecureAtomicReaderTestBase {
   @Override
   public AccessControlFactory getAccessControlFactory() {
     return _accessControlFactory;
+  }
+  
+  @Test
+  public void testTermWalk() throws IOException, ParseException {
+    super.testTermWalk();
   }
 
 }

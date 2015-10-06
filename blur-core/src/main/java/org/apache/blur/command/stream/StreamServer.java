@@ -33,6 +33,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 import org.apache.commons.io.IOUtils;
@@ -158,23 +160,28 @@ public class StreamServer implements Closeable {
 
   public static void executeStream(StreamProcessor streamProcessor, InputStream in, OutputStream outputStream)
       throws IOException {
-    DataInputStream inputStream = new DataInputStream(in);
-    byte[] streamSplitBytes = getObjectBytes(inputStream);
-    byte[] functionBytes = getObjectBytes(inputStream);
-    StreamSplit streamSplit = getStreamSplit(toInputStream(streamSplitBytes));
-    String table = streamSplit.getTable();
-    String shard = streamSplit.getShard();
-    String classLoaderId = streamSplit.getClassLoaderId();
-    User user = new User(streamSplit.getUser(), streamSplit.getUserAttributes());
-    UserContext.setUser(user);
-    StreamIndexContext indexContext = null;
+    Tracer tracer = Trace.trace("stream - executeStream");
     try {
-      indexContext = streamProcessor.getIndexContext(table, shard);
-      StreamFunction<?> function = streamProcessor.getStreamFunction(classLoaderId, toInputStream(functionBytes));
-      streamProcessor.execute(function, outputStream, indexContext);
+      DataInputStream inputStream = new DataInputStream(in);
+      byte[] streamSplitBytes = getObjectBytes(inputStream);
+      byte[] functionBytes = getObjectBytes(inputStream);
+      StreamSplit streamSplit = getStreamSplit(toInputStream(streamSplitBytes));
+      String table = streamSplit.getTable();
+      String shard = streamSplit.getShard();
+      String classLoaderId = streamSplit.getClassLoaderId();
+      User user = new User(streamSplit.getUser(), streamSplit.getUserAttributes());
+      UserContext.setUser(user);
+      StreamIndexContext indexContext = null;
+      try {
+        indexContext = streamProcessor.getIndexContext(table, shard);
+        StreamFunction<?> function = streamProcessor.getStreamFunction(classLoaderId, toInputStream(functionBytes));
+        streamProcessor.execute(function, outputStream, indexContext);
+      } finally {
+        IOUtils.closeQuietly(indexContext);
+        UserContext.reset();
+      }
     } finally {
-      IOUtils.closeQuietly(indexContext);
-      UserContext.reset();
+      tracer.done();
     }
   }
 
@@ -224,6 +231,7 @@ public class StreamServer implements Closeable {
   }
 
   private static StreamSplit getStreamSplit(InputStream inputStream) throws IOException {
+    Tracer tracer = Trace.trace("stream - getStreamSplit");
     ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
     try {
       return (StreamSplit) objectInputStream.readObject();
@@ -231,6 +239,7 @@ public class StreamServer implements Closeable {
       throw new IOException(e);
     } finally {
       objectInputStream.close();
+      tracer.done();
     }
   }
 

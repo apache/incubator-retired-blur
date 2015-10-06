@@ -16,9 +16,7 @@
  */
 package org.apache.blur.command.stream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,7 +53,7 @@ import com.google.common.io.Closer;
 public class StreamServerTest implements Serializable {
 
   @Test
-  public void testServer() throws IOException {
+  public void testServer() throws StreamException, IOException {
     Closer closer = Closer.create();
     try {
       File tmpFile = new File("./target/tmp/StreamServerTest");
@@ -87,6 +85,51 @@ public class StreamServerTest implements Serializable {
       assertTrue(iterator.hasNext());
       assertEquals("test", iterator.next());
       assertFalse(iterator.hasNext());
+
+    } finally {
+      closer.close();
+    }
+  }
+
+  @Test
+  public void testServerInjectError() throws IOException {
+    Closer closer = Closer.create();
+    try {
+      File tmpFile = new File("./target/tmp/StreamServerTest");
+      tmpFile.mkdirs();
+      IndexServer indexServer = new TestIndexServer();
+      StreamProcessor streamProcessor = new StreamProcessor(indexServer, tmpFile);
+      int timeout = 3000000;
+      String classLoaderId = UUID.randomUUID().toString();
+
+      StreamServer server = closer.register(new StreamServer(0, 100, streamProcessor));
+      server.start();
+      int port = server.getPort();
+      StreamClient client = closer.register(new StreamClient("localhost", port, timeout));
+      assertFalse(client.isClassLoaderAvailable(classLoaderId));
+      client.loadJars(classLoaderId, getTestJar());
+
+      String table = "test";
+      String shard = "shard";
+      String user = "test";
+      Map<String, String> userAttributes = new HashMap<String, String>();
+      StreamSplit split = new StreamSplit(table, shard, classLoaderId, user, userAttributes);
+      try {
+        Iterable<String> it = client.executeStream(split, new StreamFunction<String>() {
+          @Override
+          public void call(IndexContext indexContext, StreamWriter<String> writer) throws Exception {
+            Class.forName("errorclass");
+          }
+        });
+        Iterator<String> iterator = it.iterator();
+        if (iterator.hasNext()) {
+          iterator.next();
+        }
+        fail();
+      } catch (StreamException e) {
+        Throwable cause = e.getCause();
+        cause.printStackTrace();
+      }
 
     } finally {
       closer.close();
@@ -249,32 +292,32 @@ public class StreamServerTest implements Serializable {
 
   protected static IndexSearcherCloseable getIndexSearcherCloseable() {
     return new IndexSearcherCloseable() {
-      
+
       @Override
       public void close() throws IOException {
-        
+
       }
-      
+
       @Override
       public void setSimilarity(Similarity similarity) {
         throw new RuntimeException("Not implemented.");
       }
-      
+
       @Override
       public void search(Query query, Collector collector) throws IOException {
         throw new RuntimeException("Not implemented.");
       }
-      
+
       @Override
       public TopDocs search(Query query, int i) throws IOException {
         throw new RuntimeException("Not implemented.");
       }
-      
+
       @Override
       public Query rewrite(Query query) throws IOException {
         throw new RuntimeException("Not implemented.");
       }
-      
+
       @Override
       public IndexReader getIndexReader() {
         return null;

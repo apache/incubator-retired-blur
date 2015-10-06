@@ -16,6 +16,7 @@
  */
 package org.apache.blur.command.stream;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.File;
@@ -43,6 +44,8 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.commons.io.IOUtils;
 
 import com.google.common.cache.CacheBuilder;
@@ -106,16 +109,17 @@ public class StreamProcessor {
 
   public <T> void execute(StreamFunction<T> function, OutputStream outputStream, IndexContext indexContext)
       throws IOException {
-    final ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+    final ObjectOutputStream objectOutputStream = new ObjectOutputStream(new BufferedOutputStream(outputStream));
     StreamWriter<T> writer = getWriter(objectOutputStream);
+    Tracer tracer = Trace.trace("stream - execute");
     try {
       function.call(indexContext, writer);
-    } catch (Exception e) {
-      LOG.error("Unknown error.", e);
-      objectOutputStream.writeObject(new StreamError(e));
-    } finally {
       objectOutputStream.writeObject(new StreamComplete());
+    } catch (Throwable t) {
+      objectOutputStream.writeObject(new StreamError(t));
+    } finally {
       objectOutputStream.close();
+      tracer.done();
     }
   }
 

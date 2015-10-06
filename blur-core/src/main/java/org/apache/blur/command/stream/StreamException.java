@@ -16,25 +16,11 @@
  */
 package org.apache.blur.command.stream;
 
-import java.io.Serializable;
+public class StreamException extends RuntimeException {
 
-public class StreamError implements Serializable {
+  private static final long serialVersionUID = -2692794357251949238L;
 
-  private static final long serialVersionUID = 5624998869726795714L;
-
-  private final Throwable _throwable;
-
-  public StreamError(Throwable t) {
-    _throwable = t;
+  public StreamException(Throwable throwable) {
+    super(throwable.getMessage(), throwable);
   }
-
-  public Throwable getThrowable() {
-    return _throwable;
-  }
-
-  @Override
-  public String toString() {
-    return "StreamError [_throwable=" + _throwable + "]";
-  }
-
 }

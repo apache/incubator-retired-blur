@@ -123,7 +123,8 @@ public class StreamClient implements Closeable {
     loadJars(classLoaderId, Arrays.asList(testJars));
   }
 
-  public <T> Iterable<T> executeStream(StreamSplit streamSplit, StreamFunction<T> streamFunction) throws IOException {
+  public <T> Iterable<T> executeStream(StreamSplit streamSplit, StreamFunction<T> streamFunction)
+      throws StreamException {
     return new Iterable<T>() {
       @Override
       public Iterator<T> iterator() {
@@ -168,6 +169,9 @@ public class StreamClient implements Closeable {
             public T next() {
               T o = (T) _obj;
               _obj = null;
+              if (o instanceof StreamError) {
+                throw new StreamException(((StreamError) o).getThrowable());
+              }
               return o;
             }
           };

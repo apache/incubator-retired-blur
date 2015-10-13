@@ -18,7 +18,9 @@ package org.apache.blur.lucene.security.index;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.index.AtomicReader;
@@ -38,6 +40,8 @@ import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.automaton.CompiledAutomaton;
+
+import com.google.common.base.Splitter;
 
 /**
  * The current {@link SecureAtomicReader} will protect access to documents based
@@ -112,7 +116,7 @@ public class SecureAtomicReader extends FilterAtomicReader {
     if (_accessControl.hasAccess(ReadType.DOCUMENT_FETCH_READ, docID)) {
       GetReadMaskFields getReadMaskFields = new GetReadMaskFields();
       in.document(docID, getReadMaskFields);
-      Set<String> readMaskFields = getReadMaskFields.getReadMaskFields();
+      Map<String, String> readMaskFields = getReadMaskFields.getReadMaskFields();
       if (readMaskFields.isEmpty()) {
         in.document(docID, visitor);
       } else {
@@ -169,56 +173,78 @@ public class SecureAtomicReader extends FilterAtomicReader {
   private static class ReadMaskStoredFieldVisitor extends StoredFieldVisitor {
 
     private final StoredFieldVisitor _visitor;
-    private final Set<String> _readMaskFields;
+    private final Map<String, String> _readMaskFieldsAndMessages;
 
-    public ReadMaskStoredFieldVisitor(StoredFieldVisitor visitor, Set<String> readMaskFields) {
+    public ReadMaskStoredFieldVisitor(StoredFieldVisitor visitor, Map<String, String> readMaskFieldsAndMessages) {
       _visitor = visitor;
-      _readMaskFields = readMaskFields;
+      _readMaskFieldsAndMessages = readMaskFieldsAndMessages;
     }
 
     @Override
     public Status needsField(FieldInfo fieldInfo) throws IOException {
-      if (_readMaskFields.contains(fieldInfo.name)) {
-        return Status.NO;
-      }
       return Status.YES;
     }
 
     @Override
     public void binaryField(FieldInfo fieldInfo, byte[] value) throws IOException {
-      _visitor.binaryField(fieldInfo, value);
+      if (!checkReadMask(fieldInfo)) {
+        _visitor.binaryField(fieldInfo, value);
+      }
+    }
+
+    private boolean checkReadMask(FieldInfo fieldInfo) throws IOException {
+      final String message = _readMaskFieldsAndMessages.get(fieldInfo.name);
+      if (message != null) {
+        if (message.isEmpty()) {
+          return true;
+        }
+        _visitor.stringField(fieldInfo, message);
+        return true;
+      }
+      return false;
     }
 
     @Override
     public void stringField(FieldInfo fieldInfo, String value) throws IOException {
-      _visitor.stringField(fieldInfo, value);
+      if (!checkReadMask(fieldInfo)) {
+        _visitor.stringField(fieldInfo, value);
+      }
     }
 
     @Override
     public void intField(FieldInfo fieldInfo, int value) throws IOException {
-      _visitor.intField(fieldInfo, value);
+      if (!checkReadMask(fieldInfo)) {
+        _visitor.intField(fieldInfo, value);
+      }
     }
 
     @Override
     public void longField(FieldInfo fieldInfo, long value) throws IOException {
-      _visitor.longField(fieldInfo, value);
+      if (!checkReadMask(fieldInfo)) {
+        _visitor.longField(fieldInfo, value);
+      }
     }
 
     @Override
     public void floatField(FieldInfo fieldInfo, float value) throws IOException {
-      _visitor.floatField(fieldInfo, value);
+      if (!checkReadMask(fieldInfo)) {
+        _visitor.floatField(fieldInfo, value);
+      }
     }
 
     @Override
     public void doubleField(FieldInfo fieldInfo, double value) throws IOException {
-      _visitor.doubleField(fieldInfo, value);
+      if (!checkReadMask(fieldInfo)) {
+        _visitor.doubleField(fieldInfo, value);
+      }
     }
 
   }
 
   private static class GetReadMaskFields extends StoredFieldVisitor {
 
-    private Set<String> _fields = new HashSet<String>();
+    private Map<String, String> _fieldsAndMessages = new HashMap<String, String>();
+    private Splitter splitter = Splitter.on('|');
 
     @Override
     public Status needsField(FieldInfo fieldInfo) throws IOException {
@@ -230,11 +256,27 @@ public class SecureAtomicReader extends FilterAtomicReader {
 
     @Override
     public void stringField(FieldInfo fieldInfo, String value) throws IOException {
-      _fields.add(value);
+      Iterable<String> split = splitter.split(value);
+      Iterator<String> iterator = split.iterator();
+      String field;
+      String message = null;
+      if (iterator.hasNext()) {
+        field = iterator.next();
+      } else {
+        return;
+      }
+      if (iterator.hasNext()) {
+        message = iterator.next();
+      }
+      if (message != null) {
+        _fieldsAndMessages.put(field, message);
+      } else {
+        _fieldsAndMessages.put(field, "");
+      }
     }
 
-    Set<String> getReadMaskFields() {
-      return _fields;
+    Map<String, String> getReadMaskFields() {
+      return _fieldsAndMessages;
     }
 
   }

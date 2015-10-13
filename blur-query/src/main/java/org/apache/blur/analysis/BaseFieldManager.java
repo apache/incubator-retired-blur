@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.apache.blur.analysis.type.FloatFieldTypeDefinition;
 import org.apache.blur.analysis.type.IntFieldTypeDefinition;
 import org.apache.blur.analysis.type.LongFieldTypeDefinition;
 import org.apache.blur.analysis.type.NumericFieldTypeDefinition;
+import org.apache.blur.analysis.type.ReadMaskFieldTypeDefinition;
 import org.apache.blur.analysis.type.StoredFieldTypeDefinition;
 import org.apache.blur.analysis.type.StringFieldTypeDefinition;
 import org.apache.blur.analysis.type.TextFieldTypeDefinition;
@@ -58,7 +60,6 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 
@@ -67,6 +68,12 @@ public abstract class BaseFieldManager extends FieldManager {
   private static final Log LOG = LogFactory.getLog(BaseFieldManager.class);
   private static final Map<String, String> EMPTY_MAP = new HashMap<String, String>();
   private static final boolean DEFAULT_MULTI_VALUE_FIELD_VALUE = true;
+  private static final Comparator<FieldTypeDefinition> POST_PROCESSING_COMPARATOR = new Comparator<FieldTypeDefinition>() {
+    @Override
+    public int compare(FieldTypeDefinition o1, FieldTypeDefinition o2) {
+      return Integer.compare(o2.getPostProcessingPriority(), o1.getPostProcessingPriority());
+    }
+  };
 
   private final ConcurrentMap<String, Set<String>> _columnToSubColumn = new ConcurrentHashMap<String, Set<String>>();
   private final ConcurrentMap<String, FieldTypeDefinition> _fieldNameToDefMap = new ConcurrentHashMap<String, FieldTypeDefinition>();
@@ -120,6 +127,7 @@ public abstract class BaseFieldManager extends FieldManager {
     registerType(SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.class);
     registerType(AclReadFieldTypeDefinition.class);
     registerType(AclDiscoverFieldTypeDefinition.class);
+    registerType(ReadMaskFieldTypeDefinition.class);
     _fieldLessField = fieldLessField;
     _strict = strict;
     _defaultMissingFieldLessIndexing = defaultMissingFieldLessIndexing;
@@ -227,6 +235,7 @@ public abstract class BaseFieldManager extends FieldManager {
     addDefaultFields(fields, rowId, record);
     addFieldExistance(fields, record);
     Map<String, Integer> fieldCounts = new HashMap<String, Integer>();
+    List<FieldTypeDefinition> postProcessingFieldTypes = new ArrayList<FieldTypeDefinition>();
     for (Column column : columns) {
       String name = column.getName();
       String value = column.getValue();
@@ -242,6 +251,9 @@ public abstract class BaseFieldManager extends FieldManager {
         addColumnDefinition(family, name, null, getDefaultMissingFieldLessIndexing(), getDefaultMissingFieldType(),
             false, DEFAULT_MULTI_VALUE_FIELD_VALUE, getDefaultMissingFieldProps());
         fieldTypeDefinition = getFieldTypeDefinition(family, column);
+      }
+      if (fieldTypeDefinition.isPostProcessingSupported()) {
+        postProcessingFieldTypes.add(fieldTypeDefinition);
       }
       String fieldName = fieldTypeDefinition.getFieldName();
       Integer count = fieldCounts.get(fieldName);
@@ -267,15 +279,24 @@ public abstract class BaseFieldManager extends FieldManager {
         }
       }
     }
+    if (!postProcessingFieldTypes.isEmpty()) {
+      Collections.sort(postProcessingFieldTypes, POST_PROCESSING_COMPARATOR);
+      Iterable<? extends Field> iterable = fields;
+      for (FieldTypeDefinition fieldTypeDefinition : postProcessingFieldTypes) {
+        iterable = fieldTypeDefinition.executePostProcessing(iterable);
+      }
+      return toList(iterable);
+    } else {
+      return fields;
+    }
+  }
+
+  private List<Field> toList(Iterable<? extends Field> iterable) {
+    List<Field> fields = new ArrayList<Field>();
+    for (Field field : iterable) {
+      fields.add(field);
+    }
     return fields;
-  }
-
-  public List<IndexableField> getIndexableFields(String fieldname, String fieldValue) throws IOException {
-    throw new RuntimeException("Not implemented.");
-  }
-
-  public int getFieldId(String fieldName) throws IOException {
-    throw new RuntimeException("Not implemented.");
   }
 
   private void addFieldExistance(List<Field> fields, Record record) {

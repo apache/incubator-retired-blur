@@ -32,7 +32,9 @@ import org.apache.blur.lucene.security.search.DocumentVisibilityFilterCacheStrat
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.BinaryDocValuesField;
 import org.apache.lucene.document.DoubleField;
+import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.FloatField;
 import org.apache.lucene.document.IntField;
 import org.apache.lucene.document.LongField;
@@ -45,10 +47,12 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.IndexableFieldType;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.util.Bits;
+import org.apache.lucene.util.BytesRef;
 
 public class FilterAccessControlFactory extends AccessControlFactory {
 
@@ -318,13 +322,19 @@ public class FilterAccessControlFactory extends AccessControlFactory {
 
     @Override
     public Iterable<IndexableField> lastStepBeforeIndexing(Iterable<IndexableField> fields) {
+      return processFieldMasks(fields);
+    }
+
+    public static Iterable<IndexableField> processFieldMasks(Iterable<IndexableField> fields) {
       Set<String> fieldsToMask = getFieldsToMask(fields);
       if (fieldsToMask.isEmpty()) {
         return fields;
       }
       List<IndexableField> result = new ArrayList<IndexableField>();
       for (IndexableField field : fields) {
-        if (fieldsToMask.contains(field.name())) {
+        IndexableFieldType fieldType = field.fieldType();
+        // If field is to be indexed and is to be read masked.
+        if (fieldsToMask.contains(field.name()) && fieldType.indexed()) {
           // If field is a doc value, then don't bother indexing.
           if (!isDocValue(field)) {
             if (isStoredField(field)) {
@@ -348,10 +358,20 @@ public class FilterAccessControlFactory extends AccessControlFactory {
       Set<String> result = new HashSet<String>();
       for (IndexableField field : fields) {
         if (field.name().equals(READ_MASK_FIELD)) {
-          result.add(field.stringValue());
+          result.add(getFieldNameOnly(field.stringValue()));
         }
       }
       return result;
+    }
+
+    private static String getFieldNameOnly(String s) {
+      // remove any stored messages
+      int indexOf = s.indexOf('|');
+      if (indexOf < 0) {
+        return s;
+      } else {
+        return s.substring(0, indexOf);
+      }
     }
 
     private static boolean isStoredField(IndexableField field) {
@@ -362,45 +382,69 @@ public class FilterAccessControlFactory extends AccessControlFactory {
     }
 
     private static IndexableField createMaskField(IndexableField field) {
+      FieldType fieldTypeNotStored = getFieldTypeNotStored(field);
+      String name = field.name() + READ_MASK_SUFFIX;
       if (field instanceof DoubleField) {
         DoubleField f = (DoubleField) field;
-        return new DoubleField(field.name() + READ_MASK_SUFFIX, (double) f.numericValue(), f.fieldType());
+        return new DoubleField(name, (double) f.numericValue(), fieldTypeNotStored);
       } else if (field instanceof FloatField) {
         FloatField f = (FloatField) field;
-        return new FloatField(field.name() + READ_MASK_SUFFIX, (float) f.numericValue(), f.fieldType());
+        return new FloatField(name, (float) f.numericValue(), fieldTypeNotStored);
       } else if (field instanceof IntField) {
         IntField f = (IntField) field;
-        return new IntField(field.name() + READ_MASK_SUFFIX, (int) f.numericValue(), f.fieldType());
+        return new IntField(name, (int) f.numericValue(), fieldTypeNotStored);
       } else if (field instanceof LongField) {
         LongField f = (LongField) field;
-        return new LongField(field.name() + READ_MASK_SUFFIX, (long) f.numericValue(), f.fieldType());
+        return new LongField(name, (long) f.numericValue(), fieldTypeNotStored);
       } else if (field instanceof StringField) {
         StringField f = (StringField) field;
-        if (f.fieldType() == StringField.TYPE_NOT_STORED) {
-          return new StringField(field.name() + READ_MASK_SUFFIX, f.stringValue(), Store.NO);
-        } else {
-          return new StringField(field.name() + READ_MASK_SUFFIX, f.stringValue(), Store.YES);
-        }
+        return new StringField(name, f.stringValue(), Store.NO);
       } else if (field instanceof StringField) {
         TextField f = (TextField) field;
         Reader readerValue = f.readerValue();
         if (readerValue != null) {
-          return new TextField(field.name() + READ_MASK_SUFFIX, readerValue);
+          return new TextField(name, readerValue);
         }
         TokenStream tokenStreamValue = f.tokenStreamValue();
         if (tokenStreamValue != null) {
-          return new TextField(field.name() + READ_MASK_SUFFIX, tokenStreamValue);
+          return new TextField(name, tokenStreamValue);
         }
-        Store s;
-        if (f.fieldType() == StringField.TYPE_NOT_STORED) {
-          s = Store.NO;
-        } else {
-          s = Store.YES;
+        return new TextField(name, f.stringValue(), Store.NO);
+      } else if (field.getClass().equals(Field.class)) {
+        Field f = (Field) field;
+        String stringValue = f.stringValue();
+        if (stringValue != null) {
+          return new Field(name, stringValue, fieldTypeNotStored);
         }
-        return new TextField(field.name() + READ_MASK_SUFFIX, f.stringValue(), s);
+        BytesRef binaryValue = f.binaryValue();
+        if (binaryValue != null) {
+          return new Field(name, binaryValue, fieldTypeNotStored);
+        }
+        Number numericValue = f.numericValue();
+        if (numericValue != null) {
+          throw new RuntimeException("Field [" + field + "] with type [" + field.getClass() + "] is not supported.");
+        }
+        Reader readerValue = f.readerValue();
+        if (readerValue != null) {
+          return new Field(name, readerValue, fieldTypeNotStored);
+        }
+        TokenStream tokenStreamValue = f.tokenStreamValue();
+        if (tokenStreamValue != null) {
+          return new Field(name, tokenStreamValue, fieldTypeNotStored);
+        }
+        throw new RuntimeException("Field [" + field + "] with type [" + field.getClass() + "] is not supported.");
       } else {
         throw new RuntimeException("Field [" + field + "] with type [" + field.getClass() + "] is not supported.");
       }
+    }
+
+    private static FieldType getFieldTypeNotStored(IndexableField indexableField) {
+      Field field = (Field) indexableField;
+      FieldType fieldType = field.fieldType();
+      FieldType result = new FieldType(fieldType);
+      result.setStored(false);
+      result.freeze();
+      return result;
     }
 
     private static boolean isDocValue(IndexableField field) {

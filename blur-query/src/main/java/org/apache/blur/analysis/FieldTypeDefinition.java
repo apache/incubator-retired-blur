@@ -282,4 +282,16 @@ public abstract class FieldTypeDefinition {
    */
   public abstract String readTerm(BytesRef byteRef);
 
+  public boolean isPostProcessingSupported() {
+    return false;
+  }
+
+  public int getPostProcessingPriority() {
+    return 0;
+  }
+
+  public Iterable<? extends Field> executePostProcessing(Iterable<? extends Field> fields) {
+    throw new RuntimeException("Not Implemented.");
+  }
+
 }

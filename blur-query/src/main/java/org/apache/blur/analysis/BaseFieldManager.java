@@ -60,6 +60,7 @@ import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 
@@ -281,7 +282,7 @@ public abstract class BaseFieldManager extends FieldManager {
     }
     if (!postProcessingFieldTypes.isEmpty()) {
       Collections.sort(postProcessingFieldTypes, POST_PROCESSING_COMPARATOR);
-      Iterable<? extends Field> iterable = fields;
+      Iterable<? extends IndexableField> iterable = fields;
       for (FieldTypeDefinition fieldTypeDefinition : postProcessingFieldTypes) {
         iterable = fieldTypeDefinition.executePostProcessing(iterable);
       }
@@ -291,10 +292,10 @@ public abstract class BaseFieldManager extends FieldManager {
     }
   }
 
-  private List<Field> toList(Iterable<? extends Field> iterable) {
+  private List<Field> toList(Iterable<? extends IndexableField> iterable) {
     List<Field> fields = new ArrayList<Field>();
-    for (Field field : iterable) {
-      fields.add(field);
+    for (IndexableField field : iterable) {
+      fields.add((Field) field);
     }
     return fields;
   }

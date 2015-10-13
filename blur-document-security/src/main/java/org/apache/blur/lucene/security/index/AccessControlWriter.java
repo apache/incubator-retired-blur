@@ -27,19 +27,19 @@ public abstract class AccessControlWriter {
   /**
    * Adds document read visibility rule to document.
    */
-  public abstract Iterable<IndexableField> addReadVisiblity(String read, Iterable<IndexableField> fields);
+  public abstract Iterable<? extends IndexableField> addReadVisiblity(String read, Iterable<? extends IndexableField> fields);
 
   /**
    * Adds document discover visibility rule to document.
    */
-  public abstract Iterable<IndexableField> addDiscoverVisiblity(String discover, Iterable<IndexableField> fields);
+  public abstract Iterable<? extends IndexableField> addDiscoverVisiblity(String discover, Iterable<? extends IndexableField> fields);
 
   /**
    * Adds a read mask to document. If a field has been masked the value can not
    * be viewed, but if a search utilizes the tokens from the field the document
    * can be found.
    */
-  public abstract Iterable<IndexableField> addReadMask(String fieldToMask, Iterable<IndexableField> fields);
+  public abstract Iterable<? extends IndexableField> addReadMask(String fieldToMask, Iterable<? extends IndexableField> fields);
 
   /**
    * This method should be called as the document is being added to the index
@@ -48,9 +48,9 @@ public abstract class AccessControlWriter {
    * @param fields
    * @return
    */
-  public abstract Iterable<IndexableField> lastStepBeforeIndexing(Iterable<IndexableField> fields);
+  public abstract Iterable<? extends IndexableField> lastStepBeforeIndexing(Iterable<? extends IndexableField> fields);
 
-  protected Iterable<IndexableField> addField(Iterable<IndexableField> fields, IndexableField... fieldsToAdd) {
+  protected Iterable<? extends IndexableField> addField(Iterable<? extends IndexableField> fields, IndexableField... fieldsToAdd) {
     if (fields instanceof Document) {
       Document document = (Document) fields;
       if (fieldsToAdd != null) {

@@ -26,6 +26,7 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.util.BytesRef;
@@ -290,7 +291,7 @@ public abstract class FieldTypeDefinition {
     return 0;
   }
 
-  public Iterable<? extends Field> executePostProcessing(Iterable<? extends Field> fields) {
+  public Iterable<? extends IndexableField> executePostProcessing(Iterable<? extends IndexableField> fields) {
     throw new RuntimeException("Not Implemented.");
   }
 

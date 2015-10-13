@@ -306,26 +306,26 @@ public class FilterAccessControlFactory extends AccessControlFactory {
   public static class FilterAccessControlWriter extends AccessControlWriter {
 
     @Override
-    public Iterable<IndexableField> addReadVisiblity(String read, Iterable<IndexableField> fields) {
+    public Iterable<? extends IndexableField> addReadVisiblity(String read, Iterable<? extends IndexableField> fields) {
       return addField(fields, new DocumentVisiblityField(READ_FIELD, read, Store.YES));
     }
 
     @Override
-    public Iterable<IndexableField> addDiscoverVisiblity(String discover, Iterable<IndexableField> fields) {
+    public Iterable<? extends IndexableField> addDiscoverVisiblity(String discover, Iterable<? extends IndexableField> fields) {
       return addField(fields, new DocumentVisiblityField(DISCOVER_FIELD, discover, Store.YES));
     }
 
     @Override
-    public Iterable<IndexableField> addReadMask(String fieldToMask, Iterable<IndexableField> fields) {
+    public Iterable<? extends IndexableField> addReadMask(String fieldToMask, Iterable<? extends IndexableField> fields) {
       return addField(fields, new StoredField(READ_MASK_FIELD, fieldToMask));
     }
 
     @Override
-    public Iterable<IndexableField> lastStepBeforeIndexing(Iterable<IndexableField> fields) {
+    public Iterable<? extends IndexableField> lastStepBeforeIndexing(Iterable<? extends IndexableField> fields) {
       return processFieldMasks(fields);
     }
 
-    public static Iterable<IndexableField> processFieldMasks(Iterable<IndexableField> fields) {
+    public static Iterable<? extends IndexableField> processFieldMasks(Iterable<? extends IndexableField> fields) {
       Set<String> fieldsToMask = getFieldsToMask(fields);
       if (fieldsToMask.isEmpty()) {
         return fields;
@@ -354,7 +354,7 @@ public class FilterAccessControlFactory extends AccessControlFactory {
       return result;
     }
 
-    private static Set<String> getFieldsToMask(Iterable<IndexableField> fields) {
+    private static Set<String> getFieldsToMask(Iterable<? extends IndexableField> fields) {
       Set<String> result = new HashSet<String>();
       for (IndexableField field : fields) {
         if (field.name().equals(READ_MASK_FIELD)) {

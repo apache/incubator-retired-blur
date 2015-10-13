@@ -94,9 +94,8 @@ public class ReadMaskFieldTypeDefinition extends FieldTypeDefinition {
 
   @SuppressWarnings("unchecked")
   @Override
-  public Iterable<? extends Field> executePostProcessing(Iterable<? extends Field> fields) {
-    Iterable<IndexableField> doc = FilterAccessControlWriter.processFieldMasks((Iterable<IndexableField>) fields);
-    return (Iterable<? extends Field>) doc;
+  public Iterable<? extends IndexableField> executePostProcessing(Iterable<? extends IndexableField> fields) {
+    return FilterAccessControlWriter.processFieldMasks(fields);
   }
 
   @Override

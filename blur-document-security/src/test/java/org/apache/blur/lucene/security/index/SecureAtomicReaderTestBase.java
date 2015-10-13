@@ -345,7 +345,7 @@ public abstract class SecureAtomicReaderTestBase {
 
   private void addDoc(IndexWriter writer, AccessControlWriter accessControlWriter, String read, String discover,
       int doc, String... readMaskFields) throws IOException {
-    Iterable<IndexableField> fields = getDoc(doc);
+    Iterable<? extends IndexableField> fields = getDoc(doc);
     fields = accessControlWriter.addReadVisiblity(read, fields);
     fields = accessControlWriter.addDiscoverVisiblity(discover, fields);
     if (readMaskFields != null) {

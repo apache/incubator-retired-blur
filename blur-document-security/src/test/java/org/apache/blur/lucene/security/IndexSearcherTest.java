@@ -27,9 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.blur.lucene.security.DocumentAuthorizations;
-import org.apache.blur.lucene.security.DocumentVisibility;
-import org.apache.blur.lucene.security.DocumentVisibilityEvaluator;
 import org.apache.blur.lucene.security.index.AccessControlFactory;
 import org.apache.blur.lucene.security.index.AccessControlWriter;
 import org.apache.blur.lucene.security.index.FilterAccessControlFactory;
@@ -219,7 +216,7 @@ public class IndexSearcherTest {
     doc.add(new StringField("f1", field1, Store.YES));
     doc.add(new StringField("f2", field2, Store.YES));
     doc.add(new TextField("text", "constant text", Store.YES));
-    Iterable<IndexableField> fields = doc;
+    Iterable<? extends IndexableField> fields = doc;
     if (read != null) {
       fields = writer.addReadVisiblity(read, doc);
     }

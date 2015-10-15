@@ -22,19 +22,25 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.blur.doc.BlurPropertyParser.BlurProp;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class CreateCSDDescriptor {
 
   private static final String BLUR_VERSION = "|||BLUR-VERSION|||";
 
-  public static void main(String[] args) throws IOException {
+  public static void main(String[] args) throws IOException, JSONException {
     BlurPropertyParser parser = new BlurPropertyParser();
     Map<String, List<BlurProp>> props = parser.parse();
+    removeProps("blur.shard.block.cache.total.size", props);
     Map<String, StringBuffer> map = new HashMap<String, StringBuffer>();
 
     JsonPropertyFormatter formatter = new JsonPropertyFormatter();
@@ -62,6 +68,27 @@ public class CreateCSDDescriptor {
     String blurVersion = args[2];
 
     replaceValuesInFile(source, dest, map, formatVersion(blurVersion));
+
+    FileInputStream input = new FileInputStream(dest);
+    try {
+      // Check if the csd is a good json file.
+      new JSONObject(IOUtils.toString(input));
+    } finally {
+      input.close();
+    }
+  }
+
+  private static void removeProps(String propertyName, Map<String, List<BlurProp>> props) {
+    for (Entry<String, List<BlurProp>> e : props.entrySet()) {
+      List<BlurProp> value = e.getValue();
+      List<BlurProp> remove = new ArrayList<BlurProp>();
+      for (BlurProp blurProp : value) {
+        if (propertyName.equals(blurProp.getName())) {
+          remove.add(blurProp);
+        }
+      }
+      value.removeAll(remove);
+    }
   }
 
   public static String formatVersion(String blurVersion) {

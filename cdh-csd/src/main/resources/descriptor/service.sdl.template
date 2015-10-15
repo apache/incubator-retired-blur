@@ -72,7 +72,7 @@
             "BLUR_DEFAULT_TABLE_PATH": "/user/${user}/${blur_cluster_name}/tables",
             "BLUR_COMMAND_PATH":"/user/${user}/${blur_cluster_name}/commands",
             "BLUR_CLUSTER_NAME":"${blur_cluster_name}",
-            "BLUR_CONTROLLER_JVM_OPTIONS":"${blur_controller_jvm_options}"
+            "BLUR_CONTROLLER_JVM_OPTIONS":"-Xmx${blur_controller_jvm_heap} -Xms${blur_controller_jvm_heap} ${blur_controller_jvm_options}"
         }
       },
       "externalLink" : {
@@ -102,9 +102,23 @@
           "configName":"blur.controller.jvm.options",
 	      "required":"false",
 	      "type":"string",
-	      "default":"-Xmx1024m -Djava.net.preferIPv4Stack=true",
+	      "default":"-Djava.net.preferIPv4Stack=true",
 	      "configurableInWizard":true
       },
+    {
+      "name" : "blur_controller_jvm_heap",
+      "configName": "blur.controller.jvm.heap",
+      "label" : "Total Java Heap Sizes of Controller in Bytes",
+      "description" : "Memory available to the Controller. Passed to Java -Xmx. Measured in bytes.",
+      "required" : "true",
+      "type" : "memory",
+      "unit" : "bytes",
+      "min" : 2147483648,
+      "default" : 8589934592,
+      "scaleFactor" : 1.3,
+      "autoConfigShare" : 100
+    }
+      ,
 |||Controller-Server-Properties|||
                  ]
    },
@@ -120,7 +134,7 @@
             "BLUR_DEFAULT_TABLE_PATH": "/user/${user}/${blur_cluster_name}/tables",
             "BLUR_COMMAND_PATH":"/user/${user}/${blur_cluster_name}/commands",
             "BLUR_CLUSTER_NAME":"${blur_cluster_name}",
-            "BLUR_SHARD_JVM_OPTIONS":"${blur_shard_jvm_options}"
+            "BLUR_SHARD_JVM_OPTIONS":"-Xmx${blur_shard_jvm_heap} -Xms${blur_shard_jvm_heap} ${blur_shard_jvm_options}"
           }
 	    },
       "additionalExternalLinks" : [{
@@ -150,9 +164,37 @@
 	          "configName":"blur.shard.jvm.options",
 		      "required":"false",
 		      "type":"string",
-		      "default":"-Xmx1024m -Djava.net.preferIPv4Stack=true -XX:MaxDirectMemorySize=256m",
+		      "default":"-Djava.net.preferIPv4Stack=true",
 		      "configurableInWizard":true
 	      	},
+    {
+      "name" : "blur_shard_jvm_heap",
+      "configName": "blur.shard.jvm.heap",
+      "label" : "Total Java Heap Sizes of Shard in Bytes",
+      "description" : "Memory available to the Shard. Passed to Java -Xmx. Measured in bytes.",
+      "required" : "true",
+      "type" : "memory",
+      "unit" : "bytes",
+      "min" : 2147483648,
+      "default" : 8589934592,
+      "scaleFactor" : 1.3,
+      "autoConfigShare" : 100
+    },
+    
+    {
+      "name" : "blur_shard_block_cache_total_size",
+      "configName": "blur.shard.block.cache.total.size",
+      "label" : "Total Block Cache Sizes of Shard in Bytes",
+      "description" : "Block Cache Memory available to the Shard. Measured in bytes.",
+      "required" : "true",
+      "type" : "memory",
+      "unit" : "bytes",
+      "min" : 134217728,
+      "default" : 8589934592,
+      "scaleFactor" : 1.3,
+      "autoConfigShare" : 100
+    },
+	      	
 |||Shard-Server-Properties|||
                  ]
 	}   

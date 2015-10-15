@@ -197,7 +197,7 @@ under the License.
 		<commons-codec.version>1.9</commons-codec.version>
 		<spark.version>1.5.0</spark.version>
 		<hadoop.version>2.6.0</hadoop.version>
-		<projectVersion>h.${hadoop.version}.b.${project.parent.version}</projectVersion>
+		<projectVersion>${project.parent.version}.${hadoop.version}</projectVersion>
 	</properties>
 
 	<dependencyManagement>

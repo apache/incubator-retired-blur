@@ -26,7 +26,7 @@
 	<description>The Blur hive module contains a storage handler and serde for Hive so that it can integrate with Hive.</description>
 
 	<properties>
-		<projectHiveVersion>h.${hadoop.version}.hv.${hive.version}.b.${project.parent.version}</projectHiveVersion>
+		<projectHiveVersion>${project.parent.version}.${hadoop.version}.${hive.version}</projectHiveVersion>
 	</properties>
 
 	<dependencies>

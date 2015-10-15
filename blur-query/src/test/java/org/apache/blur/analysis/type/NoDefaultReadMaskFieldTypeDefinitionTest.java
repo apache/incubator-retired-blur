@@ -14,23 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.lucene.security.index;
+package org.apache.blur.analysis.type;
 
-import java.util.Collection;
-import java.util.Set;
+public class NoDefaultReadMaskFieldTypeDefinitionTest extends BaseReadMaskFieldTypeDefinitionTest {
 
-public abstract class AccessControlFactory {
-  
-  public abstract String getDiscoverFieldName();
-  
-  public abstract String getReadFieldName();
-  
-  public abstract String getReadMaskFieldName();
-  
-  public abstract String getReadMaskFieldSuffix();
+  @Override
+  protected String getDefaultReadMask() {
+    return null;
+  }
 
-  public abstract AccessControlWriter getWriter();
-
-  public abstract AccessControlReader getReader(Collection<String> readAuthorizations, Collection<String> discoverAuthorizations,
-      Set<String> discoverableFields, String defaultReadMaskMessage);
 }

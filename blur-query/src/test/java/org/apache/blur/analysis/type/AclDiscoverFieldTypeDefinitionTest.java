@@ -185,7 +185,7 @@ public class AclDiscoverFieldTypeDefinitionTest {
     discoverableFields.add("recordid");
     discoverableFields.add("family");
     IndexSearcher searcher = new SecureIndexSearcher(reader, getAccessControlFactory(), readAuthorizations,
-        discoverAuthorizations, discoverableFields);
+        discoverAuthorizations, discoverableFields, null);
 
     TopDocs topDocs = searcher.search(query, 10);
     assertEquals(expected, topDocs.totalHits);

@@ -63,7 +63,7 @@ import org.apache.lucene.util.Version;
 import org.junit.Before;
 import org.junit.Test;
 
-public class ReadMaskFieldTypeDefinitionTest {
+public abstract class BaseReadMaskFieldTypeDefinitionTest {
   private static final String FAM = "fam";
   private static final String FAM2 = "fam2";
 
@@ -197,8 +197,9 @@ public class ReadMaskFieldTypeDefinitionTest {
 
     Collection<String> discoverAuthorizations = null;
     Set<String> discoverableFields = null;
+    String defaultReadMask = getDefaultReadMask();
     IndexSearcher searcher = new SecureIndexSearcher(reader, getAccessControlFactory(), readAuthorizations,
-        discoverAuthorizations, discoverableFields);
+        discoverAuthorizations, discoverableFields, defaultReadMask);
 
     checkTerms(searcher, "fam.string2");
 
@@ -214,12 +215,18 @@ public class ReadMaskFieldTypeDefinitionTest {
         assertEquals("READ_MASK", s);
       } else if (recordId.equals("5678")) {
         String s = document.get("fam.string");
-        assertNull(s);
+        if (defaultReadMask == null) {
+          assertNull(s);
+        } else {
+          assertEquals(defaultReadMask, s);
+        }
       }
     }
 
     reader.close();
   }
+
+  protected abstract String getDefaultReadMask();
 
   private void checkTerms(IndexSearcher searcher, String fieldName) throws IOException {
     IndexReader reader = searcher.getIndexReader();

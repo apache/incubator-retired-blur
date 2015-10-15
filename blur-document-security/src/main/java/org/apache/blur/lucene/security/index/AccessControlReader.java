@@ -56,4 +56,6 @@ public abstract class AccessControlReader implements Cloneable {
 
   public abstract Filter getQueryFilter() throws IOException;
 
+  public abstract String getDefaultReadMaskMessage();
+
 }

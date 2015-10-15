@@ -43,6 +43,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH = "blur.shard.queue.max.inmemory.length";
 
   public static final String BLUR_RECORD_SECURITY = "blur.record.security";
+  public static final String BLUR_RECORD_SECURITY_DEFAULT_READMASK_MESSAGE = "blur.record.security.default.readmask.message";
   public static final String ACL_DISCOVER = "acl-discover";
   public static final String ACL_READ = "acl-read";
 

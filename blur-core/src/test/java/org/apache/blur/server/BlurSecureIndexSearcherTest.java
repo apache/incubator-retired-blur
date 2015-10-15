@@ -61,7 +61,7 @@ public class BlurSecureIndexSearcherTest {
     Collection<String> discoverAuthorizations = new ArrayList<String>();
     Set<String> discoverableFields = new HashSet<String>(Arrays.asList("rowid"));
     BlurSecureIndexSearcher blurSecureIndexSearcher = new BlurSecureIndexSearcher(r, null, accessControlFactory,
-        readAuthorizations, discoverAuthorizations, discoverableFields);
+        readAuthorizations, discoverAuthorizations, discoverableFields, null);
     Query wrapFilter;
     Query query = new TermQuery(new Term("a", "b"));
     Filter filter = new Filter() {
@@ -97,7 +97,7 @@ public class BlurSecureIndexSearcherTest {
     Collection<String> discoverAuthorizations = new ArrayList<String>();
     Set<String> discoverableFields = new HashSet<String>(Arrays.asList("rowid"));
     BlurSecureIndexSearcher blurSecureIndexSearcher = new BlurSecureIndexSearcher(r, null, accessControlFactory,
-        readAuthorizations, discoverAuthorizations, discoverableFields);
+        readAuthorizations, discoverAuthorizations, discoverableFields, null);
     Query wrapFilter;
     Query query = new TermQuery(new Term("a", "b"));
     Filter filter = new Filter() {

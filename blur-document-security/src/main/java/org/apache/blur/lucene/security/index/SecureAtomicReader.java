@@ -59,10 +59,10 @@ public class SecureAtomicReader extends FilterAtomicReader {
   private final AtomicReader _original;
 
   public static SecureAtomicReader create(AccessControlFactory accessControlFactory, AtomicReader in,
-      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields)
-      throws IOException {
+      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields,
+      String defaultReadMaskMessage) throws IOException {
     AccessControlReader accessControlReader = accessControlFactory.getReader(readAuthorizations,
-        discoverAuthorizations, discoverableFields);
+        discoverAuthorizations, discoverableFields, defaultReadMaskMessage);
     return new SecureAtomicReader(in, accessControlReader);
   }
 
@@ -114,7 +114,7 @@ public class SecureAtomicReader extends FilterAtomicReader {
   @Override
   public void document(int docID, final StoredFieldVisitor visitor) throws IOException {
     if (_accessControl.hasAccess(ReadType.DOCUMENT_FETCH_READ, docID)) {
-      GetReadMaskFields getReadMaskFields = new GetReadMaskFields();
+      GetReadMaskFields getReadMaskFields = new GetReadMaskFields(_accessControl.getDefaultReadMaskMessage());
       in.document(docID, getReadMaskFields);
       Map<String, String> readMaskFields = getReadMaskFields.getReadMaskFields();
       if (readMaskFields.isEmpty()) {
@@ -243,8 +243,13 @@ public class SecureAtomicReader extends FilterAtomicReader {
 
   private static class GetReadMaskFields extends StoredFieldVisitor {
 
-    private Map<String, String> _fieldsAndMessages = new HashMap<String, String>();
-    private Splitter splitter = Splitter.on('|');
+    private final Map<String, String> _fieldsAndMessages = new HashMap<String, String>();
+    private final Splitter splitter = Splitter.on('|');
+    private final String _defaultReadMask;
+
+    GetReadMaskFields(String defaultReadMask) {
+      _defaultReadMask = defaultReadMask == null ? "" : defaultReadMask;
+    }
 
     @Override
     public Status needsField(FieldInfo fieldInfo) throws IOException {
@@ -271,7 +276,7 @@ public class SecureAtomicReader extends FilterAtomicReader {
       if (message != null) {
         _fieldsAndMessages.put(field, message);
       } else {
-        _fieldsAndMessages.put(field, "");
+        _fieldsAndMessages.put(field, _defaultReadMask);
       }
     }
 

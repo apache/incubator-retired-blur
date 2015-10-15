@@ -246,8 +246,8 @@ public abstract class SecureAtomicReaderTestBase {
     // }
     // }
 
-    assertEquals(0, getTermCount(fields, "termmask")); //read mask
-    assertEquals(0, getTermCount(fields, "shouldnotsee")); //discover
+    assertEquals(0, getTermCount(fields, "termmask")); // read mask
+    assertEquals(0, getTermCount(fields, "shouldnotsee")); // discover
     assertEquals(1, getTermCount(fields, "test"));
 
     secureReader.close();
@@ -311,13 +311,13 @@ public abstract class SecureAtomicReaderTestBase {
   private SecureIndexSearcher getSecureIndexSearcher() throws IOException {
     DirectoryReader reader = createReader();
     return new SecureIndexSearcher(reader, getAccessControlFactory(), Arrays.asList("r1"), Arrays.asList("d1"),
-        discoverableFields);
+        discoverableFields, null);
   }
 
   private SecureAtomicReader getSecureReader() throws IOException {
     AtomicReader baseReader = createAtomicReader();
     AccessControlReader accessControlReader = getAccessControlFactory().getReader(readAuthorizations,
-        discoverAuthorizations, discoverableFields);
+        discoverAuthorizations, discoverableFields, null);
     return new SecureAtomicReader(baseReader, accessControlReader);
   }
 

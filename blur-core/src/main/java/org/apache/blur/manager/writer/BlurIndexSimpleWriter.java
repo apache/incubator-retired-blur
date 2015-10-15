@@ -19,6 +19,7 @@ package org.apache.blur.manager.writer;
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 import static org.apache.blur.utils.BlurConstants.ACL_DISCOVER;
 import static org.apache.blur.utils.BlurConstants.ACL_READ;
+import static org.apache.blur.utils.BlurConstants.BLUR_RECORD_SECURITY_DEFAULT_READMASK_MESSAGE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WRITER_SORT_FACTOR;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WRITER_SORT_MEMORY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH;
@@ -144,6 +145,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final Timer _bulkIndexingTimer;
   private final TimerTask _watchForIdleBulkWriters;
   private final ThriftCache _thriftCache;
+  private final String _defaultReadMaskMessage;
 
   private Thread _optimizeThread;
   private Thread _writerOpener;
@@ -154,6 +156,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       Timer bulkIndexingTimer, ThriftCache thriftCache) throws IOException {
     super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexImporterTimer, bulkIndexingTimer,
         thriftCache);
+
     _thriftCache = thriftCache;
     _commaSplitter = Splitter.on(',');
     _bulkWriters = new ConcurrentHashMap<String, BlurIndexSimpleWriter.BulkEntry>();
@@ -166,6 +169,8 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _fieldManager = _tableContext.getFieldManager();
     _discoverableFields = _tableContext.getDiscoverableFields();
     _accessControlFactory = _tableContext.getAccessControlFactory();
+    _defaultReadMaskMessage = getDefaultReadMaskMessage(_tableContext);
+
     TableDescriptor descriptor = _tableContext.getDescriptor();
     Map<String, String> tableProperties = descriptor.getTableProperties();
     if (tableProperties != null) {
@@ -233,6 +238,15 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     };
     long delay = TimeUnit.SECONDS.toMillis(30);
     _bulkIndexingTimer.schedule(_watchForIdleBulkWriters, delay, delay);
+  }
+
+  private String getDefaultReadMaskMessage(TableContext tableContext) {
+    BlurConfiguration blurConfiguration = tableContext.getBlurConfiguration();
+    String message = blurConfiguration.get(BLUR_RECORD_SECURITY_DEFAULT_READMASK_MESSAGE);
+    if (message == null || message.trim().isEmpty()) {
+      return null;
+    }
+    return message.trim();
   }
 
   private DirectoryReader checkForMemoryLeaks(DirectoryReader wrappped, String message) {
@@ -338,7 +352,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     Collection<String> readAuthorizations = toCollection(readStr);
     Collection<String> discoverAuthorizations = toCollection(discoverStr);
     return new IndexSearcherCloseableSecureBase(indexReader, _searchThreadPool, _accessControlFactory,
-        readAuthorizations, discoverAuthorizations, _discoverableFields) {
+        readAuthorizations, discoverAuthorizations, _discoverableFields, _defaultReadMaskMessage) {
       private boolean _closed;
 
       @Override

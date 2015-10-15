@@ -178,7 +178,7 @@ public class AclReadFieldTypeDefinitionTest {
     Collection<String> discoverAuthorizations = null;
     Set<String> discoverableFields = null;
     IndexSearcher searcher = new SecureIndexSearcher(reader, getAccessControlFactory(), readAuthorizations,
-        discoverAuthorizations, discoverableFields);
+        discoverAuthorizations, discoverableFields, null);
 
     TopDocs topDocs = searcher.search(query, 10);
     assertEquals(expected, topDocs.totalHits);

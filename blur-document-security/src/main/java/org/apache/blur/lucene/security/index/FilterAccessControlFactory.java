@@ -88,8 +88,8 @@ public class FilterAccessControlFactory extends AccessControlFactory {
 
   @Override
   public AccessControlReader getReader(Collection<String> readAuthorizations,
-      Collection<String> discoverAuthorizations, Set<String> discoverableFields) {
-    return new FilterAccessControlReader(readAuthorizations, discoverAuthorizations, discoverableFields);
+      Collection<String> discoverAuthorizations, Set<String> discoverableFields, String defaultReadMaskMessage) {
+    return new FilterAccessControlReader(readAuthorizations, discoverAuthorizations, discoverableFields, defaultReadMaskMessage);
   }
 
   public static class FilterAccessControlReader extends AccessControlReader {
@@ -98,6 +98,7 @@ public class FilterAccessControlFactory extends AccessControlFactory {
     private final DocumentVisibilityFilter _readDocumentVisibilityFilter;
     private final DocumentVisibilityFilter _discoverDocumentVisibilityFilter;
     private final DocumentVisibilityFilterCacheStrategy _filterCacheStrategy;
+    private final String _defaultReadMaskMessage;
 
     private Bits _readBits;
     private Bits _discoverBits;
@@ -108,13 +109,14 @@ public class FilterAccessControlFactory extends AccessControlFactory {
     private boolean _isClone;
 
     public FilterAccessControlReader(Collection<String> readAuthorizations, Collection<String> discoverAuthorizations,
-        Set<String> discoverableFields) {
+        Set<String> discoverableFields, String defaultReadMaskMessage) {
       this(readAuthorizations, discoverAuthorizations, discoverableFields,
-          BitSetDocumentVisibilityFilterCacheStrategy.INSTANCE);
+          BitSetDocumentVisibilityFilterCacheStrategy.INSTANCE, defaultReadMaskMessage);
     }
 
     public FilterAccessControlReader(Collection<String> readAuthorizations, Collection<String> discoverAuthorizations,
-        Set<String> discoverableFields, DocumentVisibilityFilterCacheStrategy filterCacheStrategy) {
+        Set<String> discoverableFields, DocumentVisibilityFilterCacheStrategy filterCacheStrategy, String defaultReadMaskMessage) {
+      _defaultReadMaskMessage=defaultReadMaskMessage;
       _filterCacheStrategy = filterCacheStrategy;
 
       if (readAuthorizations == null || readAuthorizations.isEmpty()) {
@@ -300,6 +302,11 @@ public class FilterAccessControlFactory extends AccessControlFactory {
           };
         }
       };
+    }
+
+    @Override
+    public String getDefaultReadMaskMessage() {
+      return _defaultReadMaskMessage;
     }
   }
 

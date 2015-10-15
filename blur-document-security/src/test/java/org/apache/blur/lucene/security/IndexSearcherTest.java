@@ -129,7 +129,7 @@ public class IndexSearcherTest {
     List<AtomicReaderContext> leaves = reader.leaves();
     assertEquals(leafCount, leaves.size());
     SecureIndexSearcher searcher = new SecureIndexSearcher(reader, getAccessControlFactory(), readAuthorizations,
-        discoverAuthorizations, toSet(discoverableFields));
+        discoverAuthorizations, toSet(discoverableFields), null);
     TopDocs topDocs;
     Query query = new MatchAllDocsQuery();
     {

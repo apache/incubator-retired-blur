@@ -27,10 +27,10 @@ import org.apache.lucene.index.FilterDirectoryReader;
 public class SecureDirectoryReader extends FilterDirectoryReader {
 
   public static SecureDirectoryReader create(AccessControlFactory accessControlFactory, DirectoryReader in,
-      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields)
+      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields, String defaultReadMaskMessage)
       throws IOException {
     AccessControlReader accessControlReader = accessControlFactory.getReader(readAuthorizations,
-        discoverAuthorizations, discoverableFields);
+        discoverAuthorizations, discoverableFields, defaultReadMaskMessage);
     return new SecureDirectoryReader(in, accessControlReader);
   }
 

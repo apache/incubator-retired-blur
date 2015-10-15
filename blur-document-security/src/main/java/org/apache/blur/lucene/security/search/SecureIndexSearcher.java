@@ -50,36 +50,42 @@ public class SecureIndexSearcher extends IndexSearcher {
   private final Collection<String> _readAuthorizations;
   private final Collection<String> _discoverAuthorizations;
   private final Set<String> _discoverableFields;
+  private final String _defaultReadMaskMessage;
   private AccessControlReader _accessControlReader;
 
   public SecureIndexSearcher(IndexReader r, AccessControlFactory accessControlFactory,
-      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields)
-      throws IOException {
-    this(r, null, accessControlFactory, readAuthorizations, discoverAuthorizations, discoverableFields);
+      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields,
+      String defaultReadMaskMessage) throws IOException {
+    this(r, null, accessControlFactory, readAuthorizations, discoverAuthorizations, discoverableFields,
+        defaultReadMaskMessage);
   }
 
   public SecureIndexSearcher(IndexReader r, ExecutorService executor, AccessControlFactory accessControlFactory,
-      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields)
-      throws IOException {
-    this(r.getContext(), executor, accessControlFactory, readAuthorizations, discoverAuthorizations, discoverableFields);
+      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields,
+      String defaultReadMaskMessage) throws IOException {
+    this(r.getContext(), executor, accessControlFactory, readAuthorizations, discoverAuthorizations,
+        discoverableFields, defaultReadMaskMessage);
   }
 
   public SecureIndexSearcher(IndexReaderContext context, AccessControlFactory accessControlFactory,
-      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields)
-      throws IOException {
-    this(context, null, accessControlFactory, readAuthorizations, discoverAuthorizations, discoverableFields);
+      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields,
+      String defaultReadMaskMessage) throws IOException {
+    this(context, null, accessControlFactory, readAuthorizations, discoverAuthorizations, discoverableFields,
+        defaultReadMaskMessage);
   }
 
   public SecureIndexSearcher(IndexReaderContext context, ExecutorService executor,
       AccessControlFactory accessControlFactory, Collection<String> readAuthorizations,
-      Collection<String> discoverAuthorizations, Set<String> discoverableFields) throws IOException {
+      Collection<String> discoverAuthorizations, Set<String> discoverableFields, String defaultReadMaskMessage)
+      throws IOException {
     super(context, executor);
     _accessControlFactory = accessControlFactory;
     _readAuthorizations = readAuthorizations;
     _discoverAuthorizations = discoverAuthorizations;
     _discoverableFields = discoverableFields;
+    _defaultReadMaskMessage = defaultReadMaskMessage;
     _accessControlReader = _accessControlFactory.getReader(readAuthorizations, discoverAuthorizations,
-        discoverableFields);
+        discoverableFields, _defaultReadMaskMessage);
     _secureIndexReader = getSecureIndexReader(context);
     List<AtomicReaderContext> leaves = _secureIndexReader.leaves();
     _leaveMap = new HashMap<Object, AtomicReaderContext>();
@@ -94,17 +100,17 @@ public class SecureIndexSearcher extends IndexSearcher {
 
   protected AtomicReader getSecureAtomicReader(AtomicReader atomicReader) throws IOException {
     return SecureAtomicReader.create(_accessControlFactory, atomicReader, _readAuthorizations, _discoverAuthorizations,
-        _discoverableFields);
+        _discoverableFields, _defaultReadMaskMessage);
   }
 
   protected IndexReader getSecureIndexReader(IndexReaderContext context) throws IOException {
     IndexReader indexReader = context.reader();
     if (indexReader instanceof DirectoryReader) {
       return SecureDirectoryReader.create(_accessControlFactory, (DirectoryReader) indexReader, _readAuthorizations,
-          _discoverAuthorizations, _discoverableFields);
+          _discoverAuthorizations, _discoverableFields, _defaultReadMaskMessage);
     } else if (indexReader instanceof AtomicReader) {
       return SecureAtomicReader.create(_accessControlFactory, (AtomicReader) indexReader, _readAuthorizations,
-          _discoverAuthorizations, _discoverableFields);
+          _discoverAuthorizations, _discoverableFields, _defaultReadMaskMessage);
     }
     throw new IOException("IndexReader type [" + indexReader.getClass() + "] not supported.");
   }

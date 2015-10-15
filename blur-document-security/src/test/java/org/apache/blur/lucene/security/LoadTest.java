@@ -67,10 +67,10 @@ public class LoadTest {
     IndexSearcher searcher = new IndexSearcher(reader);
 
     SecureIndexSearcher secureIndexSearcher1 = new SecureIndexSearcher(reader, accessControlFactory,
-        Arrays.asList("nothing"), Arrays.asList("nothing"), new HashSet<String>());
+        Arrays.asList("nothing"), Arrays.asList("nothing"), new HashSet<String>(), null);
 
     SecureIndexSearcher secureIndexSearcher2 = new SecureIndexSearcher(reader, accessControlFactory,
-        Arrays.asList("r1"), Arrays.asList("nothing"), new HashSet<String>());
+        Arrays.asList("r1"), Arrays.asList("nothing"), new HashSet<String>(), null);
 
     MatchAllDocsQuery query = new MatchAllDocsQuery();
     for (int p = 0; p < 10; p++) {

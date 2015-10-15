@@ -37,9 +37,10 @@ import org.apache.lucene.search.Query;
 public class BlurSecureIndexSearcher extends SecureIndexSearcher {
 
   public BlurSecureIndexSearcher(IndexReader r, ExecutorService executor, AccessControlFactory accessControlFactory,
-      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields)
-      throws IOException {
-    super(r, executor, accessControlFactory, readAuthorizations, discoverAuthorizations, discoverableFields);
+      Collection<String> readAuthorizations, Collection<String> discoverAuthorizations, Set<String> discoverableFields,
+      String defaultReadMaskMessage) throws IOException {
+    super(r, executor, accessControlFactory, readAuthorizations, discoverAuthorizations, discoverableFields,
+        defaultReadMaskMessage);
   }
 
   /**

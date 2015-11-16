@@ -85,7 +85,7 @@ public abstract class BaseReadMaskFieldTypeDefinitionTest {
       record.addToColumns(new Column("string", "value"));
       record.addToColumns(new Column("read", "a&b"));
       record.addToColumns(new Column("string2", "value should not read"));
-      record.addToColumns(new Column("mask", "fam.string2|READ_MASK"));
+      record.addToColumns(new Column("mask", "string2|READ_MASK"));
       List<Field> fields = _fieldManager.getFields("1234", record);
       fields.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
       docs.add(debug(fields));
@@ -96,7 +96,7 @@ public abstract class BaseReadMaskFieldTypeDefinitionTest {
       record.setRecordId("5678");
       record.addToColumns(new Column("string", "value"));
       record.addToColumns(new Column("read", "a&c"));
-      record.addToColumns(new Column("mask", "fam.string"));
+      record.addToColumns(new Column("mask", "string"));
       docs.add(debug(_fieldManager.getFields("1234", record)));
     }
 

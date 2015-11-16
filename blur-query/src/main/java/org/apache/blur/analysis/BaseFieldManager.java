@@ -166,7 +166,7 @@ public abstract class BaseFieldManager extends FieldManager {
       protected Analyzer getWrappedAnalyzer(String fieldName) {
         FieldTypeDefinition fieldTypeDefinition;
         try {
-          fieldTypeDefinition = getFieldTypeDefinition(fieldName);
+          fieldTypeDefinition = getFieldTypeDefinition(getFieldNameRealNameIfReadMask(fieldName));
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
@@ -181,6 +181,13 @@ public abstract class BaseFieldManager extends FieldManager {
         return components;
       }
     };
+  }
+
+  protected String getFieldNameRealNameIfReadMask(String fieldName) {
+    if (fieldName.endsWith("$" + ReadMaskFieldTypeDefinition.INTERNAL_FIELDNAME)) {
+      return fieldName.substring(0, fieldName.lastIndexOf('$'));
+    }
+    return fieldName;
   }
 
   protected boolean isBuiltInField(String fieldName) {

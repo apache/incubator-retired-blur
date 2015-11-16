@@ -38,7 +38,7 @@ import org.apache.lucene.util.BytesRef;
 
 public class ReadMaskFieldTypeDefinition extends FieldTypeDefinition {
 
-  private static final String INTERNAL_FIELDNAME = "_readmask_";
+  public static final String INTERNAL_FIELDNAME = "_readmask_";
   private static final KeywordAnalyzer KEYWORD_ANALYZER = new KeywordAnalyzer();
   private static final String READ_MASK = "read-mask";
   private static final Collection<String> ALT_FIELD_NAMES;
@@ -73,13 +73,13 @@ public class ReadMaskFieldTypeDefinition extends FieldTypeDefinition {
     String name = getName(family, column.getName());
     List<Field> fields = new ArrayList<Field>();
     fields.add(new StoredField(name, column.getValue()));
-    fields.add(new StringField(INTERNAL_FIELDNAME, column.getValue(), Store.YES));
+    fields.add(new StringField(INTERNAL_FIELDNAME, family + "." + column.getValue(), Store.YES));
     return fields;
   }
 
   @Override
   public Iterable<? extends Field> getFieldsForSubColumn(String family, Column column, String subName) {
-    return makeIterable(new StringField(INTERNAL_FIELDNAME, column.getValue(), Store.YES));
+    return makeIterable(new StringField(INTERNAL_FIELDNAME, family + "." + column.getValue(), Store.YES));
   }
 
   @Override
@@ -92,7 +92,6 @@ public class ReadMaskFieldTypeDefinition extends FieldTypeDefinition {
     return Integer.MAX_VALUE;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public Iterable<? extends IndexableField> executePostProcessing(Iterable<? extends IndexableField> fields) {
     return FilterAccessControlWriter.processFieldMasks(fields);

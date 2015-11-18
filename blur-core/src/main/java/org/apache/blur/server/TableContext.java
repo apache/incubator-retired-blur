@@ -370,7 +370,7 @@ public class TableContext implements Cloneable {
   @SuppressWarnings("unchecked")
   public BlurIndex newInstanceBlurIndex(ShardContext shardContext, Directory dir, SharedMergeScheduler mergeScheduler,
       ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer, Timer bulkTimer,
-      ThriftCache thriftCache) throws IOException {
+      ThriftCache thriftCache, Timer indexWriterTimer, long maxWriterIdle) throws IOException {
 
     String className = _blurConfiguration.get(BLUR_SHARD_BLURINDEX_CLASS, BlurIndexSimpleWriter.class.getName());
 
@@ -383,7 +383,7 @@ public class TableContext implements Cloneable {
     Constructor<? extends BlurIndex> constructor = findConstructor(clazz);
     try {
       return constructor.newInstance(shardContext, dir, mergeScheduler, searchExecutor, indexCloser,
-          indexImporterTimer, bulkTimer, thriftCache);
+          indexImporterTimer, bulkTimer, thriftCache, indexWriterTimer, maxWriterIdle);
     } catch (InstantiationException e) {
       throw new IOException(e);
     } catch (IllegalAccessException e) {
@@ -398,7 +398,8 @@ public class TableContext implements Cloneable {
   private Constructor<? extends BlurIndex> findConstructor(Class<? extends BlurIndex> clazz) throws IOException {
     try {
       return clazz.getConstructor(new Class[] { ShardContext.class, Directory.class, SharedMergeScheduler.class,
-          ExecutorService.class, BlurIndexCloser.class, Timer.class, Timer.class, ThriftCache.class });
+          ExecutorService.class, BlurIndexCloser.class, Timer.class, Timer.class, ThriftCache.class, Timer.class,
+          Long.TYPE });
     } catch (NoSuchMethodException e) {
       throw new IOException(e);
     } catch (SecurityException e) {

@@ -29,16 +29,15 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.lucene.index.IndexReader;
 
-
 public class BlurIndexCloser implements Runnable, Closeable {
 
   private static final Log LOG = LogFactory.getLog(BlurIndexCloser.class);
   private static final long PAUSE_TIME = TimeUnit.SECONDS.toMillis(1);
-  private Thread daemon;
-  private Collection<IndexReader> readers = new LinkedBlockingQueue<IndexReader>();
-  private AtomicBoolean running = new AtomicBoolean();
-  private ExecutorService executorService;
-  
+  private final Thread daemon;
+  private final Collection<IndexReader> readers = new LinkedBlockingQueue<IndexReader>();
+  private final AtomicBoolean running = new AtomicBoolean();
+  private final ExecutorService executorService;
+
   public BlurIndexCloser() {
     running.set(true);
     daemon = new Thread(this);
@@ -47,6 +46,10 @@ public class BlurIndexCloser implements Runnable, Closeable {
     daemon.start();
     LOG.info("Init Complete");
     executorService = Executors.newThreadPool("Blur Index Closer Pool", 10);
+  }
+
+  public int getReadersToBeClosedCount() {
+    return readers.size();
   }
 
   public void close() {

@@ -122,11 +122,11 @@ public class IndexImporterTest {
     BufferStore.initNewBuffer(128, 128 * 128);
 
     _indexImporter = new IndexImporter(_timer, getBlurIndex(shardContext, _mainDirectory), shardContext,
-        TimeUnit.MINUTES, 10, null, _mainDirectory);
+        TimeUnit.MINUTES, 10, 10, null, _mainDirectory);
   }
 
   private BlurIndex getBlurIndex(ShardContext shardContext, final Directory mainDirectory) throws IOException {
-    return new BlurIndex(shardContext, mainDirectory, null, null, null, null, null, null) {
+    return new BlurIndex(shardContext, mainDirectory, null, null, null, null, null, null, null, 0) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {

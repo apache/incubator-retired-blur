@@ -84,4 +84,8 @@ public class IndexDeletionPolicyReader extends IndexDeletionPolicy {
     _gens.remove(gen);
   }
 
+  public int getReaderGenerationCount() {
+    return _gens.size();
+  }
+
 }

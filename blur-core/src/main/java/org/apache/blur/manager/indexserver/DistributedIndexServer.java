@@ -119,8 +119,10 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
   private final Timer _hdfsKeyValueTimer;
   private final Timer _indexImporterTimer;
   private final Timer _indexBulkTimer;
+  private final Timer _indexIdleWriterTimer;
   private final ThriftCache _thriftCache;
   private final SequentialReadControl _sequentialReadControl;
+  private final long _maxWriterIdle;
 
   public DistributedIndexServer(Configuration configuration, ZooKeeper zookeeper, ClusterStatus clusterStatus,
       BlurFilterCache filterCache, BlockCacheDirectoryFactory blockCacheDirectoryFactory,
@@ -128,8 +130,11 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       int shardOpenerThreadCount, int maxMergeThreads, int internalSearchThreads,
       int minimumNumberOfNodesBeforeExitingSafeMode, Timer hdfsKeyValueTimer, Timer indexImporterTimer,
       long smallMergeThreshold, Timer indexBulkTimer, ThriftCache thriftCache,
-      SequentialReadControl sequentialReadControl) throws KeeperException, InterruptedException {
+      SequentialReadControl sequentialReadControl, Timer indexIdleWriterTimer, long maxWriterIdle)
+      throws KeeperException, InterruptedException {
     super(clusterStatus, configuration, nodeName, cluster);
+    _indexIdleWriterTimer = indexIdleWriterTimer;
+    _maxWriterIdle = maxWriterIdle;
     _sequentialReadControl = sequentialReadControl;
     _indexImporterTimer = indexImporterTimer;
     _indexBulkTimer = indexBulkTimer;
@@ -522,7 +527,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
     }
 
     BlurIndex index = tableContext.newInstanceBlurIndex(shardContext, directory, _mergeScheduler, _searchExecutor,
-        _indexCloser, _indexImporterTimer, _indexBulkTimer, _thriftCache);
+        _indexCloser, _indexImporterTimer, _indexBulkTimer, _thriftCache, _indexIdleWriterTimer, _maxWriterIdle);
 
     if (_clusterStatus.isReadOnly(true, _cluster, table)) {
       index = new BlurIndexReadOnly(index);

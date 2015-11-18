@@ -375,7 +375,7 @@ public class ShardCommandManagerTest {
 
   protected BlurIndex getNullBlurIndex(String shard) throws IOException {
     ShardContext shardContext = ShardContext.create(getTableContextFactory().getTableContext("test"), shard);
-    return new BlurIndex(shardContext, null, null, null, null, null, null, null) {
+    return new BlurIndex(shardContext, null, null, null, null, null, null, null, null, 0) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {
@@ -410,16 +410,16 @@ public class ShardCommandManagerTest {
       @Override
       public IndexSearcherCloseable getIndexSearcher() throws IOException {
         IndexReader reader = getEmtpyReader();
-        return new IndexSearcherCloseableBase(reader,null) {
-          
+        return new IndexSearcherCloseableBase(reader, null) {
+
           @Override
           public Directory getDirectory() {
             throw new RuntimeException("Not implemented.");
           }
-          
+
           @Override
           public void close() throws IOException {
-            
+
           }
         };
       }

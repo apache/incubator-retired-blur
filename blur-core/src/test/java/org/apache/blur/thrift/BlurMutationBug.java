@@ -39,6 +39,12 @@ public class BlurMutationBug {
   private final String tableName;
   private final String[] rowIds;
 
+  public static void main(String[] args) throws TException {
+    Iface client = BlurClient.getClient("localhost:40010");
+    BlurMutationBug blurMutationBug = new BlurMutationBug(client, "testtable", 20);
+    blurMutationBug.runTest(5, TimeUnit.MINUTES);
+  }
+
   public BlurMutationBug(Iface client, String tableName, int totalIds) {
     this.client = client;
     this.tableName = tableName;

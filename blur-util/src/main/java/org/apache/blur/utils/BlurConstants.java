@@ -79,6 +79,7 @@ public class BlurConstants {
   public static final String BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT = "blur.shard.internal.search.thread.count";
   public static final String BLUR_SHARD_INDEX_WRITER_SORT_MEMORY = "blur.shard.index.writer.sort.memory";
   public static final String BLUR_SHARD_INDEX_WRITER_SORT_FACTOR = "blur.shard.index.writer.sort.factor";
+  public static final String BLUR_SHARD_INDEX_MAX_IDLE_TIME = "blur.shard.index.max.idle.time";
   public static final String BLUR_TABLE_DISABLE_FAST_DIR = "blur.table.disable.fast.dir";
   public static final String BLUR_BULK_UPDATE_WORKING_PATH = "blur.bulk.update.working.path";
   public static final String BLUR_BULK_UPDATE_WORKING_PATH_PERMISSION = "blur.bulk.update.working.path.permission";

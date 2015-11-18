@@ -40,6 +40,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DEEP_PAGING_CACHE_S
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FETCHCOUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_MAX_IDLE_TIME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_MERGE_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
@@ -218,12 +219,15 @@ public class ThriftBlurShardServer extends ThriftServer {
     final Timer hdfsKeyValueTimer = new Timer("HDFS KV Store", true);
     final Timer indexImporterTimer = new Timer("IndexImporter", true);
     final Timer indexBulkTimer = new Timer("BulkIndex", true);
+    final Timer indexIdleWriterTimer = new Timer("BlurIdleWriter", true);
     long smallMergeThreshold = configuration.getLong(BLUR_SHARD_SMALL_MERGE_THRESHOLD, 128 * 1000 * 1000);
+    long maxWriterIdle = configuration.getLong(BLUR_SHARD_INDEX_MAX_IDLE_TIME, 30000);
     SequentialReadControl sequentialReadControl = new SequentialReadControl(configuration);
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
         filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay,
         shardOpenerThreadCount, maxMergeThreads, internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode,
-        hdfsKeyValueTimer, indexImporterTimer, smallMergeThreshold, indexBulkTimer, thriftCache, sequentialReadControl);
+        hdfsKeyValueTimer, indexImporterTimer, smallMergeThreshold, indexBulkTimer, thriftCache, sequentialReadControl,
+        indexIdleWriterTimer, maxWriterIdle);
 
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 

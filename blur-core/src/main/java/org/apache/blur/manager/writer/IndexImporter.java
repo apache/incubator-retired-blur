@@ -85,15 +85,16 @@ public class IndexImporter extends TimerTask implements Closeable {
   private long _lastCleanup;
   private Runnable _testError;
 
-  public IndexImporter(Timer indexImporterTimer, BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit,
-      long refreshAmount, ThriftCache thriftCache, Directory dir) throws IOException {
+  public IndexImporter(Timer indexImporterTimer, BlurIndex blurIndex, ShardContext shardContext, TimeUnit timeUnit,
+      long refreshAmount, long initalWaitTime, ThriftCache thriftCache, Directory dir) throws IOException {
     _thriftCache = thriftCache;
     _blurIndex = blurIndex;
     _shardContext = shardContext;
     _directory = getHdfsDirectory(dir);
 
-    long period = refreshUnit.toMillis(refreshAmount);
-    indexImporterTimer.schedule(this, period, period);
+    long period = timeUnit.toMillis(refreshAmount);
+    long delay = timeUnit.toMillis(initalWaitTime);
+    indexImporterTimer.schedule(this, delay, period);
     _inindexImporterTimer = indexImporterTimer;
     _table = _shardContext.getTableContext().getTable();
     _shard = _shardContext.getShard();

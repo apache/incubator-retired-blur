@@ -43,7 +43,7 @@ public abstract class BlurIndex {
 
   public BlurIndex(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer, Timer bulkIndexingTimer,
-      ThriftCache thriftCache) throws IOException {
+      ThriftCache thriftCache, Timer indexWriterTimer, long maxWriterIdle) throws IOException {
     _shardContext = shardContext;
   }
 

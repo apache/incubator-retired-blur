@@ -30,6 +30,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.Executors;
@@ -78,13 +79,15 @@ public class BlurIndexSimpleWriterTest {
   private SharedMergeScheduler _mergeScheduler;
   private String uuid;
   private BlurIndexCloser _closer;
-  private Timer _timer;
+  private Timer _indexImporterTimer;
   private Timer _bulkTimer;
+  private Timer _idleWriterTimer;
 
   @Before
   public void setup() throws IOException {
-    _timer = new Timer("Index Importer", true);
+    _indexImporterTimer = new Timer("Index Importer", true);
     _bulkTimer = new Timer("Bulk Indexing", true);
+    _idleWriterTimer = new Timer("Idle Writer", true);
     TableContext.clear();
     _base = new File(TMPDIR, "blur-index-writer-test");
     rmr(_base);
@@ -124,17 +127,20 @@ public class BlurIndexSimpleWriterTest {
     BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsPath, "unit-test", BlurUtil.getPid());
     directory.setLockFactory(lockFactory);
 
-    // FSDirectory directory = FSDirectory.open(path);
-
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer, _timer,
-        _bulkTimer, null);
+    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer,
+        _indexImporterTimer, _bulkTimer, null, _idleWriterTimer, TimeUnit.SECONDS.toMillis(5));
   }
 
   @After
   public void tearDown() throws IOException {
-    _timer.cancel();
-    _timer.purge();
+    _indexImporterTimer.cancel();
+    _indexImporterTimer.purge();
+    _bulkTimer.cancel();
+    _bulkTimer.purge();
+    _idleWriterTimer.cancel();
+    _idleWriterTimer.purge();
+
     _writer.close();
     _mergeScheduler.close();
     _service.shutdownNow();
@@ -220,6 +226,9 @@ public class BlurIndexSimpleWriterTest {
       assertEquals(i + 1, reader.numDocs());
       searcher.close();
       total++;
+      int readersToBeClosedCount = _closer.getReadersToBeClosedCount();
+      int readerGenerationCount = _writer.getReaderGenerationCount();
+      assertEquals(1, (readerGenerationCount - readersToBeClosedCount));
     }
     Trace.tearDownTrace();
     long e = System.nanoTime();
@@ -319,6 +328,19 @@ public class BlurIndexSimpleWriterTest {
     runQueueTest(TOTAL_ROWS_FOR_TESTS, TOTAL_ROWS_FOR_TESTS);
     runQueueTest(TOTAL_ROWS_FOR_TESTS, TOTAL_ROWS_FOR_TESTS * 2);
     runQueueTest(TOTAL_ROWS_FOR_TESTS, TOTAL_ROWS_FOR_TESTS * 3);
+  }
+
+  @Test
+  public void testAutoCloseOfWriter() throws InterruptedException, IOException {
+    setupWriter(_configuration);
+    Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+    for (int i = 0; i < 10; i++) {
+      if (_writer.isWriterClosed()) {
+        return;
+      }
+      Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+    }
+    fail();
   }
 
   private void runQueueTest(final int mutatesToAdd, int numberOfValidDocs) throws IOException, InterruptedException {

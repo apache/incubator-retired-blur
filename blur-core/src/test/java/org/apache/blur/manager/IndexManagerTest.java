@@ -112,7 +112,7 @@ public class IndexManagerTest {
     base = new File(TMPDIR, "blur-index-manager-test");
     rm(base);
 
-    File file = new File(base, TABLE);
+    File file = new File(new File(base, TABLE), UUID.randomUUID().toString());
     file.mkdirs();
 
     IndexManagerTestReadInterceptor.interceptor = null;
@@ -124,7 +124,7 @@ public class IndexManagerTest {
     tableDescriptor.setShardCount(1);
     tableDescriptor.putToTableProperties(BlurConstants.BLUR_SHARD_READ_INTERCEPTOR,
         IndexManagerTestReadInterceptor.class.getName());
-    server = new LocalIndexServer(tableDescriptor, true);
+    server = new LocalIndexServer(tableDescriptor);
 
     BlurFilterCache filterCache = new DefaultBlurFilterCache(new BlurConfiguration());
     long statusCleanupTimerDelay = 1000;
@@ -230,8 +230,10 @@ public class IndexManagerTest {
 
   @After
   public void teardown() {
-    indexManager.close();
-    indexManager = null;
+    if (indexManager != null) {
+      indexManager.close();
+      indexManager = null;
+    }
     server = null;
   }
 

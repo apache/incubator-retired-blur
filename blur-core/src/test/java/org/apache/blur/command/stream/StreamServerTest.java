@@ -211,7 +211,7 @@ public class StreamServerTest implements Serializable {
     tableDescriptor.setTableUri("file:///tmp");
     TableContext tableContext = TableContext.create(tableDescriptor);
     ShardContext shardContext = ShardContext.create(tableContext, shard);
-    return new BlurIndex(shardContext, null, null, null, null, null, null, null) {
+    return new BlurIndex(shardContext, null, null, null, null, null, null, null, null, 0) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {

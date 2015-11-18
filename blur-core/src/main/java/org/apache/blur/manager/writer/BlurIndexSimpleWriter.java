@@ -44,6 +44,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -146,17 +147,21 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   private final TimerTask _watchForIdleBulkWriters;
   private final ThriftCache _thriftCache;
   private final String _defaultReadMaskMessage;
+  private final IndexImporter _indexImporter;
+  private final Timer _indexWriterTimer;
+  private final AtomicLong _lastWrite = new AtomicLong();
+  private final long _maxWriterIdle;
+  private final TimerTask _watchForIdleWriter;
 
-  private Thread _optimizeThread;
-  private Thread _writerOpener;
-  private IndexImporter _indexImporter;
+  private volatile Thread _optimizeThread;
 
   public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
       final ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer,
-      Timer bulkIndexingTimer, ThriftCache thriftCache) throws IOException {
+      Timer bulkIndexingTimer, ThriftCache thriftCache, Timer indexWriterTimer, long maxWriterIdle) throws IOException {
     super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexImporterTimer, bulkIndexingTimer,
-        thriftCache);
-
+        thriftCache, indexWriterTimer, maxWriterIdle);
+    _maxWriterIdle = maxWriterIdle;
+    _indexWriterTimer = indexWriterTimer;
     _thriftCache = thriftCache;
     _commaSplitter = Splitter.on(',');
     _bulkWriters = new ConcurrentHashMap<String, BlurIndexSimpleWriter.BulkEntry>();
@@ -215,7 +220,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     DirectoryReader directoryReader = checkForMemoryLeaks(wrappped, message);
     _indexReader.set(directoryReader);
 
-    openWriter();
+    _indexImporter = new IndexImporter(_indexImporterTimer, BlurIndexSimpleWriter.this, _shardContext,
+        TimeUnit.SECONDS, 10, 120, _thriftCache, _directory);
+
     _watchForIdleBulkWriters = new TimerTask() {
       @Override
       public void run() {
@@ -238,6 +245,17 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     };
     long delay = TimeUnit.SECONDS.toMillis(30);
     _bulkIndexingTimer.schedule(_watchForIdleBulkWriters, delay, delay);
+    _watchForIdleWriter = new TimerTask() {
+      @Override
+      public void run() {
+        closeWriter();
+      }
+    };
+    _indexWriterTimer.schedule(_watchForIdleWriter, _maxWriterIdle, _maxWriterIdle);
+  }
+
+  public int getReaderGenerationCount() {
+    return _policy.getReaderGenerationCount();
   }
 
   private String getDefaultReadMaskMessage(TableContext tableContext) {
@@ -268,50 +286,11 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     }
   }
 
-  private synchronized void openWriter() {
-    IOUtils.cleanup(LOG, _indexImporter);
-    BlurIndexWriter writer = _writer.get();
-    if (writer != null) {
-      try {
-        writer.close(false);
-      } catch (IOException e) {
-        LOG.error("Unknown error while trying to close the writer, [" + _shardContext.getTableContext().getTable()
-            + "] Shard [" + _shardContext.getShard() + "]", e);
-      }
-      _writer.set(null);
-    }
-    _writerOpener = getWriterOpener(_shardContext);
-    _writerOpener.start();
-  }
-
   private DirectoryReader wrap(DirectoryReader reader) throws IOException {
     if (_makeReaderExitable) {
       reader = new ExitableReader(reader);
     }
     return _policy.register(reader);
-  }
-
-  private Thread getWriterOpener(ShardContext shardContext) {
-    Thread thread = new Thread(new Runnable() {
-
-      @Override
-      public void run() {
-        try {
-          _writer.set(new BlurIndexWriter(_directory, _conf.clone()));
-          synchronized (_writer) {
-            _writer.notify();
-          }
-          _indexImporter = new IndexImporter(_indexImporterTimer, BlurIndexSimpleWriter.this, _shardContext,
-              TimeUnit.SECONDS, 10, _thriftCache, _directory);
-        } catch (IOException e) {
-          LOG.error("Unknown error on index writer open.", e);
-        }
-      }
-    });
-    thread.setName("Writer Opener for Table [" + shardContext.getTableContext().getTable() + "] Shard ["
-        + shardContext.getShard() + "]");
-    thread.setDaemon(true);
-    return thread;
   }
 
   @Override
@@ -413,26 +392,11 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     };
   }
 
-  private void waitUntilNotNull(AtomicReference<?> ref) {
-    while (true) {
-      Object object = ref.get();
-      if (object != null) {
-        return;
-      }
-      synchronized (ref) {
-        try {
-          ref.wait(TimeUnit.SECONDS.toMillis(1));
-        } catch (InterruptedException e) {
-          return;
-        }
-      }
-    }
-  }
-
   @Override
   public void close() throws IOException {
     _isClosed.set(true);
-    IOUtils.cleanup(LOG, makeCloseable(_watchForIdleBulkWriters), _indexImporter, _mutationQueueProcessor,
+    IOUtils.cleanup(LOG, makeCloseable(_bulkIndexingTimer, _watchForIdleBulkWriters),
+        makeCloseable(_indexWriterTimer, _watchForIdleWriter), _indexImporter, _mutationQueueProcessor,
         makeCloseable(_writer.get()), _indexReader.get(), _directory);
   }
 
@@ -447,12 +411,12 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     };
   }
 
-  private Closeable makeCloseable(final TimerTask timerTask) {
+  private Closeable makeCloseable(Timer timer, final TimerTask timerTask) {
     return new Closeable() {
       @Override
       public void close() throws IOException {
         timerTask.cancel();
-        _bulkIndexingTimer.purge();
+        timer.purge();
       }
     };
   }
@@ -467,6 +431,48 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     return _isClosed;
   }
 
+  private void closeWriter() {
+    if (_lastWrite.get() + _maxWriterIdle < System.currentTimeMillis()) {
+      synchronized (_writer) {
+        _writeLock.lock();
+        try {
+          BlurIndexWriter writer = _writer.getAndSet(null);
+          if (writer != null) {
+            LOG.info("Closing idle writer for table [{0}] shard [{1}]", _tableContext.getTable(),
+                _shardContext.getShard());
+            IOUtils.cleanup(LOG, writer);
+          }
+        } finally {
+          _writeLock.unlock();
+        }
+      }
+    }
+  }
+
+  protected boolean isWriterClosed() {
+    synchronized (_writer) {
+      return _writer.get() == null;
+    }
+  }
+
+  private BlurIndexWriter getBlurIndexWriter() throws IOException {
+    synchronized (_writer) {
+      BlurIndexWriter blurIndexWriter = _writer.get();
+      if (blurIndexWriter == null) {
+        blurIndexWriter = new BlurIndexWriter(_directory, _conf.clone());
+        _writer.set(blurIndexWriter);
+        _lastWrite.set(System.currentTimeMillis());
+      }
+      return blurIndexWriter;
+    }
+  }
+
+  private void resetBlurIndexWriter() {
+    synchronized (_writer) {
+      _writer.set(null);
+    }
+  }
+
   @Override
   public synchronized void optimize(final int numberOfSegmentsPerShard) throws IOException {
     final String table = _tableContext.getTable();
@@ -479,8 +485,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       @Override
       public void run() {
         try {
-          waitUntilNotNull(_writer);
-          BlurIndexWriter writer = _writer.get();
+          BlurIndexWriter writer = getBlurIndexWriter();
           writer.forceMerge(numberOfSegmentsPerShard, true);
           _writeLock.lock();
           try {
@@ -525,8 +530,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   private void commit() throws IOException {
     Tracer trace1 = Trace.trace("prepareCommit");
-    waitUntilNotNull(_writer);
-    BlurIndexWriter writer = _writer.get();
+    BlurIndexWriter writer = getBlurIndexWriter();
     writer.prepareCommit();
     trace1.done();
 
@@ -549,17 +553,9 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       } finally {
         _indexRefreshWriteLock.unlock();
       }
-      _indexCloser.close(getRealReader(currentReader));
+      _indexCloser.close(currentReader);
     }
     trace3.done();
-  }
-
-  private IndexReader getRealReader(DirectoryReader reader) {
-    if (reader instanceof ExitableReader) {
-      ExitableReader exitableReader = (ExitableReader) reader;
-      return getRealReader(exitableReader.getIn());
-    }
-    return reader;
   }
 
   @Override
@@ -568,8 +564,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _writeLock.lock();
     _writesWaiting.decrementAndGet();
     indexAction.setWritesWaiting(_writesWaiting);
-    waitUntilNotNull(_writer);
-    BlurIndexWriter writer = _writer.get();
+    BlurIndexWriter writer = getBlurIndexWriter();
     IndexSearcherCloseable indexSearcher = null;
     try {
       indexSearcher = getIndexSearcher(false);
@@ -580,7 +575,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     } catch (Exception e) {
       indexAction.doPreRollback(writer);
       writer.rollback();
-      openWriter();
+      resetBlurIndexWriter();
       indexAction.doPostRollback(writer);
       throw new IOException("Unknown error during mutation", e);
     } finally {
@@ -590,6 +585,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
       if (indexSearcher != null) {
         indexSearcher.close();
       }
+      _lastWrite.set(System.currentTimeMillis());
       _writeLock.unlock();
     }
   }

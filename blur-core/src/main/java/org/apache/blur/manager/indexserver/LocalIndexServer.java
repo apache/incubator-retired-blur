@@ -16,8 +16,6 @@ package org.apache.blur.manager.indexserver;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +29,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -40,19 +39,18 @@ import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.store.hdfs.BlurLockFactory;
+import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ShardUtil;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.MMapDirectory;
-import org.apache.lucene.store.RAMDirectory;
 
 import com.google.common.io.Closer;
 
@@ -65,24 +63,22 @@ public class LocalIndexServer extends AbstractIndexServer {
   private final ExecutorService _searchExecutor;
   private final TableContext _tableContext;
   private final Closer _closer;
-  private final boolean _ramDir;
   private final BlurIndexCloser _indexCloser;
   private final Timer _timer;
   private final Timer _bulkTimer;
+  private final Timer _closerTimer;
+  private final long _maxWriterIdle;
 
   public LocalIndexServer(TableDescriptor tableDescriptor) throws IOException {
-    this(tableDescriptor, false);
-  }
-
-  public LocalIndexServer(TableDescriptor tableDescriptor, boolean ramDir) throws IOException {
     _timer = new Timer("Index Importer", true);
     _bulkTimer = new Timer("Bulk Indexing", true);
+    _closerTimer = new Timer("Writer Closer", true);
+    _maxWriterIdle = TimeUnit.SECONDS.toMillis(30);
     _closer = Closer.create();
     _tableContext = TableContext.create(tableDescriptor);
     _mergeScheduler = _closer.register(new SharedMergeScheduler(3, 128 * 1000 * 1000));
     _searchExecutor = Executors.newCachedThreadPool();
     _closer.register(new CloseableExecutorService(_searchExecutor));
-    _ramDir = ramDir;
     _indexCloser = _closer.register(new BlurIndexCloser());
     _closer.register(new Closeable() {
       @Override
@@ -141,23 +137,17 @@ public class LocalIndexServer extends AbstractIndexServer {
   private Map<String, BlurIndex> openFromDisk() throws IOException {
     String table = _tableContext.getDescriptor().getName();
     Path tablePath = _tableContext.getTablePath();
-    File tableFile = new File(tablePath.toUri());
-    if (tableFile.isDirectory()) {
+    Configuration configuration = _tableContext.getConfiguration();
+    FileSystem fileSystem = tablePath.getFileSystem(configuration);
+    if (fileSystem.isDirectory(tablePath)) {
       Map<String, BlurIndex> shards = new ConcurrentHashMap<String, BlurIndex>();
       int shardCount = _tableContext.getDescriptor().getShardCount();
       for (int i = 0; i < shardCount; i++) {
-        Directory directory;
         String shardName = ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, i);
-        if (_ramDir) {
-          directory = new RAMDirectory();
-        } else {
-          File file = new File(tableFile, shardName);
-          file.mkdirs();
-          directory = new MMapDirectory(file);
-        }
-        if (!DirectoryReader.indexExists(directory)) {
-          new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer())).close();
-        }
+        Path hdfsPath = new Path(tablePath, shardName);
+        Directory directory = new HdfsDirectory(configuration, hdfsPath);
+        BlurLockFactory lockFactory = new BlurLockFactory(configuration, hdfsPath, getNodeName(), BlurUtil.getPid());
+        directory.setLockFactory(lockFactory);
         shards.put(shardName, openIndex(table, shardName, directory));
       }
       return shards;
@@ -168,7 +158,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     ShardContext shardContext = ShardContext.create(_tableContext, shard);
     BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(shardContext, dir, _mergeScheduler, _searchExecutor,
-        _indexCloser, _timer, _bulkTimer, null);
+        _indexCloser, _timer, _bulkTimer, null, _closerTimer, _maxWriterIdle);
     return index;
   }
 

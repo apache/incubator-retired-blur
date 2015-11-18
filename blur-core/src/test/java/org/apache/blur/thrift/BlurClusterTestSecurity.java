@@ -104,6 +104,56 @@ public class BlurClusterTestSecurity extends BlurClusterTestBase {
   }
 
   @Test
+  public void testSecurityMaskReadRowQuery() throws BlurException, TException, IOException {
+    String tableName = "testSecurity2";
+    createTable(tableName);
+    Iface client = getClient();
+    {
+      ColumnDefinition columnDefinition = new ColumnDefinition(TEST, "read_mask", null, false, "read-mask", null, false);
+      columnDefinition.setMultiValueField(false);
+      client.addColumnDefinition(tableName, columnDefinition);
+    }
+    List<RowMutation> batch = new ArrayList<RowMutation>();
+    for (int i = 0; i < 50; i++) {
+      List<RecordMutation> recordMutations = getRecordMutations("a");
+      RowMutation mutation1 = new RowMutation(tableName, getRowId(), RowMutationType.REPLACE_ROW, recordMutations);
+      addReadMaskColumn(mutation1);
+      batch.add(mutation1);
+    }
+    client.mutateBatch(batch);
+
+    Map<String, String> attributes = new HashMap<String, String>();
+    attributes.put(BlurConstants.ACL_READ, "a");
+    User user = new User("testuser", attributes);
+    UserContext.setUser(user);
+
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.setSelector(new Selector());
+    Query query = new Query();
+    query.setRowQuery(true);
+    query.setQuery("*");
+    blurQuery.setQuery(query);
+    blurQuery.setFetch(100);
+
+    BlurResults results = client.query(tableName, blurQuery);
+    for (BlurResult result : results.getResults()) {
+      System.out.println(result.getFetchResult().getRowResult().getRow());
+    }
+    List<String> terms = client.terms(tableName, TEST, "test2", "", (short) 1000);
+    assertTrue(terms.isEmpty());
+    UserContext.reset();
+  }
+
+  private void addReadMaskColumn(RowMutation mutation) {
+    List<RecordMutation> recordMutations = mutation.getRecordMutations();
+    for (RecordMutation recordMutation : recordMutations) {
+      Record record = recordMutation.getRecord();
+      record.addToColumns(new Column("test2", UUID.randomUUID().toString()));
+      record.addToColumns(new Column("read_mask", "test2|MASK"));
+    }
+  }
+
+  @Test
   public void testSecurityReadOnlyRowQuery() throws BlurException, TException, IOException {
     String tableName = "testSecurity1";
     createTable(tableName);

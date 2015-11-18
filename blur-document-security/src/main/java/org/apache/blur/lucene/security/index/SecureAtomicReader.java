@@ -513,6 +513,36 @@ public class SecureAtomicReader extends FilterAtomicReader {
     }
 
     @Override
+    public SeekStatus seekCeil(BytesRef text, boolean useCache) throws IOException {
+      SeekStatus seekStatus = in.seekCeil(text, useCache);
+      if (seekStatus == SeekStatus.END) {
+        return SeekStatus.END;
+      }
+      BytesRef term = in.term();
+      BytesRef bytesRef = new BytesRef();
+      bytesRef.copyBytes(term);
+      // If not in mask then return.
+      if (!_maskTermsEnum.seekExact(bytesRef, true)) {
+        return seekStatus;
+      } else {
+        if (checkDocs()) {
+          return seekStatus;
+        }
+        // check if any docs for given term are not present in mask terms enums
+        if (next() == null) {
+          return SeekStatus.END;
+        } else {
+          return SeekStatus.NOT_FOUND;
+        }
+      }
+    }
+
+    @Override
+    public void seekExact(long ord) throws IOException {
+      throw new IOException("Not supported");
+    }
+
+    @Override
     public BytesRef next() throws IOException {
       while (true) {
         BytesRef ref = in.next();
@@ -550,6 +580,23 @@ public class SecureAtomicReader extends FilterAtomicReader {
       super(in);
       _accessControlReader = accessControlReader;
       _maxDoc = maxDoc;
+    }
+
+    @Override
+    public SeekStatus seekCeil(BytesRef text, boolean useCache) throws IOException {
+      SeekStatus seekStatus = in.seekCeil(text, useCache);
+      if (seekStatus == SeekStatus.END) {
+        return SeekStatus.END;
+      }
+      BytesRef term = in.term();
+      if (hasAccess(term)) {
+        return seekStatus;
+      }
+      if (next() == null) {
+        return SeekStatus.END;
+      } else {
+        return SeekStatus.NOT_FOUND;
+      }
     }
 
     @Override

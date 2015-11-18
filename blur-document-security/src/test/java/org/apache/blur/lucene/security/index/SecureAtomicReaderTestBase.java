@@ -50,6 +50,7 @@ import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.SortedSetDocValues;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.index.TermsEnum.SeekStatus;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
@@ -232,25 +233,30 @@ public abstract class SecureAtomicReaderTestBase {
   public void testTermWalk() throws IOException, ParseException {
     SecureAtomicReader secureReader = getSecureReader();
     Fields fields = secureReader.fields();
-    // for (String field : fields) {
-    // Terms terms = fields.terms(field);
-    // TermsEnum termsEnum = terms.iterator(null);
-    // BytesRef ref;
-    // while ((ref = termsEnum.next()) != null) {
-    // System.out.println(field + " " + ref.utf8ToString());
-    // DocsEnum docsEnum = termsEnum.docs(null, null);
-    // int doc;
-    // while ((doc = docsEnum.nextDoc()) != DocIdSetIterator.NO_MORE_DOCS) {
-    // System.out.println(field + " " + ref.utf8ToString() + " " + doc);
-    // }
-    // }
-    // }
 
     assertEquals(0, getTermCount(fields, "termmask")); // read mask
+    assertEquals(0, getTermWithSeekCount(fields, "termmask")); // read mask
     assertEquals(0, getTermCount(fields, "shouldnotsee")); // discover
+    assertEquals(0, getTermWithSeekCount(fields, "shouldnotsee")); // discover
     assertEquals(1, getTermCount(fields, "test"));
+    assertEquals(1, getTermWithSeekCount(fields, "test"));
 
     secureReader.close();
+  }
+
+  private int getTermWithSeekCount(Fields fields, String field) throws IOException {
+    Terms terms = fields.terms(field);
+    TermsEnum termsEnum = terms.iterator(null);
+    SeekStatus seekStatus = termsEnum.seekCeil(new BytesRef(""));
+    if (seekStatus == SeekStatus.END) {
+      return 0;
+    }
+    System.out.println(termsEnum.term().utf8ToString());
+    int count = 1;
+    while (termsEnum.next() != null) {
+      count++;
+    }
+    return count;
   }
 
   private int getTermCount(Fields fields, String field) throws IOException {

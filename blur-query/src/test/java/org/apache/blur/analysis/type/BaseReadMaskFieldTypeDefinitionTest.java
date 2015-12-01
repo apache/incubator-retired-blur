@@ -49,6 +49,7 @@ import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.SortedDocValues;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
@@ -159,7 +160,7 @@ public abstract class BaseReadMaskFieldTypeDefinitionTest {
   }
 
   private void setupFieldManager(BaseFieldManager fieldManager) throws IOException {
-    fieldManager.addColumnDefinition(FAM, "string", null, false, "string", false, false, null);
+    fieldManager.addColumnDefinition(FAM, "string", null, false, "string", true, false, null);
     fieldManager.addColumnDefinition(FAM, "string2", null, false, "string", false, false, null);
     fieldManager.addColumnDefinition(FAM, "read", null, false, "acl-read", false, false, null);
     fieldManager.addColumnDefinition(FAM, "mask", null, false, "read-mask", false, false, null);
@@ -221,6 +222,16 @@ public abstract class BaseReadMaskFieldTypeDefinitionTest {
           assertEquals(defaultReadMask, s);
         }
       }
+
+      String s = document.get("fam.string");
+      if (s == null || s.equals(getDefaultReadMask())) {
+        AtomicReader atomicReader = searcher.getIndexReader().leaves().get(0).reader();
+        SortedDocValues sortedDocValues = atomicReader.getSortedDocValues("fam.string");
+        BytesRef result = new BytesRef();
+        sortedDocValues.get(doc, result);
+        assertEquals(0, result.length);
+      }
+
     }
 
     reader.close();

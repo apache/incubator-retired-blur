@@ -47,7 +47,6 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.IndexableFieldType;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Filter;
@@ -339,9 +338,7 @@ public class FilterAccessControlFactory extends AccessControlFactory {
       }
       List<IndexableField> result = new ArrayList<IndexableField>();
       for (IndexableField field : fields) {
-        IndexableFieldType fieldType = field.fieldType();
-        // If field is to be indexed and is to be read masked.
-        if (fieldsToMask.contains(field.name()) && fieldType.indexed()) {
+        if (fieldsToMask.contains(field.name())) {
           // If field is a doc value, then don't bother indexing.
           if (!isDocValue(field)) {
             if (isStoredField(field)) {
@@ -382,10 +379,7 @@ public class FilterAccessControlFactory extends AccessControlFactory {
     }
 
     private static boolean isStoredField(IndexableField field) {
-      if (field instanceof StoredField) {
-        return true;
-      }
-      return false;
+      return !field.fieldType().indexed();
     }
 
     private static IndexableField createMaskField(IndexableField field) {

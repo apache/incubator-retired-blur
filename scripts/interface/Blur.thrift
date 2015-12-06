@@ -926,6 +926,16 @@ struct CommandDescriptor {
   6:string version
 }
 
+struct CommandTarget {
+  1:set<string> tables,
+  2:set<string> shards
+}
+
+struct CommandRequest {
+  1:string name,
+  2:CommandTarget target
+}
+
 /**
  * The Blur service API.  This API is the same for both controller servers as well as 
  * shards servers.  Each of the methods are documented.
@@ -971,6 +981,11 @@ service Blur {
    * current connection.
    */
   oneway void refresh()
+
+  /**
+   * Executes command.
+   */
+  oneway void executeCommand(1:CommandRequest commandRequest)
 
   //Table Commands
 

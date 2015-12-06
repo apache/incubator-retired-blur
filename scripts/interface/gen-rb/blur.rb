@@ -116,6 +116,13 @@ module Blur
       def send_refresh()
         send_message('refresh', Refresh_args)
       end
+      def executeCommand(commandRequest)
+        send_executeCommand(commandRequest)
+      end
+
+      def send_executeCommand(commandRequest)
+        send_message('executeCommand', ExecuteCommand_args, :commandRequest => commandRequest)
+      end
       def createTable(tableDescriptor)
         send_createTable(tableDescriptor)
         recv_createTable()
@@ -987,6 +994,12 @@ module Blur
         return
       end
 
+      def process_executeCommand(seqid, iprot, oprot)
+        args = read_args(iprot, ExecuteCommand_args)
+        @handler.executeCommand(args.commandRequest)
+        return
+      end
+
       def process_createTable(seqid, iprot, oprot)
         args = read_args(iprot, CreateTable_args)
         result = CreateTable_result.new()
@@ -1779,6 +1792,37 @@ module Blur
     end
 
     class Refresh_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+
+      FIELDS = {
+
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ExecuteCommand_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      COMMANDREQUEST = 1
+
+      FIELDS = {
+        COMMANDREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'commandRequest', :class => ::Blur::CommandRequest}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ExecuteCommand_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
 
       FIELDS = {

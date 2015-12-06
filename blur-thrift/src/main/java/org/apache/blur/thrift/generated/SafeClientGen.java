@@ -202,6 +202,13 @@ public org.apache.blur.thrift.generated.Response execute(java.lang.String arg0, 
 }
 
 @Override
+public void executeCommand(org.apache.blur.thrift.generated.CommandRequest arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.executeCommand(arg0);
+  } finally {_lock.unlock();}
+}
+
+@Override
 public org.apache.blur.thrift.generated.FetchResult fetchRow(java.lang.String arg0, org.apache.blur.thrift.generated.Selector arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     return super.fetchRow(arg0, arg1);
@@ -898,6 +905,13 @@ public void send_enqueueMutateBatch(java.util.List arg0) throws org.apache.blur.
 public void send_execute(java.lang.String arg0, org.apache.blur.thrift.generated.Arguments arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
     super.send_execute(arg0, arg1);
+  } finally {_lock.unlock();}
+}
+
+@Override
+public void send_executeCommand(org.apache.blur.thrift.generated.CommandRequest arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+  _lock.errorFailLock(); try {
+    super.send_executeCommand(arg0);
   } finally {_lock.unlock();}
 }
 

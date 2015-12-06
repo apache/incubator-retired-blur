@@ -1261,4 +1261,40 @@ module Blur
     ::Thrift::Struct.generate_accessors self
   end
 
+  class CommandTarget
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TABLES = 1
+    SHARDS = 2
+
+    FIELDS = {
+      TABLES => {:type => ::Thrift::Types::SET, :name => 'tables', :element => {:type => ::Thrift::Types::STRING}},
+      SHARDS => {:type => ::Thrift::Types::SET, :name => 'shards', :element => {:type => ::Thrift::Types::STRING}}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class CommandRequest
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    NAME = 1
+    TARGET = 2
+
+    FIELDS = {
+      NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+      TARGET => {:type => ::Thrift::Types::STRUCT, :name => 'target', :class => ::Blur::CommandTarget}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
 end

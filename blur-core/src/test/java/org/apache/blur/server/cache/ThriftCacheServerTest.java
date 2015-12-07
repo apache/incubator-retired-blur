@@ -40,6 +40,7 @@ import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.CommandDescriptor;
+import org.apache.blur.thrift.generated.CommandRequest;
 import org.apache.blur.thrift.generated.CommandStatus;
 import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.FetchResult;
@@ -523,6 +524,11 @@ public class ThriftCacheServerTest {
 
       @Override
       public void loadIndex(String table, List<String> externalIndexPaths) throws BlurException, TException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public void executeCommand(CommandRequest commandRequest) throws TException {
         throw new RuntimeException("Not implemented.");
       }
 

@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -50,7 +51,9 @@ import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.TableContextFactory;
+import org.apache.blur.server.command.ServerCommand;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.BlurException;
@@ -58,6 +61,7 @@ import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.CommandDescriptor;
+import org.apache.blur.thrift.generated.CommandRequest;
 import org.apache.blur.thrift.generated.CommandStatus;
 import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.FetchResult;
@@ -773,6 +777,38 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public void loadData(String table, String location) throws BlurException, TException {
     throw new RuntimeException("Shard servers do not support this call.");
+  }
+
+  @Override
+  public void executeCommand(CommandRequest commandRequest) throws TException {
+    ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
+    TProtocol input = shardServerContext.getInput();
+    TProtocol output = shardServerContext.getOutput();
+    ServerCommand command = getServerCommand(commandRequest);
+    try {
+      command.request(input, output);
+    } catch (Exception e) {
+      if (e instanceof TException) {
+        throw (TException) e;
+      }
+      throw new RuntimeException(e);
+    }
+  }
+
+  private ServerCommand getServerCommand(CommandRequest commandRequest) {
+    return new ServerCommand() {
+      @Override
+      public void request(TProtocol input, TProtocol output) throws Exception {
+        output.writeBool(true);
+        long count = input.readI64();
+        // long count = 1000;
+        Random random = new Random();
+        for (long l = 0; l < count; l++) {
+          output.writeByte((byte) random.nextInt());
+        }
+        output.getTransport().flush();
+      }
+    };
   }
 
 }

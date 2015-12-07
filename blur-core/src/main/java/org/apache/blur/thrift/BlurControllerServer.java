@@ -91,6 +91,7 @@ import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.CommandDescriptor;
+import org.apache.blur.thrift.generated.CommandRequest;
 import org.apache.blur.thrift.generated.CommandStatus;
 import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.ErrorType;
@@ -1872,5 +1873,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }
       throw new BException("Unknown error while trying to validate indexes for table [{0}]", e, table);
     }
+  }
+
+  @Override
+  public void executeCommand(CommandRequest commandRequest) throws TException {
+    throw new RuntimeException("Not supported.");
   }
 }

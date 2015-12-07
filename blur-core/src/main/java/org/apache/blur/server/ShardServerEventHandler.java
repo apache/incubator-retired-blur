@@ -86,7 +86,7 @@ public class ShardServerEventHandler implements TServerEventHandler {
     }
     _connectionMeter.mark();
     _connections.incrementAndGet();
-    return new ShardServerContext(localSocketAddress, remoteSocketAddress);
+    return new ShardServerContext(localSocketAddress, remoteSocketAddress, input, output);
   }
 
   @Override

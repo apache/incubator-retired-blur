@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
 
 /**
@@ -40,9 +41,13 @@ public class ShardServerContext extends BlurServerContext implements ServerConte
 
   private final static Map<Thread, ShardServerContext> _threadsToContext = new ConcurrentHashMap<Thread, ShardServerContext>();
   private final Map<String, IndexSearcherCloseable> _indexSearcherMap = new ConcurrentHashMap<String, IndexSearcherCloseable>();
+  private final TProtocol _input;
+  private final TProtocol _output;
 
-  public ShardServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress) {
+  public ShardServerContext(SocketAddress localSocketAddress, SocketAddress remoteSocketAddress, TProtocol input, TProtocol output) {
     super(localSocketAddress, remoteSocketAddress);
+    _input = input;
+    _output = output;
   }
 
   /**
@@ -143,6 +148,14 @@ public class ShardServerContext extends BlurServerContext implements ServerConte
 
   private String getKey(String table, String shard) {
     return table + "/" + shard;
+  }
+
+  public TProtocol getInput() {
+    return _input;
+  }
+
+  public TProtocol getOutput() {
+    return _output;
   }
 
 }

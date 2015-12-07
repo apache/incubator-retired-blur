@@ -85,7 +85,7 @@ public class ShardCommandManager extends BaseCommandManager {
   private ShardServerContext getShardServerContext() {
     ShardServerContext shardServerContext = ShardServerContext.getShardServerContext();
     if (shardServerContext == null) {
-      shardServerContext = new ShardServerContext(null, null);
+      shardServerContext = new ShardServerContext(null, null, null, null);
     }
     return shardServerContext;
   }
@@ -229,7 +229,8 @@ public class ShardCommandManager extends BaseCommandManager {
     private final TableContextFactory _tableContextFactory;
     private final String _table;
 
-    public ShardIndexContext(TableContextFactory tableContextFactory, String table, Shard shard, IndexSearcherCloseable searcher) {
+    public ShardIndexContext(TableContextFactory tableContextFactory, String table, Shard shard,
+        IndexSearcherCloseable searcher) {
       _tableContextFactory = tableContextFactory;
       _table = table;
       _shard = shard;

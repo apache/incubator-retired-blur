@@ -100,8 +100,12 @@ public class ClientPool {
     master.schedule(new TimerTask() {
       @Override
       public void run() {
-        for (Entry<Connection, BlockingQueue<Client>> e : _connMap.entrySet()) {
-          testConnections(e.getKey(), e.getValue());
+        try {
+          for (Entry<Connection, BlockingQueue<Client>> e : _connMap.entrySet()) {
+            testConnections(e.getKey(), e.getValue());
+          }
+        } catch (Throwable t) {
+          LOG.error("Unknown error while trying to clean up connections.", t);
         }
       }
     }, getClientPoolCleanFrequency(), getClientPoolCleanFrequency());

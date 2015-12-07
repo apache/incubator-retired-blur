@@ -226,6 +226,14 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _watchForIdleBulkWriters = new TimerTask() {
       @Override
       public void run() {
+        try {
+          watchForIdleBulkWriters();
+        } catch (Throwable t) {
+          LOG.error("Unknown error.", t);
+        }
+      }
+
+      private void watchForIdleBulkWriters() {
         for (BulkEntry bulkEntry : _bulkWriters.values()) {
           bulkEntry._lock.lock();
           try {
@@ -248,7 +256,11 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _watchForIdleWriter = new TimerTask() {
       @Override
       public void run() {
-        closeWriter();
+        try {
+          closeWriter();
+        } catch (Throwable t) {
+          LOG.error("Unknown error while trying to close idle writer.", t);
+        }
       }
     };
     _indexWriterTimer.schedule(_watchForIdleWriter, _maxWriterIdle, _maxWriterIdle);

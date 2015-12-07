@@ -68,7 +68,11 @@ public class MemoryLeakDetector {
     _timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        dump();
+        try {
+          dump();
+        } catch (Throwable t) {
+          LOG.error("Unknown error.", t);
+        }
       }
     }, TimeUnit.SECONDS.toMillis(10), TimeUnit.SECONDS.toMillis(10));
   }

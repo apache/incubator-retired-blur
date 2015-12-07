@@ -133,20 +133,24 @@ public abstract class BaseCommandManager implements Closeable {
     return new TimerTask() {
       @Override
       public void run() {
-        Set<Entry<Long, ResponseFuture<?>>> entrySet = runningMap.entrySet();
-        for (Entry<Long, ResponseFuture<?>> e : entrySet) {
-          Long instanceExecutionId = e.getKey();
-          ResponseFuture<?> responseFuture = e.getValue();
-          if (!responseFuture.isRunning() && responseFuture.hasExpired()) {
-            Command<?> commandExecuting = responseFuture.getCommandExecuting();
-            String commandExecutionId = null;
-            if (commandExecuting != null) {
-              commandExecutionId = commandExecuting.getCommandExecutionId();
+        try {
+          Set<Entry<Long, ResponseFuture<?>>> entrySet = runningMap.entrySet();
+          for (Entry<Long, ResponseFuture<?>> e : entrySet) {
+            Long instanceExecutionId = e.getKey();
+            ResponseFuture<?> responseFuture = e.getValue();
+            if (!responseFuture.isRunning() && responseFuture.hasExpired()) {
+              Command<?> commandExecuting = responseFuture.getCommandExecuting();
+              String commandExecutionId = null;
+              if (commandExecuting != null) {
+                commandExecutionId = commandExecuting.getCommandExecutionId();
+              }
+              LOG.info("Removing old execution instance id [{0}] with command execution id of [{1}]",
+                  instanceExecutionId, commandExecutionId);
+              runningMap.remove(instanceExecutionId);
             }
-            LOG.info("Removing old execution instance id [{0}] with command execution id of [{1}]",
-                instanceExecutionId, commandExecutionId);
-            runningMap.remove(instanceExecutionId);
           }
+        } catch (Throwable t) {
+          LOG.error("Unknown error.", t);
         }
       }
     };
@@ -187,7 +191,7 @@ public abstract class BaseCommandManager implements Closeable {
     Path path = new Path(_commandPath);
     FileSystem fileSystem = path.getFileSystem(_configuration);
     int changeCount = 0;
-    if(fileSystem.exists(path)) {
+    if (fileSystem.exists(path)) {
       FileStatus[] listStatus = fileSystem.listStatus(path);
       for (FileStatus fileStatus : listStatus) {
         BigInteger contentsCheck = checkContents(fileStatus, fileSystem);

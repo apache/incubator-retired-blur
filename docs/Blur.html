@@ -105,8 +105,7 @@ limitations under the License.
 <li><a href="#Struct_CommandStatus">CommandStatus</a></li>
 <li><a href="#Struct_ArgumentDescriptor">ArgumentDescriptor</a></li>
 <li><a href="#Struct_CommandDescriptor">CommandDescriptor</a></li>
-<li><a href="#Struct_CommandTarget">CommandTarget</a></li>
-<li><a href="#Struct_CommandRequest">CommandRequest</a></li>
+<li><a href="#Struct_ShardOperationRequest">ShardOperationRequest</a></li>
 </ul>
 </li>
 <li><a href="#Svc_Blur">Service</a>
@@ -119,7 +118,7 @@ limitations under the License.
 <li><a href="#Fn_Blur_commandStatus">&nbsp;&nbsp;commandStatus</a></li>
 <li><a href="#Fn_Blur_commandCancel">&nbsp;&nbsp;commandCancel</a></li>
 <li><a href="#Fn_Blur_refresh">&nbsp;&nbsp;refresh</a></li>
-<li><a href="#Fn_Blur_executeCommand">&nbsp;&nbsp;executeCommand</a></li>
+<li><a href="#Fn_Blur_executeShardOperation">&nbsp;&nbsp;executeShardOperation</a></li>
 <li><a href="#Fn_Blur_createTable">&nbsp;&nbsp;createTable</a></li>
 <li><a href="#Fn_Blur_enableTable">&nbsp;&nbsp;enableTable</a></li>
 <li><a href="#Fn_Blur_disableTable">&nbsp;&nbsp;disableTable</a></li>
@@ -743,14 +742,11 @@ be family dot column, "family.column".
 <tr><td>4</td><td>optionalArguments</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ArgumentDescriptor">ArgumentDescriptor</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>5</td><td>returnType</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>6</td><td>version</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></p></section><section><div class="page-header"><h3 id="Struct_CommandTarget">Struct: CommandTarget</h3></div><p class="lead">
-<table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>tables</td><td><code>set&lt;<code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>shards</td><td><code>set&lt;<code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></p></section><section><div class="page-header"><h3 id="Struct_CommandRequest">Struct: CommandRequest</h3></div><p class="lead">
+</table><br/></p></section><section><div class="page-header"><h3 id="Struct_ShardOperationRequest">Struct: ShardOperationRequest</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>name</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>target</td><td><code><a href="Blur.html#Struct_CommandTarget">CommandTarget</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>table</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>shard</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 </table><br/></p></section><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
 The Blur service API.  This API is the same for both controller servers as well as
@@ -788,9 +784,9 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 <pre><code>void</code> refresh()
 </pre>Releases and refreshes the read snapshots of the indexes in the session for the
 current connection.
-<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_executeCommand">Function: Blur.executeCommand</h4></div><p class="lead">
-<pre><code>void</code> executeCommand(<code><a href="Blur.html#Struct_CommandRequest">CommandRequest</a></code> commandRequest)
-</pre>Executes command.
+<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_executeShardOperation">Function: Blur.executeShardOperation</h4></div><p class="lead">
+<pre><code>void</code> executeShardOperation(<code><a href="Blur.html#Struct_ShardOperationRequest">ShardOperationRequest</a></code> shardOperationRequest)
+</pre>Executes a shard operation which allows for bidirectional communication.
 <br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_createTable">Function: Blur.createTable</h4></div><p class="lead">
 <pre><code>void</code> createTable(<code><a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a></code> tableDescriptor)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>

@@ -5112,150 +5112,33 @@ sub write {
   return $xfer;
 }
 
-package Blur::CommandTarget;
+package Blur::ShardOperationRequest;
 use base qw(Class::Accessor);
-Blur::CommandTarget->mk_accessors( qw( tables shards ) );
-
-sub new {
-  my $classname = shift;
-  my $self      = {};
-  my $vals      = shift || {};
-  $self->{tables} = undef;
-  $self->{shards} = undef;
-  if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{tables}) {
-      $self->{tables} = $vals->{tables};
-    }
-    if (defined $vals->{shards}) {
-      $self->{shards} = $vals->{shards};
-    }
-  }
-  return bless ($self, $classname);
-}
-
-sub getName {
-  return 'CommandTarget';
-}
-
-sub read {
-  my ($self, $input) = @_;
-  my $xfer  = 0;
-  my $fname;
-  my $ftype = 0;
-  my $fid   = 0;
-  $xfer += $input->readStructBegin(\$fname);
-  while (1) 
-  {
-    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
-    if ($ftype == TType::STOP) {
-      last;
-    }
-    SWITCH: for($fid)
-    {
-      /^1$/ && do{      if ($ftype == TType::SET) {
-        {
-          my $_size258 = 0;
-          $self->{tables} = {};
-          my $_etype261 = 0;
-          $xfer += $input->readSetBegin(\$_etype261, \$_size258);
-          for (my $_i262 = 0; $_i262 < $_size258; ++$_i262)
-          {
-            my $elem263 = undef;
-            $xfer += $input->readString(\$elem263);
-            $self->{tables}->{$elem263} = 1;
-          }
-          $xfer += $input->readSetEnd();
-        }
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::SET) {
-        {
-          my $_size264 = 0;
-          $self->{shards} = {};
-          my $_etype267 = 0;
-          $xfer += $input->readSetBegin(\$_etype267, \$_size264);
-          for (my $_i268 = 0; $_i268 < $_size264; ++$_i268)
-          {
-            my $elem269 = undef;
-            $xfer += $input->readString(\$elem269);
-            $self->{shards}->{$elem269} = 1;
-          }
-          $xfer += $input->readSetEnd();
-        }
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-        $xfer += $input->skip($ftype);
-    }
-    $xfer += $input->readFieldEnd();
-  }
-  $xfer += $input->readStructEnd();
-  return $xfer;
-}
-
-sub write {
-  my ($self, $output) = @_;
-  my $xfer   = 0;
-  $xfer += $output->writeStructBegin('CommandTarget');
-  if (defined $self->{tables}) {
-    $xfer += $output->writeFieldBegin('tables', TType::SET, 1);
-    {
-      $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{tables}}));
-      {
-        foreach my $iter270 (@{$self->{tables}})
-        {
-          $xfer += $output->writeString($iter270);
-        }
-      }
-      $xfer += $output->writeSetEnd();
-    }
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{shards}) {
-    $xfer += $output->writeFieldBegin('shards', TType::SET, 2);
-    {
-      $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{shards}}));
-      {
-        foreach my $iter271 (@{$self->{shards}})
-        {
-          $xfer += $output->writeString($iter271);
-        }
-      }
-      $xfer += $output->writeSetEnd();
-    }
-    $xfer += $output->writeFieldEnd();
-  }
-  $xfer += $output->writeFieldStop();
-  $xfer += $output->writeStructEnd();
-  return $xfer;
-}
-
-package Blur::CommandRequest;
-use base qw(Class::Accessor);
-Blur::CommandRequest->mk_accessors( qw( name target ) );
+Blur::ShardOperationRequest->mk_accessors( qw( name table shard ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
   $self->{name} = undef;
-  $self->{target} = undef;
+  $self->{table} = undef;
+  $self->{shard} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{name}) {
       $self->{name} = $vals->{name};
     }
-    if (defined $vals->{target}) {
-      $self->{target} = $vals->{target};
+    if (defined $vals->{table}) {
+      $self->{table} = $vals->{table};
+    }
+    if (defined $vals->{shard}) {
+      $self->{shard} = $vals->{shard};
     }
   }
   return bless ($self, $classname);
 }
 
 sub getName {
-  return 'CommandRequest';
+  return 'ShardOperationRequest';
 }
 
 sub read {
@@ -5279,9 +5162,14 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^2$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{target} = new Blur::CommandTarget();
-        $xfer += $self->{target}->read($input);
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{table});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^3$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{shard});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -5297,15 +5185,20 @@ sub read {
 sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
-  $xfer += $output->writeStructBegin('CommandRequest');
+  $xfer += $output->writeStructBegin('ShardOperationRequest');
   if (defined $self->{name}) {
     $xfer += $output->writeFieldBegin('name', TType::STRING, 1);
     $xfer += $output->writeString($self->{name});
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{target}) {
-    $xfer += $output->writeFieldBegin('target', TType::STRUCT, 2);
-    $xfer += $self->{target}->write($output);
+  if (defined $self->{table}) {
+    $xfer += $output->writeFieldBegin('table', TType::STRING, 2);
+    $xfer += $output->writeString($self->{table});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{shard}) {
+    $xfer += $output->writeFieldBegin('shard', TType::STRING, 3);
+    $xfer += $output->writeString($self->{shard});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

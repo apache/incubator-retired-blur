@@ -49,25 +49,28 @@ import java.util.Arrays;
 //import org.slf4j.Logger;
 //import org.slf4j.LoggerFactory;
 
-public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<CommandRequest, CommandRequest._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("CommandRequest");
+public class ShardOperationRequest implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<ShardOperationRequest, ShardOperationRequest._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("ShardOperationRequest");
 
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField NAME_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("name", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TARGET_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("target", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField TABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("table", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)2);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SHARD_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("shard", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)3);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
-    schemes.put(StandardScheme.class, new CommandRequestStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new CommandRequestTupleSchemeFactory());
+    schemes.put(StandardScheme.class, new ShardOperationRequestStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new ShardOperationRequestTupleSchemeFactory());
   }
 
   public String name; // required
-  public CommandTarget target; // required
+  public String table; // required
+  public String shard; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
     NAME((short)1, "name"),
-    TARGET((short)2, "target");
+    TABLE((short)2, "table"),
+    SHARD((short)3, "shard");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -84,8 +87,10 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
       switch(fieldId) {
         case 1: // NAME
           return NAME;
-        case 2: // TARGET
-          return TARGET;
+        case 2: // TABLE
+          return TABLE;
+        case 3: // SHARD
+          return SHARD;
         default:
           return null;
       }
@@ -131,51 +136,59 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.NAME, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("name", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
-    tmpMap.put(_Fields.TARGET, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("target", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, CommandTarget.class)));
+    tmpMap.put(_Fields.TABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("table", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SHARD, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("shard", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(CommandRequest.class, metaDataMap);
+    org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(ShardOperationRequest.class, metaDataMap);
   }
 
-  public CommandRequest() {
+  public ShardOperationRequest() {
   }
 
-  public CommandRequest(
+  public ShardOperationRequest(
     String name,
-    CommandTarget target)
+    String table,
+    String shard)
   {
     this();
     this.name = name;
-    this.target = target;
+    this.table = table;
+    this.shard = shard;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public CommandRequest(CommandRequest other) {
+  public ShardOperationRequest(ShardOperationRequest other) {
     if (other.isSetName()) {
       this.name = other.name;
     }
-    if (other.isSetTarget()) {
-      this.target = new CommandTarget(other.target);
+    if (other.isSetTable()) {
+      this.table = other.table;
+    }
+    if (other.isSetShard()) {
+      this.shard = other.shard;
     }
   }
 
-  public CommandRequest deepCopy() {
-    return new CommandRequest(this);
+  public ShardOperationRequest deepCopy() {
+    return new ShardOperationRequest(this);
   }
 
   @Override
   public void clear() {
     this.name = null;
-    this.target = null;
+    this.table = null;
+    this.shard = null;
   }
 
   public String getName() {
     return this.name;
   }
 
-  public CommandRequest setName(String name) {
+  public ShardOperationRequest setName(String name) {
     this.name = name;
     return this;
   }
@@ -195,27 +208,51 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
     }
   }
 
-  public CommandTarget getTarget() {
-    return this.target;
+  public String getTable() {
+    return this.table;
   }
 
-  public CommandRequest setTarget(CommandTarget target) {
-    this.target = target;
+  public ShardOperationRequest setTable(String table) {
+    this.table = table;
     return this;
   }
 
-  public void unsetTarget() {
-    this.target = null;
+  public void unsetTable() {
+    this.table = null;
   }
 
-  /** Returns true if field target is set (has been assigned a value) and false otherwise */
-  public boolean isSetTarget() {
-    return this.target != null;
+  /** Returns true if field table is set (has been assigned a value) and false otherwise */
+  public boolean isSetTable() {
+    return this.table != null;
   }
 
-  public void setTargetIsSet(boolean value) {
+  public void setTableIsSet(boolean value) {
     if (!value) {
-      this.target = null;
+      this.table = null;
+    }
+  }
+
+  public String getShard() {
+    return this.shard;
+  }
+
+  public ShardOperationRequest setShard(String shard) {
+    this.shard = shard;
+    return this;
+  }
+
+  public void unsetShard() {
+    this.shard = null;
+  }
+
+  /** Returns true if field shard is set (has been assigned a value) and false otherwise */
+  public boolean isSetShard() {
+    return this.shard != null;
+  }
+
+  public void setShardIsSet(boolean value) {
+    if (!value) {
+      this.shard = null;
     }
   }
 
@@ -229,11 +266,19 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
       }
       break;
 
-    case TARGET:
+    case TABLE:
       if (value == null) {
-        unsetTarget();
+        unsetTable();
       } else {
-        setTarget((CommandTarget)value);
+        setTable((String)value);
+      }
+      break;
+
+    case SHARD:
+      if (value == null) {
+        unsetShard();
+      } else {
+        setShard((String)value);
       }
       break;
 
@@ -245,8 +290,11 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
     case NAME:
       return getName();
 
-    case TARGET:
-      return getTarget();
+    case TABLE:
+      return getTable();
+
+    case SHARD:
+      return getShard();
 
     }
     throw new IllegalStateException();
@@ -261,8 +309,10 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
     switch (field) {
     case NAME:
       return isSetName();
-    case TARGET:
-      return isSetTarget();
+    case TABLE:
+      return isSetTable();
+    case SHARD:
+      return isSetShard();
     }
     throw new IllegalStateException();
   }
@@ -271,12 +321,12 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof CommandRequest)
-      return this.equals((CommandRequest)that);
+    if (that instanceof ShardOperationRequest)
+      return this.equals((ShardOperationRequest)that);
     return false;
   }
 
-  public boolean equals(CommandRequest that) {
+  public boolean equals(ShardOperationRequest that) {
     if (that == null)
       return false;
 
@@ -289,12 +339,21 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
         return false;
     }
 
-    boolean this_present_target = true && this.isSetTarget();
-    boolean that_present_target = true && that.isSetTarget();
-    if (this_present_target || that_present_target) {
-      if (!(this_present_target && that_present_target))
+    boolean this_present_table = true && this.isSetTable();
+    boolean that_present_table = true && that.isSetTable();
+    if (this_present_table || that_present_table) {
+      if (!(this_present_table && that_present_table))
         return false;
-      if (!this.target.equals(that.target))
+      if (!this.table.equals(that.table))
+        return false;
+    }
+
+    boolean this_present_shard = true && this.isSetShard();
+    boolean that_present_shard = true && that.isSetShard();
+    if (this_present_shard || that_present_shard) {
+      if (!(this_present_shard && that_present_shard))
+        return false;
+      if (!this.shard.equals(that.shard))
         return false;
     }
 
@@ -306,13 +365,13 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
     return 0;
   }
 
-  public int compareTo(CommandRequest other) {
+  public int compareTo(ShardOperationRequest other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    CommandRequest typedOther = (CommandRequest)other;
+    ShardOperationRequest typedOther = (ShardOperationRequest)other;
 
     lastComparison = Boolean.valueOf(isSetName()).compareTo(typedOther.isSetName());
     if (lastComparison != 0) {
@@ -324,12 +383,22 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetTarget()).compareTo(typedOther.isSetTarget());
+    lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetTarget()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.target, typedOther.target);
+    if (isSetTable()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetShard()).compareTo(typedOther.isSetShard());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetShard()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.shard, typedOther.shard);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -351,7 +420,7 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("CommandRequest(");
+    StringBuilder sb = new StringBuilder("ShardOperationRequest(");
     boolean first = true;
 
     sb.append("name:");
@@ -362,11 +431,19 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("target:");
-    if (this.target == null) {
+    sb.append("table:");
+    if (this.table == null) {
       sb.append("null");
     } else {
-      sb.append(this.target);
+      sb.append(this.table);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("shard:");
+    if (this.shard == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.shard);
     }
     first = false;
     sb.append(")");
@@ -376,9 +453,6 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
   public void validate() throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
     // check for required fields
     // check for sub-struct validity
-    if (target != null) {
-      target.validate();
-    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -397,15 +471,15 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
     }
   }
 
-  private static class CommandRequestStandardSchemeFactory implements SchemeFactory {
-    public CommandRequestStandardScheme getScheme() {
-      return new CommandRequestStandardScheme();
+  private static class ShardOperationRequestStandardSchemeFactory implements SchemeFactory {
+    public ShardOperationRequestStandardScheme getScheme() {
+      return new ShardOperationRequestStandardScheme();
     }
   }
 
-  private static class CommandRequestStandardScheme extends StandardScheme<CommandRequest> {
+  private static class ShardOperationRequestStandardScheme extends StandardScheme<ShardOperationRequest> {
 
-    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, CommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol iprot, ShardOperationRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -423,11 +497,18 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 2: // TARGET
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT) {
-              struct.target = new CommandTarget();
-              struct.target.read(iprot);
-              struct.setTargetIsSet(true);
+          case 2: // TABLE
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.table = iprot.readString();
+              struct.setTableIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 3: // SHARD
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
+              struct.shard = iprot.readString();
+              struct.setShardIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -443,7 +524,7 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
       struct.validate();
     }
 
-    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, CommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol oprot, ShardOperationRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
@@ -452,9 +533,14 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
         oprot.writeString(struct.name);
         oprot.writeFieldEnd();
       }
-      if (struct.target != null) {
-        oprot.writeFieldBegin(TARGET_FIELD_DESC);
-        struct.target.write(oprot);
+      if (struct.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(struct.table);
+        oprot.writeFieldEnd();
+      }
+      if (struct.shard != null) {
+        oprot.writeFieldBegin(SHARD_FIELD_DESC);
+        oprot.writeString(struct.shard);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -463,45 +549,54 @@ public class CommandRequest implements org.apache.blur.thirdparty.thrift_0_9_0.T
 
   }
 
-  private static class CommandRequestTupleSchemeFactory implements SchemeFactory {
-    public CommandRequestTupleScheme getScheme() {
-      return new CommandRequestTupleScheme();
+  private static class ShardOperationRequestTupleSchemeFactory implements SchemeFactory {
+    public ShardOperationRequestTupleScheme getScheme() {
+      return new ShardOperationRequestTupleScheme();
     }
   }
 
-  private static class CommandRequestTupleScheme extends TupleScheme<CommandRequest> {
+  private static class ShardOperationRequestTupleScheme extends TupleScheme<ShardOperationRequest> {
 
     @Override
-    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, CommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ShardOperationRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
       if (struct.isSetName()) {
         optionals.set(0);
       }
-      if (struct.isSetTarget()) {
+      if (struct.isSetTable()) {
         optionals.set(1);
       }
-      oprot.writeBitSet(optionals, 2);
+      if (struct.isSetShard()) {
+        optionals.set(2);
+      }
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
-      if (struct.isSetTarget()) {
-        struct.target.write(oprot);
+      if (struct.isSetTable()) {
+        oprot.writeString(struct.table);
+      }
+      if (struct.isSetShard()) {
+        oprot.writeString(struct.shard);
       }
     }
 
     @Override
-    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, CommandRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+    public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ShardOperationRequest struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(2);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
       }
       if (incoming.get(1)) {
-        struct.target = new CommandTarget();
-        struct.target.read(iprot);
-        struct.setTargetIsSet(true);
+        struct.table = iprot.readString();
+        struct.setTableIsSet(true);
+      }
+      if (incoming.get(2)) {
+        struct.shard = iprot.readString();
+        struct.setShardIsSet(true);
       }
     }
   }

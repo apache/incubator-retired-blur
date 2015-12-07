@@ -4870,130 +4870,24 @@ CommandDescriptor.prototype.write = function(output) {
   return;
 };
 
-CommandTarget = function(args) {
-  this.tables = null;
-  this.shards = null;
-  if (args) {
-    if (args.tables !== undefined) {
-      this.tables = args.tables;
-    }
-    if (args.shards !== undefined) {
-      this.shards = args.shards;
-    }
-  }
-};
-CommandTarget.prototype = {};
-CommandTarget.prototype.read = function(input) {
-  input.readStructBegin();
-  while (true)
-  {
-    var ret = input.readFieldBegin();
-    var fname = ret.fname;
-    var ftype = ret.ftype;
-    var fid = ret.fid;
-    if (ftype == Thrift.Type.STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-      if (ftype == Thrift.Type.SET) {
-        var _size290 = 0;
-        var _rtmp3294;
-        this.tables = [];
-        var _etype293 = 0;
-        _rtmp3294 = input.readSetBegin();
-        _etype293 = _rtmp3294.etype;
-        _size290 = _rtmp3294.size;
-        for (var _i295 = 0; _i295 < _size290; ++_i295)
-        {
-          var elem296 = null;
-          elem296 = input.readString().value;
-          this.tables.push(elem296);
-        }
-        input.readSetEnd();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 2:
-      if (ftype == Thrift.Type.SET) {
-        var _size297 = 0;
-        var _rtmp3301;
-        this.shards = [];
-        var _etype300 = 0;
-        _rtmp3301 = input.readSetBegin();
-        _etype300 = _rtmp3301.etype;
-        _size297 = _rtmp3301.size;
-        for (var _i302 = 0; _i302 < _size297; ++_i302)
-        {
-          var elem303 = null;
-          elem303 = input.readString().value;
-          this.shards.push(elem303);
-        }
-        input.readSetEnd();
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      default:
-        input.skip(ftype);
-    }
-    input.readFieldEnd();
-  }
-  input.readStructEnd();
-  return;
-};
-
-CommandTarget.prototype.write = function(output) {
-  output.writeStructBegin('CommandTarget');
-  if (this.tables !== null && this.tables !== undefined) {
-    output.writeFieldBegin('tables', Thrift.Type.SET, 1);
-    output.writeSetBegin(Thrift.Type.STRING, this.tables.length);
-    for (var iter304 in this.tables)
-    {
-      if (this.tables.hasOwnProperty(iter304))
-      {
-        iter304 = this.tables[iter304];
-        output.writeString(iter304);
-      }
-    }
-    output.writeSetEnd();
-    output.writeFieldEnd();
-  }
-  if (this.shards !== null && this.shards !== undefined) {
-    output.writeFieldBegin('shards', Thrift.Type.SET, 2);
-    output.writeSetBegin(Thrift.Type.STRING, this.shards.length);
-    for (var iter305 in this.shards)
-    {
-      if (this.shards.hasOwnProperty(iter305))
-      {
-        iter305 = this.shards[iter305];
-        output.writeString(iter305);
-      }
-    }
-    output.writeSetEnd();
-    output.writeFieldEnd();
-  }
-  output.writeFieldStop();
-  output.writeStructEnd();
-  return;
-};
-
-CommandRequest = function(args) {
+ShardOperationRequest = function(args) {
   this.name = null;
-  this.target = null;
+  this.table = null;
+  this.shard = null;
   if (args) {
     if (args.name !== undefined) {
       this.name = args.name;
     }
-    if (args.target !== undefined) {
-      this.target = args.target;
+    if (args.table !== undefined) {
+      this.table = args.table;
+    }
+    if (args.shard !== undefined) {
+      this.shard = args.shard;
     }
   }
 };
-CommandRequest.prototype = {};
-CommandRequest.prototype.read = function(input) {
+ShardOperationRequest.prototype = {};
+ShardOperationRequest.prototype.read = function(input) {
   input.readStructBegin();
   while (true)
   {
@@ -5014,9 +4908,15 @@ CommandRequest.prototype.read = function(input) {
       }
       break;
       case 2:
-      if (ftype == Thrift.Type.STRUCT) {
-        this.target = new CommandTarget();
-        this.target.read(input);
+      if (ftype == Thrift.Type.STRING) {
+        this.table = input.readString().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 3:
+      if (ftype == Thrift.Type.STRING) {
+        this.shard = input.readString().value;
       } else {
         input.skip(ftype);
       }
@@ -5030,16 +4930,21 @@ CommandRequest.prototype.read = function(input) {
   return;
 };
 
-CommandRequest.prototype.write = function(output) {
-  output.writeStructBegin('CommandRequest');
+ShardOperationRequest.prototype.write = function(output) {
+  output.writeStructBegin('ShardOperationRequest');
   if (this.name !== null && this.name !== undefined) {
     output.writeFieldBegin('name', Thrift.Type.STRING, 1);
     output.writeString(this.name);
     output.writeFieldEnd();
   }
-  if (this.target !== null && this.target !== undefined) {
-    output.writeFieldBegin('target', Thrift.Type.STRUCT, 2);
-    this.target.write(output);
+  if (this.table !== null && this.table !== undefined) {
+    output.writeFieldBegin('table', Thrift.Type.STRING, 2);
+    output.writeString(this.table);
+    output.writeFieldEnd();
+  }
+  if (this.shard !== null && this.shard !== undefined) {
+    output.writeFieldBegin('shard', Thrift.Type.STRING, 3);
+    output.writeString(this.shard);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

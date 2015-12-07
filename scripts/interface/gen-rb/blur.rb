@@ -116,12 +116,12 @@ module Blur
       def send_refresh()
         send_message('refresh', Refresh_args)
       end
-      def executeCommand(commandRequest)
-        send_executeCommand(commandRequest)
+      def executeShardOperation(shardOperationRequest)
+        send_executeShardOperation(shardOperationRequest)
       end
 
-      def send_executeCommand(commandRequest)
-        send_message('executeCommand', ExecuteCommand_args, :commandRequest => commandRequest)
+      def send_executeShardOperation(shardOperationRequest)
+        send_message('executeShardOperation', ExecuteShardOperation_args, :shardOperationRequest => shardOperationRequest)
       end
       def createTable(tableDescriptor)
         send_createTable(tableDescriptor)
@@ -994,9 +994,9 @@ module Blur
         return
       end
 
-      def process_executeCommand(seqid, iprot, oprot)
-        args = read_args(iprot, ExecuteCommand_args)
-        @handler.executeCommand(args.commandRequest)
+      def process_executeShardOperation(seqid, iprot, oprot)
+        args = read_args(iprot, ExecuteShardOperation_args)
+        @handler.executeShardOperation(args.shardOperationRequest)
         return
       end
 
@@ -1806,12 +1806,12 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
-    class ExecuteCommand_args
+    class ExecuteShardOperation_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      COMMANDREQUEST = 1
+      SHARDOPERATIONREQUEST = 1
 
       FIELDS = {
-        COMMANDREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'commandRequest', :class => ::Blur::CommandRequest}
+        SHARDOPERATIONREQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'shardOperationRequest', :class => ::Blur::ShardOperationRequest}
       }
 
       def struct_fields; FIELDS; end
@@ -1822,7 +1822,7 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
-    class ExecuteCommand_result
+    class ExecuteShardOperation_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
 
       FIELDS = {

@@ -23,12 +23,12 @@ import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Blur.Client;
-import org.apache.blur.thrift.generated.CommandRequest;
+//import org.apache.blur.thrift.generated.CommandRequest;
 
 public class ServerCommandExample {
 
   public static void main(String[] args) throws TException, IOException {
-    CommandRequest commandRequest = new CommandRequest();
+ /*   CommandRequest commandRequest = new CommandRequest();
     commandRequest.setName("cool");
     Client client = BlurClientManager.getClientPool().getClient(new Connection("localhost:40020"));
     client.executeCommand(commandRequest);
@@ -47,6 +47,6 @@ public class ServerCommandExample {
     System.out.println(t);
 
     System.out.println(client.tableList());
-  }
+ */ }
 
 }

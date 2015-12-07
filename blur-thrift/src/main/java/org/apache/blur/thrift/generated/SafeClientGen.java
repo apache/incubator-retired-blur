@@ -202,9 +202,9 @@ public org.apache.blur.thrift.generated.Response execute(java.lang.String arg0, 
 }
 
 @Override
-public void executeCommand(org.apache.blur.thrift.generated.CommandRequest arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void executeShardOperation(org.apache.blur.thrift.generated.ShardOperationRequest arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.executeCommand(arg0);
+    super.executeShardOperation(arg0);
   } finally {_lock.unlock();}
 }
 
@@ -909,9 +909,9 @@ public void send_execute(java.lang.String arg0, org.apache.blur.thrift.generated
 }
 
 @Override
-public void send_executeCommand(org.apache.blur.thrift.generated.CommandRequest arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void send_executeShardOperation(org.apache.blur.thrift.generated.ShardOperationRequest arg0) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.send_executeCommand(arg0);
+    super.send_executeShardOperation(arg0);
   } finally {_lock.unlock();}
 }
 

@@ -81,6 +81,7 @@ public class IndexImporter extends TimerTask implements Closeable {
   private final Timer _inindexImporterTimer;
   private final ThriftCache _thriftCache;
   private final HdfsDirectory _directory;
+  private final int MAX_ATTEMPTS = 10;
 
   private long _lastCleanup;
   private Runnable _testError;
@@ -201,9 +202,13 @@ public class IndexImporter extends TimerTask implements Closeable {
       Configuration configuration = _shardContext.getTableContext().getConfiguration();
       try {
         FileSystem fileSystem = path.getFileSystem(configuration);
-        SortedSet<FileStatus> listStatus;
-        while (true) {
+        SortedSet<FileStatus> listStatus = null;
+        for (int i = 0; i < MAX_ATTEMPTS; i++) {
           try {
+            if (!fileSystem.exists(path)) {
+              LOG.warn("Path [{0}] no longer exists, exiting.", path);
+              return;
+            }
             listStatus = sort(fileSystem.listStatus(path, new PathFilter() {
               @Override
               public boolean accept(Path path) {
@@ -218,10 +223,14 @@ public class IndexImporter extends TimerTask implements Closeable {
             LOG.warn("File not found error, retrying.");
           }
           try {
-            Thread.sleep(100);
+            Thread.sleep(100 * (i + 1));
           } catch (InterruptedException e) {
             return;
           }
+        }
+        if (listStatus == null) {
+          LOG.warn("Could not get listing of path [{0}], exiting.", path);
+          return;
         }
         for (FileStatus fileStatus : listStatus) {
           Path file = fileStatus.getPath();

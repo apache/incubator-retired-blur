@@ -159,7 +159,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     if (configBindPort == 0) {
       instanceBindPort = 0;
     }
-    TServerTransport serverTransport = ThriftServer.getTServerTransport(bindAddress, instanceBindPort, configuration);
+    TServerTransport serverTransport = ThriftServer.getTServerTransport(bindAddress, instanceBindPort);
     instanceBindPort = ThriftServer.getBindingPort(serverTransport);
 
     Set<Entry<String, String>> set = configuration.getProperties().entrySet();

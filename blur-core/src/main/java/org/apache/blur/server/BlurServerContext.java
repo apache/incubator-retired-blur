@@ -22,10 +22,8 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.ServerContext;
 import org.apache.blur.thrift.generated.User;
-import org.apache.blur.thrift.server.ThriftTrace;
-import org.apache.blur.thrift.server.ThriftTracer;
 
-public class BlurServerContext implements ServerContext, ThriftTrace {
+public class BlurServerContext implements ServerContext {
 
   private static final Log LOG = LogFactory.getLog(BlurServerContext.class);
 
@@ -92,11 +90,6 @@ public class BlurServerContext implements ServerContext, ThriftTrace {
   public void resetTraceIds() {
     _traceRootId = null;
     _traceRequestId = null;
-  }
-
-  @Override
-  public ThriftTracer getTracer(String name) {
-    return ThriftTracer.NOTHING;
   }
 
 }

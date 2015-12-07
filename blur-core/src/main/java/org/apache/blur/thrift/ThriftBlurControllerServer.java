@@ -118,7 +118,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     if (configBindPort == 0) {
       instanceBindPort = 0;
     }
-    TServerTransport serverTransport = ThriftServer.getTServerTransport(bindAddress, instanceBindPort, configuration);
+    TServerTransport serverTransport = ThriftServer.getTServerTransport(bindAddress, instanceBindPort);
     instanceBindPort = ThriftServer.getBindingPort(serverTransport);
 
     LOG.info("Controller Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":"
@@ -187,7 +187,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
-    List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration, ServerSecurityFilterFactory.ServerType.CONTROLLER);
+    List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration,
+        ServerSecurityFilterFactory.ServerType.CONTROLLER);
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
     iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, false);

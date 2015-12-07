@@ -926,14 +926,10 @@ struct CommandDescriptor {
   6:string version
 }
 
-struct CommandTarget {
-  1:set<string> tables,
-  2:set<string> shards
-}
-
-struct CommandRequest {
+struct ShardOperationRequest {
   1:string name,
-  2:CommandTarget target
+  2:string table,
+  3:string shard
 }
 
 /**
@@ -983,9 +979,9 @@ service Blur {
   oneway void refresh()
 
   /**
-   * Executes command.
+   * Executes a shard operation which allows for bidirectional communication.
    */
-  oneway void executeCommand(1:CommandRequest commandRequest)
+  oneway void executeShardOperation(1:ShardOperationRequest shardOperationRequest)
 
   //Table Commands
 

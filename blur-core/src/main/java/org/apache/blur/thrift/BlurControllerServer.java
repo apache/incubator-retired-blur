@@ -236,7 +236,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       public void run() {
         try {
           tableContextWarmup();
-        } catch (Exception e) {
+        } catch (Throwable e) {
           LOG.error("Unknown error while trying to preconnect to shard servers.", e);
         }
       }
@@ -267,7 +267,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       public void run() {
         try {
           preconnectClients();
-        } catch (Exception e) {
+        } catch (Throwable e) {
           LOG.error("Unknown error while trying to preconnect to shard servers.", e);
         }
       }

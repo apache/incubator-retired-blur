@@ -13,6 +13,8 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.ShardState;
 
 /**
@@ -39,6 +41,8 @@ import org.apache.blur.thrift.generated.ShardState;
  */
 public class ShardStateManager implements Closeable {
 
+  private static final Log LOG = LogFactory.getLog(ShardStateManager.class);
+
   private static final long _5_SECONDS = TimeUnit.SECONDS.toMillis(5);
   private static final long _60_SECONDS = TimeUnit.SECONDS.toMillis(60);
   private final Map<Key, Value> stateMap = new ConcurrentHashMap<Key, Value>();
@@ -49,6 +53,14 @@ public class ShardStateManager implements Closeable {
     timer.schedule(new TimerTask() {
       @Override
       public void run() {
+        try {
+          cleanup();
+        } catch (Throwable t) {
+          LOG.error("Unkown error whiel trying to cleanup shard state manager.", t);
+        }
+      }
+
+      private void cleanup() {
         Collection<Key> toBeDeleted = null;
         for (Entry<Key, Value> e : stateMap.entrySet()) {
           if (shouldBeRemoved(e)) {

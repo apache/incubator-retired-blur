@@ -353,13 +353,17 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     return new TimerTask() {
       @Override
       public void run() {
-        while (true) {
-          Closeable closeable = CLOSING_QUEUE.poll();
-          if (closeable == null) {
-            return;
+        try {
+          while (true) {
+            Closeable closeable = CLOSING_QUEUE.poll();
+            if (closeable == null) {
+              return;
+            }
+            LOG.info("Closing [{0}] [{1}]", System.identityHashCode(closeable), closeable);
+            org.apache.hadoop.io.IOUtils.cleanup(LOG, closeable);
           }
-          LOG.info("Closing [{0}] [{1}]", System.identityHashCode(closeable), closeable);
-          org.apache.hadoop.io.IOUtils.cleanup(LOG, closeable);
+        } catch (Throwable t) {
+          LOG.error("Unknown error.", t);
         }
       }
     };
@@ -478,7 +482,8 @@ public class HdfsDirectory extends Directory implements LastModified, HdfsSymlin
     }
     long fileLength = fileLength(name);
     Path path = getPath(name);
-    FSInputFileHandle fsInputFileHandle = new FSInputFileHandle(_fileSystem, path, fileLength, name, _resourceTracking, _asyncClosing && _useCache);
+    FSInputFileHandle fsInputFileHandle = new FSInputFileHandle(_fileSystem, path, fileLength, name, _resourceTracking,
+        _asyncClosing && _useCache);
     HdfsIndexInput input = new HdfsIndexInput(this, fsInputFileHandle, fileLength, _metricsGroup, name,
         _sequentialReadControl.clone());
     return input;

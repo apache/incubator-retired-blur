@@ -220,7 +220,7 @@ public class HdfsKeyValueStore implements Store {
       public void run() {
         try {
           cleanupOldFiles();
-        } catch (IOException e) {
+        } catch (Throwable e) {
           LOG.error("Unknown error while trying to clean up old files.", e);
         }
       }
@@ -233,7 +233,7 @@ public class HdfsKeyValueStore implements Store {
       public void run() {
         try {
           closeLogFileIfIdle();
-        } catch (IOException e) {
+        } catch (Throwable e) {
           LOG.error("Unknown error while trying to close output file.", e);
         }
       }

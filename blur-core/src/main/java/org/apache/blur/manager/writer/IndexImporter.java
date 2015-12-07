@@ -259,9 +259,12 @@ public class IndexImporter extends TimerTask implements Closeable {
       } catch (IOException e) {
         LOG.error("Unknown error while trying to refresh imports on [{1}/{2}].", e, _shard, _table);
       }
+    } catch (Throwable t) {
+      LOG.error("Unknown error while tyring to run index importer.", t);
     } finally {
       _globalLock.unlock();
     }
+
   }
 
   private void touch(FileSystem fileSystem, Path path) throws IOException {

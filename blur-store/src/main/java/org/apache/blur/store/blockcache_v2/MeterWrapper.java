@@ -29,9 +29,14 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
+
 import com.yammer.metrics.core.Meter;
 
 public abstract class MeterWrapper implements Closeable {
+
+  private static final Log LOG = LogFactory.getLog(MeterWrapper.class);
 
   public static final MeterWrapper NOTHING = new MeterWrapper() {
     @Override
@@ -95,7 +100,11 @@ public abstract class MeterWrapper implements Closeable {
     return new TimerTask() {
       @Override
       public void run() {
-        updateMetrics();
+        try {
+          updateMetrics();
+        } catch (Throwable t) {
+          LOG.error("Unknown error.", t);
+        }
       }
     };
   }

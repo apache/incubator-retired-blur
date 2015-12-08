@@ -170,7 +170,7 @@ public class BlurOutputFormatMiniClusterTest {
     for (FileStatus fileStatus : listStatus) {
       System.out.println(fileStatus.getPath());
     }
-    assertEquals(4, listStatus.length);
+    assertEquals(3, listStatus.length);
 
     assertTrue(job.waitForCompletion(true));
     Counters ctrs = job.getCounters();

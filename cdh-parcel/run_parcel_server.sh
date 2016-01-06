@@ -36,7 +36,12 @@ MANIFEST="${HTTP_DIR}/manifest.json"
 rm -r $HTTP_DIR
 mkdir $HTTP_DIR
 
-shasum $PARCEL | awk '{print $1}' > $PARCEL_SHA
+if hash sha1sum 2>/dev/null; then
+  sha1sum $PARCEL | awk '{print $1}' > $PARCEL_SHA
+else
+  shasum $PARCEL | awk '{print $1}' > $PARCEL_SHA
+fi
+
 HASH=`cat $PARCEL_SHA`
 echo "{\"lastUpdated\":${LAST_UPDATED},\"parcels\": [" > $MANIFEST
 for DISTRO in el5 el6 sles11 lucid precise trusty squeeze wheezy

@@ -25,10 +25,6 @@
 	<name>Blur Hive</name>
 	<description>The Blur hive module contains a storage handler and serde for Hive so that it can integrate with Hive.</description>
 
-	<properties>
-		<projectHiveVersion>${project.parent.version}.${hadoop.version}.${hive.version}</projectHiveVersion>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>

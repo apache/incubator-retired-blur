@@ -202,7 +202,7 @@ under the License.
 		<hadoop.version.display>${hadoop.version}</hadoop.version.display>
 		<projectVersionSuffix></projectVersionSuffix>
 		<projectVersion>${project.parent.version}.${hadoop.version.display}${projectVersionSuffix}</projectVersion>
-		<projectHiveVersion>${project.parent.version}.${hadoop.version.display.${hive.version.display}${projectVersionSuffix}</projectHiveVersion>
+		<projectHiveVersion>${project.parent.version}.${hadoop.version.display}.${hive.version.display}${projectVersionSuffix}</projectHiveVersion>
 	</properties>
 
 	<dependencyManagement>

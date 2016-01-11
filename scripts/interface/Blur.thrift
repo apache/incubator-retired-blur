@@ -906,7 +906,7 @@ struct CommandStatus {
   1:string executionId,
   2:string commandName,
   3:Arguments arguments,
-  4:map<string,map<CommandStatusState,double>> serverStateMap,
+  4:map<string,map<CommandStatusState,i64>> serverStateMap,
   5:User user
 }
 

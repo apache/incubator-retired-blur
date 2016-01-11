@@ -899,16 +899,15 @@ struct Arguments {
 enum CommandStatusState {
   RUNNING,
   INTERRUPTED,
-  COMPLETE,
-  BACK_PRESSURE_INTERRUPTED
+  COMPLETE
 }
 
 struct CommandStatus {
   1:string executionId,
-  2:string table,
-  3:string commandName,
-  4:Arguments arguments,
-  5:CommandStatusState state
+  2:string commandName,
+  3:Arguments arguments,
+  4:map<string,map<CommandStatusState,double>> serverStateMap,
+  5:User user
 }
 
 struct ArgumentDescriptor {
@@ -954,7 +953,7 @@ service Blur {
   /**
    * Fetches the command status ids in the order they were submitted.
    */
-  list<string> commandStatusList(1:i32 startingAt, 2:i16 fetch, 3:CommandStatusState state) throws (1:BlurException ex)
+  list<string> commandStatusList(1:i32 startingAt, 2:i16 fetch) throws (1:BlurException ex)
 
   /**
    * Retrieves the command status by the given command execution id.

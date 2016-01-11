@@ -301,7 +301,6 @@ Logging level enum used to change the logging levels at runtime.
 <tr><td><code>RUNNING</code></td><td><code>0</code></td></tr>
 <tr><td><code>INTERRUPTED</code></td><td><code>1</code></td></tr>
 <tr><td><code>COMPLETE</code></td><td><code>2</code></td></tr>
-<tr><td><code>BACK_PRESSURE_INTERRUPTED</code></td><td><code>3</code></td></tr>
 </table></p></section>
 <hr/><h2 id="Structs">Data structures</h2>
 <section><div class="page-header"><h3 id="Struct_BlurException">Exception: BlurException</h3></div><p class="lead">
@@ -723,10 +722,10 @@ be family dot column, "family.column".
 </table><br/></p></section><section><div class="page-header"><h3 id="Struct_CommandStatus">Struct: CommandStatus</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>executionId</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>table</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>commandName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>arguments</td><td><code><a href="Blur.html#Struct_Arguments">Arguments</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_CommandStatusState">CommandStatusState</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>2</td><td>commandName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>3</td><td>arguments</td><td><code><a href="Blur.html#Struct_Arguments">Arguments</a></code></td><td></td><td>default</td><td></td></tr>
+<tr><td>4</td><td>serverStateMap</td><td><code>map&lt;<code>string</code>, <code>map&lt;<code><a href="Blur.html#Enum_CommandStatusState">CommandStatusState</a></code>, <code>double</code>&gt;</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>5</td><td>user</td><td><code><a href="Blur.html#Struct_User">User</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/></p></section><section><div class="page-header"><h3 id="Struct_ArgumentDescriptor">Struct: ArgumentDescriptor</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
 <tr><td>1</td><td>name</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
@@ -761,8 +760,7 @@ network tcp timeout this method allows the client to reconnect to the already
 executing command.
 <br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_commandStatusList">Function: Blur.commandStatusList</h4></div><p class="lead">
 <pre><code>list&lt;<code>string</code>&gt;</code> commandStatusList(<code>i32</code> startingAt,
-<code>i16</code> fetch,
-<code><a href="Blur.html#Enum_CommandStatusState">CommandStatusState</a></code> state)
+<code>i16</code> fetch)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Fetches the command status ids in the order they were submitted.
 <br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_commandStatus">Function: Blur.commandStatus</h4></div><p class="lead">

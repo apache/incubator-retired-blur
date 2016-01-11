@@ -61,7 +61,6 @@ package Blur::CommandStatusState;
 use constant RUNNING => 0;
 use constant INTERRUPTED => 1;
 use constant COMPLETE => 2;
-use constant BACK_PRESSURE_INTERRUPTED => 3;
 package Blur::BlurException;
 use base qw(Thrift::TException);
 use base qw(Class::Accessor);
@@ -4704,23 +4703,20 @@ sub write {
 
 package Blur::CommandStatus;
 use base qw(Class::Accessor);
-Blur::CommandStatus->mk_accessors( qw( executionId table commandName arguments state ) );
+Blur::CommandStatus->mk_accessors( qw( executionId commandName arguments serverStateMap user ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
   $self->{executionId} = undef;
-  $self->{table} = undef;
   $self->{commandName} = undef;
   $self->{arguments} = undef;
-  $self->{state} = undef;
+  $self->{serverStateMap} = undef;
+  $self->{user} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{executionId}) {
       $self->{executionId} = $vals->{executionId};
-    }
-    if (defined $vals->{table}) {
-      $self->{table} = $vals->{table};
     }
     if (defined $vals->{commandName}) {
       $self->{commandName} = $vals->{commandName};
@@ -4728,8 +4724,11 @@ sub new {
     if (defined $vals->{arguments}) {
       $self->{arguments} = $vals->{arguments};
     }
-    if (defined $vals->{state}) {
-      $self->{state} = $vals->{state};
+    if (defined $vals->{serverStateMap}) {
+      $self->{serverStateMap} = $vals->{serverStateMap};
+    }
+    if (defined $vals->{user}) {
+      $self->{user} = $vals->{user};
     }
   }
   return bless ($self, $classname);
@@ -4761,26 +4760,57 @@ sub read {
       }
       last; };
       /^2$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{table});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^3$/ && do{      if ($ftype == TType::STRING) {
         $xfer += $input->readString(\$self->{commandName});
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^4$/ && do{      if ($ftype == TType::STRUCT) {
+      /^3$/ && do{      if ($ftype == TType::STRUCT) {
         $self->{arguments} = new Blur::Arguments();
         $xfer += $self->{arguments}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^5$/ && do{      if ($ftype == TType::I32) {
-        $xfer += $input->readI32(\$self->{state});
+      /^4$/ && do{      if ($ftype == TType::MAP) {
+        {
+          my $_size240 = 0;
+          $self->{serverStateMap} = {};
+          my $_ktype241 = 0;
+          my $_vtype242 = 0;
+          $xfer += $input->readMapBegin(\$_ktype241, \$_vtype242, \$_size240);
+          for (my $_i244 = 0; $_i244 < $_size240; ++$_i244)
+          {
+            my $key245 = '';
+            my $val246 = [];
+            $xfer += $input->readString(\$key245);
+            {
+              my $_size247 = 0;
+              $val246 = {};
+              my $_ktype248 = 0;
+              my $_vtype249 = 0;
+              $xfer += $input->readMapBegin(\$_ktype248, \$_vtype249, \$_size247);
+              for (my $_i251 = 0; $_i251 < $_size247; ++$_i251)
+              {
+                my $key252 = 0;
+                my $val253 = 0.0;
+                $xfer += $input->readI32(\$key252);
+                $xfer += $input->readDouble(\$val253);
+                $val246->{$key252} = $val253;
+              }
+              $xfer += $input->readMapEnd();
+            }
+            $self->{serverStateMap}->{$key245} = $val246;
+          }
+          $xfer += $input->readMapEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^5$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{user} = new Blur::User();
+        $xfer += $self->{user}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -4802,24 +4832,44 @@ sub write {
     $xfer += $output->writeString($self->{executionId});
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{table}) {
-    $xfer += $output->writeFieldBegin('table', TType::STRING, 2);
-    $xfer += $output->writeString($self->{table});
-    $xfer += $output->writeFieldEnd();
-  }
   if (defined $self->{commandName}) {
-    $xfer += $output->writeFieldBegin('commandName', TType::STRING, 3);
+    $xfer += $output->writeFieldBegin('commandName', TType::STRING, 2);
     $xfer += $output->writeString($self->{commandName});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{arguments}) {
-    $xfer += $output->writeFieldBegin('arguments', TType::STRUCT, 4);
+    $xfer += $output->writeFieldBegin('arguments', TType::STRUCT, 3);
     $xfer += $self->{arguments}->write($output);
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{state}) {
-    $xfer += $output->writeFieldBegin('state', TType::I32, 5);
-    $xfer += $output->writeI32($self->{state});
+  if (defined $self->{serverStateMap}) {
+    $xfer += $output->writeFieldBegin('serverStateMap', TType::MAP, 4);
+    {
+      $xfer += $output->writeMapBegin(TType::STRING, TType::MAP, scalar(keys %{$self->{serverStateMap}}));
+      {
+        while( my ($kiter254,$viter255) = each %{$self->{serverStateMap}}) 
+        {
+          $xfer += $output->writeString($kiter254);
+          {
+            $xfer += $output->writeMapBegin(TType::I32, TType::DOUBLE, scalar(keys %{${viter255}}));
+            {
+              while( my ($kiter256,$viter257) = each %{${viter255}}) 
+              {
+                $xfer += $output->writeI32($kiter256);
+                $xfer += $output->writeDouble($viter257);
+              }
+            }
+            $xfer += $output->writeMapEnd();
+          }
+        }
+      }
+      $xfer += $output->writeMapEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{user}) {
+    $xfer += $output->writeFieldBegin('user', TType::STRUCT, 5);
+    $xfer += $self->{user}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -4991,19 +5041,19 @@ sub read {
       last; };
       /^3$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size240 = 0;
+          my $_size258 = 0;
           $self->{requiredArguments} = {};
-          my $_ktype241 = 0;
-          my $_vtype242 = 0;
-          $xfer += $input->readMapBegin(\$_ktype241, \$_vtype242, \$_size240);
-          for (my $_i244 = 0; $_i244 < $_size240; ++$_i244)
+          my $_ktype259 = 0;
+          my $_vtype260 = 0;
+          $xfer += $input->readMapBegin(\$_ktype259, \$_vtype260, \$_size258);
+          for (my $_i262 = 0; $_i262 < $_size258; ++$_i262)
           {
-            my $key245 = '';
-            my $val246 = new Blur::ArgumentDescriptor();
-            $xfer += $input->readString(\$key245);
-            $val246 = new Blur::ArgumentDescriptor();
-            $xfer += $val246->read($input);
-            $self->{requiredArguments}->{$key245} = $val246;
+            my $key263 = '';
+            my $val264 = new Blur::ArgumentDescriptor();
+            $xfer += $input->readString(\$key263);
+            $val264 = new Blur::ArgumentDescriptor();
+            $xfer += $val264->read($input);
+            $self->{requiredArguments}->{$key263} = $val264;
           }
           $xfer += $input->readMapEnd();
         }
@@ -5013,19 +5063,19 @@ sub read {
       last; };
       /^4$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size247 = 0;
+          my $_size265 = 0;
           $self->{optionalArguments} = {};
-          my $_ktype248 = 0;
-          my $_vtype249 = 0;
-          $xfer += $input->readMapBegin(\$_ktype248, \$_vtype249, \$_size247);
-          for (my $_i251 = 0; $_i251 < $_size247; ++$_i251)
+          my $_ktype266 = 0;
+          my $_vtype267 = 0;
+          $xfer += $input->readMapBegin(\$_ktype266, \$_vtype267, \$_size265);
+          for (my $_i269 = 0; $_i269 < $_size265; ++$_i269)
           {
-            my $key252 = '';
-            my $val253 = new Blur::ArgumentDescriptor();
-            $xfer += $input->readString(\$key252);
-            $val253 = new Blur::ArgumentDescriptor();
-            $xfer += $val253->read($input);
-            $self->{optionalArguments}->{$key252} = $val253;
+            my $key270 = '';
+            my $val271 = new Blur::ArgumentDescriptor();
+            $xfer += $input->readString(\$key270);
+            $val271 = new Blur::ArgumentDescriptor();
+            $xfer += $val271->read($input);
+            $self->{optionalArguments}->{$key270} = $val271;
           }
           $xfer += $input->readMapEnd();
         }
@@ -5072,10 +5122,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRUCT, scalar(keys %{$self->{requiredArguments}}));
       {
-        while( my ($kiter254,$viter255) = each %{$self->{requiredArguments}}) 
+        while( my ($kiter272,$viter273) = each %{$self->{requiredArguments}}) 
         {
-          $xfer += $output->writeString($kiter254);
-          $xfer += ${viter255}->write($output);
+          $xfer += $output->writeString($kiter272);
+          $xfer += ${viter273}->write($output);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -5087,10 +5137,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRUCT, scalar(keys %{$self->{optionalArguments}}));
       {
-        while( my ($kiter256,$viter257) = each %{$self->{optionalArguments}}) 
+        while( my ($kiter274,$viter275) = each %{$self->{optionalArguments}}) 
         {
-          $xfer += $output->writeString($kiter256);
-          $xfer += ${viter257}->write($output);
+          $xfer += $output->writeString($kiter274);
+          $xfer += ${viter275}->write($output);
         }
       }
       $xfer += $output->writeMapEnd();

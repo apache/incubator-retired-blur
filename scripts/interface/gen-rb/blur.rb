@@ -62,13 +62,13 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'reconnect failed: unknown result')
       end
 
-      def commandStatusList(startingAt, fetch, state)
-        send_commandStatusList(startingAt, fetch, state)
+      def commandStatusList(startingAt, fetch)
+        send_commandStatusList(startingAt, fetch)
         return recv_commandStatusList()
       end
 
-      def send_commandStatusList(startingAt, fetch, state)
-        send_message('commandStatusList', CommandStatusList_args, :startingAt => startingAt, :fetch => fetch, :state => state)
+      def send_commandStatusList(startingAt, fetch)
+        send_message('commandStatusList', CommandStatusList_args, :startingAt => startingAt, :fetch => fetch)
       end
 
       def recv_commandStatusList()
@@ -952,7 +952,7 @@ module Blur
         args = read_args(iprot, CommandStatusList_args)
         result = CommandStatusList_result.new()
         begin
-          result.success = @handler.commandStatusList(args.startingAt, args.fetch, args.state)
+          result.success = @handler.commandStatusList(args.startingAt, args.fetch)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -1660,20 +1660,15 @@ module Blur
       include ::Thrift::Struct, ::Thrift::Struct_Union
       STARTINGAT = 1
       FETCH = 2
-      STATE = 3
 
       FIELDS = {
         STARTINGAT => {:type => ::Thrift::Types::I32, :name => 'startingAt'},
-        FETCH => {:type => ::Thrift::Types::I16, :name => 'fetch'},
-        STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::Blur::CommandStatusState}
+        FETCH => {:type => ::Thrift::Types::I16, :name => 'fetch'}
       }
 
       def struct_fields; FIELDS; end
 
       def validate
-        unless @state.nil? || ::Blur::CommandStatusState::VALID_VALUES.include?(@state)
-          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
-        end
       end
 
       ::Thrift::Struct.generate_accessors self

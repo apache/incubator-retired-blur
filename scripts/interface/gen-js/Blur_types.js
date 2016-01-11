@@ -65,8 +65,7 @@ BlurObjectType = {
 CommandStatusState = {
 'RUNNING' : 0,
 'INTERRUPTED' : 1,
-'COMPLETE' : 2,
-'BACK_PRESSURE_INTERRUPTED' : 3
+'COMPLETE' : 2
 };
 BlurException = function(args) {
   this.message = null;
@@ -4479,16 +4478,13 @@ Arguments.prototype.write = function(output) {
 
 CommandStatus = function(args) {
   this.executionId = null;
-  this.table = null;
   this.commandName = null;
   this.arguments = null;
-  this.state = null;
+  this.serverStateMap = null;
+  this.user = null;
   if (args) {
     if (args.executionId !== undefined) {
       this.executionId = args.executionId;
-    }
-    if (args.table !== undefined) {
-      this.table = args.table;
     }
     if (args.commandName !== undefined) {
       this.commandName = args.commandName;
@@ -4496,8 +4492,11 @@ CommandStatus = function(args) {
     if (args.arguments !== undefined) {
       this.arguments = args.arguments;
     }
-    if (args.state !== undefined) {
-      this.state = args.state;
+    if (args.serverStateMap !== undefined) {
+      this.serverStateMap = args.serverStateMap;
+    }
+    if (args.user !== undefined) {
+      this.user = args.user;
     }
   }
 };
@@ -4524,19 +4523,12 @@ CommandStatus.prototype.read = function(input) {
       break;
       case 2:
       if (ftype == Thrift.Type.STRING) {
-        this.table = input.readString().value;
-      } else {
-        input.skip(ftype);
-      }
-      break;
-      case 3:
-      if (ftype == Thrift.Type.STRING) {
         this.commandName = input.readString().value;
       } else {
         input.skip(ftype);
       }
       break;
-      case 4:
+      case 3:
       if (ftype == Thrift.Type.STRUCT) {
         this.arguments = new Arguments();
         this.arguments.read(input);
@@ -4544,9 +4536,61 @@ CommandStatus.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 4:
+      if (ftype == Thrift.Type.MAP) {
+        var _size270 = 0;
+        var _rtmp3274;
+        this.serverStateMap = {};
+        var _ktype271 = 0;
+        var _vtype272 = 0;
+        _rtmp3274 = input.readMapBegin();
+        _ktype271 = _rtmp3274.ktype;
+        _vtype272 = _rtmp3274.vtype;
+        _size270 = _rtmp3274.size;
+        for (var _i275 = 0; _i275 < _size270; ++_i275)
+        {
+          if (_i275 > 0 ) {
+            if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+              input.rstack.pop();
+            }
+          }
+          var key276 = null;
+          var val277 = null;
+          key276 = input.readString().value;
+          var _size278 = 0;
+          var _rtmp3282;
+          val277 = {};
+          var _ktype279 = 0;
+          var _vtype280 = 0;
+          _rtmp3282 = input.readMapBegin();
+          _ktype279 = _rtmp3282.ktype;
+          _vtype280 = _rtmp3282.vtype;
+          _size278 = _rtmp3282.size;
+          for (var _i283 = 0; _i283 < _size278; ++_i283)
+          {
+            if (_i283 > 0 ) {
+              if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
+                input.rstack.pop();
+              }
+            }
+            var key284 = null;
+            var val285 = null;
+            key284 = input.readI32().value;
+            val285 = input.readDouble().value;
+            val277[key284] = val285;
+          }
+          input.readMapEnd();
+          this.serverStateMap[key276] = val277;
+        }
+        input.readMapEnd();
+      } else {
+        input.skip(ftype);
+      }
+      break;
       case 5:
-      if (ftype == Thrift.Type.I32) {
-        this.state = input.readI32().value;
+      if (ftype == Thrift.Type.STRUCT) {
+        this.user = new User();
+        this.user.read(input);
       } else {
         input.skip(ftype);
       }
@@ -4567,24 +4611,44 @@ CommandStatus.prototype.write = function(output) {
     output.writeString(this.executionId);
     output.writeFieldEnd();
   }
-  if (this.table !== null && this.table !== undefined) {
-    output.writeFieldBegin('table', Thrift.Type.STRING, 2);
-    output.writeString(this.table);
-    output.writeFieldEnd();
-  }
   if (this.commandName !== null && this.commandName !== undefined) {
-    output.writeFieldBegin('commandName', Thrift.Type.STRING, 3);
+    output.writeFieldBegin('commandName', Thrift.Type.STRING, 2);
     output.writeString(this.commandName);
     output.writeFieldEnd();
   }
   if (this.arguments !== null && this.arguments !== undefined) {
-    output.writeFieldBegin('arguments', Thrift.Type.STRUCT, 4);
+    output.writeFieldBegin('arguments', Thrift.Type.STRUCT, 3);
     this.arguments.write(output);
     output.writeFieldEnd();
   }
-  if (this.state !== null && this.state !== undefined) {
-    output.writeFieldBegin('state', Thrift.Type.I32, 5);
-    output.writeI32(this.state);
+  if (this.serverStateMap !== null && this.serverStateMap !== undefined) {
+    output.writeFieldBegin('serverStateMap', Thrift.Type.MAP, 4);
+    output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.MAP, Thrift.objectLength(this.serverStateMap));
+    for (var kiter286 in this.serverStateMap)
+    {
+      if (this.serverStateMap.hasOwnProperty(kiter286))
+      {
+        var viter287 = this.serverStateMap[kiter286];
+        output.writeString(kiter286);
+        output.writeMapBegin(Thrift.Type.I32, Thrift.Type.DOUBLE, Thrift.objectLength(viter287));
+        for (var kiter288 in viter287)
+        {
+          if (viter287.hasOwnProperty(kiter288))
+          {
+            var viter289 = viter287[kiter288];
+            output.writeI32(kiter288);
+            output.writeDouble(viter289);
+          }
+        }
+        output.writeMapEnd();
+      }
+    }
+    output.writeMapEnd();
+    output.writeFieldEnd();
+  }
+  if (this.user !== null && this.user !== undefined) {
+    output.writeFieldBegin('user', Thrift.Type.STRUCT, 5);
+    this.user.write(output);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -4732,28 +4796,28 @@ CommandDescriptor.prototype.read = function(input) {
       break;
       case 3:
       if (ftype == Thrift.Type.MAP) {
-        var _size270 = 0;
-        var _rtmp3274;
+        var _size290 = 0;
+        var _rtmp3294;
         this.requiredArguments = {};
-        var _ktype271 = 0;
-        var _vtype272 = 0;
-        _rtmp3274 = input.readMapBegin();
-        _ktype271 = _rtmp3274.ktype;
-        _vtype272 = _rtmp3274.vtype;
-        _size270 = _rtmp3274.size;
-        for (var _i275 = 0; _i275 < _size270; ++_i275)
+        var _ktype291 = 0;
+        var _vtype292 = 0;
+        _rtmp3294 = input.readMapBegin();
+        _ktype291 = _rtmp3294.ktype;
+        _vtype292 = _rtmp3294.vtype;
+        _size290 = _rtmp3294.size;
+        for (var _i295 = 0; _i295 < _size290; ++_i295)
         {
-          if (_i275 > 0 ) {
+          if (_i295 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key276 = null;
-          var val277 = null;
-          key276 = input.readString().value;
-          val277 = new ArgumentDescriptor();
-          val277.read(input);
-          this.requiredArguments[key276] = val277;
+          var key296 = null;
+          var val297 = null;
+          key296 = input.readString().value;
+          val297 = new ArgumentDescriptor();
+          val297.read(input);
+          this.requiredArguments[key296] = val297;
         }
         input.readMapEnd();
       } else {
@@ -4762,28 +4826,28 @@ CommandDescriptor.prototype.read = function(input) {
       break;
       case 4:
       if (ftype == Thrift.Type.MAP) {
-        var _size278 = 0;
-        var _rtmp3282;
+        var _size298 = 0;
+        var _rtmp3302;
         this.optionalArguments = {};
-        var _ktype279 = 0;
-        var _vtype280 = 0;
-        _rtmp3282 = input.readMapBegin();
-        _ktype279 = _rtmp3282.ktype;
-        _vtype280 = _rtmp3282.vtype;
-        _size278 = _rtmp3282.size;
-        for (var _i283 = 0; _i283 < _size278; ++_i283)
+        var _ktype299 = 0;
+        var _vtype300 = 0;
+        _rtmp3302 = input.readMapBegin();
+        _ktype299 = _rtmp3302.ktype;
+        _vtype300 = _rtmp3302.vtype;
+        _size298 = _rtmp3302.size;
+        for (var _i303 = 0; _i303 < _size298; ++_i303)
         {
-          if (_i283 > 0 ) {
+          if (_i303 > 0 ) {
             if (input.rstack.length > input.rpos[input.rpos.length -1] + 1) {
               input.rstack.pop();
             }
           }
-          var key284 = null;
-          var val285 = null;
-          key284 = input.readString().value;
-          val285 = new ArgumentDescriptor();
-          val285.read(input);
-          this.optionalArguments[key284] = val285;
+          var key304 = null;
+          var val305 = null;
+          key304 = input.readString().value;
+          val305 = new ArgumentDescriptor();
+          val305.read(input);
+          this.optionalArguments[key304] = val305;
         }
         input.readMapEnd();
       } else {
@@ -4828,13 +4892,13 @@ CommandDescriptor.prototype.write = function(output) {
   if (this.requiredArguments !== null && this.requiredArguments !== undefined) {
     output.writeFieldBegin('requiredArguments', Thrift.Type.MAP, 3);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.requiredArguments));
-    for (var kiter286 in this.requiredArguments)
+    for (var kiter306 in this.requiredArguments)
     {
-      if (this.requiredArguments.hasOwnProperty(kiter286))
+      if (this.requiredArguments.hasOwnProperty(kiter306))
       {
-        var viter287 = this.requiredArguments[kiter286];
-        output.writeString(kiter286);
-        viter287.write(output);
+        var viter307 = this.requiredArguments[kiter306];
+        output.writeString(kiter306);
+        viter307.write(output);
       }
     }
     output.writeMapEnd();
@@ -4843,13 +4907,13 @@ CommandDescriptor.prototype.write = function(output) {
   if (this.optionalArguments !== null && this.optionalArguments !== undefined) {
     output.writeFieldBegin('optionalArguments', Thrift.Type.MAP, 4);
     output.writeMapBegin(Thrift.Type.STRING, Thrift.Type.STRUCT, Thrift.objectLength(this.optionalArguments));
-    for (var kiter288 in this.optionalArguments)
+    for (var kiter308 in this.optionalArguments)
     {
-      if (this.optionalArguments.hasOwnProperty(kiter288))
+      if (this.optionalArguments.hasOwnProperty(kiter308))
       {
-        var viter289 = this.optionalArguments[kiter288];
-        output.writeString(kiter288);
-        viter289.write(output);
+        var viter309 = this.optionalArguments[kiter308];
+        output.writeString(kiter308);
+        viter309.write(output);
       }
     }
     output.writeMapEnd();

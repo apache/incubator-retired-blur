@@ -96,9 +96,8 @@ module Blur
     RUNNING = 0
     INTERRUPTED = 1
     COMPLETE = 2
-    BACK_PRESSURE_INTERRUPTED = 3
-    VALUE_MAP = {0 => "RUNNING", 1 => "INTERRUPTED", 2 => "COMPLETE", 3 => "BACK_PRESSURE_INTERRUPTED"}
-    VALID_VALUES = Set.new([RUNNING, INTERRUPTED, COMPLETE, BACK_PRESSURE_INTERRUPTED]).freeze
+    VALUE_MAP = {0 => "RUNNING", 1 => "INTERRUPTED", 2 => "COMPLETE"}
+    VALID_VALUES = Set.new([RUNNING, INTERRUPTED, COMPLETE]).freeze
   end
 
   # BlurException that carries a message plus the original stack
@@ -1191,25 +1190,22 @@ module Blur
   class CommandStatus
     include ::Thrift::Struct, ::Thrift::Struct_Union
     EXECUTIONID = 1
-    TABLE = 2
-    COMMANDNAME = 3
-    ARGUMENTS = 4
-    STATE = 5
+    COMMANDNAME = 2
+    ARGUMENTS = 3
+    SERVERSTATEMAP = 4
+    USER = 5
 
     FIELDS = {
       EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'},
-      TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
       COMMANDNAME => {:type => ::Thrift::Types::STRING, :name => 'commandName'},
       ARGUMENTS => {:type => ::Thrift::Types::STRUCT, :name => 'arguments', :class => ::Blur::Arguments},
-      STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::Blur::CommandStatusState}
+      SERVERSTATEMAP => {:type => ::Thrift::Types::MAP, :name => 'serverStateMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::MAP, :key => {:type => ::Thrift::Types::I32, :enum_class => ::Blur::CommandStatusState}, :value => {:type => ::Thrift::Types::DOUBLE}}},
+      USER => {:type => ::Thrift::Types::STRUCT, :name => 'user', :class => ::Blur::User}
     }
 
     def struct_fields; FIELDS; end
 
     def validate
-      unless @state.nil? || ::Blur::CommandStatusState::VALID_VALUES.include?(@state)
-        raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
-      end
     end
 
     ::Thrift::Struct.generate_accessors self

@@ -100,16 +100,16 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size258 = 0;
+          my $_size276 = 0;
           $self->{success} = [];
-          my $_etype261 = 0;
-          $xfer += $input->readListBegin(\$_etype261, \$_size258);
-          for (my $_i262 = 0; $_i262 < $_size258; ++$_i262)
+          my $_etype279 = 0;
+          $xfer += $input->readListBegin(\$_etype279, \$_size276);
+          for (my $_i280 = 0; $_i280 < $_size276; ++$_i280)
           {
-            my $elem263 = undef;
-            $elem263 = new Blur::CommandDescriptor();
-            $xfer += $elem263->read($input);
-            push(@{$self->{success}},$elem263);
+            my $elem281 = undef;
+            $elem281 = new Blur::CommandDescriptor();
+            $xfer += $elem281->read($input);
+            push(@{$self->{success}},$elem281);
           }
           $xfer += $input->readListEnd();
         }
@@ -141,9 +141,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{success}}));
       {
-        foreach my $iter264 (@{$self->{success}}) 
+        foreach my $iter282 (@{$self->{success}}) 
         {
-          $xfer += ${iter264}->write($output);
+          $xfer += ${iter282}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -500,7 +500,7 @@ sub write {
 
 package Blur::Blur_commandStatusList_args;
 use base qw(Class::Accessor);
-Blur::Blur_commandStatusList_args->mk_accessors( qw( startingAt fetch state ) );
+Blur::Blur_commandStatusList_args->mk_accessors( qw( startingAt fetch ) );
 
 sub new {
   my $classname = shift;
@@ -508,16 +508,12 @@ sub new {
   my $vals      = shift || {};
   $self->{startingAt} = undef;
   $self->{fetch} = undef;
-  $self->{state} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{startingAt}) {
       $self->{startingAt} = $vals->{startingAt};
     }
     if (defined $vals->{fetch}) {
       $self->{fetch} = $vals->{fetch};
-    }
-    if (defined $vals->{state}) {
-      $self->{state} = $vals->{state};
     }
   }
   return bless ($self, $classname);
@@ -554,12 +550,6 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^3$/ && do{      if ($ftype == TType::I32) {
-        $xfer += $input->readI32(\$self->{state});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -580,11 +570,6 @@ sub write {
   if (defined $self->{fetch}) {
     $xfer += $output->writeFieldBegin('fetch', TType::I16, 2);
     $xfer += $output->writeI16($self->{fetch});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{state}) {
-    $xfer += $output->writeFieldBegin('state', TType::I32, 3);
-    $xfer += $output->writeI32($self->{state});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -634,15 +619,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size265 = 0;
+          my $_size283 = 0;
           $self->{success} = [];
-          my $_etype268 = 0;
-          $xfer += $input->readListBegin(\$_etype268, \$_size265);
-          for (my $_i269 = 0; $_i269 < $_size265; ++$_i269)
+          my $_etype286 = 0;
+          $xfer += $input->readListBegin(\$_etype286, \$_size283);
+          for (my $_i287 = 0; $_i287 < $_size283; ++$_i287)
           {
-            my $elem270 = undef;
-            $xfer += $input->readString(\$elem270);
-            push(@{$self->{success}},$elem270);
+            my $elem288 = undef;
+            $xfer += $input->readString(\$elem288);
+            push(@{$self->{success}},$elem288);
           }
           $xfer += $input->readListEnd();
         }
@@ -674,9 +659,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter271 (@{$self->{success}}) 
+        foreach my $iter289 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter271);
+          $xfer += $output->writeString($iter289);
         }
       }
       $xfer += $output->writeListEnd();
@@ -1839,15 +1824,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size272 = 0;
+          my $_size290 = 0;
           $self->{success} = [];
-          my $_etype275 = 0;
-          $xfer += $input->readListBegin(\$_etype275, \$_size272);
-          for (my $_i276 = 0; $_i276 < $_size272; ++$_i276)
+          my $_etype293 = 0;
+          $xfer += $input->readListBegin(\$_etype293, \$_size290);
+          for (my $_i294 = 0; $_i294 < $_size290; ++$_i294)
           {
-            my $elem277 = undef;
-            $xfer += $input->readString(\$elem277);
-            push(@{$self->{success}},$elem277);
+            my $elem295 = undef;
+            $xfer += $input->readString(\$elem295);
+            push(@{$self->{success}},$elem295);
           }
           $xfer += $input->readListEnd();
         }
@@ -1879,9 +1864,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter278 (@{$self->{success}}) 
+        foreach my $iter296 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter278);
+          $xfer += $output->writeString($iter296);
         }
       }
       $xfer += $output->writeListEnd();
@@ -2004,15 +1989,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size279 = 0;
+          my $_size297 = 0;
           $self->{success} = [];
-          my $_etype282 = 0;
-          $xfer += $input->readListBegin(\$_etype282, \$_size279);
-          for (my $_i283 = 0; $_i283 < $_size279; ++$_i283)
+          my $_etype300 = 0;
+          $xfer += $input->readListBegin(\$_etype300, \$_size297);
+          for (my $_i301 = 0; $_i301 < $_size297; ++$_i301)
           {
-            my $elem284 = undef;
-            $xfer += $input->readString(\$elem284);
-            push(@{$self->{success}},$elem284);
+            my $elem302 = undef;
+            $xfer += $input->readString(\$elem302);
+            push(@{$self->{success}},$elem302);
           }
           $xfer += $input->readListEnd();
         }
@@ -2044,9 +2029,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter285 (@{$self->{success}}) 
+        foreach my $iter303 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter285);
+          $xfer += $output->writeString($iter303);
         }
       }
       $xfer += $output->writeListEnd();
@@ -3196,30 +3181,30 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size286 = 0;
+          my $_size304 = 0;
           $self->{success} = {};
-          my $_ktype287 = 0;
-          my $_vtype288 = 0;
-          $xfer += $input->readMapBegin(\$_ktype287, \$_vtype288, \$_size286);
-          for (my $_i290 = 0; $_i290 < $_size286; ++$_i290)
+          my $_ktype305 = 0;
+          my $_vtype306 = 0;
+          $xfer += $input->readMapBegin(\$_ktype305, \$_vtype306, \$_size304);
+          for (my $_i308 = 0; $_i308 < $_size304; ++$_i308)
           {
-            my $key291 = '';
-            my $val292 = [];
-            $xfer += $input->readString(\$key291);
+            my $key309 = '';
+            my $val310 = [];
+            $xfer += $input->readString(\$key309);
             {
-              my $_size293 = 0;
-              $val292 = [];
-              my $_etype296 = 0;
-              $xfer += $input->readListBegin(\$_etype296, \$_size293);
-              for (my $_i297 = 0; $_i297 < $_size293; ++$_i297)
+              my $_size311 = 0;
+              $val310 = [];
+              my $_etype314 = 0;
+              $xfer += $input->readListBegin(\$_etype314, \$_size311);
+              for (my $_i315 = 0; $_i315 < $_size311; ++$_i315)
               {
-                my $elem298 = undef;
-                $xfer += $input->readString(\$elem298);
-                push(@{$val292},$elem298);
+                my $elem316 = undef;
+                $xfer += $input->readString(\$elem316);
+                push(@{$val310},$elem316);
               }
               $xfer += $input->readListEnd();
             }
-            $self->{success}->{$key291} = $val292;
+            $self->{success}->{$key309} = $val310;
           }
           $xfer += $input->readMapEnd();
         }
@@ -3251,15 +3236,15 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::LIST, scalar(keys %{$self->{success}}));
       {
-        while( my ($kiter299,$viter300) = each %{$self->{success}}) 
+        while( my ($kiter317,$viter318) = each %{$self->{success}}) 
         {
-          $xfer += $output->writeString($kiter299);
+          $xfer += $output->writeString($kiter317);
           {
-            $xfer += $output->writeListBegin(TType::STRING, scalar(@{${viter300}}));
+            $xfer += $output->writeListBegin(TType::STRING, scalar(@{${viter318}}));
             {
-              foreach my $iter301 (@{${viter300}}) 
+              foreach my $iter319 (@{${viter318}}) 
               {
-                $xfer += $output->writeString($iter301);
+                $xfer += $output->writeString($iter319);
               }
             }
             $xfer += $output->writeListEnd();
@@ -3761,16 +3746,16 @@ sub read {
       last; };
       /^2$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size302 = 0;
+          my $_size320 = 0;
           $self->{selectors} = [];
-          my $_etype305 = 0;
-          $xfer += $input->readListBegin(\$_etype305, \$_size302);
-          for (my $_i306 = 0; $_i306 < $_size302; ++$_i306)
+          my $_etype323 = 0;
+          $xfer += $input->readListBegin(\$_etype323, \$_size320);
+          for (my $_i324 = 0; $_i324 < $_size320; ++$_i324)
           {
-            my $elem307 = undef;
-            $elem307 = new Blur::Selector();
-            $xfer += $elem307->read($input);
-            push(@{$self->{selectors}},$elem307);
+            my $elem325 = undef;
+            $elem325 = new Blur::Selector();
+            $xfer += $elem325->read($input);
+            push(@{$self->{selectors}},$elem325);
           }
           $xfer += $input->readListEnd();
         }
@@ -3800,9 +3785,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{selectors}}));
       {
-        foreach my $iter308 (@{$self->{selectors}}) 
+        foreach my $iter326 (@{$self->{selectors}}) 
         {
-          $xfer += ${iter308}->write($output);
+          $xfer += ${iter326}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -3856,16 +3841,16 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size309 = 0;
+          my $_size327 = 0;
           $self->{success} = [];
-          my $_etype312 = 0;
-          $xfer += $input->readListBegin(\$_etype312, \$_size309);
-          for (my $_i313 = 0; $_i313 < $_size309; ++$_i313)
+          my $_etype330 = 0;
+          $xfer += $input->readListBegin(\$_etype330, \$_size327);
+          for (my $_i331 = 0; $_i331 < $_size327; ++$_i331)
           {
-            my $elem314 = undef;
-            $elem314 = new Blur::FetchResult();
-            $xfer += $elem314->read($input);
-            push(@{$self->{success}},$elem314);
+            my $elem332 = undef;
+            $elem332 = new Blur::FetchResult();
+            $xfer += $elem332->read($input);
+            push(@{$self->{success}},$elem332);
           }
           $xfer += $input->readListEnd();
         }
@@ -3897,9 +3882,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{success}}));
       {
-        foreach my $iter315 (@{$self->{success}}) 
+        foreach my $iter333 (@{$self->{success}}) 
         {
-          $xfer += ${iter315}->write($output);
+          $xfer += ${iter333}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -4108,15 +4093,15 @@ sub read {
       last; };
       /^2$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size316 = 0;
+          my $_size334 = 0;
           $self->{externalIndexPaths} = [];
-          my $_etype319 = 0;
-          $xfer += $input->readListBegin(\$_etype319, \$_size316);
-          for (my $_i320 = 0; $_i320 < $_size316; ++$_i320)
+          my $_etype337 = 0;
+          $xfer += $input->readListBegin(\$_etype337, \$_size334);
+          for (my $_i338 = 0; $_i338 < $_size334; ++$_i338)
           {
-            my $elem321 = undef;
-            $xfer += $input->readString(\$elem321);
-            push(@{$self->{externalIndexPaths}},$elem321);
+            my $elem339 = undef;
+            $xfer += $input->readString(\$elem339);
+            push(@{$self->{externalIndexPaths}},$elem339);
           }
           $xfer += $input->readListEnd();
         }
@@ -4146,9 +4131,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{externalIndexPaths}}));
       {
-        foreach my $iter322 (@{$self->{externalIndexPaths}}) 
+        foreach my $iter340 (@{$self->{externalIndexPaths}}) 
         {
-          $xfer += $output->writeString($iter322);
+          $xfer += $output->writeString($iter340);
         }
       }
       $xfer += $output->writeListEnd();
@@ -4273,15 +4258,15 @@ sub read {
       last; };
       /^2$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size323 = 0;
+          my $_size341 = 0;
           $self->{externalIndexPaths} = [];
-          my $_etype326 = 0;
-          $xfer += $input->readListBegin(\$_etype326, \$_size323);
-          for (my $_i327 = 0; $_i327 < $_size323; ++$_i327)
+          my $_etype344 = 0;
+          $xfer += $input->readListBegin(\$_etype344, \$_size341);
+          for (my $_i345 = 0; $_i345 < $_size341; ++$_i345)
           {
-            my $elem328 = undef;
-            $xfer += $input->readString(\$elem328);
-            push(@{$self->{externalIndexPaths}},$elem328);
+            my $elem346 = undef;
+            $xfer += $input->readString(\$elem346);
+            push(@{$self->{externalIndexPaths}},$elem346);
           }
           $xfer += $input->readListEnd();
         }
@@ -4311,9 +4296,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{externalIndexPaths}}));
       {
-        foreach my $iter329 (@{$self->{externalIndexPaths}}) 
+        foreach my $iter347 (@{$self->{externalIndexPaths}}) 
         {
-          $xfer += $output->writeString($iter329);
+          $xfer += $output->writeString($iter347);
         }
       }
       $xfer += $output->writeListEnd();
@@ -4688,16 +4673,16 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size330 = 0;
+          my $_size348 = 0;
           $self->{mutations} = [];
-          my $_etype333 = 0;
-          $xfer += $input->readListBegin(\$_etype333, \$_size330);
-          for (my $_i334 = 0; $_i334 < $_size330; ++$_i334)
+          my $_etype351 = 0;
+          $xfer += $input->readListBegin(\$_etype351, \$_size348);
+          for (my $_i352 = 0; $_i352 < $_size348; ++$_i352)
           {
-            my $elem335 = undef;
-            $elem335 = new Blur::RowMutation();
-            $xfer += $elem335->read($input);
-            push(@{$self->{mutations}},$elem335);
+            my $elem353 = undef;
+            $elem353 = new Blur::RowMutation();
+            $xfer += $elem353->read($input);
+            push(@{$self->{mutations}},$elem353);
           }
           $xfer += $input->readListEnd();
         }
@@ -4722,9 +4707,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{mutations}}));
       {
-        foreach my $iter336 (@{$self->{mutations}}) 
+        foreach my $iter354 (@{$self->{mutations}}) 
         {
-          $xfer += ${iter336}->write($output);
+          $xfer += ${iter354}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -4839,16 +4824,16 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size337 = 0;
+          my $_size355 = 0;
           $self->{mutations} = [];
-          my $_etype340 = 0;
-          $xfer += $input->readListBegin(\$_etype340, \$_size337);
-          for (my $_i341 = 0; $_i341 < $_size337; ++$_i341)
+          my $_etype358 = 0;
+          $xfer += $input->readListBegin(\$_etype358, \$_size355);
+          for (my $_i359 = 0; $_i359 < $_size355; ++$_i359)
           {
-            my $elem342 = undef;
-            $elem342 = new Blur::RowMutation();
-            $xfer += $elem342->read($input);
-            push(@{$self->{mutations}},$elem342);
+            my $elem360 = undef;
+            $elem360 = new Blur::RowMutation();
+            $xfer += $elem360->read($input);
+            push(@{$self->{mutations}},$elem360);
           }
           $xfer += $input->readListEnd();
         }
@@ -4873,9 +4858,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{mutations}}));
       {
-        foreach my $iter343 (@{$self->{mutations}}) 
+        foreach my $iter361 (@{$self->{mutations}}) 
         {
-          $xfer += ${iter343}->write($output);
+          $xfer += ${iter361}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -5274,16 +5259,16 @@ sub read {
       last; };
       /^2$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size344 = 0;
+          my $_size362 = 0;
           $self->{rowMutations} = [];
-          my $_etype347 = 0;
-          $xfer += $input->readListBegin(\$_etype347, \$_size344);
-          for (my $_i348 = 0; $_i348 < $_size344; ++$_i348)
+          my $_etype365 = 0;
+          $xfer += $input->readListBegin(\$_etype365, \$_size362);
+          for (my $_i366 = 0; $_i366 < $_size362; ++$_i366)
           {
-            my $elem349 = undef;
-            $elem349 = new Blur::RowMutation();
-            $xfer += $elem349->read($input);
-            push(@{$self->{rowMutations}},$elem349);
+            my $elem367 = undef;
+            $elem367 = new Blur::RowMutation();
+            $xfer += $elem367->read($input);
+            push(@{$self->{rowMutations}},$elem367);
           }
           $xfer += $input->readListEnd();
         }
@@ -5313,9 +5298,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{rowMutations}}));
       {
-        foreach my $iter350 (@{$self->{rowMutations}}) 
+        foreach my $iter368 (@{$self->{rowMutations}}) 
         {
-          $xfer += ${iter350}->write($output);
+          $xfer += ${iter368}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -5801,15 +5786,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size351 = 0;
+          my $_size369 = 0;
           $self->{success} = [];
-          my $_etype354 = 0;
-          $xfer += $input->readListBegin(\$_etype354, \$_size351);
-          for (my $_i355 = 0; $_i355 < $_size351; ++$_i355)
+          my $_etype372 = 0;
+          $xfer += $input->readListBegin(\$_etype372, \$_size369);
+          for (my $_i373 = 0; $_i373 < $_size369; ++$_i373)
           {
-            my $elem356 = undef;
-            $xfer += $input->readString(\$elem356);
-            push(@{$self->{success}},$elem356);
+            my $elem374 = undef;
+            $xfer += $input->readString(\$elem374);
+            push(@{$self->{success}},$elem374);
           }
           $xfer += $input->readListEnd();
         }
@@ -5841,9 +5826,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter357 (@{$self->{success}}) 
+        foreach my $iter375 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter357);
+          $xfer += $output->writeString($iter375);
         }
       }
       $xfer += $output->writeListEnd();
@@ -6186,15 +6171,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size358 = 0;
+          my $_size376 = 0;
           $self->{success} = [];
-          my $_etype361 = 0;
-          $xfer += $input->readListBegin(\$_etype361, \$_size358);
-          for (my $_i362 = 0; $_i362 < $_size358; ++$_i362)
+          my $_etype379 = 0;
+          $xfer += $input->readListBegin(\$_etype379, \$_size376);
+          for (my $_i380 = 0; $_i380 < $_size376; ++$_i380)
           {
-            my $elem363 = undef;
-            $xfer += $input->readString(\$elem363);
-            push(@{$self->{success}},$elem363);
+            my $elem381 = undef;
+            $xfer += $input->readString(\$elem381);
+            push(@{$self->{success}},$elem381);
           }
           $xfer += $input->readListEnd();
         }
@@ -6226,9 +6211,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter364 (@{$self->{success}}) 
+        foreach my $iter382 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter364);
+          $xfer += $output->writeString($iter382);
         }
       }
       $xfer += $output->writeListEnd();
@@ -6522,15 +6507,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size365 = 0;
+          my $_size383 = 0;
           $self->{success} = [];
-          my $_etype368 = 0;
-          $xfer += $input->readListBegin(\$_etype368, \$_size365);
-          for (my $_i369 = 0; $_i369 < $_size365; ++$_i369)
+          my $_etype386 = 0;
+          $xfer += $input->readListBegin(\$_etype386, \$_size383);
+          for (my $_i387 = 0; $_i387 < $_size383; ++$_i387)
           {
-            my $elem370 = undef;
-            $xfer += $input->readString(\$elem370);
-            push(@{$self->{success}},$elem370);
+            my $elem388 = undef;
+            $xfer += $input->readString(\$elem388);
+            push(@{$self->{success}},$elem388);
           }
           $xfer += $input->readListEnd();
         }
@@ -6562,9 +6547,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter371 (@{$self->{success}}) 
+        foreach my $iter389 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter371);
+          $xfer += $output->writeString($iter389);
         }
       }
       $xfer += $output->writeListEnd();
@@ -6687,15 +6672,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size372 = 0;
+          my $_size390 = 0;
           $self->{success} = [];
-          my $_etype375 = 0;
-          $xfer += $input->readListBegin(\$_etype375, \$_size372);
-          for (my $_i376 = 0; $_i376 < $_size372; ++$_i376)
+          my $_etype393 = 0;
+          $xfer += $input->readListBegin(\$_etype393, \$_size390);
+          for (my $_i394 = 0; $_i394 < $_size390; ++$_i394)
           {
-            my $elem377 = undef;
-            $xfer += $input->readString(\$elem377);
-            push(@{$self->{success}},$elem377);
+            my $elem395 = undef;
+            $xfer += $input->readString(\$elem395);
+            push(@{$self->{success}},$elem395);
           }
           $xfer += $input->readListEnd();
         }
@@ -6727,9 +6712,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter378 (@{$self->{success}}) 
+        foreach my $iter396 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter378);
+          $xfer += $output->writeString($iter396);
         }
       }
       $xfer += $output->writeListEnd();
@@ -6834,15 +6819,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size379 = 0;
+          my $_size397 = 0;
           $self->{success} = [];
-          my $_etype382 = 0;
-          $xfer += $input->readListBegin(\$_etype382, \$_size379);
-          for (my $_i383 = 0; $_i383 < $_size379; ++$_i383)
+          my $_etype400 = 0;
+          $xfer += $input->readListBegin(\$_etype400, \$_size397);
+          for (my $_i401 = 0; $_i401 < $_size397; ++$_i401)
           {
-            my $elem384 = undef;
-            $xfer += $input->readString(\$elem384);
-            push(@{$self->{success}},$elem384);
+            my $elem402 = undef;
+            $xfer += $input->readString(\$elem402);
+            push(@{$self->{success}},$elem402);
           }
           $xfer += $input->readListEnd();
         }
@@ -6874,9 +6859,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter385 (@{$self->{success}}) 
+        foreach my $iter403 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter385);
+          $xfer += $output->writeString($iter403);
         }
       }
       $xfer += $output->writeListEnd();
@@ -6999,18 +6984,18 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size386 = 0;
+          my $_size404 = 0;
           $self->{success} = {};
-          my $_ktype387 = 0;
-          my $_vtype388 = 0;
-          $xfer += $input->readMapBegin(\$_ktype387, \$_vtype388, \$_size386);
-          for (my $_i390 = 0; $_i390 < $_size386; ++$_i390)
+          my $_ktype405 = 0;
+          my $_vtype406 = 0;
+          $xfer += $input->readMapBegin(\$_ktype405, \$_vtype406, \$_size404);
+          for (my $_i408 = 0; $_i408 < $_size404; ++$_i408)
           {
-            my $key391 = '';
-            my $val392 = '';
-            $xfer += $input->readString(\$key391);
-            $xfer += $input->readString(\$val392);
-            $self->{success}->{$key391} = $val392;
+            my $key409 = '';
+            my $val410 = '';
+            $xfer += $input->readString(\$key409);
+            $xfer += $input->readString(\$val410);
+            $self->{success}->{$key409} = $val410;
           }
           $xfer += $input->readMapEnd();
         }
@@ -7042,10 +7027,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{success}}));
       {
-        while( my ($kiter393,$viter394) = each %{$self->{success}}) 
+        while( my ($kiter411,$viter412) = each %{$self->{success}}) 
         {
-          $xfer += $output->writeString($kiter393);
-          $xfer += $output->writeString($viter394);
+          $xfer += $output->writeString($kiter411);
+          $xfer += $output->writeString($viter412);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -7168,33 +7153,33 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size395 = 0;
+          my $_size413 = 0;
           $self->{success} = {};
-          my $_ktype396 = 0;
-          my $_vtype397 = 0;
-          $xfer += $input->readMapBegin(\$_ktype396, \$_vtype397, \$_size395);
-          for (my $_i399 = 0; $_i399 < $_size395; ++$_i399)
+          my $_ktype414 = 0;
+          my $_vtype415 = 0;
+          $xfer += $input->readMapBegin(\$_ktype414, \$_vtype415, \$_size413);
+          for (my $_i417 = 0; $_i417 < $_size413; ++$_i417)
           {
-            my $key400 = '';
-            my $val401 = [];
-            $xfer += $input->readString(\$key400);
+            my $key418 = '';
+            my $val419 = [];
+            $xfer += $input->readString(\$key418);
             {
-              my $_size402 = 0;
-              $val401 = {};
-              my $_ktype403 = 0;
-              my $_vtype404 = 0;
-              $xfer += $input->readMapBegin(\$_ktype403, \$_vtype404, \$_size402);
-              for (my $_i406 = 0; $_i406 < $_size402; ++$_i406)
+              my $_size420 = 0;
+              $val419 = {};
+              my $_ktype421 = 0;
+              my $_vtype422 = 0;
+              $xfer += $input->readMapBegin(\$_ktype421, \$_vtype422, \$_size420);
+              for (my $_i424 = 0; $_i424 < $_size420; ++$_i424)
               {
-                my $key407 = '';
-                my $val408 = 0;
-                $xfer += $input->readString(\$key407);
-                $xfer += $input->readI32(\$val408);
-                $val401->{$key407} = $val408;
+                my $key425 = '';
+                my $val426 = 0;
+                $xfer += $input->readString(\$key425);
+                $xfer += $input->readI32(\$val426);
+                $val419->{$key425} = $val426;
               }
               $xfer += $input->readMapEnd();
             }
-            $self->{success}->{$key400} = $val401;
+            $self->{success}->{$key418} = $val419;
           }
           $xfer += $input->readMapEnd();
         }
@@ -7226,16 +7211,16 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::MAP, scalar(keys %{$self->{success}}));
       {
-        while( my ($kiter409,$viter410) = each %{$self->{success}}) 
+        while( my ($kiter427,$viter428) = each %{$self->{success}}) 
         {
-          $xfer += $output->writeString($kiter409);
+          $xfer += $output->writeString($kiter427);
           {
-            $xfer += $output->writeMapBegin(TType::STRING, TType::I32, scalar(keys %{${viter410}}));
+            $xfer += $output->writeMapBegin(TType::STRING, TType::I32, scalar(keys %{${viter428}}));
             {
-              while( my ($kiter411,$viter412) = each %{${viter410}}) 
+              while( my ($kiter429,$viter430) = each %{${viter428}}) 
               {
-                $xfer += $output->writeString($kiter411);
-                $xfer += $output->writeI32($viter412);
+                $xfer += $output->writeString($kiter429);
+                $xfer += $output->writeI32($viter430);
               }
             }
             $xfer += $output->writeMapEnd();
@@ -7488,18 +7473,18 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size413 = 0;
+          my $_size431 = 0;
           $self->{success} = {};
-          my $_ktype414 = 0;
-          my $_vtype415 = 0;
-          $xfer += $input->readMapBegin(\$_ktype414, \$_vtype415, \$_size413);
-          for (my $_i417 = 0; $_i417 < $_size413; ++$_i417)
+          my $_ktype432 = 0;
+          my $_vtype433 = 0;
+          $xfer += $input->readMapBegin(\$_ktype432, \$_vtype433, \$_size431);
+          for (my $_i435 = 0; $_i435 < $_size431; ++$_i435)
           {
-            my $key418 = '';
-            my $val419 = '';
-            $xfer += $input->readString(\$key418);
-            $xfer += $input->readString(\$val419);
-            $self->{success}->{$key418} = $val419;
+            my $key436 = '';
+            my $val437 = '';
+            $xfer += $input->readString(\$key436);
+            $xfer += $input->readString(\$val437);
+            $self->{success}->{$key436} = $val437;
           }
           $xfer += $input->readMapEnd();
         }
@@ -7531,10 +7516,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{success}}));
       {
-        while( my ($kiter420,$viter421) = each %{$self->{success}}) 
+        while( my ($kiter438,$viter439) = each %{$self->{success}}) 
         {
-          $xfer += $output->writeString($kiter420);
-          $xfer += $output->writeString($viter421);
+          $xfer += $output->writeString($kiter438);
+          $xfer += $output->writeString($viter439);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -7748,15 +7733,15 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::SET) {
         {
-          my $_size422 = 0;
+          my $_size440 = 0;
           $self->{metrics} = {};
-          my $_etype425 = 0;
-          $xfer += $input->readSetBegin(\$_etype425, \$_size422);
-          for (my $_i426 = 0; $_i426 < $_size422; ++$_i426)
+          my $_etype443 = 0;
+          $xfer += $input->readSetBegin(\$_etype443, \$_size440);
+          for (my $_i444 = 0; $_i444 < $_size440; ++$_i444)
           {
-            my $elem427 = undef;
-            $xfer += $input->readString(\$elem427);
-            $self->{metrics}->{$elem427} = 1;
+            my $elem445 = undef;
+            $xfer += $input->readString(\$elem445);
+            $self->{metrics}->{$elem445} = 1;
           }
           $xfer += $input->readSetEnd();
         }
@@ -7781,9 +7766,9 @@ sub write {
     {
       $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{metrics}}));
       {
-        foreach my $iter428 (@{$self->{metrics}})
+        foreach my $iter446 (@{$self->{metrics}})
         {
-          $xfer += $output->writeString($iter428);
+          $xfer += $output->writeString($iter446);
         }
       }
       $xfer += $output->writeSetEnd();
@@ -7837,19 +7822,19 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size429 = 0;
+          my $_size447 = 0;
           $self->{success} = {};
-          my $_ktype430 = 0;
-          my $_vtype431 = 0;
-          $xfer += $input->readMapBegin(\$_ktype430, \$_vtype431, \$_size429);
-          for (my $_i433 = 0; $_i433 < $_size429; ++$_i433)
+          my $_ktype448 = 0;
+          my $_vtype449 = 0;
+          $xfer += $input->readMapBegin(\$_ktype448, \$_vtype449, \$_size447);
+          for (my $_i451 = 0; $_i451 < $_size447; ++$_i451)
           {
-            my $key434 = '';
-            my $val435 = new Blur::Metric();
-            $xfer += $input->readString(\$key434);
-            $val435 = new Blur::Metric();
-            $xfer += $val435->read($input);
-            $self->{success}->{$key434} = $val435;
+            my $key452 = '';
+            my $val453 = new Blur::Metric();
+            $xfer += $input->readString(\$key452);
+            $val453 = new Blur::Metric();
+            $xfer += $val453->read($input);
+            $self->{success}->{$key452} = $val453;
           }
           $xfer += $input->readMapEnd();
         }
@@ -7881,10 +7866,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRUCT, scalar(keys %{$self->{success}}));
       {
-        while( my ($kiter436,$viter437) = each %{$self->{success}}) 
+        while( my ($kiter454,$viter455) = each %{$self->{success}}) 
         {
-          $xfer += $output->writeString($kiter436);
-          $xfer += ${viter437}->write($output);
+          $xfer += $output->writeString($kiter454);
+          $xfer += ${viter455}->write($output);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -8114,15 +8099,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size438 = 0;
+          my $_size456 = 0;
           $self->{success} = [];
-          my $_etype441 = 0;
-          $xfer += $input->readListBegin(\$_etype441, \$_size438);
-          for (my $_i442 = 0; $_i442 < $_size438; ++$_i442)
+          my $_etype459 = 0;
+          $xfer += $input->readListBegin(\$_etype459, \$_size456);
+          for (my $_i460 = 0; $_i460 < $_size456; ++$_i460)
           {
-            my $elem443 = undef;
-            $xfer += $input->readString(\$elem443);
-            push(@{$self->{success}},$elem443);
+            my $elem461 = undef;
+            $xfer += $input->readString(\$elem461);
+            push(@{$self->{success}},$elem461);
           }
           $xfer += $input->readListEnd();
         }
@@ -8154,9 +8139,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter444 (@{$self->{success}}) 
+        foreach my $iter462 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter444);
+          $xfer += $output->writeString($iter462);
         }
       }
       $xfer += $output->writeListEnd();
@@ -8279,15 +8264,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size445 = 0;
+          my $_size463 = 0;
           $self->{success} = [];
-          my $_etype448 = 0;
-          $xfer += $input->readListBegin(\$_etype448, \$_size445);
-          for (my $_i449 = 0; $_i449 < $_size445; ++$_i449)
+          my $_etype466 = 0;
+          $xfer += $input->readListBegin(\$_etype466, \$_size463);
+          for (my $_i467 = 0; $_i467 < $_size463; ++$_i467)
           {
-            my $elem450 = undef;
-            $xfer += $input->readString(\$elem450);
-            push(@{$self->{success}},$elem450);
+            my $elem468 = undef;
+            $xfer += $input->readString(\$elem468);
+            push(@{$self->{success}},$elem468);
           }
           $xfer += $input->readListEnd();
         }
@@ -8319,9 +8304,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter451 (@{$self->{success}}) 
+        foreach my $iter469 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter451);
+          $xfer += $output->writeString($iter469);
         }
       }
       $xfer += $output->writeListEnd();
@@ -9003,7 +8988,6 @@ sub commandStatusList{
   my $self = shift;
   my $startingAt = shift;
   my $fetch = shift;
-  my $state = shift;
 
   die 'implement interface';
 }
@@ -9452,8 +9436,7 @@ sub commandStatusList{
 
   my $startingAt = ($request->{'startingAt'}) ? $request->{'startingAt'} : undef;
   my $fetch = ($request->{'fetch'}) ? $request->{'fetch'} : undef;
-  my $state = ($request->{'state'}) ? $request->{'state'} : undef;
-  return $self->{impl}->commandStatusList($startingAt, $fetch, $state);
+  return $self->{impl}->commandStatusList($startingAt, $fetch);
 }
 
 sub commandStatus{
@@ -10023,9 +10006,8 @@ sub commandStatusList{
   my $self = shift;
   my $startingAt = shift;
   my $fetch = shift;
-  my $state = shift;
 
-    $self->send_commandStatusList($startingAt, $fetch, $state);
+    $self->send_commandStatusList($startingAt, $fetch);
   return $self->recv_commandStatusList();
 }
 
@@ -10033,13 +10015,11 @@ sub send_commandStatusList{
   my $self = shift;
   my $startingAt = shift;
   my $fetch = shift;
-  my $state = shift;
 
   $self->{output}->writeMessageBegin('commandStatusList', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_commandStatusList_args();
   $args->{startingAt} = $startingAt;
   $args->{fetch} = $fetch;
-  $args->{state} = $state;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
@@ -12601,7 +12581,7 @@ sub process_commandStatusList {
     $input->readMessageEnd();
     my $result = new Blur::Blur_commandStatusList_result();
     eval {
-      $result->{success} = $self->{handler}->commandStatusList($args->startingAt, $args->fetch, $args->state);
+      $result->{success} = $self->{handler}->commandStatusList($args->startingAt, $args->fetch);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }

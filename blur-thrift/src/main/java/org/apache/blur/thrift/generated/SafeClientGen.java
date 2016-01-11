@@ -118,9 +118,9 @@ public org.apache.blur.thrift.generated.CommandStatus commandStatus(java.lang.St
 }
 
 @Override
-public java.util.List commandStatusList(int arg0, short arg1, org.apache.blur.thrift.generated.CommandStatusState arg2) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public java.util.List commandStatusList(int arg0, short arg1) throws org.apache.blur.thrift.generated.BlurException, org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    return super.commandStatusList(arg0, arg1, arg2);
+    return super.commandStatusList(arg0, arg1);
   } finally {_lock.unlock();}
 }
 
@@ -818,9 +818,9 @@ public void send_commandStatus(java.lang.String arg0) throws org.apache.blur.thi
 }
 
 @Override
-public void send_commandStatusList(int arg0, short arg1, org.apache.blur.thrift.generated.CommandStatusState arg2) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
+public void send_commandStatusList(int arg0, short arg1) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
   _lock.errorFailLock(); try {
-    super.send_commandStatusList(arg0, arg1, arg2);
+    super.send_commandStatusList(arg0, arg1);
   } finally {_lock.unlock();}
 }
 

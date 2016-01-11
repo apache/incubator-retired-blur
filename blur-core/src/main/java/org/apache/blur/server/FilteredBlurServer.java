@@ -31,7 +31,6 @@ import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.CommandDescriptor;
 import org.apache.blur.thrift.generated.CommandStatus;
-import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Level;
 import org.apache.blur.thrift.generated.Metric;
@@ -261,9 +260,9 @@ public class FilteredBlurServer implements Iface {
   }
 
   @Override
-  public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state) throws BlurException,
+  public List<String> commandStatusList(int startingAt, short fetch) throws BlurException,
       TException {
-    return _iface.commandStatusList(startingAt, fetch, state);
+    return _iface.commandStatusList(startingAt, fetch);
   }
 
   @Override

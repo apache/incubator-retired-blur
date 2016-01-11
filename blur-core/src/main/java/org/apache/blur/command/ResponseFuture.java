@@ -20,7 +20,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.blur.thrift.generated.CommandStatus;
 
 public class ResponseFuture<T> implements Future<T> {
 
@@ -28,11 +31,20 @@ public class ResponseFuture<T> implements Future<T> {
   private final AtomicLong _timeWhenNotRunningObserved = new AtomicLong();
   private final long _tombstone;
   private final Command<?> _commandExecuting;
+  private final CommandStatus _originalCommandStatusObject;
+  private final AtomicBoolean _running;
 
-  public ResponseFuture(long tombstone, Future<T> future, Command<?> commandExecuting) {
+  public ResponseFuture(long tombstone, Future<T> future, Command<?> commandExecuting,
+      CommandStatus originalCommandStatusObject, AtomicBoolean running) {
     _tombstone = tombstone;
     _future = future;
     _commandExecuting = commandExecuting;
+    _originalCommandStatusObject = originalCommandStatusObject;
+    _running = running;
+  }
+
+  public CommandStatus getOriginalCommandStatusObject() {
+    return _originalCommandStatusObject;
   }
 
   public Command<?> getCommandExecuting() {
@@ -40,6 +52,7 @@ public class ResponseFuture<T> implements Future<T> {
   }
 
   public boolean cancel(boolean mayInterruptIfRunning) {
+    _running.set(false);
     return _future.cancel(mayInterruptIfRunning);
   }
 

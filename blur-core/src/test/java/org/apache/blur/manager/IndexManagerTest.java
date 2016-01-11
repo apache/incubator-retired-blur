@@ -51,6 +51,7 @@ import org.apache.blur.lucene.search.DeepPagingCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.indexserver.LocalIndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
+import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.memory.MemoryAllocationWatcher;
 import org.apache.blur.memory.Watcher;
 import org.apache.blur.server.TableContext;
@@ -106,6 +107,8 @@ public class IndexManagerTest {
   private IndexManager indexManager;
   private File base;
 
+  private QueryStatusManager _statusManager;
+
   @Before
   public void setUp() throws BlurException, IOException, InterruptedException {
     TableContext.clear();
@@ -128,8 +131,10 @@ public class IndexManagerTest {
 
     BlurFilterCache filterCache = new DefaultBlurFilterCache(new BlurConfiguration());
     long statusCleanupTimerDelay = 1000;
-    indexManager = new IndexManager(server, getClusterStatus(tableDescriptor), filterCache, 10000000, 100, 1, 1,
-        statusCleanupTimerDelay, 0, new DeepPagingCache(), NOTHING);
+    _statusManager = new QueryStatusManager(statusCleanupTimerDelay);
+
+    indexManager = new IndexManager(server, getClusterStatus(tableDescriptor), filterCache, 10000000, 100, 1, 1, 0,
+        new DeepPagingCache(), NOTHING, _statusManager);
     setupData();
   }
 
@@ -231,6 +236,7 @@ public class IndexManagerTest {
   @After
   public void teardown() {
     if (indexManager != null) {
+      _statusManager.close();
       indexManager.close();
       indexManager = null;
     }

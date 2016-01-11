@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.command.commandtype.ClusterExecuteCommand;
@@ -14,6 +15,7 @@ import org.apache.blur.command.commandtype.ServerReadCommand;
 import org.apache.blur.server.LayoutFactory;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.TableContextFactory;
+import org.apache.blur.thrift.generated.CommandStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 
@@ -37,12 +39,13 @@ import org.apache.hadoop.conf.Configuration;
 public class ControllerCommandManager extends BaseCommandManager {
 
   public ControllerCommandManager(File tmpPath, String commandPath, int workerThreadCount, int driverThreadCount,
-      long connectionTimeout, Configuration configuration) throws IOException {
-    super(tmpPath, commandPath, workerThreadCount, driverThreadCount, connectionTimeout, configuration);
+      long connectionTimeout, Configuration configuration, String serverName) throws IOException {
+    super(tmpPath, commandPath, workerThreadCount, driverThreadCount, connectionTimeout, configuration, serverName);
   }
 
   public Response execute(final TableContextFactory tableContextFactory, LayoutFactory layoutFactory,
-      String commandName, ArgumentOverlay argumentOverlay) throws IOException, TimeoutException, ExceptionCollector {
+      String commandName, ArgumentOverlay argumentOverlay, CommandStatus originalCommandStatusObject)
+      throws IOException, TimeoutException, ExceptionCollector {
     final ControllerClusterContext context = createCommandContext(tableContextFactory, layoutFactory);
     final Command<?> command = getCommandObject(commandName, argumentOverlay);
     if (command == null) {
@@ -78,7 +81,7 @@ public class ControllerCommandManager extends BaseCommandManager {
         }
       }
 
-    }, command);
+    }, command, originalCommandStatusObject, new AtomicBoolean(true));
   }
 
   private CombiningContext getCombiningContext(final TableContextFactory tableContextFactory) {

@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
@@ -25,6 +26,7 @@ import org.apache.blur.thrift.Connection;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.CommandStatus;
 import org.apache.blur.thrift.generated.Response;
 import org.apache.blur.thrift.generated.TimeoutException;
 import org.apache.blur.thrift.generated.ValueObject;
@@ -131,6 +133,8 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     Map<Server, Client> clientMap = getClientMap(command, tables, shards);
 
     final Arguments arguments = _manager.toArguments(command);
+
+    CommandStatus originalCommandStatusObject = new CommandStatus(null, command.getName(), arguments, null, null);
     for (Entry<Server, Client> e : clientMap.entrySet()) {
       Server server = e.getKey();
       final Client client = e.getValue();
@@ -142,7 +146,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
           Map<Shard, Object> shardToValue = CommandUtil.fromThriftSupportedObjects(shardToThriftValue, _serDe);
           return (Map<Shard, T>) shardToValue;
         }
-      }, command);
+      }, command, originalCommandStatusObject, new AtomicBoolean(true));
       for (Shard shard : getShardsOnServer(server, tables, shards)) {
         futureMap.put(shard, new ShardResultFuture<T>(shard, future));
       }
@@ -222,6 +226,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     Set<Shard> shards = command.routeShards(this, tables);
     Map<Server, Client> clientMap = getClientMap(command, tables, shards);
     final Arguments arguments = _manager.toArguments(command);
+    CommandStatus originalCommandStatusObject = new CommandStatus(null, command.getName(), arguments, null, null);
     for (Entry<Server, Client> e : clientMap.entrySet()) {
       Server server = e.getKey();
       final Client client = e.getValue();
@@ -233,7 +238,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
           Object thriftObject = CommandUtil.toObject(valueObject);
           return (T) _serDe.fromSupportedThriftObject(thriftObject);
         }
-      }, command);
+      }, command, originalCommandStatusObject, new AtomicBoolean(true));
       futureMap.put(server, future);
     }
     return futureMap;

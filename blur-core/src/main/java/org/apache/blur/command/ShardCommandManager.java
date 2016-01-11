@@ -26,14 +26,17 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.manager.IndexManager;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.TableContextFactory;
+import org.apache.blur.thrift.generated.CommandStatus;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.index.IndexReader;
 
@@ -42,14 +45,16 @@ public class ShardCommandManager extends BaseCommandManager {
   private final IndexServer _indexServer;
 
   public ShardCommandManager(IndexServer indexServer, File tmpPath, String commandPath, int workerThreadCount,
-      int driverThreadCount, long connectionTimeout, Configuration configuration) throws IOException {
-    super(tmpPath, commandPath, workerThreadCount, driverThreadCount, connectionTimeout, configuration);
+      int driverThreadCount, long connectionTimeout, Configuration configuration, String serverName) throws IOException {
+    super(tmpPath, commandPath, workerThreadCount, driverThreadCount, connectionTimeout, configuration, serverName);
     _indexServer = indexServer;
   }
 
   public Response execute(final TableContextFactory tableContextFactory, final String commandName,
-      final ArgumentOverlay argumentOverlay) throws IOException, TimeoutException, ExceptionCollector {
+      final ArgumentOverlay argumentOverlay, CommandStatus originalCommandStatusObject) throws IOException,
+      TimeoutException, ExceptionCollector {
     final ShardServerContext shardServerContext = getShardServerContext();
+    AtomicBoolean running = new AtomicBoolean(true);
     final Command<?> command = getCommandObject(commandName, argumentOverlay);
     Callable<Response> callable = new Callable<Response>() {
       @Override
@@ -58,8 +63,9 @@ public class ShardCommandManager extends BaseCommandManager {
           throw new IOException("Command with name [" + commandName + "] not found.");
         }
         if (command instanceof IndexRead || command instanceof ServerRead) {
-          return toResponse(executeReadCommand(shardServerContext, command, tableContextFactory), command,
-              getServerContext(tableContextFactory));
+          return toResponse(
+              executeReadCommand(shardServerContext, command, tableContextFactory, originalCommandStatusObject, running),
+              command, getServerContext(tableContextFactory));
         }
         throw new IOException("Command type of [" + command.getClass() + "] not supported.");
       }
@@ -79,7 +85,7 @@ public class ShardCommandManager extends BaseCommandManager {
         };
       }
     };
-    return submitDriverCallable(callable, command);
+    return submitDriverCallable(callable, command, originalCommandStatusObject, running);
   }
 
   private ShardServerContext getShardServerContext() {
@@ -102,7 +108,8 @@ public class ShardCommandManager extends BaseCommandManager {
   }
 
   private Map<Shard, Object> executeReadCommand(ShardServerContext shardServerContext, Command<?> command,
-      final TableContextFactory tableContextFactory) throws IOException, ExceptionCollector {
+      final TableContextFactory tableContextFactory, CommandStatus originalCommandStatusObject, AtomicBoolean running)
+      throws IOException, ExceptionCollector {
     BaseContext context = new BaseContext() {
       @Override
       public TableContext getTableContext(String table) throws IOException {
@@ -139,14 +146,15 @@ public class ShardCommandManager extends BaseCommandManager {
         Command<?> clone = command.clone();
         if (clone instanceof IndexRead) {
           final IndexRead<?> readCommand = (IndexRead<?>) clone;
-          callable = getCallable(shardServerContext, tableContextFactory, table, shard, blurIndex, readCommand);
+          callable = getCallable(shardServerContext, tableContextFactory, table, shard, blurIndex, readCommand, running);
         } else if (clone instanceof ServerRead) {
           final ServerRead<?, ?> readCombiningCommand = (ServerRead<?, ?>) clone;
-          callable = getCallable(shardServerContext, tableContextFactory, table, shard, blurIndex, readCombiningCommand);
+          callable = getCallable(shardServerContext, tableContextFactory, table, shard, blurIndex,
+              readCombiningCommand, running);
         } else {
           throw new IOException("Command type of [" + clone.getClass() + "] not supported.");
         }
-        Future<Object> future = submitToExecutorService(callable, clone);
+        Future<Object> future = submitToExecutorService(callable, clone, originalCommandStatusObject, running);
         futureMap.put(shard, future);
       }
     }
@@ -189,7 +197,7 @@ public class ShardCommandManager extends BaseCommandManager {
 
   private Callable<Object> getCallable(final ShardServerContext shardServerContext,
       final TableContextFactory tableContextFactory, final String table, final Shard shard, final BlurIndex blurIndex,
-      final ServerRead<?, ?> readCombiningCommand) {
+      final ServerRead<?, ?> readCombiningCommand, AtomicBoolean running) {
     return new Callable<Object>() {
       @Override
       public Object call() throws Exception {
@@ -199,14 +207,15 @@ public class ShardCommandManager extends BaseCommandManager {
           searcher = blurIndex.getIndexSearcher();
           shardServerContext.setIndexSearcherClosable(table, shardId, searcher);
         }
-        return readCombiningCommand.execute(new ShardIndexContext(tableContextFactory, table, shard, searcher));
+        return readCombiningCommand
+            .execute(new ShardIndexContext(tableContextFactory, table, shard, searcher, running));
       }
     };
   }
 
   private Callable<Object> getCallable(final ShardServerContext shardServerContext,
       final TableContextFactory tableContextFactory, final String table, final Shard shard, final BlurIndex blurIndex,
-      final IndexRead<?> readCommand) {
+      final IndexRead<?> readCommand, AtomicBoolean running) {
     return new Callable<Object>() {
       @Override
       public Object call() throws Exception {
@@ -217,7 +226,7 @@ public class ShardCommandManager extends BaseCommandManager {
           searcher = blurIndex.getIndexSearcher();
           shardServerContext.setIndexSearcherClosable(table, shardId, searcher);
         }
-        return readCommand.execute(new ShardIndexContext(tableContextFactory, table, shard, searcher));
+        return readCommand.execute(new ShardIndexContext(tableContextFactory, table, shard, searcher, running));
       }
     };
   }
@@ -229,11 +238,13 @@ public class ShardCommandManager extends BaseCommandManager {
     private final TableContextFactory _tableContextFactory;
     private final String _table;
 
-    public ShardIndexContext(TableContextFactory tableContextFactory, String table, Shard shard, IndexSearcherCloseable searcher) {
+    public ShardIndexContext(TableContextFactory tableContextFactory, String table, Shard shard,
+        IndexSearcherCloseable searcher, AtomicBoolean running) {
       _tableContextFactory = tableContextFactory;
       _table = table;
       _shard = shard;
       _searcher = searcher;
+      IndexManager.resetExitableReader(getIndexReader(), running);
     }
 
     @Override

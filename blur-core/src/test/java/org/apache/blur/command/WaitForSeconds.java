@@ -21,14 +21,26 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.command.annotation.OptionalArgument;
 import org.apache.blur.command.commandtype.IndexReadCommandSingleTable;
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 
 public class WaitForSeconds extends IndexReadCommandSingleTable<Boolean> {
+
+  private static final Log LOG = LogFactory.getLog(WaitForSeconds.class);
+
+  public static void main(String[] args) throws IOException {
+    WaitForSeconds waitForSecond = new WaitForSeconds();
+    waitForSecond.setSeconds(30);
+    waitForSecond.setTable("test1");
+    waitForSecond.run("localhost:40010");
+  }
 
   @OptionalArgument("The number of seconds to sleep, the default is 30 seconds.")
   private int seconds = 30;
 
   @Override
   public Boolean execute(IndexContext context) throws IOException, InterruptedException {
+    LOG.info(Thread.currentThread().isInterrupted());
     Thread.sleep(TimeUnit.SECONDS.toMillis(seconds));
     return true;
   }

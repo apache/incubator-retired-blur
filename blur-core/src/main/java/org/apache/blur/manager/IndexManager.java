@@ -166,7 +166,7 @@ public class IndexManager {
   private final ExecutorService _facetExecutor;
   private final ExecutorService _mutateExecutor;
 
-  private final QueryStatusManager _statusManager = new QueryStatusManager();
+  private final QueryStatusManager _statusManager;
   private final AtomicBoolean _closed = new AtomicBoolean(false);
   private final BlurPartitioner _blurPartitioner = new BlurPartitioner();
   private final BlurFilterCache _filterCache;
@@ -184,8 +184,9 @@ public class IndexManager {
   public static AtomicBoolean DEBUG_RUN_SLOW = new AtomicBoolean(false);
 
   public IndexManager(IndexServer indexServer, ClusterStatus clusterStatus, BlurFilterCache filterCache,
-      int maxHeapPerRowFetch, int fetchCount, int threadCount, int mutateThreadCount, long statusCleanupTimerDelay,
-      int facetThreadCount, DeepPagingCache deepPagingCache, MemoryAllocationWatcher memoryAllocationWatcher) {
+      int maxHeapPerRowFetch, int fetchCount, int threadCount, int mutateThreadCount, int facetThreadCount,
+      DeepPagingCache deepPagingCache, MemoryAllocationWatcher memoryAllocationWatcher, QueryStatusManager statusManager) {
+    _statusManager = statusManager;
     _memoryAllocationWatcher = memoryAllocationWatcher;
     _deepPagingCache = deepPagingCache;
     _indexServer = indexServer;
@@ -219,8 +220,6 @@ public class IndexManager {
       _facetExecutor = Executors.newThreadPool(new SynchronousQueue<Runnable>(), "facet-execution", facetThreadCount);
     }
 
-    _statusManager.setStatusCleanupTimerDelay(statusCleanupTimerDelay);
-    _statusManager.init();
     LOG.info("Init Complete");
 
   }
@@ -228,7 +227,6 @@ public class IndexManager {
   public synchronized void close() {
     if (!_closed.get()) {
       _closed.set(true);
-      _statusManager.close();
       _executor.shutdownNow();
       _mutateExecutor.shutdownNow();
       if (_facetExecutor != null) {
@@ -1296,7 +1294,7 @@ public class IndexManager {
 
   }
 
-  private static boolean resetExitableReader(IndexReader indexReader, AtomicBoolean running) {
+  public static boolean resetExitableReader(IndexReader indexReader, AtomicBoolean running) {
     if (indexReader instanceof ExitableReader) {
       ExitableReader exitableReader = (ExitableReader) indexReader;
       exitableReader.setRunning(running);

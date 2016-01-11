@@ -110,7 +110,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     Configuration config = BlurUtil.newHadoopConfiguration(configuration);
     TableContext.setSystemBlurConfiguration(configuration);
     TableContext.setSystemConfiguration(config);
-    
+
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
     int configBindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
@@ -127,12 +127,11 @@ public class ThriftBlurControllerServer extends ThriftServer {
     String nodeName = getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
     nodeName = nodeName + ":" + instanceBindPort;
     configuration.set(BLUR_NODENAME, nodeName);
-    
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
     final ZooKeeper zooKeeper = setupZookeeper(configuration, null);
-    
+
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration, config);
 
     int timeout = configuration.getInt(BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT, 60000);
@@ -157,7 +156,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     }
     final ControllerCommandManager controllerCommandManager = new ControllerCommandManager(tmpPath, commandPath,
         numberOfControllerWorkerCommandThreads, numberOfControllerDriverCommandThreads, Connection.DEFAULT_TIMEOUT,
-        config);
+        config, nodeName);
 
     final BlurControllerServer controllerServer = new BlurControllerServer();
     controllerServer.setClient(client);
@@ -187,7 +186,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
-    List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration, ServerSecurityFilterFactory.ServerType.CONTROLLER);
+    List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration,
+        ServerSecurityFilterFactory.ServerType.CONTROLLER);
 
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
     iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, false);

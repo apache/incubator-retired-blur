@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -29,6 +31,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.command.annotation.Description;
 import org.apache.blur.concurrent.Executors;
@@ -36,6 +39,9 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.CommandStatus;
+import org.apache.blur.thrift.generated.CommandStatusState;
+import org.apache.blur.thrift.generated.User;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -85,9 +91,11 @@ public abstract class BaseCommandManager implements Closeable {
   protected final Configuration _configuration;
   protected final BlurObjectSerDe _serDe = new BlurObjectSerDe();
   protected final long _runningCacheTombstoneTime = TimeUnit.SECONDS.toMillis(60);
+  protected final String _serverName;
 
   public BaseCommandManager(File tmpPath, String commandPath, int workerThreadCount, int driverThreadCount,
-      long connectionTimeout, Configuration configuration) throws IOException {
+      long connectionTimeout, Configuration configuration, String serverName) throws IOException {
+    _serverName = serverName;
     _configuration = configuration;
     lookForCommandsToRegisterInClassPath();
     _tmpPath = tmpPath;
@@ -125,8 +133,70 @@ public abstract class BaseCommandManager implements Closeable {
     }
   }
 
-  public List<String> commandStatusList(CommandStatusStateEnum commandStatus) {
-    throw new RuntimeException("Not implemented.");
+  public CommandStatus getCommandStatus(String commandExecutionId) {
+    CommandStatus cso = findCommandStatusObject(commandExecutionId, _workerRunningMap.values());
+    if (cso != null) {
+      return cso;
+    }
+    return findCommandStatusObject(commandExecutionId, _driverRunningMap.values());
+  }
+
+  private CommandStatus findCommandStatusObject(String commandExecutionId, Collection<ResponseFuture<?>> values) {
+    Map<String, Map<CommandStatusState, Long>> serverStateMap = new HashMap<String, Map<CommandStatusState, Long>>();
+    CommandStatus commandStatus = null;
+    for (ResponseFuture<?> responseFuture : values) {
+      Command<?> commandExecuting = responseFuture.getCommandExecuting();
+      if (commandExecuting.getCommandExecutionId().equals(commandExecutionId)) {
+        if (commandStatus == null) {
+          CommandStatus originalCommandStatusObject = responseFuture.getOriginalCommandStatusObject();
+          String commandName = responseFuture.getCommandExecuting().getName();
+          Arguments arguments = originalCommandStatusObject.getArguments();
+          User user = originalCommandStatusObject.getUser();
+          commandStatus = new CommandStatus(commandExecutionId, commandName, arguments, serverStateMap, user);
+        }
+
+        CommandStatusState commandStatusStateEnum = getCommandStatusStateEnum(responseFuture);
+        Map<CommandStatusState, Long> map = serverStateMap.get(_serverName);
+        if (map == null) {
+          serverStateMap.put(_serverName, map = new HashMap<CommandStatusState, Long>());
+        }
+        Long l = map.get(commandStatusStateEnum);
+        if (l == null) {
+          map.put(commandStatusStateEnum, 1L);
+        } else {
+          map.put(commandStatusStateEnum, 1L + l);
+        }
+      }
+    }
+    return commandStatus;
+  }
+
+  public List<String> commandStatusList() {
+    Set<String> result = new TreeSet<String>();
+    result.addAll(getStatusList(_workerRunningMap.values()));
+    result.addAll(getStatusList(_driverRunningMap.values()));
+    return new ArrayList<String>(result);
+  }
+
+  private List<String> getStatusList(Collection<ResponseFuture<?>> values) {
+    List<String> result = new ArrayList<String>();
+    for (ResponseFuture<?> responseFuture : values) {
+      Command<?> commandExecuting = responseFuture.getCommandExecuting();
+      result.add(commandExecuting.getCommandExecutionId());
+    }
+    return result;
+  }
+
+  private CommandStatusState getCommandStatusStateEnum(ResponseFuture<?> responseFuture) {
+    if (responseFuture.isCancelled()) {
+      return CommandStatusState.INTERRUPTED;
+    } else {
+      if (responseFuture.isDone()) {
+        return CommandStatusState.COMPLETE;
+      } else {
+        return CommandStatusState.RUNNING;
+      }
+    }
   }
 
   private TimerTask getTimerTaskForRemovalOfOldCommands(final Map<Long, ResponseFuture<?>> runningMap) {
@@ -240,7 +310,7 @@ public abstract class BaseCommandManager implements Closeable {
   protected void copyLocal(FileSystem fileSystem, FileStatus fileStatus, File destDir) throws IOException {
     Path path = fileStatus.getPath();
     File file = new File(destDir, path.getName());
-    if (fileStatus.isDir()) {
+    if (fileStatus.isDirectory()) {
       if (!file.mkdirs()) {
         LOG.error("Error while trying to create a sub directory [{0}].", file.getAbsolutePath());
         throw new IOException("Error while trying to create a sub directory [" + file.getAbsolutePath() + "].");
@@ -259,7 +329,7 @@ public abstract class BaseCommandManager implements Closeable {
   }
 
   protected BigInteger checkContents(FileStatus fileStatus, FileSystem fileSystem) throws IOException {
-    if (fileStatus.isDir()) {
+    if (fileStatus.isDirectory()) {
       LOG.debug("Scanning directory [{0}].", fileStatus.getPath());
       BigInteger count = BigInteger.ZERO;
       Path path = fileStatus.getPath();
@@ -329,12 +399,12 @@ public abstract class BaseCommandManager implements Closeable {
     }
   }
 
-  protected Response submitDriverCallable(Callable<Response> callable, Command<?> commandExecuting) throws IOException,
-      TimeoutException, ExceptionCollector {
+  protected Response submitDriverCallable(Callable<Response> callable, Command<?> commandExecuting,
+      CommandStatus originalCommandStatusObject, AtomicBoolean running) throws IOException, TimeoutException, ExceptionCollector {
     Future<Response> future = _executorServiceDriver.submit(callable);
     Long instanceExecutionId = getInstanceExecutionId();
     _driverRunningMap.put(instanceExecutionId, new ResponseFuture<Response>(_runningCacheTombstoneTime, future,
-        commandExecuting));
+        commandExecuting, originalCommandStatusObject,running));
     try {
       return future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
     } catch (CancellationException e) {
@@ -368,11 +438,12 @@ public abstract class BaseCommandManager implements Closeable {
     }
   }
 
-  protected <T> Future<T> submitToExecutorService(Callable<T> callable, Command<?> commandExecuting) {
+  protected <T> Future<T> submitToExecutorService(Callable<T> callable, Command<?> commandExecuting,
+      CommandStatus originalCommandStatusObject, AtomicBoolean running) {
     Future<T> future = _executorServiceWorker.submit(callable);
     Long instanceExecutionId = getInstanceExecutionId();
     _workerRunningMap.put(instanceExecutionId, new ResponseFuture<T>(_runningCacheTombstoneTime, future,
-        commandExecuting));
+        commandExecuting, originalCommandStatusObject, running));
     return future;
   }
 

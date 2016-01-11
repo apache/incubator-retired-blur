@@ -41,7 +41,6 @@ import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.CommandDescriptor;
 import org.apache.blur.thrift.generated.CommandStatus;
-import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Level;
 import org.apache.blur.thrift.generated.Metric;
@@ -463,8 +462,7 @@ public class ThriftCacheServerTest {
       }
 
       @Override
-      public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state)
-          throws BlurException, TException {
+      public List<String> commandStatusList(int startingAt, short fetch) throws BlurException, TException {
         throw new RuntimeException("Not implemented.");
       }
 

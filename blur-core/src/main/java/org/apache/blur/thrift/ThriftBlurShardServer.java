@@ -88,6 +88,7 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
+import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.memory.MemoryAllocationWatcher;
 import org.apache.blur.memory.Watcher;
 import org.apache.blur.metrics.JSONReporter;
@@ -252,9 +253,11 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     };
 
+    QueryStatusManager statusManager = new QueryStatusManager(statusCleanupTimerDelay);
+
     final IndexManager indexManager = new IndexManager(indexServer, clusterStatus, filterCache, maxHeapPerRowFetch,
-        fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay, facetThreadCount,
-        deepPagingCache, memoryAllocationWatcher);
+        fetchCount, indexManagerThreadCount, mutateThreadCount, facetThreadCount, deepPagingCache,
+        memoryAllocationWatcher, statusManager);
 
     File tmpPath = getTmpPath(configuration);
     int numberOfShardWorkerCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_WORKER_THREADS, 16);
@@ -266,7 +269,8 @@ public class ThriftBlurShardServer extends ThriftServer {
       LOG.info("Command Path was not set.");
     }
     final ShardCommandManager commandManager = new ShardCommandManager(indexServer, tmpPath, commandPath,
-        numberOfShardWorkerCommandThreads, numberOfShardDriverCommandThreads, Connection.DEFAULT_TIMEOUT, config);
+        numberOfShardWorkerCommandThreads, numberOfShardDriverCommandThreads, Connection.DEFAULT_TIMEOUT, config,
+        nodeName);
 
     clusterStatus.registerActionOnTableStateChange(new Action() {
       @Override
@@ -361,7 +365,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
         quietClose(streamServer, makeCloseable(hdfsKeyValueTimer), makeCloseable(indexImporterTimer),
             makeCloseable(indexBulkTimer), blockCacheDirectoryFactory, commandManager, traceStorage, server,
-            shardServer, indexManager, indexServer, threadWatcher, clusterStatus, zooKeeper, httpServer);
+            shardServer, indexManager, statusManager, indexServer, threadWatcher, clusterStatus, zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);

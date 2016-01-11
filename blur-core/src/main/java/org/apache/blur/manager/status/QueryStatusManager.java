@@ -16,6 +16,7 @@ package org.apache.blur.manager.status;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,7 +25,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.log.Log;
@@ -36,18 +37,19 @@ import org.apache.blur.thrift.generated.User;
 import org.apache.blur.utils.GCAction;
 import org.apache.blur.utils.GCWatcher;
 
-public class QueryStatusManager {
+public class QueryStatusManager implements Closeable {
 
   private static final Log LOG = LogFactory.getLog(QueryStatusManager.class);
   private static final Object CONSTANT_VALUE = new Object();
 
-  private Timer statusCleanupTimer;
-  private long statusCleanupTimerDelay = TimeUnit.SECONDS.toMillis(10);
-  private ConcurrentHashMap<QueryStatus, Object> currentQueryStatusCollection = new ConcurrentHashMap<QueryStatus, Object>();
-
-  public void init() {
-    statusCleanupTimer = new Timer("Query-Status-Cleanup", true);
-    statusCleanupTimer.schedule(new TimerTask() {
+  private final Timer _statusCleanupTimer;
+  private final long _statusCleanupTimerDelay;
+  private final ConcurrentMap<QueryStatus, Object> _currentQueryStatusCollection = new ConcurrentHashMap<QueryStatus, Object>();
+  
+  public QueryStatusManager(long statusCleanupTimerDelay) {
+    _statusCleanupTimerDelay = statusCleanupTimerDelay;
+    _statusCleanupTimer = new Timer("Query-Status-Cleanup", true);
+    _statusCleanupTimer.schedule(new TimerTask() {
       @Override
       public void run() {
         try {
@@ -56,7 +58,7 @@ public class QueryStatusManager {
           LOG.error("Unknown error while trying to cleanup finished queries.", e);
         }
       }
-    }, statusCleanupTimerDelay, statusCleanupTimerDelay);
+    }, _statusCleanupTimerDelay, _statusCleanupTimerDelay);
     GCWatcher.registerAction(new GCAction() {
       @Override
       public void takeAction() throws Exception {
@@ -65,14 +67,15 @@ public class QueryStatusManager {
     });
   }
 
+  @Override
   public void close() {
-    statusCleanupTimer.cancel();
-    statusCleanupTimer.purge();
+    _statusCleanupTimer.cancel();
+    _statusCleanupTimer.purge();
   }
 
   public QueryStatus newQueryStatus(String table, BlurQuery blurQuery, int maxNumberOfThreads, AtomicBoolean running, User user) {
-    QueryStatus queryStatus = new QueryStatus(statusCleanupTimerDelay, table, blurQuery, running, user);
-    currentQueryStatusCollection.put(queryStatus, CONSTANT_VALUE);
+    QueryStatus queryStatus = new QueryStatus(_statusCleanupTimerDelay, table, blurQuery, running, user);
+    _currentQueryStatusCollection.put(queryStatus, CONSTANT_VALUE);
     return queryStatus;
   }
 
@@ -81,27 +84,23 @@ public class QueryStatusManager {
   }
 
   private void cleanupFinishedQueryStatuses() {
-    LOG.debug("QueryStatus Start count [{0}].", currentQueryStatusCollection.size());
-    Iterator<QueryStatus> iterator = currentQueryStatusCollection.keySet().iterator();
+    LOG.debug("QueryStatus Start count [{0}].", _currentQueryStatusCollection.size());
+    Iterator<QueryStatus> iterator = _currentQueryStatusCollection.keySet().iterator();
     while (iterator.hasNext()) {
       QueryStatus status = iterator.next();
       if (status.isValidForCleanUp()) {
-        currentQueryStatusCollection.remove(status);
+        _currentQueryStatusCollection.remove(status);
       }
     }
-    LOG.debug("QueryStatus Finish count [{0}].", currentQueryStatusCollection.size());
+    LOG.debug("QueryStatus Finish count [{0}].", _currentQueryStatusCollection.size());
   }
 
   public long getStatusCleanupTimerDelay() {
-    return statusCleanupTimerDelay;
-  }
-
-  public void setStatusCleanupTimerDelay(long statusCleanupTimerDelay) {
-    this.statusCleanupTimerDelay = statusCleanupTimerDelay;
+    return _statusCleanupTimerDelay;
   }
 
   public void cancelQuery(String table, String uuid) {
-    for (QueryStatus status : currentQueryStatusCollection.keySet()) {
+    for (QueryStatus status : _currentQueryStatusCollection.keySet()) {
       String userUuid = status.getUserUuid();
       if (userUuid != null && userUuid.equals(uuid) && status.getTable().equals(table)) {
         status.cancelQuery();
@@ -111,7 +110,7 @@ public class QueryStatusManager {
 
   public List<BlurQueryStatus> currentQueries(String table) {
     List<BlurQueryStatus> result = new ArrayList<BlurQueryStatus>();
-    for (QueryStatus status : currentQueryStatusCollection.keySet()) {
+    for (QueryStatus status : _currentQueryStatusCollection.keySet()) {
       if (status.getTable().equals(table)) {
         result.add(status.getQueryStatus());
       }
@@ -120,7 +119,7 @@ public class QueryStatusManager {
   }
 
   public BlurQueryStatus queryStatus(String table, String uuid) {
-    for (QueryStatus status : currentQueryStatusCollection.keySet()) {
+    for (QueryStatus status : _currentQueryStatusCollection.keySet()) {
       String userUuid = status.getUserUuid();
       if (userUuid != null && userUuid.equals(uuid) && status.getTable().equals(table)) {
         return status.getQueryStatus();
@@ -131,7 +130,7 @@ public class QueryStatusManager {
 
   public List<String> queryStatusIdList(String table) {
     Set<String> ids = new HashSet<String>();
-    for (QueryStatus status : currentQueryStatusCollection.keySet()) {
+    for (QueryStatus status : _currentQueryStatusCollection.keySet()) {
       if (status.getTable().equals(table)) {
         if (status.getUserUuid() != null) {
           ids.add(status.getUserUuid());  
@@ -143,7 +142,7 @@ public class QueryStatusManager {
 
   public void stopAllQueriesForBackPressure() {
     LOG.warn("Stopping all queries for back pressure.");
-    for (QueryStatus status : currentQueryStatusCollection.keySet()) {
+    for (QueryStatus status : _currentQueryStatusCollection.keySet()) {
       QueryState state = status.getQueryStatus().getState();
       if (state == QueryState.RUNNING) {
         status.stopQueryForBackPressure();

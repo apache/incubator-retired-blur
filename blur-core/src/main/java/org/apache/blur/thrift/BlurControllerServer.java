@@ -112,9 +112,9 @@ import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ForkJoin;
-import org.apache.blur.utils.ShardUtil;
 import org.apache.blur.utils.ForkJoin.Merger;
 import org.apache.blur.utils.ForkJoin.ParallelCall;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeExistance;
@@ -1514,8 +1514,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       throws BlurException, TException {
     try {
       BlurObject args = CommandUtil.toBlurObject(arguments);
+      CommandStatus originalCommandStatusObject = new CommandStatus(null, commandName, arguments, null, null);
       Response response = _commandManager.execute(getTableContextFactory(), getLayoutFactory(), commandName,
-          new ArgumentOverlay(args, _serDe));
+          new ArgumentOverlay(args, _serDe), originalCommandStatusObject);
       return CommandUtil.fromObjectToThrift(response, _serDe);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
@@ -1658,44 +1659,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     // This is a NO-OP at this point for the controller.
   }
 
-  @Override
-  public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state) throws BlurException,
-      TException {
-    throw new BException("Not Implemented");
-  }
-
-  @Override
-  public CommandStatus commandStatus(String commandExecutionId) throws BlurException, TException {
-    throw new BException("Not Implemented");
-  }
-
-  @Override
-  public void commandCancel(String commandExecutionId) throws BlurException, TException {
-    throw new BException("Not Implemented");
-  }
-
-  // @Override
-  // public void bulkMutateStart(final String bulkId) throws BlurException,
-  // TException {
-  // String cluster = getCluster(table);
-  // try {
-  // scatter(cluster, new BlurCommand<Void>() {
-  // @Override
-  // public Void call(Client client) throws BlurException, TException {
-  // client.bulkMutateStart(bulkId);
-  // return null;
-  // }
-  // });
-  // } catch (Exception e) {
-  // LOG.error("Unknown error while trying to get start a bulk mutate [{0}] [{1}]",
-  // e, bulkId);
-  // if (e instanceof BlurException) {
-  // throw (BlurException) e;
-  // }
-  // throw new BException(e.getMessage(), e);
-  // }
-  // }
-  //
   @Override
   public void bulkMutateAdd(final String bulkId, final RowMutation mutation) throws BlurException, TException {
     try {
@@ -1871,6 +1834,139 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         throw (BlurException) e;
       }
       throw new BException("Unknown error while trying to validate indexes for table [{0}]", e, table);
+    }
+  }
+
+  @Override
+  public List<String> commandStatusList(int startingAt, short fetch) throws BlurException, TException {
+    try {
+      List<String> shardClusterList = shardClusterList();
+      SortedSet<String> result = new TreeSet<String>();
+      result.addAll(_commandManager.commandStatusList());
+      for (String cluster : shardClusterList) {
+        result.addAll(scatterGather(cluster, new BlurCommand<List<String>>() {
+          @Override
+          public List<String> call(Client client) throws BlurException, TException {
+            return client.commandStatusList(0, Short.MAX_VALUE);
+          }
+        }, new Merger<List<String>>() {
+          @Override
+          public List<String> merge(BlurExecutorCompletionService<List<String>> service) throws BlurException {
+            SortedSet<String> ids = new TreeSet<String>();
+            while (service.getRemainingCount() > 0) {
+              Future<List<String>> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true);
+              ids.addAll(service.getResultThrowException(future));
+            }
+            return new ArrayList<String>(ids);
+          }
+        }));
+      }
+      return new ArrayList<String>().subList(startingAt, fetch);
+    } catch (Exception e) {
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public CommandStatus commandStatus(String commandExecutionId) throws BlurException, TException {
+    try {
+      List<String> shardClusterList = shardClusterList();
+      CommandStatus commandStatus = _commandManager.getCommandStatus(commandExecutionId);
+      for (String cluster : shardClusterList) {
+        CommandStatus cs = scatterGather(cluster, new BlurCommand<CommandStatus>() {
+          @Override
+          public CommandStatus call(Client client) throws BlurException, TException {
+            return client.commandStatus(commandExecutionId);
+          }
+        }, new Merger<CommandStatus>() {
+          @Override
+          public CommandStatus merge(BlurExecutorCompletionService<CommandStatus> service) throws BlurException {
+            CommandStatus commandStatus = null;
+            while (service.getRemainingCount() > 0) {
+              Future<CommandStatus> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true);
+              commandStatus = mergeCommandStatus(commandStatus, service.getResultThrowException(future));
+            }
+            return commandStatus;
+          }
+        });
+        commandStatus = mergeCommandStatus(commandStatus, cs);
+      }
+      return commandStatus;
+    } catch (Exception e) {
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  private static CommandStatus mergeCommandStatus(CommandStatus cs1, CommandStatus cs2) {
+    if (cs1 == null && cs2 == null) {
+      return null;
+    } else if (cs1 == null) {
+      return cs2;
+    } else if (cs2 == null) {
+      return cs1;
+    } else {
+      Map<String, Map<CommandStatusState, Long>> serverStateMap1 = cs1.getServerStateMap();
+      Map<String, Map<CommandStatusState, Long>> serverStateMap2 = cs2.getServerStateMap();
+      Map<String, Map<CommandStatusState, Long>> merge = mergeServerStateMap(serverStateMap1, serverStateMap2);
+      return new CommandStatus(cs1.getExecutionId(), cs1.getCommandName(), cs1.getArguments(), merge, cs1.getUser());
+    }
+  }
+
+  private static Map<String, Map<CommandStatusState, Long>> mergeServerStateMap(
+      Map<String, Map<CommandStatusState, Long>> serverStateMap1,
+      Map<String, Map<CommandStatusState, Long>> serverStateMap2) {
+    Map<String, Map<CommandStatusState, Long>> result = new HashMap<String, Map<CommandStatusState, Long>>();
+    Set<String> keys = new HashSet<String>();
+    keys.addAll(serverStateMap1.keySet());
+    keys.addAll(serverStateMap2.keySet());
+    for (String key : keys) {
+      Map<CommandStatusState, Long> css1 = serverStateMap2.get(key);
+      Map<CommandStatusState, Long> css2 = serverStateMap2.get(key);
+      result.put(key, mergeCommandStatusState(css1, css2));
+    }
+    return result;
+  }
+
+  private static Map<CommandStatusState, Long> mergeCommandStatusState(Map<CommandStatusState, Long> css1,
+      Map<CommandStatusState, Long> css2) {
+    if (css1 == null && css2 == null) {
+      return new HashMap<CommandStatusState, Long>();
+    } else if (css1 == null) {
+      return css2;
+    } else if (css2 == null) {
+      return css1;
+    } else {
+      Map<CommandStatusState, Long> result = new HashMap<CommandStatusState, Long>(css1);
+      for (Entry<CommandStatusState, Long> e : css2.entrySet()) {
+        CommandStatusState key = e.getKey();
+        Long l = result.get(key);
+        Long value = e.getValue();
+        if (l == null) {
+          result.put(key, value);
+        } else {
+          result.put(key, l + value);
+        }
+      }
+      return result;
+    }
+  }
+
+  @Override
+  public void commandCancel(String commandExecutionId) throws BlurException, TException {
+    try {
+      List<String> shardClusterList = shardClusterList();
+      _commandManager.cancelCommand(commandExecutionId);
+      for (String cluster : shardClusterList) {
+        scatter(cluster, new BlurCommand<Void>() {
+          @Override
+          public Void call(Client client) throws BlurException, TException {
+            client.commandCancel(commandExecutionId);
+            return null;
+          }
+        });
+      }
+    } catch (Exception e) {
+      throw new BException(e.getMessage(), e);
     }
   }
 }

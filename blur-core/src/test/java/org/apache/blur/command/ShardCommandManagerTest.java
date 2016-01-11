@@ -44,6 +44,7 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.server.TableContextFactory;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.BlurException;
+import org.apache.blur.thrift.generated.CommandStatus;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -83,7 +84,7 @@ public class ShardCommandManagerTest {
   @Before
   public void setup() throws IOException {
     _config = new Configuration();
-    _manager = new ShardCommandManager(getIndexServer(), null, null, 10, 10, 1000, _config);
+    _manager = new ShardCommandManager(getIndexServer(), null, null, 10, 10, 1000, _config, "test");
   }
 
   @After
@@ -136,12 +137,14 @@ public class ShardCommandManagerTest {
       output.close();
     }
     ShardCommandManager manager = new ShardCommandManager(getIndexServer(), _tmpPath, _commandPath, 10, 10, 1000,
-        _config);
+        _config, "test");
     {
       BlurObject args = new BlurObject();
       args.put("table", "test");
       ArgumentOverlay argumentOverlay = new ArgumentOverlay(args, new BlurObjectSerDe());
-      Response response = manager.execute(getTableContextFactory(), "test", argumentOverlay);
+      CommandStatus originalCommandStatusObject = new CommandStatus(null, "test", null, null, null);
+      Response response = manager.execute(getTableContextFactory(), "test", argumentOverlay,
+          originalCommandStatusObject);
       Map<Shard, Object> shardResults = response.getShardResults();
       for (Object o : shardResults.values()) {
         assertEquals("test1", o);
@@ -163,7 +166,9 @@ public class ShardCommandManagerTest {
       BlurObject args = new BlurObject();
       args.put("table", "test");
       ArgumentOverlay argumentOverlay = new ArgumentOverlay(args, new BlurObjectSerDe());
-      Response response = manager.execute(getTableContextFactory(), "test", argumentOverlay);
+      CommandStatus originalCommandStatusObject = new CommandStatus(null, "test", null, null, null);
+      Response response = manager.execute(getTableContextFactory(), "test", argumentOverlay,
+          originalCommandStatusObject);
       Map<Shard, Object> shardResults = response.getShardResults();
       for (Object o : shardResults.values()) {
         assertEquals("test2", o);
@@ -205,7 +210,8 @@ public class ShardCommandManagerTest {
       try {
         if (instanceExecutionId == null) {
           TableContextFactory tableContextFactory = getTableContextFactory();
-          response = _manager.execute(tableContextFactory, "wait", argumentOverlay);
+          CommandStatus originalCommandStatusObject = new CommandStatus(null, "test", null, null, null);
+          response = _manager.execute(tableContextFactory, "wait", argumentOverlay, originalCommandStatusObject);
         } else {
           response = _manager.reconnect(instanceExecutionId);
         }
@@ -225,7 +231,8 @@ public class ShardCommandManagerTest {
     ArgumentOverlay argumentOverlay = new ArgumentOverlay(args, new BlurObjectSerDe());
     TableContextFactory tableContextFactory = getTableContextFactory();
     try {
-      _manager.execute(tableContextFactory, "error", argumentOverlay);
+      CommandStatus originalCommandStatusObject = new CommandStatus(null, "test", null, null, null);
+      _manager.execute(tableContextFactory, "error", argumentOverlay, originalCommandStatusObject);
       fail();
     } catch (ExceptionCollector e) {
       Throwable t = e.getCause();
@@ -263,7 +270,8 @@ public class ShardCommandManagerTest {
           try {
             Response response;
             if (instanceExecutionId == null) {
-              response = _manager.execute(tableContextFactory, "wait", argumentOverlay);
+              CommandStatus originalCommandStatusObject = new CommandStatus(null, "test", null, null, null);
+              response = _manager.execute(tableContextFactory, "wait", argumentOverlay, originalCommandStatusObject);
             } else {
               response = _manager.reconnect(instanceExecutionId);
             }

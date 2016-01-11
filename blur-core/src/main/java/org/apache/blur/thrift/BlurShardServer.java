@@ -35,7 +35,6 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import org.apache.blur.command.ArgumentOverlay;
 import org.apache.blur.command.BlurObject;
 import org.apache.blur.command.BlurObjectSerDe;
-import org.apache.blur.command.CommandStatusStateEnum;
 import org.apache.blur.command.CommandUtil;
 import org.apache.blur.command.Response;
 import org.apache.blur.command.ShardCommandManager;
@@ -59,7 +58,6 @@ import org.apache.blur.thrift.generated.BlurQueryStatus;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.CommandDescriptor;
 import org.apache.blur.thrift.generated.CommandStatus;
-import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
 import org.apache.blur.thrift.generated.Query;
@@ -71,6 +69,7 @@ import org.apache.blur.thrift.generated.Status;
 import org.apache.blur.thrift.generated.TableStats;
 import org.apache.blur.thrift.generated.TimeoutException;
 import org.apache.blur.thrift.generated.User;
+import org.apache.blur.user.UserContext;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.QueryCache;
@@ -615,7 +614,10 @@ public class BlurShardServer extends TableAdmin implements Iface {
         }
       };
       BlurObject args = CommandUtil.toBlurObject(arguments);
-      Response response = _commandManager.execute(tableContextFactory, commandName, new ArgumentOverlay(args, _serDe));
+      User thriftUser = UserConverter.toThriftUser(UserContext.getUser());
+      CommandStatus originalCommandStatusObject = new CommandStatus(null, commandName, arguments, null, thriftUser);
+      Response response = _commandManager.execute(tableContextFactory, commandName, new ArgumentOverlay(args, _serDe),
+          originalCommandStatusObject);
       return CommandUtil.fromObjectToThrift(response, _serDe);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
@@ -670,11 +672,10 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public List<String> commandStatusList(int startingAt, short fetch, CommandStatusState state) throws BlurException,
-      TException {
+  public List<String> commandStatusList(int startingAt, short fetch) throws BlurException, TException {
     try {
-      List<String> ids = _commandManager.commandStatusList(toCommandStatus(state));
-      return ids.subList(startingAt, fetch);
+      List<String> ids = _commandManager.commandStatusList();
+      return ids.subList(startingAt, Math.min(ids.size(), fetch));
     } catch (Exception e) {
       throw new BException(e.getMessage(), e);
     }
@@ -682,7 +683,11 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public CommandStatus commandStatus(String commandExecutionId) throws BlurException, TException {
-    throw new BException("Not Implemented");
+    try {
+      return _commandManager.getCommandStatus(commandExecutionId);
+    } catch (Exception e) {
+      throw new BException(e.getMessage(), e);
+    }
   }
 
   @Override
@@ -692,10 +697,6 @@ public class BlurShardServer extends TableAdmin implements Iface {
     } catch (Exception e) {
       throw new BException(e.getMessage(), e);
     }
-  }
-
-  private CommandStatusStateEnum toCommandStatus(CommandStatusState state) {
-    return CommandStatusStateEnum.valueOf(state.name());
   }
 
   @Override

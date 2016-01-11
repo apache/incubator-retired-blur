@@ -67,7 +67,7 @@ public class CommandStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TB
   public String executionId; // required
   public String commandName; // required
   public Arguments arguments; // required
-  public Map<String,Map<CommandStatusState,Double>> serverStateMap; // required
+  public Map<String,Map<CommandStatusState,Long>> serverStateMap; // required
   public User user; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -155,7 +155,7 @@ public class CommandStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TB
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING), 
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.MapMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, 
                 new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.EnumMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.ENUM, CommandStatusState.class), 
-                new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.DOUBLE)))));
+                new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)))));
     tmpMap.put(_Fields.USER, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("user", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.StructMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRUCT, User.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -169,7 +169,7 @@ public class CommandStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TB
     String executionId,
     String commandName,
     Arguments arguments,
-    Map<String,Map<CommandStatusState,Double>> serverStateMap,
+    Map<String,Map<CommandStatusState,Long>> serverStateMap,
     User user)
   {
     this();
@@ -194,23 +194,23 @@ public class CommandStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TB
       this.arguments = new Arguments(other.arguments);
     }
     if (other.isSetServerStateMap()) {
-      Map<String,Map<CommandStatusState,Double>> __this__serverStateMap = new HashMap<String,Map<CommandStatusState,Double>>();
-      for (Map.Entry<String, Map<CommandStatusState,Double>> other_element : other.serverStateMap.entrySet()) {
+      Map<String,Map<CommandStatusState,Long>> __this__serverStateMap = new HashMap<String,Map<CommandStatusState,Long>>();
+      for (Map.Entry<String, Map<CommandStatusState,Long>> other_element : other.serverStateMap.entrySet()) {
 
         String other_element_key = other_element.getKey();
-        Map<CommandStatusState,Double> other_element_value = other_element.getValue();
+        Map<CommandStatusState,Long> other_element_value = other_element.getValue();
 
         String __this__serverStateMap_copy_key = other_element_key;
 
-        Map<CommandStatusState,Double> __this__serverStateMap_copy_value = new HashMap<CommandStatusState,Double>();
-        for (Map.Entry<CommandStatusState, Double> other_element_value_element : other_element_value.entrySet()) {
+        Map<CommandStatusState,Long> __this__serverStateMap_copy_value = new HashMap<CommandStatusState,Long>();
+        for (Map.Entry<CommandStatusState, Long> other_element_value_element : other_element_value.entrySet()) {
 
           CommandStatusState other_element_value_element_key = other_element_value_element.getKey();
-          Double other_element_value_element_value = other_element_value_element.getValue();
+          Long other_element_value_element_value = other_element_value_element.getValue();
 
           CommandStatusState __this__serverStateMap_copy_value_copy_key = other_element_value_element_key;
 
-          Double __this__serverStateMap_copy_value_copy_value = other_element_value_element_value;
+          Long __this__serverStateMap_copy_value_copy_value = other_element_value_element_value;
 
           __this__serverStateMap_copy_value.put(__this__serverStateMap_copy_value_copy_key, __this__serverStateMap_copy_value_copy_value);
         }
@@ -313,18 +313,18 @@ public class CommandStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TB
     return (this.serverStateMap == null) ? 0 : this.serverStateMap.size();
   }
 
-  public void putToServerStateMap(String key, Map<CommandStatusState,Double> val) {
+  public void putToServerStateMap(String key, Map<CommandStatusState,Long> val) {
     if (this.serverStateMap == null) {
-      this.serverStateMap = new HashMap<String,Map<CommandStatusState,Double>>();
+      this.serverStateMap = new HashMap<String,Map<CommandStatusState,Long>>();
     }
     this.serverStateMap.put(key, val);
   }
 
-  public Map<String,Map<CommandStatusState,Double>> getServerStateMap() {
+  public Map<String,Map<CommandStatusState,Long>> getServerStateMap() {
     return this.serverStateMap;
   }
 
-  public CommandStatus setServerStateMap(Map<String,Map<CommandStatusState,Double>> serverStateMap) {
+  public CommandStatus setServerStateMap(Map<String,Map<CommandStatusState,Long>> serverStateMap) {
     this.serverStateMap = serverStateMap;
     return this;
   }
@@ -398,7 +398,7 @@ public class CommandStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TB
       if (value == null) {
         unsetServerStateMap();
       } else {
-        setServerStateMap((Map<String,Map<CommandStatusState,Double>>)value);
+        setServerStateMap((Map<String,Map<CommandStatusState,Long>>)value);
       }
       break;
 
@@ -716,21 +716,21 @@ public class CommandStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TB
             if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP) {
               {
                 org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map270 = iprot.readMapBegin();
-                struct.serverStateMap = new HashMap<String,Map<CommandStatusState,Double>>(2*_map270.size);
+                struct.serverStateMap = new HashMap<String,Map<CommandStatusState,Long>>(2*_map270.size);
                 for (int _i271 = 0; _i271 < _map270.size; ++_i271)
                 {
                   String _key272; // required
-                  Map<CommandStatusState,Double> _val273; // required
+                  Map<CommandStatusState,Long> _val273; // required
                   _key272 = iprot.readString();
                   {
                     org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map274 = iprot.readMapBegin();
-                    _val273 = new HashMap<CommandStatusState,Double>(2*_map274.size);
+                    _val273 = new HashMap<CommandStatusState,Long>(2*_map274.size);
                     for (int _i275 = 0; _i275 < _map274.size; ++_i275)
                     {
                       CommandStatusState _key276; // required
-                      double _val277; // required
+                      long _val277; // required
                       _key276 = CommandStatusState.findByValue(iprot.readI32());
-                      _val277 = iprot.readDouble();
+                      _val277 = iprot.readI64();
                       _val273.put(_key276, _val277);
                     }
                     iprot.readMapEnd();
@@ -787,15 +787,15 @@ public class CommandStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TB
         oprot.writeFieldBegin(SERVER_STATE_MAP_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, struct.serverStateMap.size()));
-          for (Map.Entry<String, Map<CommandStatusState,Double>> _iter278 : struct.serverStateMap.entrySet())
+          for (Map.Entry<String, Map<CommandStatusState,Long>> _iter278 : struct.serverStateMap.entrySet())
           {
             oprot.writeString(_iter278.getKey());
             {
-              oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.DOUBLE, _iter278.getValue().size()));
-              for (Map.Entry<CommandStatusState, Double> _iter279 : _iter278.getValue().entrySet())
+              oprot.writeMapBegin(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, _iter278.getValue().size()));
+              for (Map.Entry<CommandStatusState, Long> _iter279 : _iter278.getValue().entrySet())
               {
                 oprot.writeI32(_iter279.getKey().getValue());
-                oprot.writeDouble(_iter279.getValue());
+                oprot.writeI64(_iter279.getValue());
               }
               oprot.writeMapEnd();
             }
@@ -855,15 +855,15 @@ public class CommandStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TB
       if (struct.isSetServerStateMap()) {
         {
           oprot.writeI32(struct.serverStateMap.size());
-          for (Map.Entry<String, Map<CommandStatusState,Double>> _iter280 : struct.serverStateMap.entrySet())
+          for (Map.Entry<String, Map<CommandStatusState,Long>> _iter280 : struct.serverStateMap.entrySet())
           {
             oprot.writeString(_iter280.getKey());
             {
               oprot.writeI32(_iter280.getValue().size());
-              for (Map.Entry<CommandStatusState, Double> _iter281 : _iter280.getValue().entrySet())
+              for (Map.Entry<CommandStatusState, Long> _iter281 : _iter280.getValue().entrySet())
               {
                 oprot.writeI32(_iter281.getKey().getValue());
-                oprot.writeDouble(_iter281.getValue());
+                oprot.writeI64(_iter281.getValue());
               }
             }
           }
@@ -894,21 +894,21 @@ public class CommandStatus implements org.apache.blur.thirdparty.thrift_0_9_0.TB
       if (incoming.get(3)) {
         {
           org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map282 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, iprot.readI32());
-          struct.serverStateMap = new HashMap<String,Map<CommandStatusState,Double>>(2*_map282.size);
+          struct.serverStateMap = new HashMap<String,Map<CommandStatusState,Long>>(2*_map282.size);
           for (int _i283 = 0; _i283 < _map282.size; ++_i283)
           {
             String _key284; // required
-            Map<CommandStatusState,Double> _val285; // required
+            Map<CommandStatusState,Long> _val285; // required
             _key284 = iprot.readString();
             {
-              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map286 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.DOUBLE, iprot.readI32());
-              _val285 = new HashMap<CommandStatusState,Double>(2*_map286.size);
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap _map286 = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TMap(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I32, org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, iprot.readI32());
+              _val285 = new HashMap<CommandStatusState,Long>(2*_map286.size);
               for (int _i287 = 0; _i287 < _map286.size; ++_i287)
               {
                 CommandStatusState _key288; // required
-                double _val289; // required
+                long _val289; // required
                 _key288 = CommandStatusState.findByValue(iprot.readI32());
-                _val289 = iprot.readDouble();
+                _val289 = iprot.readI64();
                 _val285.put(_key288, _val289);
               }
             }

@@ -4576,7 +4576,7 @@ CommandStatus.prototype.read = function(input) {
             var key284 = null;
             var val285 = null;
             key284 = input.readI32().value;
-            val285 = input.readDouble().value;
+            val285 = input.readI64().value;
             val277[key284] = val285;
           }
           input.readMapEnd();
@@ -4630,14 +4630,14 @@ CommandStatus.prototype.write = function(output) {
       {
         var viter287 = this.serverStateMap[kiter286];
         output.writeString(kiter286);
-        output.writeMapBegin(Thrift.Type.I32, Thrift.Type.DOUBLE, Thrift.objectLength(viter287));
+        output.writeMapBegin(Thrift.Type.I32, Thrift.Type.I64, Thrift.objectLength(viter287));
         for (var kiter288 in viter287)
         {
           if (viter287.hasOwnProperty(kiter288))
           {
             var viter289 = viter287[kiter288];
             output.writeI32(kiter288);
-            output.writeDouble(viter289);
+            output.writeI64(viter289);
           }
         }
         output.writeMapEnd();

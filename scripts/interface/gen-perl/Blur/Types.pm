@@ -4793,9 +4793,9 @@ sub read {
               for (my $_i251 = 0; $_i251 < $_size247; ++$_i251)
               {
                 my $key252 = 0;
-                my $val253 = 0.0;
+                my $val253 = 0;
                 $xfer += $input->readI32(\$key252);
-                $xfer += $input->readDouble(\$val253);
+                $xfer += $input->readI64(\$val253);
                 $val246->{$key252} = $val253;
               }
               $xfer += $input->readMapEnd();
@@ -4851,12 +4851,12 @@ sub write {
         {
           $xfer += $output->writeString($kiter254);
           {
-            $xfer += $output->writeMapBegin(TType::I32, TType::DOUBLE, scalar(keys %{${viter255}}));
+            $xfer += $output->writeMapBegin(TType::I32, TType::I64, scalar(keys %{${viter255}}));
             {
               while( my ($kiter256,$viter257) = each %{${viter255}}) 
               {
                 $xfer += $output->writeI32($kiter256);
-                $xfer += $output->writeDouble($viter257);
+                $xfer += $output->writeI64($viter257);
               }
             }
             $xfer += $output->writeMapEnd();

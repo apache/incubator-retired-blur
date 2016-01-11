@@ -1199,7 +1199,7 @@ module Blur
       EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'},
       COMMANDNAME => {:type => ::Thrift::Types::STRING, :name => 'commandName'},
       ARGUMENTS => {:type => ::Thrift::Types::STRUCT, :name => 'arguments', :class => ::Blur::Arguments},
-      SERVERSTATEMAP => {:type => ::Thrift::Types::MAP, :name => 'serverStateMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::MAP, :key => {:type => ::Thrift::Types::I32, :enum_class => ::Blur::CommandStatusState}, :value => {:type => ::Thrift::Types::DOUBLE}}},
+      SERVERSTATEMAP => {:type => ::Thrift::Types::MAP, :name => 'serverStateMap', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::MAP, :key => {:type => ::Thrift::Types::I32, :enum_class => ::Blur::CommandStatusState}, :value => {:type => ::Thrift::Types::I64}}},
       USER => {:type => ::Thrift::Types::STRUCT, :name => 'user', :class => ::Blur::User}
     }
 

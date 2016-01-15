@@ -178,7 +178,7 @@
       "min" : 2147483648,
       "default" : 8589934592,
       "scaleFactor" : 1.3,
-      "autoConfigShare" : 100
+      "autoConfigShare" : 60
     },
     
     {
@@ -192,7 +192,7 @@
       "min" : 134217728,
       "default" : 8589934592,
       "scaleFactor" : 1.3,
-      "autoConfigShare" : 100
+      "autoConfigShare" : 40
     },
 	      	
 |||Shard-Server-Properties|||

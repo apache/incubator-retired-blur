@@ -1861,7 +1861,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           }
         }));
       }
-      return new ArrayList<String>().subList(startingAt, fetch);
+      return new ArrayList<String>(result).subList(startingAt, Math.min(fetch, result.size()));
     } catch (Exception e) {
       throw new BException(e.getMessage(), e);
     }

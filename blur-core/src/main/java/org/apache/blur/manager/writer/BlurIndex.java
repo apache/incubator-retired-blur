@@ -18,33 +18,27 @@ package org.apache.blur.manager.writer;
  */
 import java.io.IOException;
 import java.util.List;
-import java.util.Timer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.server.ShardContext;
-import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.store.Directory;
 
 public abstract class BlurIndex {
 
-  private static final long ONE_MINUTE = TimeUnit.MINUTES.toMillis(1);
-  private long _lastMemoryCheck = 0;
-  private long _memoryUsage = 0;
-  protected ShardContext _shardContext;
+  protected final BlurIndexConf _blurIndexConf;
 
-  public BlurIndex(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
-      ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer, Timer bulkIndexingTimer,
-      ThriftCache thriftCache, Timer indexWriterTimer, long maxWriterIdle) throws IOException {
-    _shardContext = shardContext;
+  public BlurIndex(BlurIndexConf blurIndexConf) throws IOException {
+    _blurIndexConf = blurIndexConf;
+  }
+
+  public BlurIndexConf getBlurIndexConf() {
+    return _blurIndexConf;
   }
 
   public abstract IndexSearcherCloseable getIndexSearcher() throws IOException;
@@ -130,7 +124,7 @@ public abstract class BlurIndex {
   }
 
   public ShardContext getShardContext() {
-    return _shardContext;
+    return _blurIndexConf.getShardContext();
   }
 
   public abstract void process(IndexAction indexAction) throws IOException;

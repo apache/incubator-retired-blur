@@ -18,7 +18,6 @@ package org.apache.blur.manager.writer;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
@@ -29,7 +28,7 @@ public class BlurIndexReadOnly extends BlurIndex {
   private final BlurIndex _blurIndex;
 
   public BlurIndexReadOnly(BlurIndex blurIndex) throws IOException {
-    super(null, null, null, null, null, null, null, null, null, 0);
+    super(blurIndex.getBlurIndexConf());
     _blurIndex = blurIndex;
   }
 

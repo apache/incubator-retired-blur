@@ -34,9 +34,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
@@ -52,11 +50,8 @@ import org.apache.blur.lucene.security.index.AccessControlFactory;
 import org.apache.blur.lucene.security.index.FilterAccessControlFactory;
 import org.apache.blur.manager.ReadInterceptor;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.manager.writer.BlurIndexCloser;
+import org.apache.blur.manager.writer.BlurIndexConf;
 import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
-//import org.apache.blur.manager.writer.BlurNRTIndex;
-import org.apache.blur.manager.writer.SharedMergeScheduler;
-import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -70,7 +65,7 @@ import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.similarities.Similarity;
-import org.apache.lucene.store.Directory;
+//import org.apache.blur.manager.writer.BlurNRTIndex;
 
 public class TableContext implements Cloneable {
 
@@ -368,12 +363,8 @@ public class TableContext implements Cloneable {
   }
 
   @SuppressWarnings("unchecked")
-  public BlurIndex newInstanceBlurIndex(ShardContext shardContext, Directory dir, SharedMergeScheduler mergeScheduler,
-      ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer, Timer bulkTimer,
-      ThriftCache thriftCache, Timer indexWriterTimer, long maxWriterIdle) throws IOException {
-
+  public BlurIndex newInstanceBlurIndex(BlurIndexConf blurIndexConf) throws IOException {
     String className = _blurConfiguration.get(BLUR_SHARD_BLURINDEX_CLASS, BlurIndexSimpleWriter.class.getName());
-
     Class<? extends BlurIndex> clazz;
     try {
       clazz = (Class<? extends BlurIndex>) Class.forName(className);
@@ -382,8 +373,7 @@ public class TableContext implements Cloneable {
     }
     Constructor<? extends BlurIndex> constructor = findConstructor(clazz);
     try {
-      return constructor.newInstance(shardContext, dir, mergeScheduler, searchExecutor, indexCloser,
-          indexImporterTimer, bulkTimer, thriftCache, indexWriterTimer, maxWriterIdle);
+      return constructor.newInstance(blurIndexConf);
     } catch (InstantiationException e) {
       throw new IOException(e);
     } catch (IllegalAccessException e) {
@@ -397,9 +387,7 @@ public class TableContext implements Cloneable {
 
   private Constructor<? extends BlurIndex> findConstructor(Class<? extends BlurIndex> clazz) throws IOException {
     try {
-      return clazz.getConstructor(new Class[] { ShardContext.class, Directory.class, SharedMergeScheduler.class,
-          ExecutorService.class, BlurIndexCloser.class, Timer.class, Timer.class, ThriftCache.class, Timer.class,
-          Long.TYPE });
+      return clazz.getConstructor(new Class[] { BlurIndexConf.class });
     } catch (NoSuchMethodException e) {
       throw new IOException(e);
     } catch (SecurityException e) {

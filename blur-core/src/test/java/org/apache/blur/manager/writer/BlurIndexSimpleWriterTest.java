@@ -128,8 +128,8 @@ public class BlurIndexSimpleWriterTest {
     directory.setLockFactory(lockFactory);
 
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer,
-        _indexImporterTimer, _bulkTimer, null, _idleWriterTimer, TimeUnit.SECONDS.toMillis(5));
+    _writer = new BlurIndexSimpleWriter(new BlurIndexConf(shardContext, directory, _mergeScheduler, _service, _closer,
+        _indexImporterTimer, _bulkTimer, null, _idleWriterTimer, TimeUnit.SECONDS.toMillis(5)));
   }
 
   @After

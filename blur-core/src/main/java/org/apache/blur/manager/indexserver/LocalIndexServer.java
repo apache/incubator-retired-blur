@@ -35,6 +35,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
+import org.apache.blur.manager.writer.BlurIndexConf;
 import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.server.ShardContext;
@@ -157,8 +158,8 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     ShardContext shardContext = ShardContext.create(_tableContext, shard);
-    BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(shardContext, dir, _mergeScheduler, _searchExecutor,
-        _indexCloser, _timer, _bulkTimer, null, _closerTimer, _maxWriterIdle);
+    BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(new BlurIndexConf(shardContext, dir, _mergeScheduler,
+        _searchExecutor, _indexCloser, _timer, _bulkTimer, null, _closerTimer, _maxWriterIdle));
     return index;
   }
 

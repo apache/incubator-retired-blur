@@ -155,22 +155,19 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   private volatile Thread _optimizeThread;
 
-  public BlurIndexSimpleWriter(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
-      final ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer,
-      Timer bulkIndexingTimer, ThriftCache thriftCache, Timer indexWriterTimer, long maxWriterIdle) throws IOException {
-    super(shardContext, directory, mergeScheduler, searchExecutor, indexCloser, indexImporterTimer, bulkIndexingTimer,
-        thriftCache, indexWriterTimer, maxWriterIdle);
-    _maxWriterIdle = maxWriterIdle;
-    _indexWriterTimer = indexWriterTimer;
-    _thriftCache = thriftCache;
+  public BlurIndexSimpleWriter(BlurIndexConf blurIndexConf) throws IOException {
+    super(blurIndexConf);
+    _maxWriterIdle = blurIndexConf.getMaxWriterIdle();
+    _indexWriterTimer = blurIndexConf.getIndexWriterTimer();
+    _thriftCache = blurIndexConf.getThriftCache();
     _commaSplitter = Splitter.on(',');
     _bulkWriters = new ConcurrentHashMap<String, BlurIndexSimpleWriter.BulkEntry>();
-    _indexImporterTimer = indexImporterTimer;
-    _bulkIndexingTimer = bulkIndexingTimer;
-    _searchThreadPool = searchExecutor;
-    _shardContext = shardContext;
+    _indexImporterTimer = blurIndexConf.getIndexImporterTimer();
+    _bulkIndexingTimer = blurIndexConf.getBulkIndexingTimer();
+    _searchThreadPool = blurIndexConf.getSearchExecutor();
+    _shardContext = blurIndexConf.getShardContext();
     _tableContext = _shardContext.getTableContext();
-    _context = _tableContext.getTable() + "/" + shardContext.getShard();
+    _context = _tableContext.getTable() + "/" + _shardContext.getShard();
     _fieldManager = _tableContext.getFieldManager();
     _discoverableFields = _tableContext.getDiscoverableFields();
     _accessControlFactory = _tableContext.getAccessControlFactory();
@@ -198,7 +195,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _conf.setInfoStream(new LoggingInfoStream(_tableContext.getTable(), _shardContext.getShard()));
     TieredMergePolicy mergePolicy = (TieredMergePolicy) _conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
-    _conf.setMergeScheduler(mergeScheduler.getMergeScheduler());
+    _conf.setMergeScheduler(blurIndexConf.getMergeScheduler().getMergeScheduler());
     _snapshotIndexDeletionPolicy = new SnapshotIndexDeletionPolicy(_tableContext.getConfiguration(),
         SnapshotIndexDeletionPolicy.getGenerationsPath(_shardContext.getHdfsDirPath()));
     _policy = new IndexDeletionPolicyReader(_snapshotIndexDeletionPolicy);
@@ -207,13 +204,12 @@ public class BlurIndexSimpleWriter extends BlurIndex {
     _queue = new ArrayBlockingQueue<RowMutation>(blurConfiguration.getInt(BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH, 100));
     _mutationQueueProcessor = new MutationQueueProcessor(_queue, this, _shardContext, _writesWaiting);
 
-    if (!DirectoryReader.indexExists(directory)) {
-      new BlurIndexWriter(directory, _conf).close();
+    _directory = blurIndexConf.getDirectory();
+    if (!DirectoryReader.indexExists(_directory)) {
+      new BlurIndexWriter(_directory, _conf).close();
     }
 
-    _directory = directory;
-
-    _indexCloser = indexCloser;
+    _indexCloser = blurIndexConf.getIndexCloser();
     DirectoryReader realDirectoryReader = DirectoryReader.open(_directory);
     DirectoryReader wrappped = wrap(realDirectoryReader);
     String message = "BlurIndexSimpleWriter - inital open";

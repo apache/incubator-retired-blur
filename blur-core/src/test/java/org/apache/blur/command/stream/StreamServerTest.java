@@ -33,6 +33,7 @@ import org.apache.blur.command.IndexContext;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
+import org.apache.blur.manager.writer.BlurIndexConf;
 import org.apache.blur.manager.writer.IndexAction;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -211,7 +212,7 @@ public class StreamServerTest implements Serializable {
     tableDescriptor.setTableUri("file:///tmp");
     TableContext tableContext = TableContext.create(tableDescriptor);
     ShardContext shardContext = ShardContext.create(tableContext, shard);
-    return new BlurIndex(shardContext, null, null, null, null, null, null, null, null, 0) {
+    return new BlurIndex(new BlurIndexConf(shardContext, null, null, null, null, null, null, null, null, 0)) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {

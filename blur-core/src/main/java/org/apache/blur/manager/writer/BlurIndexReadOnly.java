@@ -40,10 +40,6 @@ public class BlurIndexReadOnly extends BlurIndex {
     _blurIndex.close();
   }
 
-  public void refresh() throws IOException {
-    _blurIndex.refresh();
-  }
-
   public AtomicBoolean isClosed() {
     return _blurIndex.isClosed();
   }

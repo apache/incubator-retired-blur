@@ -31,21 +31,19 @@ import org.apache.lucene.search.TopDocs;
 
 public abstract class BlurIndex {
 
-  protected final BlurIndexConf _blurIndexConf;
+  protected final BlurIndexConfig _blurIndexConf;
 
-  public BlurIndex(BlurIndexConf blurIndexConf) throws IOException {
+  public BlurIndex(BlurIndexConfig blurIndexConf) throws IOException {
     _blurIndexConf = blurIndexConf;
   }
 
-  public BlurIndexConf getBlurIndexConf() {
+  public BlurIndexConfig getBlurIndexConf() {
     return _blurIndexConf;
   }
 
   public abstract IndexSearcherCloseable getIndexSearcher() throws IOException;
 
   public abstract void close() throws IOException;
-
-  public abstract void refresh() throws IOException;
 
   public abstract AtomicBoolean isClosed();
 

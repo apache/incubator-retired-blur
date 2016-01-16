@@ -38,7 +38,7 @@ import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.lucene.search.IndexSearcherCloseableBase;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.manager.writer.BlurIndexConf;
+import org.apache.blur.manager.writer.BlurIndexConfig;
 import org.apache.blur.manager.writer.IndexAction;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
@@ -384,15 +384,10 @@ public class ShardCommandManagerTest {
 
   protected BlurIndex getNullBlurIndex(String shard) throws IOException {
     ShardContext shardContext = ShardContext.create(getTableContextFactory().getTableContext("test"), shard);
-    return new BlurIndex(new BlurIndexConf(shardContext, null, null, null, null, null, null, null, null, 0)) {
+    return new BlurIndex(new BlurIndexConfig(shardContext, null, null, null, null, null, null, null, null, 0)) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {
-        throw new RuntimeException("Not implemented.");
-      }
-
-      @Override
-      public void refresh() throws IOException {
         throw new RuntimeException("Not implemented.");
       }
 

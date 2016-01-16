@@ -46,7 +46,7 @@ import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.clusterstatus.ClusterStatus.Action;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.BlurIndexCloser;
-import org.apache.blur.manager.writer.BlurIndexConf;
+import org.apache.blur.manager.writer.BlurIndexConfig;
 import org.apache.blur.manager.writer.BlurIndexReadOnly;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
 import org.apache.blur.server.ShardContext;
@@ -527,7 +527,7 @@ public class DistributedIndexServer extends AbstractDistributedIndexServer {
       directory = _blockCacheDirectoryFactory.newDirectory(table, shard, directory, blockCacheFileTypes);
     }
 
-    BlurIndexConf blurIndexConf = new BlurIndexConf(shardContext, directory, _mergeScheduler, _searchExecutor,
+    BlurIndexConfig blurIndexConf = new BlurIndexConfig(shardContext, directory, _mergeScheduler, _searchExecutor,
         _indexCloser, _indexImporterTimer, _indexBulkTimer, _thriftCache, _indexIdleWriterTimer, _maxWriterIdle);
 
     BlurIndex index = tableContext.newInstanceBlurIndex(blurIndexConf);

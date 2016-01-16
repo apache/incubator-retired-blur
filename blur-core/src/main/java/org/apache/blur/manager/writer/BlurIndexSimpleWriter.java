@@ -155,7 +155,7 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   private volatile Thread _optimizeThread;
 
-  public BlurIndexSimpleWriter(BlurIndexConf blurIndexConf) throws IOException {
+  public BlurIndexSimpleWriter(BlurIndexConfig blurIndexConf) throws IOException {
     super(blurIndexConf);
     _maxWriterIdle = blurIndexConf.getMaxWriterIdle();
     _indexWriterTimer = blurIndexConf.getIndexWriterTimer();
@@ -427,11 +427,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
         timer.purge();
       }
     };
-  }
-
-  @Override
-  public void refresh() throws IOException {
-
   }
 
   @Override

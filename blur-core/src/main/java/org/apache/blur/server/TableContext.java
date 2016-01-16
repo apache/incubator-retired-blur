@@ -50,7 +50,7 @@ import org.apache.blur.lucene.security.index.AccessControlFactory;
 import org.apache.blur.lucene.security.index.FilterAccessControlFactory;
 import org.apache.blur.manager.ReadInterceptor;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.manager.writer.BlurIndexConf;
+import org.apache.blur.manager.writer.BlurIndexConfig;
 import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.ScoreType;
@@ -363,7 +363,7 @@ public class TableContext implements Cloneable {
   }
 
   @SuppressWarnings("unchecked")
-  public BlurIndex newInstanceBlurIndex(BlurIndexConf blurIndexConf) throws IOException {
+  public BlurIndex newInstanceBlurIndex(BlurIndexConfig blurIndexConf) throws IOException {
     String className = _blurConfiguration.get(BLUR_SHARD_BLURINDEX_CLASS, BlurIndexSimpleWriter.class.getName());
     Class<? extends BlurIndex> clazz;
     try {
@@ -387,7 +387,7 @@ public class TableContext implements Cloneable {
 
   private Constructor<? extends BlurIndex> findConstructor(Class<? extends BlurIndex> clazz) throws IOException {
     try {
-      return clazz.getConstructor(new Class[] { BlurIndexConf.class });
+      return clazz.getConstructor(new Class[] { BlurIndexConfig.class });
     } catch (NoSuchMethodException e) {
       throw new IOException(e);
     } catch (SecurityException e) {

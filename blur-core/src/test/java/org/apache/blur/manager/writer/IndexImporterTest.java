@@ -126,15 +126,10 @@ public class IndexImporterTest {
   }
 
   private BlurIndex getBlurIndex(ShardContext shardContext, final Directory mainDirectory) throws IOException {
-    return new BlurIndex(new BlurIndexConf(shardContext, mainDirectory, null, null, null, null, null, null, null, 0)) {
+    return new BlurIndex(new BlurIndexConfig(shardContext, mainDirectory, null, null, null, null, null, null, null, 0)) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {
-        throw new RuntimeException("Not Implemented");
-      }
-
-      @Override
-      public void refresh() throws IOException {
         throw new RuntimeException("Not Implemented");
       }
 

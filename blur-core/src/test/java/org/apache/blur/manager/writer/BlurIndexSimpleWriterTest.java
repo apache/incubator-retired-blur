@@ -128,8 +128,8 @@ public class BlurIndexSimpleWriterTest {
     directory.setLockFactory(lockFactory);
 
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    _writer = new BlurIndexSimpleWriter(new BlurIndexConf(shardContext, directory, _mergeScheduler, _service, _closer,
-        _indexImporterTimer, _bulkTimer, null, _idleWriterTimer, TimeUnit.SECONDS.toMillis(5)));
+    _writer = new BlurIndexSimpleWriter(new BlurIndexConfig(shardContext, directory, _mergeScheduler, _service,
+        _closer, _indexImporterTimer, _bulkTimer, null, _idleWriterTimer, TimeUnit.SECONDS.toMillis(5)));
   }
 
   @After
@@ -264,7 +264,6 @@ public class BlurIndexSimpleWriterTest {
     // //wait one second for the data to become visible the test is set to
     // refresh once every 25 ms
     Thread.sleep(1000);// Hack for now
-    _writer.refresh();
     IndexSearcherCloseable searcher2 = _writer.getIndexSearcher();
     IndexReader reader2 = searcher2.getIndexReader();
     assertEquals(TEST_NUMBER, reader2.numDocs());

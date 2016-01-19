@@ -47,6 +47,7 @@ import org.apache.blur.MiniCluster;
 import org.apache.blur.TestType;
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.command.BlurObject;
+import org.apache.blur.command.InfiniteLoopCommand;
 import org.apache.blur.command.RunSlowForTesting;
 import org.apache.blur.command.Shard;
 import org.apache.blur.command.UserCurrentUser;
@@ -61,6 +62,7 @@ import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.thrift.generated.CommandStatus;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.Facet;
 import org.apache.blur.thrift.generated.FetchResult;
@@ -1057,4 +1059,36 @@ public abstract class BlurClusterTestBase {
     blurMutationBug.runTest(2, TimeUnit.MINUTES);
   }
 
+  @Test
+  public void testCancelCommand() throws IOException, BlurException, TException, InterruptedException {
+    String table = "testCancelCommand";
+    createTable(table);
+    loadTable(table);
+    Iface client = getClient();
+    AtomicBoolean fail = new AtomicBoolean();
+    Thread thread = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        InfiniteLoopCommand infiniteLoopCommand = new InfiniteLoopCommand();
+        infiniteLoopCommand.setTable(table);
+        try {
+          infiniteLoopCommand.run(getClient());
+          fail.set(true);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    });
+    thread.start();
+
+    Thread.sleep(2000);
+    List<String> commandStatusList = client.commandStatusList(0, (short) 100);
+    for (String s : commandStatusList) {
+      CommandStatus commandStatus = client.commandStatus(s);
+      System.out.println(commandStatus);
+      client.commandCancel(s);
+    }
+    thread.join();
+    assertFalse("The cancelled command failed to throw an exception.", fail.get());
+  }
 }

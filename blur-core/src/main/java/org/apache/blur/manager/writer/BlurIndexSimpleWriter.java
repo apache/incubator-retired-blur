@@ -42,7 +42,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -115,7 +114,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   private static final Log LOG = LogFactory.getLog(BlurIndexSimpleWriter.class);
 
-  private final AtomicBoolean _isClosed = new AtomicBoolean();
   private final BlurIndexCloser _indexCloser;
   private final AtomicReference<DirectoryReader> _indexReader = new AtomicReference<DirectoryReader>();
   private final ExecutorService _searchThreadPool;
@@ -427,11 +425,6 @@ public class BlurIndexSimpleWriter extends BlurIndex {
         timer.purge();
       }
     };
-  }
-
-  @Override
-  public AtomicBoolean isClosed() {
-    return _isClosed;
   }
 
   private void closeWriter() {

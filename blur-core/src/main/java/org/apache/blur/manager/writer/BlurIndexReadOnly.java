@@ -28,7 +28,7 @@ public class BlurIndexReadOnly extends BlurIndex {
   private final BlurIndex _blurIndex;
 
   public BlurIndexReadOnly(BlurIndex blurIndex) throws IOException {
-    super(blurIndex.getBlurIndexConf());
+    super(blurIndex.getBlurIndexConfig());
     _blurIndex = blurIndex;
   }
 

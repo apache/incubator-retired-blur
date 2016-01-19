@@ -32,20 +32,23 @@ import org.apache.lucene.search.TopDocs;
 public abstract class BlurIndex {
 
   protected final BlurIndexConfig _blurIndexConf;
+  protected final AtomicBoolean _isClosed = new AtomicBoolean();
 
   public BlurIndex(BlurIndexConfig blurIndexConf) throws IOException {
     _blurIndexConf = blurIndexConf;
   }
 
-  public BlurIndexConfig getBlurIndexConf() {
+  public BlurIndexConfig getBlurIndexConfig() {
     return _blurIndexConf;
+  }
+
+  public AtomicBoolean isClosed() {
+    return _isClosed;
   }
 
   public abstract IndexSearcherCloseable getIndexSearcher() throws IOException;
 
   public abstract void close() throws IOException;
-
-  public abstract AtomicBoolean isClosed();
 
   public abstract void optimize(int numberOfSegmentsPerShard) throws IOException;
 

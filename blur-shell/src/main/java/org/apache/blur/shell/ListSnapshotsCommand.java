@@ -22,34 +22,37 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.generated.BlurException;
 
 public class ListSnapshotsCommand extends Command implements TableFirstArgCommand {
 
   @Override
-  public void doit(PrintWriter out, Iface client, String[] args)
-      throws CommandException, TException, BlurException {
+  public void doit(PrintWriter out, Iface client, String[] args) throws CommandException, TException, BlurException {
     if (args.length != 2) {
       throw new CommandException("Invalid args: " + help());
     }
     String tablename = args[1];
     Map<String, List<String>> snapshotsPerShard = client.listSnapshots(tablename);
+    Map<String, Long> snapshotCounts = new TreeMap<String, Long>();
     for (Entry<String, List<String>> entry : snapshotsPerShard.entrySet()) {
-      String shard = entry.getKey();
-      out.print(shard + " : ");
-      int count = 0;
       for (String snapshot : entry.getValue()) {
-        count++;
-        if (count == entry.getValue().size()) {
-          out.println(snapshot);
+        Long count = snapshotCounts.get(snapshot);
+        if (count == null) {
+          snapshotCounts.put(snapshot, 1L);
         } else {
-          out.print(snapshot + ", ");
+          snapshotCounts.put(snapshot, count + 1L);
         }
       }
     }
+
+    for (Entry<String, Long> e : snapshotCounts.entrySet()) {
+      out.println(e.getKey() + " => shards:" + e.getValue());
+    }
+
   }
 
   @Override

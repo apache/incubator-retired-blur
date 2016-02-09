@@ -415,7 +415,11 @@ public abstract class TableAdmin implements Iface {
       TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
       TableContext tableContext = TableContext.create(tableDescriptor);
       return tableContext.getDescriptor();
-    } catch (Exception e) {
+    }
+    catch(BException e){
+    	throw e;
+    }
+    catch (Exception e) {
       LOG.error("Unknown error while trying to describe a table [" + table + "].", e);
       throw new BException("Unknown error while trying to describe a table [" + table + "].", e);
     }

@@ -1,0 +1,45 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+  <formats>
+    <format>tar.gz</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+
+  <dependencySets>
+    <dependencySet>
+      <useProjectArtifact>true</useProjectArtifact>
+      <outputDirectory>blur-indexer-${project.version}/lib</outputDirectory>
+      <unpack>false</unpack>
+      <includes>
+        <include>org.apache.blur:blur-indexer</include>
+        <include>org.apache.blur:*</include>
+        <include>org.apache.zookeeper:zookeeper</include>
+        <include>org.slf4j:slf4j-api</include>
+        <include>org.slf4j:slf4j-log4j12</include>
+        <include>org.json:json</include>
+        <include>log4j:log4j</include>
+        <include>com.yammer.metrics:*</include>
+        <include>com.google.guava:guava</include>
+        <include>org.apache.httpcomponents:*</include>
+        <include>org.apache.lucene:*</include>
+        <include>com.spatial4j:spatial4j</include>
+        <include>commons-cli:commons-cli</include>
+        <include>org.eclipse.jetty:*</include>
+        <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
+        <include>jline:jline</include>
+        <include>com.fasterxml.jackson.core:*</include>
+      </includes>
+    </dependencySet>
+  </dependencySets>
+
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.scriptSourceDirectory}</directory>
+      <outputDirectory>blur-indexer-${project.version}</outputDirectory>
+      <excludes>
+        <exclude>**/.empty</exclude>
+      </excludes>
+    </fileSet>
+  </fileSets>
+</assembly>

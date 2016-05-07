@@ -31,6 +31,7 @@ import org.apache.lucene.index.IndexReader.ReaderClosedListener;
 import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.DocIdSetIterator;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 import org.apache.lucene.util.OpenBitSet;
 
@@ -62,12 +63,16 @@ public class BitSetDocumentVisibilityFilterCacheStrategy extends DocumentVisibil
 
   @Override
   public Builder createBuilder(String fieldName, BytesRef term, final AtomicReader reader) {
-    final OpenBitSet bitSet = new OpenBitSet(reader.maxDoc());
+    int maxDoc = reader.maxDoc();
     final Key key = new Key(fieldName, term, reader.getCoreCacheKey());
     LOG.debug("Creating new bitset for key [" + key + "] on index [" + reader + "]");
     return new Builder() {
+
+      private OpenBitSet bitSet = new OpenBitSet(maxDoc);
+
       @Override
       public void or(DocIdSetIterator it) throws IOException {
+        LOG.debug("Building bitset for key [" + key + "]");
         int doc;
         while ((doc = it.nextDoc()) != DocsEnum.NO_MORE_DOCS) {
           bitSet.set(doc);
@@ -76,7 +81,6 @@ public class BitSetDocumentVisibilityFilterCacheStrategy extends DocumentVisibil
 
       @Override
       public DocIdSet getDocIdSet() throws IOException {
-        LOG.debug("Building bitset for key [" + key + "]");
         SegmentReader segmentReader = getSegmentReader(reader);
         segmentReader.addReaderClosedListener(new ReaderClosedListener() {
           @Override
@@ -88,10 +92,170 @@ public class BitSetDocumentVisibilityFilterCacheStrategy extends DocumentVisibil
             }
           }
         });
-        _cache.put(key, bitSet);
-        return bitSet;
+        long cardinality = bitSet.cardinality();
+        DocIdSet cacheDocIdSet;
+        if (isFullySet(maxDoc, bitSet, cardinality)) {
+          cacheDocIdSet = getFullySetDocIdSet(maxDoc);
+        } else if (isFullyEmpty(bitSet, cardinality)) {
+          cacheDocIdSet = getFullyEmptyDocIdSet(maxDoc);
+        } else {
+          cacheDocIdSet = bitSet;
+        }
+        _cache.put(key, cacheDocIdSet);
+        return cacheDocIdSet;
       }
     };
+  }
+
+  public static DocIdSet getFullyEmptyDocIdSet(int maxDoc) {
+    Bits bits = getFullyEmptyBits(maxDoc);
+    return new DocIdSet() {
+      @Override
+      public DocIdSetIterator iterator() throws IOException {
+        return getFullyEmptyDocIdSetIterator(maxDoc);
+      }
+
+      @Override
+      public Bits bits() throws IOException {
+        return bits;
+      }
+
+      @Override
+      public boolean isCacheable() {
+        return true;
+      }
+    };
+  }
+
+  public static DocIdSetIterator getFullyEmptyDocIdSetIterator(int maxDoc) {
+    return new DocIdSetIterator() {
+
+      private int _docId = -1;
+
+      @Override
+      public int docID() {
+        return _docId;
+      }
+
+      @Override
+      public int nextDoc() throws IOException {
+        return _docId = DocIdSetIterator.NO_MORE_DOCS;
+      }
+
+      @Override
+      public int advance(int target) throws IOException {
+        return _docId = DocIdSetIterator.NO_MORE_DOCS;
+      }
+
+      @Override
+      public long cost() {
+        return 0;
+      }
+    };
+  }
+
+  public static Bits getFullyEmptyBits(int maxDoc) {
+    return new Bits() {
+      @Override
+      public boolean get(int index) {
+        return false;
+      }
+
+      @Override
+      public int length() {
+        return maxDoc;
+      }
+    };
+  }
+
+  public static DocIdSet getFullySetDocIdSet(int maxDoc) {
+    Bits bits = getFullySetBits(maxDoc);
+    return new DocIdSet() {
+      @Override
+      public DocIdSetIterator iterator() throws IOException {
+        return getFullySetDocIdSetIterator(maxDoc);
+      }
+
+      @Override
+      public Bits bits() throws IOException {
+        return bits;
+      }
+
+      @Override
+      public boolean isCacheable() {
+        return true;
+      }
+    };
+  }
+
+  public static DocIdSetIterator getFullySetDocIdSetIterator(int maxDoc) {
+    return new DocIdSetIterator() {
+
+      private int _docId = -1;
+
+      @Override
+      public int advance(int target) throws IOException {
+        if (_docId == DocIdSetIterator.NO_MORE_DOCS) {
+          return DocIdSetIterator.NO_MORE_DOCS;
+        }
+        _docId = target;
+        if (_docId >= maxDoc) {
+          return _docId = DocIdSetIterator.NO_MORE_DOCS;
+        }
+        return _docId;
+      }
+
+      @Override
+      public int nextDoc() throws IOException {
+        if (_docId == DocIdSetIterator.NO_MORE_DOCS) {
+          return DocIdSetIterator.NO_MORE_DOCS;
+        }
+        _docId++;
+        if (_docId >= maxDoc) {
+          return _docId = DocIdSetIterator.NO_MORE_DOCS;
+        }
+        return _docId;
+      }
+
+      @Override
+      public int docID() {
+        return _docId;
+      }
+
+      @Override
+      public long cost() {
+        return 0l;
+      }
+
+    };
+  }
+
+  public static Bits getFullySetBits(int maxDoc) {
+    return new Bits() {
+      @Override
+      public boolean get(int index) {
+        return true;
+      }
+
+      @Override
+      public int length() {
+        return maxDoc;
+      }
+    };
+  }
+
+  public static boolean isFullyEmpty(OpenBitSet bitSet, long cardinality) {
+    if (cardinality == 0) {
+      return true;
+    }
+    return false;
+  }
+
+  public static boolean isFullySet(int maxDoc, OpenBitSet bitSet, long cardinality) {
+    if (cardinality >= maxDoc) {
+      return true;
+    }
+    return false;
   }
 
   public static SegmentReader getSegmentReader(IndexReader indexReader) throws IOException {

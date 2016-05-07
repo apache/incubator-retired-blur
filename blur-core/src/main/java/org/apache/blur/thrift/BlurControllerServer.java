@@ -51,6 +51,7 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import org.apache.blur.command.ArgumentOverlay;
 import org.apache.blur.command.BlurObject;
 import org.apache.blur.command.BlurObjectSerDe;
+import org.apache.blur.command.CommandStatusUtil;
 import org.apache.blur.command.CommandUtil;
 import org.apache.blur.command.ControllerCommandManager;
 import org.apache.blur.command.Response;
@@ -92,7 +93,6 @@ import org.apache.blur.thrift.generated.BlurResults;
 import org.apache.blur.thrift.generated.ColumnDefinition;
 import org.apache.blur.thrift.generated.CommandDescriptor;
 import org.apache.blur.thrift.generated.CommandStatus;
-import org.apache.blur.thrift.generated.CommandStatusState;
 import org.apache.blur.thrift.generated.ErrorType;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.HighlightOptions;
@@ -108,6 +108,7 @@ import org.apache.blur.thrift.generated.User;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Trace.TraceId;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.user.UserContext;
 import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
@@ -1514,7 +1515,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       throws BlurException, TException {
     try {
       BlurObject args = CommandUtil.toBlurObject(arguments);
-      CommandStatus originalCommandStatusObject = new CommandStatus(null, commandName, arguments, null, null);
+      CommandStatus originalCommandStatusObject = new CommandStatus(null, commandName, arguments, null,
+          UserConverter.toThriftUser(UserContext.getUser()));
       Response response = _commandManager.execute(getTableContextFactory(), getLayoutFactory(), commandName,
           new ArgumentOverlay(args, _serDe), originalCommandStatusObject);
       return CommandUtil.fromObjectToThrift(response, _serDe);
@@ -1861,7 +1863,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           }
         }));
       }
-      return new ArrayList<String>(result).subList(startingAt, Math.min(fetch, result.size()));
+      return new ArrayList<String>(result).subList(startingAt, startingAt + Math.min(fetch, result.size()));
     } catch (Exception e) {
       throw new BException(e.getMessage(), e);
     }
@@ -1876,7 +1878,15 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         CommandStatus cs = scatterGather(cluster, new BlurCommand<CommandStatus>() {
           @Override
           public CommandStatus call(Client client) throws BlurException, TException {
-            return client.commandStatus(commandExecutionId);
+            try {
+              return client.commandStatus(commandExecutionId);
+            } catch (BlurException e) {
+              String message = e.getMessage();
+              if (message.startsWith("NOT_FOUND")) {
+                return null;
+              }
+              throw e;
+            }
           }
         }, new Merger<CommandStatus>() {
           @Override
@@ -1884,70 +1894,20 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             CommandStatus commandStatus = null;
             while (service.getRemainingCount() > 0) {
               Future<CommandStatus> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true);
-              commandStatus = mergeCommandStatus(commandStatus, service.getResultThrowException(future));
+              commandStatus = CommandStatusUtil.mergeCommandStatus(commandStatus,
+                  service.getResultThrowException(future));
             }
             return commandStatus;
           }
         });
-        commandStatus = mergeCommandStatus(commandStatus, cs);
+        commandStatus = CommandStatusUtil.mergeCommandStatus(commandStatus, cs);
+      }
+      if (commandStatus == null) {
+        throw new BException("NOT_FOUND {0}", commandExecutionId);
       }
       return commandStatus;
     } catch (Exception e) {
       throw new BException(e.getMessage(), e);
-    }
-  }
-
-  private static CommandStatus mergeCommandStatus(CommandStatus cs1, CommandStatus cs2) {
-    if (cs1 == null && cs2 == null) {
-      return null;
-    } else if (cs1 == null) {
-      return cs2;
-    } else if (cs2 == null) {
-      return cs1;
-    } else {
-      Map<String, Map<CommandStatusState, Long>> serverStateMap1 = cs1.getServerStateMap();
-      Map<String, Map<CommandStatusState, Long>> serverStateMap2 = cs2.getServerStateMap();
-      Map<String, Map<CommandStatusState, Long>> merge = mergeServerStateMap(serverStateMap1, serverStateMap2);
-      return new CommandStatus(cs1.getExecutionId(), cs1.getCommandName(), cs1.getArguments(), merge, cs1.getUser());
-    }
-  }
-
-  private static Map<String, Map<CommandStatusState, Long>> mergeServerStateMap(
-      Map<String, Map<CommandStatusState, Long>> serverStateMap1,
-      Map<String, Map<CommandStatusState, Long>> serverStateMap2) {
-    Map<String, Map<CommandStatusState, Long>> result = new HashMap<String, Map<CommandStatusState, Long>>();
-    Set<String> keys = new HashSet<String>();
-    keys.addAll(serverStateMap1.keySet());
-    keys.addAll(serverStateMap2.keySet());
-    for (String key : keys) {
-      Map<CommandStatusState, Long> css1 = serverStateMap2.get(key);
-      Map<CommandStatusState, Long> css2 = serverStateMap2.get(key);
-      result.put(key, mergeCommandStatusState(css1, css2));
-    }
-    return result;
-  }
-
-  private static Map<CommandStatusState, Long> mergeCommandStatusState(Map<CommandStatusState, Long> css1,
-      Map<CommandStatusState, Long> css2) {
-    if (css1 == null && css2 == null) {
-      return new HashMap<CommandStatusState, Long>();
-    } else if (css1 == null) {
-      return css2;
-    } else if (css2 == null) {
-      return css1;
-    } else {
-      Map<CommandStatusState, Long> result = new HashMap<CommandStatusState, Long>(css1);
-      for (Entry<CommandStatusState, Long> e : css2.entrySet()) {
-        CommandStatusState key = e.getKey();
-        Long l = result.get(key);
-        Long value = e.getValue();
-        if (l == null) {
-          result.put(key, value);
-        } else {
-          result.put(key, l + value);
-        }
-      }
-      return result;
     }
   }
 

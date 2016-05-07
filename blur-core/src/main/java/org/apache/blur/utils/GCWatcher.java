@@ -16,22 +16,48 @@
  */
 package org.apache.blur.utils;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryUsage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class GCWatcher {
 
   private static final String JAVA_VERSION = "java.version";
   private static final String _1_7 = "1.7";
+  private static final String _1_8 = "1.8";
   private static final boolean JDK7;
 
   static {
     Properties properties = System.getProperties();
     String javaVersion = properties.getProperty(JAVA_VERSION);
-    if (javaVersion.startsWith(_1_7)) {
+    if (javaVersion.startsWith(_1_7) || javaVersion.startsWith(_1_8)) {
       JDK7 = true;
     } else {
       JDK7 = false;
     }
+  }
+
+  public static void main(String[] args) {
+    GCWatcher.init(0.50);
+
+    GCWatcher.registerAction(new GCAction() {
+      @Override
+      public void takeAction() throws Exception {
+        System.out.println("OOM");
+        System.exit(0);
+      }
+    });
+
+    List<byte[]> lst = new ArrayList<byte[]>();
+
+    while (true) {
+      lst.add(new byte[1_000_000]);
+      MemoryUsage heapMemoryUsage = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage();
+      System.out.println(heapMemoryUsage.getMax() + " " + heapMemoryUsage.getUsed());
+    }
+
   }
 
   /**

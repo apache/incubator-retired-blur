@@ -36,6 +36,7 @@ import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.manager.BlurPartitioner;
+import org.apache.blur.manager.writer.MergeSortRowIdLookup.Action;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.cache.ThriftCache;
@@ -54,12 +55,16 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.CompositeReaderContext;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.Fields;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.BytesRef;
 
 public class IndexImporter extends TimerTask implements Closeable {
@@ -292,7 +297,9 @@ public class IndexImporter extends TimerTask implements Closeable {
       public void performMutate(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
         LOG.info("About to import [{0}] into [{1}/{2}]", directory, _shard, _table);
         boolean emitDeletes = searcher.getIndexReader().numDocs() != 0;
-        applyDeletes(directory, writer, _shard, emitDeletes);
+        Configuration configuration = _shardContext.getTableContext().getConfiguration();
+
+        applyDeletes(directory, writer, searcher, _shard, emitDeletes, configuration);
         LOG.info("Add index [{0}] [{1}/{2}]", directory, _shard, _table);
         writer.addIndexes(directory);
         LOG.info("Removing delete markers [{0}] on [{1}/{2}]", directory, _shard, _table);
@@ -336,40 +343,113 @@ public class IndexImporter extends TimerTask implements Closeable {
     return result;
   }
 
-  private void applyDeletes(Directory directory, IndexWriter indexWriter, String shard, boolean emitDeletes)
-      throws IOException {
-    DirectoryReader reader = DirectoryReader.open(directory);
+  private void applyDeletes(Directory directory, IndexWriter indexWriter, IndexSearcherCloseable searcher,
+      String shard, boolean emitDeletes, Configuration configuration) throws IOException {
+    DirectoryReader newReader = DirectoryReader.open(directory);
     try {
-      LOG.info("Applying deletes in reader [{0}]", reader);
-      CompositeReaderContext compositeReaderContext = reader.getContext();
-      List<AtomicReaderContext> leaves = compositeReaderContext.leaves();
+      List<AtomicReaderContext> newLeaves = newReader.getContext().leaves();
       BlurPartitioner blurPartitioner = new BlurPartitioner();
       Text key = new Text();
       int numberOfShards = _shardContext.getTableContext().getDescriptor().getShardCount();
       int shardId = ShardUtil.getShardIndex(shard);
-      for (AtomicReaderContext context : leaves) {
-        AtomicReader atomicReader = context.reader();
-        Fields fields = atomicReader.fields();
-        Terms terms = fields.terms(BlurConstants.ROW_ID);
-        if (terms != null) {
-          TermsEnum termsEnum = terms.iterator(null);
-          BytesRef ref = null;
-          while ((ref = termsEnum.next()) != null) {
-            key.set(ref.bytes, ref.offset, ref.length);
-            int partition = blurPartitioner.getPartition(key, null, numberOfShards);
-            if (shardId != partition) {
-              throw new IOException("Index is corrupted, RowIds are found in wrong shard, partition [" + partition
-                  + "] does not shard [" + shardId + "], this can happen when rows are not hashed correctly.");
-            }
-            if (emitDeletes) {
-              indexWriter.deleteDocuments(new Term(BlurConstants.ROW_ID, BytesRef.deepCopyOf(ref)));
-            }
+
+      Action action = new Action() {
+        @Override
+        public void found(AtomicReader reader, Bits liveDocs, TermsEnum termsEnum) throws IOException {
+          DocsEnum docsEnum = termsEnum.docs(liveDocs, null);
+          if (docsEnum.nextDoc() != DocIdSetIterator.NO_MORE_DOCS) {
+            indexWriter.deleteDocuments(new Term(BlurConstants.ROW_ID, BytesRef.deepCopyOf(termsEnum.term())));
           }
+        }
+      };
+
+      LOG.info("Applying deletes for table [{0}] shard [{1}] new reader [{2}]", _table, shard, newReader);
+      boolean skipCheckRowIds = isInternal(newReader);
+      LOG.info("Skip rowid check [{0}] for table [{1}] shard [{2}] new reader [{3}]", skipCheckRowIds, _table, shard,
+          newReader);
+      for (AtomicReaderContext context : newLeaves) {
+        AtomicReader newAtomicReader = context.reader();
+        if (isFastRowIdDeleteSupported(newAtomicReader)) {
+          runNewRowIdCheckAndDelete(indexWriter, emitDeletes, blurPartitioner, key, numberOfShards, shardId,
+              newAtomicReader, skipCheckRowIds);
+        } else {
+          runOldMergeSortRowIdCheckAndDelete(emitDeletes, searcher.getIndexReader(), blurPartitioner, key,
+              numberOfShards, shardId, action, newAtomicReader);
         }
       }
     } finally {
-      reader.close();
+      newReader.close();
     }
+  }
+
+  private boolean isInternal(DirectoryReader reader) throws IOException {
+    Map<String, String> map = reader.getIndexCommit().getUserData();
+    return BlurConstants.INTERNAL.equals(map.get(BlurConstants.INTERNAL));
+  }
+
+  private void runNewRowIdCheckAndDelete(IndexWriter indexWriter, boolean emitDeletes, BlurPartitioner blurPartitioner,
+      Text key, int numberOfShards, int shardId, AtomicReader atomicReader, boolean skipCheckRowIds) throws IOException {
+    Fields fields = atomicReader.fields();
+    if (skipCheckRowIds) {
+      Terms rowIdTerms = fields.terms(BlurConstants.ROW_ID);
+      if (rowIdTerms != null) {
+        LOG.info("Checking rowIds for import on table [{0}] shard [{1}]", _table, _shard);
+        TermsEnum rowIdTermsEnum = rowIdTerms.iterator(null);
+        BytesRef ref = null;
+        while ((ref = rowIdTermsEnum.next()) != null) {
+          key.set(ref.bytes, ref.offset, ref.length);
+          int partition = blurPartitioner.getPartition(key, null, numberOfShards);
+          if (shardId != partition) {
+            throw new IOException("Index is corrupted, RowIds are found in wrong shard, partition [" + partition
+                + "] does not shard [" + shardId + "], this can happen when rows are not hashed correctly.");
+          }
+        }
+      }
+    }
+    if (emitDeletes) {
+      Terms rowIdsToDeleteTerms = fields.terms(BlurConstants.UPDATE_ROW);
+      if (rowIdsToDeleteTerms != null) {
+        LOG.info("Performing deletes on rowIds for import on table [{0}] shard [{1}]", _table, _shard);
+        TermsEnum rowIdsToDeleteTermsEnum = rowIdsToDeleteTerms.iterator(null);
+        BytesRef ref = null;
+        while ((ref = rowIdsToDeleteTermsEnum.next()) != null) {
+          indexWriter.deleteDocuments(new Term(BlurConstants.ROW_ID, BytesRef.deepCopyOf(ref)));
+        }
+      }
+    }
+  }
+
+  private void runOldMergeSortRowIdCheckAndDelete(boolean emitDeletes, IndexReader currentIndexReader,
+      BlurPartitioner blurPartitioner, Text key, int numberOfShards, int shardId, Action action,
+      AtomicReader atomicReader) throws IOException {
+    MergeSortRowIdLookup lookup = new MergeSortRowIdLookup(currentIndexReader);
+    Fields fields = atomicReader.fields();
+    Terms terms = fields.terms(BlurConstants.ROW_ID);
+    if (terms != null) {
+      TermsEnum termsEnum = terms.iterator(null);
+      BytesRef ref = null;
+      while ((ref = termsEnum.next()) != null) {
+        key.set(ref.bytes, ref.offset, ref.length);
+        int partition = blurPartitioner.getPartition(key, null, numberOfShards);
+        if (shardId != partition) {
+          throw new IOException("Index is corrupted, RowIds are found in wrong shard, partition [" + partition
+              + "] does not shard [" + shardId + "], this can happen when rows are not hashed correctly.");
+        }
+        if (emitDeletes) {
+          lookup.lookup(ref, action);
+        }
+      }
+    }
+  }
+
+  private boolean isFastRowIdDeleteSupported(AtomicReader atomicReader) throws IOException {
+    if (atomicReader.fields().terms(BlurConstants.NEW_ROW) != null) {
+      return true;
+    }
+    if (atomicReader.fields().terms(BlurConstants.UPDATE_ROW) != null) {
+      return true;
+    }
+    return false;
   }
 
   public void cleanupOldDirs() throws IOException {

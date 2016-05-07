@@ -684,7 +684,11 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public CommandStatus commandStatus(String commandExecutionId) throws BlurException, TException {
     try {
-      return _commandManager.getCommandStatus(commandExecutionId);
+      CommandStatus commandStatus = _commandManager.getCommandStatus(commandExecutionId);
+      if (commandStatus == null) {
+        throw new BException("NOT_FOUND {0}", commandExecutionId);
+      }
+      return commandStatus;
     } catch (Exception e) {
       throw new BException(e.getMessage(), e);
     }

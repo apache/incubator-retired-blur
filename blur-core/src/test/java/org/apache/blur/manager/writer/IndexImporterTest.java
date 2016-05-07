@@ -41,12 +41,15 @@ import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.utils.BlurConstants;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -281,6 +284,20 @@ public class IndexImporterTest {
   @Test
   public void testIndexImporterWithCorrectRowIdShardCombination() throws IOException {
     List<Field> document = _fieldManager.getFields("1", genRecord("1"));
+    _commitWriter.addDocument(document);
+    _commitWriter.commit();
+    _commitWriter.close();
+    _indexImporter.run();
+    assertFalse(_fileSystem.exists(_path));
+    assertFalse(_fileSystem.exists(_badRowIdsPath));
+    assertTrue(_fileSystem.exists(_inUsePath));
+    validateIndex();
+  }
+
+  @Test
+  public void testIndexImporterWithCorrectRowIdShardCombinationWithFastImport() throws IOException {
+    List<Field> document = _fieldManager.getFields("1", genRecord("1"));
+    document.add(new StringField(BlurConstants.NEW_ROW, BlurConstants.PRIME_DOC_VALUE, Store.NO));
     _commitWriter.addDocument(document);
     _commitWriter.commit();
     _commitWriter.close();

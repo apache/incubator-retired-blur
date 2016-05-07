@@ -134,19 +134,20 @@ public abstract class BaseCommandManager implements Closeable {
   }
 
   public CommandStatus getCommandStatus(String commandExecutionId) {
-    CommandStatus cso = findCommandStatusObject(commandExecutionId, _workerRunningMap.values());
-    if (cso != null) {
-      return cso;
-    }
-    return findCommandStatusObject(commandExecutionId, _driverRunningMap.values());
+    CommandStatus cso1 = findCommandStatusObject(commandExecutionId, _workerRunningMap.values());
+    CommandStatus cso2 = findCommandStatusObject(commandExecutionId, _driverRunningMap.values());
+    return CommandStatusUtil.mergeCommandStatus(cso1, cso2);
   }
 
   private CommandStatus findCommandStatusObject(String commandExecutionId, Collection<ResponseFuture<?>> values) {
     Map<String, Map<CommandStatusState, Long>> serverStateMap = new HashMap<String, Map<CommandStatusState, Long>>();
     CommandStatus commandStatus = null;
     for (ResponseFuture<?> responseFuture : values) {
+      if (responseFuture == null) {
+        continue;
+      }
       Command<?> commandExecuting = responseFuture.getCommandExecuting();
-      if (commandExecuting.getCommandExecutionId().equals(commandExecutionId)) {
+      if (commandExecutionId.equals(commandExecuting.getCommandExecutionId())) {
         if (commandStatus == null) {
           CommandStatus originalCommandStatusObject = responseFuture.getOriginalCommandStatusObject();
           String commandName = responseFuture.getCommandExecuting().getName();
@@ -182,7 +183,10 @@ public abstract class BaseCommandManager implements Closeable {
     List<String> result = new ArrayList<String>();
     for (ResponseFuture<?> responseFuture : values) {
       Command<?> commandExecuting = responseFuture.getCommandExecuting();
-      result.add(commandExecuting.getCommandExecutionId());
+      String commandExecutionId = commandExecuting.getCommandExecutionId();
+      if (commandExecutionId != null) {
+        result.add(commandExecutionId);
+      }
     }
     return result;
   }
@@ -400,11 +404,12 @@ public abstract class BaseCommandManager implements Closeable {
   }
 
   protected Response submitDriverCallable(Callable<Response> callable, Command<?> commandExecuting,
-      CommandStatus originalCommandStatusObject, AtomicBoolean running) throws IOException, TimeoutException, ExceptionCollector {
+      CommandStatus originalCommandStatusObject, AtomicBoolean running) throws IOException, TimeoutException,
+      ExceptionCollector {
     Future<Response> future = _executorServiceDriver.submit(callable);
     Long instanceExecutionId = getInstanceExecutionId();
     _driverRunningMap.put(instanceExecutionId, new ResponseFuture<Response>(_runningCacheTombstoneTime, future,
-        commandExecuting, originalCommandStatusObject,running));
+        commandExecuting, originalCommandStatusObject, running));
     try {
       return future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
     } catch (CancellationException e) {

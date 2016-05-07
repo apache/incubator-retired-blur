@@ -30,7 +30,7 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 
 public abstract class Command<R> implements Cloneable {
 
-  @OptionalArgument("The ")
+  @OptionalArgument
   private String commandExecutionId;
 
   public abstract String getName();

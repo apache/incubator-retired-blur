@@ -16,6 +16,7 @@
  */
 package org.apache.blur.command;
 
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +40,9 @@ public class ResponseFuture<T> implements Future<T> {
     _tombstone = tombstone;
     _future = future;
     _commandExecuting = commandExecuting;
+    if (_commandExecuting.getCommandExecutionId() == null) {
+      _commandExecuting.setCommandExecutionId(UUID.randomUUID().toString());
+    }
     _originalCommandStatusObject = originalCommandStatusObject;
     _running = running;
   }

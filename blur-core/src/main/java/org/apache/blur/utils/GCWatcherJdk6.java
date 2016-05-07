@@ -151,7 +151,7 @@ public class GCWatcherJdk6 extends TimerTask {
         }
         _lastIndex = _gcInfo.getIndex();
       }
-    } catch (Exception e) {
+    } catch (Throwable e) {
       e.printStackTrace();
     }
   }

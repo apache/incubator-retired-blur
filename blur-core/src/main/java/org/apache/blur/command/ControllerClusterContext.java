@@ -23,6 +23,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClientManager;
 import org.apache.blur.thrift.ClientPool;
 import org.apache.blur.thrift.Connection;
+import org.apache.blur.thrift.UserConverter;
 import org.apache.blur.thrift.generated.Arguments;
 import org.apache.blur.thrift.generated.Blur.Client;
 import org.apache.blur.thrift.generated.BlurException;
@@ -31,6 +32,7 @@ import org.apache.blur.thrift.generated.Response;
 import org.apache.blur.thrift.generated.TimeoutException;
 import org.apache.blur.thrift.generated.ValueObject;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.user.UserContext;
 
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -134,7 +136,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
 
     final Arguments arguments = _manager.toArguments(command);
 
-    CommandStatus originalCommandStatusObject = new CommandStatus(null, command.getName(), arguments, null, null);
+    CommandStatus originalCommandStatusObject = new CommandStatus(null, command.getName(), arguments, null, UserConverter.toThriftUser(UserContext.getUser()));
     for (Entry<Server, Client> e : clientMap.entrySet()) {
       Server server = e.getKey();
       final Client client = e.getValue();
@@ -226,7 +228,7 @@ public class ControllerClusterContext extends ClusterContext implements Closeabl
     Set<Shard> shards = command.routeShards(this, tables);
     Map<Server, Client> clientMap = getClientMap(command, tables, shards);
     final Arguments arguments = _manager.toArguments(command);
-    CommandStatus originalCommandStatusObject = new CommandStatus(null, command.getName(), arguments, null, null);
+    CommandStatus originalCommandStatusObject = new CommandStatus(null, command.getName(), arguments, null, UserConverter.toThriftUser(UserContext.getUser()));
     for (Entry<Server, Client> e : clientMap.entrySet()) {
       Server server = e.getKey();
       final Client client = e.getValue();

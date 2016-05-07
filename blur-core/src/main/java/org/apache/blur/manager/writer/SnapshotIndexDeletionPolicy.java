@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -54,6 +56,7 @@ public class SnapshotIndexDeletionPolicy extends IndexDeletionPolicy {
   private final Path _path;
   private final Map<String, Long> _namesToGenerations = new ConcurrentHashMap<String, Long>();
   private final Map<Long, Set<String>> _generationsToNames = new ConcurrentHashMap<Long, Set<String>>();
+  private final WriteLock _writeLock = new ReentrantReadWriteLock().writeLock();
 
   public SnapshotIndexDeletionPolicy(Configuration configuration, Path path) throws IOException {
     _configuration = configuration;
@@ -70,13 +73,18 @@ public class SnapshotIndexDeletionPolicy extends IndexDeletionPolicy {
 
   @Override
   public void onCommit(List<? extends IndexCommit> commits) throws IOException {
-    int size = commits.size();
-    for (int i = 0; i < size - 1; i++) {
-      IndexCommit indexCommit = commits.get(i);
-      long generation = indexCommit.getGeneration();
-      if (!_generationsToNames.containsKey(generation)) {
-        indexCommit.delete();
+    _writeLock.lock();
+    try {
+      int size = commits.size();
+      for (int i = 0; i < size - 1; i++) {
+        IndexCommit indexCommit = commits.get(i);
+        long generation = indexCommit.getGeneration();
+        if (!_generationsToNames.containsKey(generation)) {
+          indexCommit.delete();
+        }
       }
+    } finally {
+      _writeLock.unlock();
     }
   }
 
@@ -147,36 +155,46 @@ public class SnapshotIndexDeletionPolicy extends IndexDeletionPolicy {
   }
 
   public void createSnapshot(String name, DirectoryReader reader, String context) throws IOException {
-    if (_namesToGenerations.containsKey(name)) {
-      throw new IOException("Snapshot [" + name + "] already exists.");
+    _writeLock.lock();
+    try {
+      if (_namesToGenerations.containsKey(name)) {
+        throw new IOException("Snapshot [" + name + "] already exists.");
+      }
+      LOG.info("Creating snapshot [{0}] in [{1}].", name, context);
+      IndexCommit indexCommit = reader.getIndexCommit();
+      long generation = indexCommit.getGeneration();
+      _namesToGenerations.put(name, generation);
+      Set<String> names = _generationsToNames.get(generation);
+      if (names == null) {
+        names = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
+        _generationsToNames.put(generation, names);
+      }
+      names.add(name);
+      storeGenerations();
+    } finally {
+      _writeLock.unlock();
     }
-    LOG.info("Creating snapshot [{0}] in [{1}].", name, context);
-    IndexCommit indexCommit = reader.getIndexCommit();
-    long generation = indexCommit.getGeneration();
-    _namesToGenerations.put(name, generation);
-    Set<String> names = _generationsToNames.get(generation);
-    if (names == null) {
-      names = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
-      _generationsToNames.put(generation, names);
-    }
-    names.add(name);
-    storeGenerations();
   }
 
   public void removeSnapshot(String name, String context) throws IOException {
-    Long gen = _namesToGenerations.get(name);
-    if (gen == null) {
-      LOG.info("Snapshot [{0}] does not exist in [{1}].", name, context);
-      return;
+    _writeLock.lock();
+    try {
+      Long gen = _namesToGenerations.get(name);
+      if (gen == null) {
+        LOG.info("Snapshot [{0}] does not exist in [{1}].", name, context);
+        return;
+      }
+      LOG.info("Removing snapshot [{0}] from [{1}].", name, context);
+      _namesToGenerations.remove(name);
+      Set<String> names = _generationsToNames.get(gen);
+      names.remove(name);
+      if (names.isEmpty()) {
+        _generationsToNames.remove(gen);
+      }
+      storeGenerations();
+    } finally {
+      _writeLock.unlock();
     }
-    LOG.info("Removing snapshot [{0}] from [{1}].", name, context);
-    _namesToGenerations.remove(name);
-    Set<String> names = _generationsToNames.get(gen);
-    names.remove(name);
-    if (names.isEmpty()) {
-      _generationsToNames.remove(gen);
-    }
-    storeGenerations();
   }
 
   public Collection<String> getSnapshots() {
@@ -194,5 +212,4 @@ public class SnapshotIndexDeletionPolicy extends IndexDeletionPolicy {
   public static Path getGenerationsPath(Path shardDir) {
     return new Path(shardDir, "generations");
   }
-
 }

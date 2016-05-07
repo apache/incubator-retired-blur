@@ -25,7 +25,6 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WRITER_SORT_M
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH;
 
 import java.io.Closeable;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -77,6 +76,7 @@ import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -428,31 +428,31 @@ public class BlurIndexSimpleWriter extends BlurIndex {
   }
 
   private void closeWriter() {
-    if (_lastWrite.get() + _maxWriterIdle < System.currentTimeMillis()) {
-      synchronized (_writer) {
-        _writeLock.lock();
-        try {
-          BlurIndexWriter writer = _writer.getAndSet(null);
-          if (writer != null) {
-            LOG.info("Closing idle writer for table [{0}] shard [{1}]", _tableContext.getTable(),
-                _shardContext.getShard());
-            IOUtils.cleanup(LOG, writer);
-          }
-        } finally {
-          _writeLock.unlock();
+    _writeLock.lock();
+    try {
+      if (_lastWrite.get() + _maxWriterIdle < System.currentTimeMillis()) {
+        BlurIndexWriter writer = _writer.getAndSet(null);
+        if (writer != null) {
+          LOG.info("Closing idle writer for table [{0}] shard [{1}]", _tableContext.getTable(),
+              _shardContext.getShard());
+          IOUtils.cleanup(LOG, writer);
         }
       }
+    } finally {
+      _writeLock.unlock();
     }
   }
 
+  /**
+   * Testing only.
+   */
   protected boolean isWriterClosed() {
-    synchronized (_writer) {
-      return _writer.get() == null;
-    }
+    return _writer.get() == null;
   }
 
   private BlurIndexWriter getBlurIndexWriter() throws IOException {
-    synchronized (_writer) {
+    _writeLock.lock();
+    try {
       BlurIndexWriter blurIndexWriter = _writer.get();
       if (blurIndexWriter == null) {
         blurIndexWriter = new BlurIndexWriter(_directory, _conf.clone());
@@ -460,12 +460,17 @@ public class BlurIndexSimpleWriter extends BlurIndex {
         _lastWrite.set(System.currentTimeMillis());
       }
       return blurIndexWriter;
+    } finally {
+      _writeLock.unlock();
     }
   }
 
   private void resetBlurIndexWriter() {
-    synchronized (_writer) {
+    _writeLock.lock();
+    try {
       _writer.set(null);
+    } finally {
+      _writeLock.unlock();
     }
   }
 
@@ -501,22 +506,12 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   @Override
   public void createSnapshot(String name) throws IOException {
-    _writeLock.lock();
-    try {
-      _snapshotIndexDeletionPolicy.createSnapshot(name, _indexReader.get(), _context);
-    } finally {
-      _writeLock.unlock();
-    }
+    _snapshotIndexDeletionPolicy.createSnapshot(name, _indexReader.get(), _context);
   }
 
   @Override
   public void removeSnapshot(String name) throws IOException {
-    _writeLock.lock();
-    try {
-      _snapshotIndexDeletionPolicy.removeSnapshot(name, _context);
-    } finally {
-      _writeLock.unlock();
-    }
+    _snapshotIndexDeletionPolicy.removeSnapshot(name, _context);
   }
 
   @Override
@@ -1024,17 +1019,10 @@ public class BlurIndexSimpleWriter extends BlurIndex {
 
   @Override
   public long getOnDiskSize() throws IOException {
-    long total = 0;
-    String[] listAll = _directory.listAll();
-    for (String name : listAll) {
-      try {
-        total += _directory.fileLength(name);
-      } catch (FileNotFoundException e) {
-        // If file is not found that means that is was removed between the time
-        // we started iterating over the file names and when we asked for it's
-        // size.
-      }
-    }
-    return total;
+    Path hdfsDirPath = _shardContext.getHdfsDirPath();
+    Configuration configuration = _tableContext.getConfiguration();
+    FileSystem fileSystem = hdfsDirPath.getFileSystem(configuration);
+    ContentSummary contentSummary = fileSystem.getContentSummary(hdfsDirPath);
+    return contentSummary.getLength();
   }
 }

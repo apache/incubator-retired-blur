@@ -338,6 +338,7 @@ public class FilterAccessControlFactory extends AccessControlFactory {
       }
       List<IndexableField> result = new ArrayList<IndexableField>();
       for (IndexableField field : fields) {
+        // If field is to be indexed and is to be read masked.
         if (fieldsToMask.contains(field.name())) {
           // If field is a doc value, then don't bother indexing.
           if (!isDocValue(field)) {

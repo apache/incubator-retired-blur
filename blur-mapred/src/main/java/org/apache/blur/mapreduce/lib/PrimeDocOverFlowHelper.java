@@ -38,24 +38,45 @@ import org.apache.lucene.util.Version;
 
 public class PrimeDocOverFlowHelper {
 
-  private static Directory _directory;
+  private static Directory _directoryNewRow;
 
   static {
     try {
-      _directory = new RAMDirectory();
-      IndexWriter writer = new IndexWriter(_directory, new IndexWriterConfig(Version.LUCENE_43, new KeywordAnalyzer()));
+      _directoryNewRow = new RAMDirectory();
+      IndexWriter writer = new IndexWriter(_directoryNewRow, new IndexWriterConfig(Version.LUCENE_43,
+          new KeywordAnalyzer()));
       Document document = new Document();
       document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
+      document.add(new StringField(BlurConstants.NEW_ROW, BlurConstants.PRIME_DOC_VALUE, Store.NO));
       writer.addDocument(document);
       writer.close();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+
   }
 
-  public static AtomicReader addPrimeDoc(AtomicReader atomicReader) throws IOException {
-    AtomicReaderContext context = DirectoryReader.open(_directory).leaves().get(0);
+  public static AtomicReader addPrimeDoc(AtomicReader atomicReader, boolean newRow, String currentRowId)
+      throws IOException {
+    AtomicReaderContext context = DirectoryReader.open(newRow ? _directoryNewRow : getDirectoryUpdateRow(currentRowId))
+        .leaves().get(0);
     return new ParallelAtomicReader(true, setDocSize(context.reader(), atomicReader.maxDoc()), atomicReader);
+  }
+
+  private static Directory getDirectoryUpdateRow(String currentRowId) {
+    try {
+      RAMDirectory directoryUpdateRow = new RAMDirectory();
+      IndexWriter writer = new IndexWriter(directoryUpdateRow, new IndexWriterConfig(Version.LUCENE_43,
+          new KeywordAnalyzer()));
+      Document document = new Document();
+      document.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
+      document.add(new StringField(BlurConstants.UPDATE_ROW, currentRowId, Store.NO));
+      writer.addDocument(document);
+      writer.close();
+      return directoryUpdateRow;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static AtomicReader setDocSize(AtomicReader reader, final int count) {

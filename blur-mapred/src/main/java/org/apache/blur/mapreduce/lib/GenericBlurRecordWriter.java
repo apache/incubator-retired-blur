@@ -18,9 +18,12 @@ package org.apache.blur.mapreduce.lib;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.log.Log;
@@ -47,11 +50,11 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.AtomicReader;
+import org.apache.lucene.index.AtomicReaderContext;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IOContext;
@@ -95,6 +98,7 @@ public class GenericBlurRecordWriter {
   private ProgressableDirectory _localTmpDir;
   private String _deletedRowId;
   private Configuration _configuration;
+  private String _currentRowId;
 
   public GenericBlurRecordWriter(Configuration configuration, int attemptId, String tmpDirName) throws IOException {
     _configuration = configuration;
@@ -200,6 +204,7 @@ public class GenericBlurRecordWriter {
 
   private void add(BlurMutate value) throws IOException {
     BlurRecord blurRecord = value.getRecord();
+    _currentRowId = blurRecord.getRowId();
     Record record = getRecord(blurRecord);
     String recordId = record.getRecordId();
     if (value.getMutateType() == MUTATE_TYPE.DELETE) {
@@ -224,7 +229,7 @@ public class GenericBlurRecordWriter {
 
   private void flushToTmpIndexIfNeeded() throws IOException {
     if (_documentBufferStrategy.isFull()) {
-      LOG.info("Document Buffer is full overflow to disk.");
+      LOG.info("RowId [" + _currentRowId + "] - Document Buffer is full overflow to disk.");
       flushToTmpIndex();
     }
   }
@@ -273,15 +278,35 @@ public class GenericBlurRecordWriter {
     return record;
   }
 
+  private static ThreadLocal<AtomicBoolean> _existingRow = new ThreadLocal<AtomicBoolean>() {
+    @Override
+    protected AtomicBoolean initialValue() {
+      return new AtomicBoolean();
+    }
+  };
+
+  public static boolean isCurrentRowExisting() {
+    return _existingRow.get().get();
+  }
+
+  public static void setCurrentRowExistingRowId(boolean existing) {
+    _existingRow.get().set(existing);
+  }
+
   private void flush() throws CorruptIndexException, IOException {
+    boolean newRow = !isCurrentRowExisting();
     if (_usingLocalTmpindex) {
       // since we have flushed to disk then we do not need to index the
       // delete.
       flushToTmpIndex();
-      _localTmpWriter.close(false);
+      LOG.info("RowId [" + _currentRowId + "] - forceMerge");
+      _localTmpWriter.forceMerge(1, true);
+      _localTmpWriter.close(true);
+
       DirectoryReader reader = DirectoryReader.open(_localTmpDir);
-      AtomicReader atomicReader = SlowCompositeReaderWrapper.wrap(reader);
-      AtomicReader primeDocAtomicReader = PrimeDocOverFlowHelper.addPrimeDoc(atomicReader);
+      AtomicReader atomicReader = getAtomicReader(reader);
+      LOG.info("RowId [" + _currentRowId + "] - total documents [" + atomicReader.maxDoc() + "]");
+      AtomicReader primeDocAtomicReader = PrimeDocOverFlowHelper.addPrimeDoc(atomicReader, newRow, _currentRowId);
       if (_countersSetup) {
         _recordRateCounter.mark(reader.numDocs());
       }
@@ -289,6 +314,7 @@ public class GenericBlurRecordWriter {
       primeDocAtomicReader.close();
       resetLocalTmp();
       _writer.maybeMerge();
+      LOG.info("RowId [" + _currentRowId + "] - add complete");
       if (_countersSetup) {
         _rowOverFlowCount.increment(1);
       }
@@ -303,6 +329,11 @@ public class GenericBlurRecordWriter {
       } else {
         List<List<Field>> docs = _documentBufferStrategy.getAndClearBuffer();
         docs.get(0).add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
+        if (newRow) {
+          docs.get(0).add(new StringField(BlurConstants.NEW_ROW, BlurConstants.PRIME_DOC_VALUE, Store.NO));
+        } else {
+          docs.get(0).add(new StringField(BlurConstants.UPDATE_ROW, _currentRowId, Store.NO));
+        }
         _writer.addDocuments(docs);
         if (_countersSetup) {
           _recordRateCounter.mark(docs.size());
@@ -316,10 +347,19 @@ public class GenericBlurRecordWriter {
     }
   }
 
+  private AtomicReader getAtomicReader(DirectoryReader reader) throws IOException {
+    List<AtomicReaderContext> leaves = reader.leaves();
+    if (leaves.size() == 1) {
+      return leaves.get(0).reader();
+    }
+    throw new IOException("Reader [" + reader + "] has more than one segment after optimize.");
+  }
+
   private Document getDeleteDoc() {
     Document document = new Document();
     document.add(new StringField(BlurConstants.ROW_ID, _deletedRowId, Store.NO));
     document.add(new StringField(BlurConstants.DELETE_MARKER, BlurConstants.DELETE_MARKER_VALUE, Store.NO));
+    document.add(new StringField(BlurConstants.UPDATE_ROW, _deletedRowId, Store.NO));
     return document;
   }
 
@@ -348,8 +388,15 @@ public class GenericBlurRecordWriter {
     DirectoryReader reader = DirectoryReader.open(_localDir);
     IndexWriter writer = new IndexWriter(copyRateDirectory, _conf.clone());
     writer.addIndexes(reader);
+    writer.setCommitData(getInternalMarker());
     writer.close();
     rm(_localPath);
+  }
+
+  private Map<String, String> getInternalMarker() {
+    Map<String, String> map = new HashMap<String, String>();
+    map.put(BlurConstants.INTERNAL, BlurConstants.INTERNAL);
+    return map;
   }
 
   private void copyDir() throws IOException {

@@ -40,13 +40,24 @@ public class ListRunningPlatformCommandsCommand extends Command {
     if (args.length != 1) {
       throw new CommandException("Invalid args: " + help());
     }
-
     List<String> commandStatusList = client.commandStatusList(0, Short.MAX_VALUE);
     RunningSummary runningSummary = new RunningSummary();
     for (String id : commandStatusList) {
-      CommandStatus commandStatus = client.commandStatus(id);
+      CommandStatus commandStatus;
+      try {
+        commandStatus = client.commandStatus(id);
+      } catch (BlurException e) {
+        String message = e.getMessage();
+        if (message != null && message.startsWith("NOT_FOUND")) {
+          commandStatus = null;
+        } else {
+          throw e;
+        }
+      }
+      if (commandStatus == null) {
+        continue;
+      }
       Map<String, Map<CommandStatusState, Long>> serverStateMap = commandStatus.getServerStateMap();
-      out.println(serverStateMap);
       Map<CommandStatusState, Long> summary = getSummary(serverStateMap);
       if (summary.containsKey(CommandStatusState.RUNNING)) {
         runningSummary.add(commandStatus, summary);
@@ -56,7 +67,7 @@ public class ListRunningPlatformCommandsCommand extends Command {
     runningSummary.print(out);
   }
 
-  private Map<CommandStatusState, Long> getSummary(Map<String, Map<CommandStatusState, Long>> serverStateMap) {
+  public static Map<CommandStatusState, Long> getSummary(Map<String, Map<CommandStatusState, Long>> serverStateMap) {
     Map<CommandStatusState, Long> map = new HashMap<CommandStatusState, Long>();
     for (Map<CommandStatusState, Long> m : serverStateMap.values()) {
       for (Entry<CommandStatusState, Long> e : m.entrySet()) {
@@ -95,18 +106,7 @@ public class ListRunningPlatformCommandsCommand extends Command {
       String executionId = commandStatus.getExecutionId();
       String commandName = commandStatus.getCommandName();
       User user = commandStatus.getUser();
-      _summary.add(Arrays.asList(executionId, commandName, user.getUsername(), toString(summary)));
-    }
-
-    private String toString(Map<CommandStatusState, Long> summary) {
-      StringBuilder builder = new StringBuilder();
-      for (Entry<CommandStatusState, Long> e : summary.entrySet()) {
-        if (builder.length() != 0) {
-          builder.append(',');
-        }
-        builder.append(e.getKey().name()).append(":").append(e.getValue());
-      }
-      return builder.toString();
+      _summary.add(Arrays.asList(executionId, commandName, user.getUsername(), toStringSummary(summary)));
     }
 
     public void print(PrintWriter out) {
@@ -157,5 +157,16 @@ public class ListRunningPlatformCommandsCommand extends Command {
       }
       return len;
     }
+  }
+
+  public static String toStringSummary(Map<CommandStatusState, Long> summary) {
+    StringBuilder builder = new StringBuilder();
+    for (Entry<CommandStatusState, Long> e : summary.entrySet()) {
+      if (builder.length() != 0) {
+        builder.append(',');
+      }
+      builder.append(e.getKey().name()).append(":").append(e.getValue());
+    }
+    return builder.toString();
   }
 }

@@ -224,6 +224,7 @@ public class CacheIndexInput extends IndexInput {
   @Override
   public void readBytes(byte[] b, int offset, int len) throws IOException {
     ensureOpen();
+    LOOP:
     while (len > 0) {
       tryToFill();
       int remaining = remaining();
@@ -232,8 +233,7 @@ public class CacheIndexInput extends IndexInput {
         _cacheValue.read(_blockPosition, b, offset, length);
       } catch (EvictionException e) {
         releaseCache();
-        readBytes(b, offset, len);
-        return;
+        continue LOOP;
       }
       offset += length;
       len -= length;

@@ -400,7 +400,7 @@ public class Main {
   public static String[] shellCommands = { "help", "debug", "timed", "quit", "reset", "user", "whoami", "trace",
       "trace-remove", "trace-list" };
   public static String[] platformCommands = { "command-list", "command-exec", "command-desc", "command-running",
-      "command-cancel" };
+      "command-cancel", "command-watch" };
   public static String[] serverCommands = { "logger", "logger-reset", "remove-shard" };
 
   private static class HelpCommand extends Command {
@@ -704,6 +704,7 @@ public class Main {
     register(builder, new ImportDataCommand());
     register(builder, new ListRunningPlatformCommandsCommand());
     register(builder, new CancelPlatformCommandCommand());
+    register(builder, new WatchCommands());
     commands = builder.build();
   }
 

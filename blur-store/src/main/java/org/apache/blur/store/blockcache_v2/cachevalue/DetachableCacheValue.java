@@ -38,7 +38,6 @@ public class DetachableCacheValue implements CacheValue {
   }
 
   private volatile CacheValue _baseCacheValue;
-  private volatile boolean _evicted;
 
   public DetachableCacheValue(CacheValue cacheValue) {
     _baseCacheValue = cacheValue;
@@ -46,7 +45,6 @@ public class DetachableCacheValue implements CacheValue {
 
   @Override
   public CacheValue detachFromCache() {
-    _evicted = true;
     if (_baseCacheValue instanceof ByteArrayCacheValue) {
       // already detached
       return null;
@@ -64,8 +62,11 @@ public class DetachableCacheValue implements CacheValue {
 
   @Override
   public int length() throws EvictionException {
-    checkEviction();
-    return _baseCacheValue.length();
+    try {
+      return _baseCacheValue.length();
+    } catch (NullPointerException npe) {
+      throw new EvictionException();
+    }
   }
 
   @Override
@@ -75,20 +76,20 @@ public class DetachableCacheValue implements CacheValue {
 
   @Override
   public void read(int position, byte[] buf, int offset, int length) throws EvictionException {
-    checkEviction();
-    _baseCacheValue.read(position, buf, offset, length);
-  }
-
-  private void checkEviction() throws EvictionException {
-    if (_evicted) {
+    try {
+      _baseCacheValue.read(position, buf, offset, length);
+    } catch (NullPointerException npe) {
       throw new EvictionException();
     }
   }
 
   @Override
   public byte read(int position) throws EvictionException {
-    checkEviction();
-    return _baseCacheValue.read(position);
+    try {
+      return _baseCacheValue.read(position);
+    } catch (NullPointerException npe) {
+      throw new EvictionException();
+    }
   }
 
   @Override
@@ -100,20 +101,29 @@ public class DetachableCacheValue implements CacheValue {
 
   @Override
   public short readShort(int position) throws EvictionException {
-    checkEviction();
-    return _baseCacheValue.readShort(position);
+    try {
+      return _baseCacheValue.readShort(position);
+    } catch (NullPointerException npe) {
+      throw new EvictionException();
+    }
   }
 
   @Override
   public int readInt(int position) throws EvictionException {
-    checkEviction();
-    return _baseCacheValue.readInt(position);
+    try {
+      return _baseCacheValue.readInt(position);
+    } catch (NullPointerException npe) {
+      throw new EvictionException();
+    }
   }
 
   @Override
   public long readLong(int position) throws EvictionException {
-    checkEviction();
-    return _baseCacheValue.readLong(position);
+    try {
+      return _baseCacheValue.readLong(position);
+    } catch (NullPointerException npe) {
+      throw new EvictionException();
+    }
   }
 
   @Override
@@ -123,7 +133,7 @@ public class DetachableCacheValue implements CacheValue {
 
   @Override
   public boolean isEvicted() {
-    return _evicted;
+    return _baseCacheValue == null;
   }
 
 }

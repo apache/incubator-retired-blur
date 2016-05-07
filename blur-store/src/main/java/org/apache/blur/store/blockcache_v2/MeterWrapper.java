@@ -121,11 +121,14 @@ public abstract class MeterWrapper implements Closeable {
   }
 
   private static void register(String id, SimpleMeter meter, AtomicLong counter) {
-    {
-      _counterMap.putIfAbsent(id, new MeterWrapperCounter(meter));
-    }
-    {
-      _counterMap.get(id).add(counter);
+    MeterWrapperCounter meterWrapperCounter = new MeterWrapperCounter(meter);
+    while (true) {
+      _counterMap.putIfAbsent(id, meterWrapperCounter);
+      MeterWrapperCounter wrapperCounter = _counterMap.get(id);
+      if (wrapperCounter != null) {
+        wrapperCounter.add(counter);
+        return;
+      }
     }
   }
 

@@ -20,10 +20,11 @@ import java.io.IOException;
 
 import org.apache.blur.mapreduce.lib.BlurMutate;
 import org.apache.blur.mapreduce.lib.BlurMutate.MUTATE_TYPE;
-import org.apache.blur.mapreduce.lib.update.IndexKey.TYPE;
 import org.apache.blur.mapreduce.lib.BlurOutputFormat;
 import org.apache.blur.mapreduce.lib.BlurRecord;
+import org.apache.blur.mapreduce.lib.GenericBlurRecordWriter;
 import org.apache.blur.mapreduce.lib.GetCounter;
+import org.apache.blur.mapreduce.lib.update.IndexKey.TYPE;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -37,9 +38,9 @@ public class UpdateReducer extends Reducer<IndexKey, IndexValue, Text, BlurMutat
   private static final String MARKER_RECORDS = "Marker Records";
   private static final String SEP = " - ";
   private static final String BLUR_UPDATE = "Blur Update";
-  private static final String EXISTING_RCORDS = "Existing Rcords";
-  private static final String NEW_RCORDS = "New Rcords";
-  private static final String NO_UPDATE = "NoUpdate";
+  private static final String EXISTING_RECORDS = "Existing Records";
+  private static final String NEW_RECORDS = "New Records";
+  private static final String NO_UPDATE = "No Update";
   private static final String UPDATE = "Update";
   private static final String BLUR_UPDATE_DEBUG = BLUR_UPDATE + SEP + "DEBUG";
 
@@ -64,10 +65,10 @@ public class UpdateReducer extends Reducer<IndexKey, IndexValue, Text, BlurMutat
       }
     });
 
-    _newRecordsUpdate = context.getCounter(BLUR_UPDATE, NEW_RCORDS + SEP + UPDATE);
-    _newRecordsNoUpdate = context.getCounter(BLUR_UPDATE, NEW_RCORDS + SEP + NO_UPDATE);
-    _existingRecordsUpdate = context.getCounter(BLUR_UPDATE, EXISTING_RCORDS + SEP + UPDATE);
-    _existingRecordsNoUpdate = context.getCounter(BLUR_UPDATE, EXISTING_RCORDS + SEP + NO_UPDATE);
+    _newRecordsUpdate = context.getCounter(BLUR_UPDATE, NEW_RECORDS + SEP + UPDATE);
+    _newRecordsNoUpdate = context.getCounter(BLUR_UPDATE, NEW_RECORDS + SEP + NO_UPDATE);
+    _existingRecordsUpdate = context.getCounter(BLUR_UPDATE, EXISTING_RECORDS + SEP + UPDATE);
+    _existingRecordsNoUpdate = context.getCounter(BLUR_UPDATE, EXISTING_RECORDS + SEP + NO_UPDATE);
     _ignoredExistingRows = context.getCounter(BLUR_UPDATE, IGNORED_EXISTING_ROWS);
 
     _debugRecordsWithSameRecordId = context.getCounter(BLUR_UPDATE_DEBUG, MULTIPLE_RECORD_W_SAME_RECORD_ID);
@@ -76,7 +77,6 @@ public class UpdateReducer extends Reducer<IndexKey, IndexValue, Text, BlurMutat
     _debugMarkerRecordsUpdate = context.getCounter(BLUR_UPDATE_DEBUG, MARKER_RECORDS + SEP + UPDATE);
     _debugIndexValues = context.getCounter(BLUR_UPDATE_DEBUG, INDEX_VALUES);
     _debugNullBlurRecords = context.getCounter(BLUR_UPDATE_DEBUG, NULL_BLUR_RECORDS);
-
   }
 
   @Override
@@ -93,6 +93,7 @@ public class UpdateReducer extends Reducer<IndexKey, IndexValue, Text, BlurMutat
       InterruptedException {
     BlurRecord prevBlurRecord = null;
     String prevRecordId = null;
+    boolean existing = false;
     for (IndexValue value : values) {
       updateCounters(true, key);
       BlurRecord br = value.getBlurRecord();
@@ -103,6 +104,9 @@ public class UpdateReducer extends Reducer<IndexKey, IndexValue, Text, BlurMutat
       } else {
         // Safe Copy
         BlurRecord currentBlurRecord = new BlurRecord(br);
+        if (key.getType() == IndexKey.TYPE.OLD_DATA) {
+          existing = true;
+        }
         String currentRecordId = currentBlurRecord.getRecordId();
         if (prevRecordId != null) {
           if (prevRecordId.equals(currentRecordId)) {
@@ -120,6 +124,7 @@ public class UpdateReducer extends Reducer<IndexKey, IndexValue, Text, BlurMutat
     if (prevBlurRecord != null) {
       context.write(new Text(prevBlurRecord.getRowId()), toMutate(prevBlurRecord));
     }
+    GenericBlurRecordWriter.setCurrentRowExistingRowId(existing);
   }
 
   private void updateCounters(boolean update, IndexKey key) {

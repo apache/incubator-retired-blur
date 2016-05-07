@@ -289,7 +289,7 @@ public class TableDisplay implements Closeable {
       width--;
     }
   }
-  
+
   private void buffer(Canvas canvas, String value, int width) {
     canvas.append(value);
     width -= getVisibleLength(value);
@@ -683,4 +683,5 @@ public class TableDisplay implements Closeable {
   public void setStopReadingInput(boolean b) {
     _stopReadingInput.set(true);
   }
+
 }

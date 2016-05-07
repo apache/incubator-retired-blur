@@ -44,7 +44,8 @@ public class SequentialReadControl implements Cloneable {
   public SequentialReadControl clone() {
     try {
       SequentialReadControl control = (SequentialReadControl) super.clone();
-      setup(_configuration, control);
+      // Setup too heavy for clones
+      // setup(_configuration, control);
       return control;
     } catch (CloneNotSupportedException e) {
       throw new RuntimeException(e);

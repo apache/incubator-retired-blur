@@ -17,6 +17,7 @@ package org.apache.blur.lucene.search;
  * limitations under the License.
  */
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
@@ -31,6 +32,8 @@ import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.OpenBitSet;
 
 public class FacetQuery extends AbstractWrapperQuery {
+
+  private static final Log LOG = LogFactory.getLog(FacetQuery.class);
 
   private final Query[] _facets;
   private final FacetExecutor _executor;
@@ -69,10 +72,11 @@ public class FacetQuery extends AbstractWrapperQuery {
     if (_rewritten) {
       return this;
     }
+    Query[] facets = new Query[_facets.length];
     for (int i = 0; i < _facets.length; i++) {
-      _facets[i] = _facets[i].rewrite(reader);
+      facets[i] = _facets[i].rewrite(reader);
     }
-    return new FacetQuery(_query.rewrite(reader), _facets, _executor, true);
+    return new FacetQuery(_query.rewrite(reader), facets, _executor, true);
   }
 
   @Override
@@ -125,7 +129,11 @@ public class FacetQuery extends AbstractWrapperQuery {
       }
       if (!_executor.scorersAlreadyAdded(context)) {
         Scorer[] scorers = getScorers(context, true, topScorer, acceptDocs);
-        _executor.addScorers(context, scorers);  
+        LOG.debug(_executor.getPrefix("Adding scorers for context [{0}] scorers [{1}]"), context,
+            Arrays.asList(scorers));
+        _executor.addScorers(context, scorers);
+      } else {
+        LOG.debug(_executor.getPrefix("Scorers already added for context [{0}]"), context);
       }
       return new FacetScorer(scorer, _executor, context);
     }

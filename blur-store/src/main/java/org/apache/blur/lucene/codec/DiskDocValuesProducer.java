@@ -18,8 +18,8 @@ package org.apache.blur.lucene.codec;
  */
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
@@ -41,25 +41,33 @@ import org.apache.lucene.util.packed.BlockPackedReader;
 import org.apache.lucene.util.packed.MonotonicBlockPackedReader;
 
 class DiskDocValuesProducer extends DocValuesProducer {
-  private final Map<Integer,NumericEntry> numerics;
-  private final Map<Integer,BinaryEntry> binaries;
-  private final Map<Integer,NumericEntry> ords;
-  private final Map<Integer,NumericEntry> ordIndexes;
+  private final Map<Integer, NumericEntry> numerics;
+  private final Map<Integer, BinaryEntry> binaries;
+  private final Map<Integer, NumericEntry> ords;
+  private final Map<Integer, NumericEntry> ordIndexes;
+  private final Map<Integer, BinaryDocValues> _binaryDocValuesCache;
+  private final Map<Integer, NumericDocValues> _numericDocValuesCache;
+  private final Map<Integer, SortedDocValues> _sortedDocValuesCache;
+  private final Map<Integer, SortedSetDocValues> _sortedSetDocValuesCache;
   private final IndexInput data;
+  private final boolean _cache = true;
 
-  DiskDocValuesProducer(SegmentReadState state, String dataCodec, String dataExtension, String metaCodec, String metaExtension) throws IOException {
+  DiskDocValuesProducer(SegmentReadState state, String dataCodec, String dataExtension, String metaCodec,
+      String metaExtension) throws IOException {
     String metaName = IndexFileNames.segmentFileName(state.segmentInfo.name, state.segmentSuffix, metaExtension);
     // read in the entries from the metadata file.
     IndexInput in = state.directory.openInput(metaName, state.context);
     boolean success = false;
     try {
-      CodecUtil.checkHeader(in, metaCodec, 
-                                DiskDocValuesFormat.VERSION_START,
-                                DiskDocValuesFormat.VERSION_START);
-      numerics = new HashMap<Integer,NumericEntry>();
-      ords = new HashMap<Integer,NumericEntry>();
-      ordIndexes = new HashMap<Integer,NumericEntry>();
-      binaries = new HashMap<Integer,BinaryEntry>();
+      CodecUtil.checkHeader(in, metaCodec, DiskDocValuesFormat.VERSION_START, DiskDocValuesFormat.VERSION_START);
+      numerics = new ConcurrentHashMap<Integer, NumericEntry>();
+      ords = new ConcurrentHashMap<Integer, NumericEntry>();
+      ordIndexes = new ConcurrentHashMap<Integer, NumericEntry>();
+      binaries = new ConcurrentHashMap<Integer, BinaryEntry>();
+      _binaryDocValuesCache = new ConcurrentHashMap<Integer, BinaryDocValues>();
+      _numericDocValuesCache = new ConcurrentHashMap<Integer, NumericDocValues>();
+      _sortedDocValuesCache = new ConcurrentHashMap<Integer, SortedDocValues>();
+      _sortedSetDocValuesCache = new ConcurrentHashMap<Integer, SortedSetDocValues>();
       readFields(in, state.fieldInfos);
       success = true;
     } finally {
@@ -69,14 +77,12 @@ class DiskDocValuesProducer extends DocValuesProducer {
         IOUtils.closeWhileHandlingException(in);
       }
     }
-    
+
     String dataName = IndexFileNames.segmentFileName(state.segmentInfo.name, state.segmentSuffix, dataExtension);
     data = state.directory.openInput(dataName, state.context);
-    CodecUtil.checkHeader(data, dataCodec, 
-                                DiskDocValuesFormat.VERSION_START,
-                                DiskDocValuesFormat.VERSION_START);
+    CodecUtil.checkHeader(data, dataCodec, DiskDocValuesFormat.VERSION_START, DiskDocValuesFormat.VERSION_START);
   }
-  
+
   private void readFields(IndexInput meta, FieldInfos infos) throws IOException {
     int fieldNumber = meta.readVInt();
     while (fieldNumber != -1) {
@@ -96,7 +102,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
         }
         BinaryEntry b = readBinaryEntry(meta);
         binaries.put(fieldNumber, b);
-        
+
         if (meta.readVInt() != fieldNumber) {
           throw new CorruptIndexException("sorted entry for field: " + fieldNumber + " is corrupt");
         }
@@ -115,7 +121,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
         }
         BinaryEntry b = readBinaryEntry(meta);
         binaries.put(fieldNumber, b);
-        
+
         if (meta.readVInt() != fieldNumber) {
           throw new CorruptIndexException("sortedset entry for field: " + fieldNumber + " is corrupt");
         }
@@ -124,7 +130,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
         }
         NumericEntry n1 = readNumericEntry(meta);
         ords.put(fieldNumber, n1);
-        
+
         if (meta.readVInt() != fieldNumber) {
           throw new CorruptIndexException("sortedset entry for field: " + fieldNumber + " is corrupt");
         }
@@ -139,7 +145,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
       fieldNumber = meta.readVInt();
     }
   }
-  
+
   static NumericEntry readNumericEntry(IndexInput meta) throws IOException {
     NumericEntry entry = new NumericEntry();
     entry.packedIntsVersion = meta.readVInt();
@@ -148,7 +154,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
     entry.blockSize = meta.readVInt();
     return entry;
   }
-  
+
   static BinaryEntry readBinaryEntry(IndexInput meta) throws IOException {
     BinaryEntry entry = new BinaryEntry();
     entry.minLength = meta.readVInt();
@@ -165,15 +171,30 @@ class DiskDocValuesProducer extends DocValuesProducer {
 
   @Override
   public NumericDocValues getNumeric(FieldInfo field) throws IOException {
-    NumericEntry entry = numerics.get(field.number);
-    return getNumeric(entry);
+    NumericDocValues numericDocValues = _numericDocValuesCache.get(field.number);
+    if (numericDocValues != null) {
+      return numericDocValues;
+    }
+    synchronized (_numericDocValuesCache) {
+      numericDocValues = _numericDocValuesCache.get(field.number);
+      if (numericDocValues != null) {
+        return numericDocValues;
+      }
+      NumericEntry entry = numerics.get(field.number);
+      numericDocValues = newNumeric(entry);
+      if (_cache && numericDocValues != null) {
+        _numericDocValuesCache.put(field.number, numericDocValues);
+      }
+      return numericDocValues;
+    }
   }
-  
-  LongNumericDocValues getNumeric(NumericEntry entry) throws IOException {
+
+  LongNumericDocValues newNumeric(NumericEntry entry) throws IOException {
     final IndexInput data = this.data.clone();
     data.seek(entry.offset);
 
-    final BlockPackedReader reader = new BlockPackedReader(data, entry.packedIntsVersion, entry.blockSize, entry.count, true);
+    final BlockPackedReader reader = new BlockPackedReader(data, entry.packedIntsVersion, entry.blockSize, entry.count,
+        true);
     return new LongNumericDocValues() {
       @Override
       public long get(long id) {
@@ -184,6 +205,24 @@ class DiskDocValuesProducer extends DocValuesProducer {
 
   @Override
   public BinaryDocValues getBinary(FieldInfo field) throws IOException {
+    BinaryDocValues binaryDocValues = _binaryDocValuesCache.get(field.number);
+    if (binaryDocValues != null) {
+      return binaryDocValues;
+    }
+    synchronized (_binaryDocValuesCache) {
+      binaryDocValues = _binaryDocValuesCache.get(field.number);
+      if (binaryDocValues != null) {
+        return binaryDocValues;
+      }
+      binaryDocValues = newBinary(field);
+      if (_cache && binaryDocValues != null) {
+        _binaryDocValuesCache.put(field.number, binaryDocValues);
+      }
+      return binaryDocValues;
+    }
+  }
+
+  private BinaryDocValues newBinary(FieldInfo field) throws IOException {
     BinaryEntry bytes = binaries.get(field.number);
     if (bytes.minLength == bytes.maxLength) {
       return getFixedBinary(field, bytes);
@@ -191,20 +230,30 @@ class DiskDocValuesProducer extends DocValuesProducer {
       return getVariableBinary(field, bytes);
     }
   }
-  
+
   private BinaryDocValues getFixedBinary(FieldInfo field, final BinaryEntry bytes) {
     final IndexInput data = this.data.clone();
 
     return new LongBinaryDocValues() {
+
+      private final ThreadLocal<IndexInput> in = new ThreadLocal<IndexInput>() {
+        @Override
+        protected IndexInput initialValue() {
+          return data.clone();
+        }
+      };
+
       @Override
       public void get(long id, BytesRef result) {
         long address = bytes.offset + id * bytes.maxLength;
         try {
-          data.seek(address);
-          // NOTE: we could have one buffer, but various consumers (e.g. FieldComparatorSource) 
+          IndexInput indexInput = in.get();
+          indexInput.seek(address);
+          // NOTE: we could have one buffer, but various consumers (e.g.
+          // FieldComparatorSource)
           // assume "they" own the bytes after calling this!
           final byte[] buffer = new byte[bytes.maxLength];
-          data.readBytes(buffer, 0, buffer.length);
+          indexInput.readBytes(buffer, 0, buffer.length);
           result.bytes = buffer;
           result.offset = 0;
           result.length = buffer.length;
@@ -214,10 +263,10 @@ class DiskDocValuesProducer extends DocValuesProducer {
       }
     };
   }
-  
+
   private BinaryDocValues getVariableBinary(FieldInfo field, final BinaryEntry bytes) throws IOException {
     final IndexInput data = this.data.clone();
-    
+
     Tracer trace = Trace.trace("getSorted - BlockPackedReader - create");
     final MonotonicBlockPackedReader addresses;
     try {
@@ -227,17 +276,27 @@ class DiskDocValuesProducer extends DocValuesProducer {
       trace.done();
     }
     return new LongBinaryDocValues() {
+      
+      private final ThreadLocal<IndexInput> _input = new ThreadLocal<IndexInput>() {
+        @Override
+        protected IndexInput initialValue() {
+          return data.clone();
+        }
+      };
+      
       @Override
       public void get(long id, BytesRef result) {
-        long startAddress = bytes.offset + (id == 0 ? 0 : addresses.get(id-1));
+        long startAddress = bytes.offset + (id == 0 ? 0 : addresses.get(id - 1));
         long endAddress = bytes.offset + addresses.get(id);
         int length = (int) (endAddress - startAddress);
         try {
-          data.seek(startAddress);
-          // NOTE: we could have one buffer, but various consumers (e.g. FieldComparatorSource) 
+          IndexInput indexInput = _input.get();
+          indexInput.seek(startAddress);
+          // NOTE: we could have one buffer, but various consumers (e.g.
+          // FieldComparatorSource)
           // assume "they" own the bytes after calling this!
           final byte[] buffer = new byte[length];
-          data.readBytes(buffer, 0, buffer.length);
+          indexInput.readBytes(buffer, 0, buffer.length);
           result.bytes = buffer;
           result.offset = 0;
           result.length = length;
@@ -250,11 +309,29 @@ class DiskDocValuesProducer extends DocValuesProducer {
 
   @Override
   public SortedDocValues getSorted(FieldInfo field) throws IOException {
+    SortedDocValues sortedDocValues = _sortedDocValuesCache.get(field.number);
+    if (sortedDocValues != null) {
+      return sortedDocValues;
+    }
+    synchronized (_sortedDocValuesCache) {
+      sortedDocValues = _sortedDocValuesCache.get(field.number);
+      if (sortedDocValues != null) {
+        return sortedDocValues;
+      }
+      sortedDocValues = newSortedDocValues(field);
+      if (_cache && sortedDocValues != null) {
+        _sortedDocValuesCache.put(field.number, sortedDocValues);
+      }
+      return sortedDocValues;
+    }
+  }
+
+  private SortedDocValues newSortedDocValues(FieldInfo field) throws IOException {
     final int valueCount = (int) binaries.get(field.number).count;
     final BinaryDocValues binary = getBinary(field);
     Tracer trace = Trace.trace("getSorted - BlockPackedReader - create");
     final BlockPackedReader ordinals;
-    try{
+    try {
       NumericEntry entry = ords.get(field.number);
       IndexInput data = this.data.clone();
       data.seek(entry.offset);
@@ -283,14 +360,32 @@ class DiskDocValuesProducer extends DocValuesProducer {
 
   @Override
   public SortedSetDocValues getSortedSet(FieldInfo field) throws IOException {
+    SortedSetDocValues sortedSetDocValues = _sortedSetDocValuesCache.get(field.number);
+    if (sortedSetDocValues != null) {
+      return sortedSetDocValues;
+    }
+    synchronized (_sortedSetDocValuesCache) {
+      sortedSetDocValues = _sortedSetDocValuesCache.get(field.number);
+      if (sortedSetDocValues != null) {
+        return sortedSetDocValues;
+      }
+      sortedSetDocValues = newSortedSetDocValues(field);
+      if (_cache && sortedSetDocValues != null) {
+        _sortedSetDocValuesCache.put(field.number, sortedSetDocValues);
+      }
+      return sortedSetDocValues;
+    }
+  }
+
+  private SortedSetDocValues newSortedSetDocValues(FieldInfo field) throws IOException {
     final long valueCount = binaries.get(field.number).count;
     // we keep the byte[]s and list of ords on disk, these could be large
     final LongBinaryDocValues binary = (LongBinaryDocValues) getBinary(field);
-    final LongNumericDocValues ordinals = getNumeric(ords.get(field.number));
+    final LongNumericDocValues ordinals = newNumeric(ords.get(field.number));
 
     Tracer trace = Trace.trace("getSortedSet - MonotonicBlockPackedReader - create");
     final MonotonicBlockPackedReader ordIndex;
-    try{
+    try {
       NumericEntry entry = ordIndexes.get(field.number);
       IndexInput data = this.data.clone();
       data.seek(entry.offset);
@@ -302,7 +397,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
     return new SortedSetDocValues() {
       long offset;
       long endOffset;
-      
+
       @Override
       public long nextOrd() {
         if (offset == endOffset) {
@@ -316,7 +411,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
 
       @Override
       public void setDocument(int docID) {
-        offset = (docID == 0 ? 0 : ordIndex.get(docID-1));
+        offset = (docID == 0 ? 0 : ordIndex.get(docID - 1));
         endOffset = ordIndex.get(docID);
       }
 
@@ -336,7 +431,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
   public void close() throws IOException {
     data.close();
   }
-  
+
   static class NumericEntry {
     long offset;
 
@@ -344,7 +439,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
     long count;
     int blockSize;
   }
-  
+
   static class BinaryEntry {
     long offset;
 
@@ -355,23 +450,23 @@ class DiskDocValuesProducer extends DocValuesProducer {
     int packedIntsVersion;
     int blockSize;
   }
-  
+
   // internally we compose complex dv (sorted/sortedset) from other ones
   static abstract class LongNumericDocValues extends NumericDocValues {
     @Override
     public final long get(int docID) {
       return get((long) docID);
     }
-    
+
     abstract long get(long id);
   }
-  
+
   static abstract class LongBinaryDocValues extends BinaryDocValues {
     @Override
     public final void get(int docID, BytesRef result) {
-      get((long)docID, result);
+      get((long) docID, result);
     }
-    
+
     abstract void get(long id, BytesRef Result);
   }
 }

@@ -202,8 +202,11 @@ public class BlurConstants {
   public static final String SHARED_MERGE_SCHEDULER_PREFIX = "shared-merge-scheduler";
 
   public static final String BLUR_FILTER_ALIAS = "blur.filter.alias.";
-  
+
   public static final String HADOOP_CONF = "hadoop_conf.";
+  public static final String UPDATE_ROW = "_update_row_";
+  public static final String NEW_ROW = "_new_row_";
+  public static final String INTERNAL = "blur.internal";
 
   static {
     try {

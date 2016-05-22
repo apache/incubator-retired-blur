@@ -494,6 +494,7 @@ under the License.
 		<module>blur-query</module>
 		<module>blur-store</module>
 		<module>blur-mapred</module>
+		<module>blur-indexer</module>
 		<module>blur-util</module>
 		<module>blur-status</module>
 		<module>blur-shell</module>

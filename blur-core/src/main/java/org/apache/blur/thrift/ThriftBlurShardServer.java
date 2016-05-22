@@ -316,7 +316,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     StreamServer streamServer;
     int streamThreadCount = configuration.getInt(BLUR_STREAM_SERVER_THREADS, 100);
     if (streamThreadCount > 0) {
-      StreamProcessor streamProcessor = new StreamProcessor(indexServer, tmpPath, config);
+      StreamProcessor streamProcessor = new StreamProcessor(indexServer, tmpPath);
       streamServer = new StreamServer(0, streamThreadCount, streamProcessor);
       streamServer.start();
       configuration.setInt(BLUR_STREAM_SERVER_RUNNING_PORT, streamServer.getPort());

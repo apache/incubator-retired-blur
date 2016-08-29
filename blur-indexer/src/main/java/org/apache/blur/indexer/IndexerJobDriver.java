@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.mapreduce.lib.update;
+package org.apache.blur.indexer;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,10 +24,22 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.indexer.mapreduce.ExistingDataIndexLookupMapper;
+import org.apache.blur.indexer.mapreduce.ExistingDataMapper;
+import org.apache.blur.indexer.mapreduce.LookupBuilderMapper;
+import org.apache.blur.indexer.mapreduce.LookupBuilderReducer;
+import org.apache.blur.indexer.mapreduce.NewDataMapper;
+import org.apache.blur.indexer.mapreduce.PrunedBlurInputFormat;
+import org.apache.blur.indexer.mapreduce.PrunedSequenceFileInputFormat;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.mapreduce.lib.BlurInputFormat;
 import org.apache.blur.mapreduce.lib.BlurOutputFormat;
+import org.apache.blur.mapreduce.lib.update.IndexKey;
+import org.apache.blur.mapreduce.lib.update.IndexKeyPartitioner;
+import org.apache.blur.mapreduce.lib.update.IndexKeyWritableComparator;
+import org.apache.blur.mapreduce.lib.update.IndexValue;
+import org.apache.blur.mapreduce.lib.update.UpdateReducer;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
@@ -56,7 +68,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-public class FasterDriver extends Configured implements Tool {
+public class IndexerJobDriver extends Configured implements Tool {
 
   public static final String BLUR_UPDATE_ID = "blur.update.id";
   private static final String BLUR_EXEC_TYPE = "blur.exec.type";
@@ -71,10 +83,10 @@ public class FasterDriver extends Configured implements Tool {
   public static final String COMPLETE = "complete";
   public static final String INPROGRESS = "inprogress";
   public static final String NEW = "new";
-  private static final Log LOG = LogFactory.getLog(FasterDriver.class);
+  private static final Log LOG = LogFactory.getLog(IndexerJobDriver.class);
 
   public static void main(String[] args) throws Exception {
-    int res = ToolRunner.run(new Configuration(), new FasterDriver(), args);
+    int res = ToolRunner.run(new Configuration(), new IndexerJobDriver(), args);
     System.exit(res);
   }
 
@@ -314,21 +326,21 @@ public class FasterDriver extends Configured implements Tool {
     {
       Path tablePath = new Path(descriptor.getTableUri());
       BlurInputFormat.addTable(job, descriptor, MRUPDATE_SNAPSHOT);
-      MultipleInputs.addInputPath(job, tablePath, PrunedBlurInputFormat.class, MapperForExistingDataMod.class);
+      MultipleInputs.addInputPath(job, tablePath, PrunedBlurInputFormat.class, ExistingDataMapper.class);
     }
 
     // Existing data - This adds the row id lookup
     {
-      MapperForExistingDataWithIndexLookup.setSnapshot(job, MRUPDATE_SNAPSHOT);
+      ExistingDataIndexLookupMapper.setSnapshot(job, MRUPDATE_SNAPSHOT);
       FileInputFormat.addInputPath(job, result._partitionedInputData);
       MultipleInputs.addInputPath(job, result._partitionedInputData, PrunedSequenceFileInputFormat.class,
-          MapperForExistingDataWithIndexLookup.class);
+          ExistingDataIndexLookupMapper.class);
     }
 
     // New Data
     for (Path p : inprogressPathList) {
       FileInputFormat.addInputPath(job, p);
-      MultipleInputs.addInputPath(job, p, SequenceFileInputFormat.class, MapperForNewDataMod.class);
+      MultipleInputs.addInputPath(job, p, SequenceFileInputFormat.class, NewDataMapper.class);
     }
 
     BlurOutputFormat.setOutputPath(job, outputPath);
@@ -356,14 +368,14 @@ public class FasterDriver extends Configured implements Tool {
 
     Job job = Job.getInstance(getConf(), "Blur Row Updater for table [" + table + "]");
 
-    MapperForExistingDataWithIndexLookup.setSnapshot(job, MRUPDATE_SNAPSHOT);
+    ExistingDataIndexLookupMapper.setSnapshot(job, MRUPDATE_SNAPSHOT);
     FileInputFormat.addInputPath(job, result._partitionedInputData);
     MultipleInputs.addInputPath(job, result._partitionedInputData, SequenceFileInputFormat.class,
-        MapperForExistingDataWithIndexLookup.class);
+        ExistingDataIndexLookupMapper.class);
 
     for (Path p : inprogressPathList) {
       FileInputFormat.addInputPath(job, p);
-      MultipleInputs.addInputPath(job, p, SequenceFileInputFormat.class, MapperForNewDataMod.class);
+      MultipleInputs.addInputPath(job, p, SequenceFileInputFormat.class, NewDataMapper.class);
     }
 
     BlurOutputFormat.setOutputPath(job, outputPath);
@@ -389,11 +401,11 @@ public class FasterDriver extends Configured implements Tool {
     Path tablePath = new Path(descriptor.getTableUri());
     BlurInputFormat.setLocalCachePath(job, fileCache);
     BlurInputFormat.addTable(job, descriptor, MRUPDATE_SNAPSHOT);
-    MultipleInputs.addInputPath(job, tablePath, BlurInputFormat.class, MapperForExistingDataMod.class);
+    MultipleInputs.addInputPath(job, tablePath, BlurInputFormat.class, ExistingDataMapper.class);
 
     for (Path p : inprogressPathList) {
       FileInputFormat.addInputPath(job, p);
-      MultipleInputs.addInputPath(job, p, SequenceFileInputFormat.class, MapperForNewDataMod.class);
+      MultipleInputs.addInputPath(job, p, SequenceFileInputFormat.class, NewDataMapper.class);
     }
 
     BlurOutputFormat.setOutputPath(job, outputPath);
@@ -422,7 +434,7 @@ public class FasterDriver extends Configured implements Tool {
     // Needed for the bloom filter path information.
     BlurOutputFormat.setTableDescriptor(job, descriptor);
     BlurInputFormat.setLocalCachePath(job, fileCachePath);
-    MapperForExistingDataWithIndexLookup.setSnapshot(job, snapshot);
+    ExistingDataIndexLookupMapper.setSnapshot(job, snapshot);
 
     for (Path p : inprogressPathList) {
       FileInputFormat.addInputPath(job, p);

@@ -14,21 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.mapreduce.lib.update;
+package org.apache.blur.indexer;
 
-import java.io.IOException;
+public enum BlurIndexCounter {
 
-import org.apache.blur.mapreduce.lib.BlurRecord;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
+  NEW_RECORDS, ROW_IDS_FROM_INDEX, ROW_IDS_TO_UPDATE_FROM_NEW_DATA, ROW_IDS_FROM_NEW_DATA,
 
-public class LookupBuilderMapper extends Mapper<Text, BlurRecord, Text, NullWritable> {
+  INPUT_FORMAT_MAPPER, INPUT_FORMAT_EXISTING_RECORDS,
 
-  @Override
-  protected void map(Text key, BlurRecord value, Mapper<Text, BlurRecord, Text, NullWritable>.Context context)
-      throws IOException, InterruptedException {
-    context.write(new Text(value.getRowId()), NullWritable.get());
-  }
+  LOOKUP_MAPPER, LOOKUP_MAPPER_EXISTING_RECORDS, LOOKUP_MAPPER_ROW_LOOKUP_ATTEMPT
 
 }

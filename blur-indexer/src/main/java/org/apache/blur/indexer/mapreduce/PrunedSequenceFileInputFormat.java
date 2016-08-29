@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.mapreduce.lib.update;
+package org.apache.blur.indexer.mapreduce;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.blur.indexer.InputSplitPruneUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -51,12 +52,12 @@ public class PrunedSequenceFileInputFormat<K, V> extends SequenceFileInputFormat
           table, shard);
       long indexCount = InputSplitPruneUtil.getBlurLookupRowIdFromIndexCount(configuration, table, shard);
       if (rowIdUpdateFromNewDataCount == 0 || indexCount == 0) {
-        LOG.info("Pruning id lookup input path [" + path + "] no overlapping ids.");
+        LOG.debug("Pruning id lookup input path [" + path + "] no overlapping ids.");
       } else if (InputSplitPruneUtil.shouldLookupExecuteOnShard(configuration, table, shard)) {
         LOG.debug("Keeping id lookup input path [" + path + "]");
         results.add(inputSplit);
       } else {
-        LOG.info("Pruning id lookup input path [" + path + "]");
+        LOG.debug("Pruning id lookup input path [" + path + "]");
       }
     }
     return results;

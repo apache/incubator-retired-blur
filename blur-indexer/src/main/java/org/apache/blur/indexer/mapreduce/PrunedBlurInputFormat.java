@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.mapreduce.lib.update;
+package org.apache.blur.indexer.mapreduce;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.blur.indexer.InputSplitPruneUtil;
 import org.apache.blur.mapreduce.lib.BlurInputFormat;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,9 +49,9 @@ public class PrunedBlurInputFormat extends BlurInputFormat {
           table, shard);
       long indexCount = InputSplitPruneUtil.getBlurLookupRowIdFromIndexCount(configuration, table, shard);
       if (rowIdUpdateFromNewDataCount == 0 || indexCount == 0) {
-        LOG.info("Pruning id lookup input path [" + path + "] no overlapping ids.");
+        LOG.debug("Pruning id lookup input path [" + path + "] no overlapping ids.");
       } else if (InputSplitPruneUtil.shouldLookupExecuteOnShard(configuration, table, shard)) {
-        LOG.info("Pruning blur input path [" + split.getDir() + "]");
+        LOG.debug("Pruning blur input path [" + split.getDir() + "]");
       } else {
         LOG.debug("Keeping blur input path [" + split.getDir() + "]");
         List<BlurInputSplit> list = splitMap.get(path);

@@ -14,17 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.mapreduce.lib.update;
+package org.apache.blur.indexer.mapreduce;
 
 import java.io.IOException;
 
+import org.apache.blur.indexer.BlurIndexCounter;
 import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.blur.mapreduce.lib.TableBlurRecord;
+import org.apache.blur.mapreduce.lib.update.IndexKey;
+import org.apache.blur.mapreduce.lib.update.IndexValue;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public class MapperForExistingDataMod extends Mapper<Text, TableBlurRecord, IndexKey, IndexValue> {
+public class ExistingDataMapper extends Mapper<Text, TableBlurRecord, IndexKey, IndexValue> {
 
   private Counter _existingRecords;
 

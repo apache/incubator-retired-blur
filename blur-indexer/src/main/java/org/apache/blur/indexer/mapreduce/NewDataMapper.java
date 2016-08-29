@@ -14,12 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.mapreduce.lib.update;
+package org.apache.blur.indexer.mapreduce;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 
+import org.apache.blur.indexer.BlurIndexCounter;
 import org.apache.blur.mapreduce.lib.BlurRecord;
+import org.apache.blur.mapreduce.lib.update.IndexKey;
+import org.apache.blur.mapreduce.lib.update.IndexValue;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -29,7 +32,7 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
-public class MapperForNewDataMod extends Mapper<Text, BlurRecord, IndexKey, IndexValue> {
+public class NewDataMapper extends Mapper<Text, BlurRecord, IndexKey, IndexValue> {
 
   private static final IndexValue EMPTY_RECORD = new IndexValue();
   private long _timestamp;

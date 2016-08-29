@@ -14,13 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.mapreduce.lib.update;
+package org.apache.blur.indexer;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,28 +60,16 @@ import org.apache.hadoop.mapreduce.JobStatus;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.hadoop.yarn.exceptions.YarnException;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.xml.DOMConfigurator;
 
 public class ClusterDriver extends Configured implements Tool {
 
-  private static final String BLUR_ENV = "blur.env";
   private static final Log LOG = LogFactory.getLog(ClusterDriver.class);
-  private static final String _SEP = "_";
+  private static final String BLUR_ENV = "blur.env";
+  private static final String SEP = "_";
   private static final String IMPORT = "import";
 
   public static void main(String[] args) throws Exception {
-    String logFilePath = System.getenv("BLUR_INDEXER_LOG_FILE");
-    System.out.println("Log file path [" + logFilePath + "]");
-    System.setProperty("BLUR_INDEXER_LOG_FILE", logFilePath);
-    URL url = ClusterDriver.class.getResource("/program-log4j.xml");
-    if (url != null) {
-      LOG.info("Reseting log4j config from classpath resource [{0}]", url);
-      LogManager.resetConfiguration();
-      DOMConfigurator.configure(url);
-    }
-    int res = ToolRunner.run(new Configuration(), new ClusterDriver(), args);
-    System.exit(res);
+    System.exit(ToolRunner.run(new Configuration(), new ClusterDriver(), args));
   }
 
   @Override
@@ -91,7 +78,7 @@ public class ClusterDriver extends Configured implements Tool {
     final String blurEnv = args[c++];
     final String blurZkConnection = args[c++];
     final String extraConfig = args[c++];
-    final int reducerMultiplier = Integer.parseInt(args[c++]);
+    final int reducerMultiplier = 1;
     final Configuration conf = getConf();
 
     final ExecutorService service = Executors.newCachedThreadPool();
@@ -140,9 +127,9 @@ public class ClusterDriver extends Configured implements Tool {
     Map<String, List<String>> listSnapshots = client.listSnapshots(table);
     for (Entry<String, List<String>> e : listSnapshots.entrySet()) {
       List<String> value = e.getValue();
-      if (value.contains(FasterDriver.MRUPDATE_SNAPSHOT)) {
+      if (value.contains(IndexerJobDriver.MRUPDATE_SNAPSHOT)) {
         LOG.info("Unlocking table [{0}]", table);
-        client.removeSnapshot(table, FasterDriver.MRUPDATE_SNAPSHOT);
+        client.removeSnapshot(table, IndexerJobDriver.MRUPDATE_SNAPSHOT);
         return;
       }
     }
@@ -154,8 +141,8 @@ public class ClusterDriver extends Configured implements Tool {
     for (String table : tableList) {
       String mrIncWorkingPathStr = getMRIncWorkingPathStr(client, table);
       Path mrIncWorkingPath = new Path(mrIncWorkingPathStr);
-      Path newData = new Path(mrIncWorkingPath, FasterDriver.NEW);
-      Path inprogressData = new Path(mrIncWorkingPath, FasterDriver.INPROGRESS);
+      Path newData = new Path(mrIncWorkingPath, IndexerJobDriver.NEW);
+      Path inprogressData = new Path(mrIncWorkingPath, IndexerJobDriver.INPROGRESS);
       FileSystem fileSystem = inprogressData.getFileSystem(conf);
       FileStatus[] listStatus = fileSystem.listStatus(inprogressData);
       for (FileStatus fileStatus : listStatus) {
@@ -260,7 +247,7 @@ public class ClusterDriver extends Configured implements Tool {
           Configuration configuration = new Configuration(conf);
           BlurInputFormat.setMaxNumberOfMaps(configuration, 10000);
 
-          FasterDriver driver = new FasterDriver();
+          IndexerJobDriver driver = new IndexerJobDriver();
           driver.setConf(configuration);
           try {
             driver.run(new String[] { table, mrIncWorkingPathStr, outputPathStr, blurZkConnection,
@@ -371,7 +358,7 @@ public class ClusterDriver extends Configured implements Tool {
     FileSystem fileSystem = tablePath.getFileSystem(getConf());
     Path importPath = new Path(tablePath, IMPORT);
     mkdirs(fileSystem, importPath);
-    return new Path(importPath, IMPORT + _SEP + System.currentTimeMillis() + _SEP + UUID.randomUUID().toString())
+    return new Path(importPath, IMPORT + SEP + System.currentTimeMillis() + SEP + UUID.randomUUID().toString())
         .toString();
   }
 

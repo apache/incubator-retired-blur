@@ -14,16 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.mapreduce.lib.update;
+package org.apache.blur.indexer.mapreduce;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.indexer.BlurIndexCounter;
 import org.apache.blur.manager.BlurPartitioner;
 import org.apache.blur.manager.writer.SnapshotIndexDeletionPolicy;
 import org.apache.blur.mapreduce.lib.BlurOutputFormat;
 import org.apache.blur.mapreduce.lib.BlurRecord;
+import org.apache.blur.mapreduce.lib.update.IndexKey;
+import org.apache.blur.mapreduce.lib.update.IndexValue;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV2;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
@@ -56,11 +59,11 @@ import org.apache.lucene.store.Directory;
 
 import com.google.common.io.Closer;
 
-public class MapperForExistingDataWithIndexLookup extends Mapper<Text, BooleanWritable, IndexKey, IndexValue> {
+public class ExistingDataIndexLookupMapper extends Mapper<Text, BooleanWritable, IndexKey, IndexValue> {
 
-  private static final Log LOG = LogFactory.getLog(MapperForExistingDataWithIndexLookup.class);
-
+  private static final Log LOG = LogFactory.getLog(ExistingDataIndexLookupMapper.class);
   private static final String BLUR_SNAPSHOT = "blur.snapshot";
+  
   private Counter _existingRecords;
   private Counter _rowLookup;
   private BlurPartitioner _blurPartitioner;
@@ -68,7 +71,6 @@ public class MapperForExistingDataWithIndexLookup extends Mapper<Text, BooleanWr
   private int _numberOfShardsInTable;
   private Configuration _configuration;
   private String _snapshot;
-
   private int _indexShard = -1;
   private DirectoryReader _reader;
   private IndexSearcher _indexSearcher;

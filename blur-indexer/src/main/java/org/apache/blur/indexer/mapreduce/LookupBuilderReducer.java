@@ -14,17 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.blur.mapreduce.lib.update;
+package org.apache.blur.indexer.mapreduce;
 
 import java.io.IOException;
 import java.util.List;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.indexer.BlurIndexCounter;
+import org.apache.blur.indexer.IndexerJobDriver;
+import org.apache.blur.indexer.MergeSortRowIdMatcher;
+import org.apache.blur.indexer.MergeSortRowIdMatcher.Action;
 import org.apache.blur.manager.BlurPartitioner;
 import org.apache.blur.manager.writer.SnapshotIndexDeletionPolicy;
 import org.apache.blur.mapreduce.lib.BlurInputFormat;
 import org.apache.blur.mapreduce.lib.BlurOutputFormat;
-import org.apache.blur.mapreduce.lib.update.MergeSortRowIdMatcher.Action;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV2;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.TableDescriptor;
@@ -77,7 +80,7 @@ public class LookupBuilderReducer extends Reducer<Text, NullWritable, Text, Bool
     TableDescriptor tableDescriptor = BlurOutputFormat.getTableDescriptor(_configuration);
     _numberOfShardsInTable = tableDescriptor.getShardCount();
     _tablePath = new Path(tableDescriptor.getTableUri());
-    _snapshot = MapperForExistingDataWithIndexLookup.getSnapshot(_configuration);
+    _snapshot = ExistingDataIndexLookupMapper.getSnapshot(_configuration);
     _totalNumberOfBytes = _configuration.getLong(BLUR_CACHE_DIR_TOTAL_BYTES, 128 * 1024 * 1024);
     _cachePath = BlurInputFormat.getLocalCachePath(_configuration);
     _table = tableDescriptor.getName();
@@ -118,7 +121,7 @@ public class LookupBuilderReducer extends Reducer<Text, NullWritable, Text, Bool
     String shardName = ShardUtil.getShardName(shard);
     Path cachePath = MergeSortRowIdMatcher.getCachePath(_cachePath, _table, shardName);
     Configuration configuration = context.getConfiguration();
-    String uuid = configuration.get(FasterDriver.BLUR_UPDATE_ID);
+    String uuid = configuration.get(IndexerJobDriver.BLUR_UPDATE_ID);
     Path tmpPath = new Path(cachePath, uuid + "_" + getAttemptString(context));
     return _closer.register(MergeSortRowIdMatcher.createWriter(_configuration, tmpPath));
   }
@@ -156,7 +159,7 @@ public class LookupBuilderReducer extends Reducer<Text, NullWritable, Text, Bool
     _closer.register(blockCacheDirectoryFactoryV2);
     Directory dir = blockCacheDirectoryFactoryV2.newDirectory("table", "shard", hdfsDirectory, null);
     List<IndexCommit> listCommits = DirectoryReader.listCommits(dir);
-    IndexCommit indexCommit = MapperForExistingDataWithIndexLookup.findIndexCommit(listCommits, generation, shardPath);
+    IndexCommit indexCommit = ExistingDataIndexLookupMapper.findIndexCommit(listCommits, generation, shardPath);
     DirectoryReader reader = DirectoryReader.open(indexCommit);
     _rowIdsFromIndex.setValue(getTotalNumberOfRowIds(reader));
 

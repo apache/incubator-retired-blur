@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.utils.ThreadValue;
 
 import com.yammer.metrics.core.Meter;
 
@@ -75,7 +76,7 @@ public abstract class MeterWrapper implements Closeable {
 
   public static MeterWrapper wrap(final SimpleMeter meter) {
     final String id = UUID.randomUUID().toString();
-    final ThreadLocal<AtomicLong> countThreadLocal = new ThreadLocal<AtomicLong>() {
+    final ThreadValue<AtomicLong> countThreadLocal = new ThreadValue<AtomicLong>() {
       @Override
       protected AtomicLong initialValue() {
         AtomicLong counter = new AtomicLong();

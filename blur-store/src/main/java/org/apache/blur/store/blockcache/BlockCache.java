@@ -33,6 +33,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.blur.utils.ThreadValue;
+
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 import com.yammer.metrics.Metrics;
@@ -71,7 +73,7 @@ public class BlockCache implements Closeable {
   private final Meter evictions;
   private final int _numberOfSlabs;
   private final boolean _directAllocation;
-  private final ThreadLocal<ByteBuffer[]> _threadLocalSlabs = new ThreadLocal<ByteBuffer[]>() {
+  private final ThreadValue<ByteBuffer[]> _threadLocalSlabs = new ThreadValue<ByteBuffer[]>() {
     @Override
     protected ByteBuffer[] initialValue() {
       return new ByteBuffer[_numberOfSlabs];

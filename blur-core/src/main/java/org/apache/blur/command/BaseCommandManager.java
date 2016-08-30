@@ -390,7 +390,9 @@ public abstract class BaseCommandManager implements Closeable {
       throw new IOException("Execution instance id [" + instanceExecutionId + "] did not find any executing commands.");
     }
     try {
-      return future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
+      Response response = future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
+      _driverRunningMap.remove(instanceExecutionId);
+      return response;
     } catch (CancellationException e) {
       throw new IOException(e);
     } catch (InterruptedException e) {
@@ -411,7 +413,9 @@ public abstract class BaseCommandManager implements Closeable {
     _driverRunningMap.put(instanceExecutionId, new ResponseFuture<Response>(_runningCacheTombstoneTime, future,
         commandExecuting, originalCommandStatusObject, running));
     try {
-      return future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
+      Response response = future.get(_connectionTimeout, TimeUnit.MILLISECONDS);
+      _driverRunningMap.remove(instanceExecutionId);
+      return response;
     } catch (CancellationException e) {
       throw new IOException(e);
     } catch (InterruptedException e) {
@@ -447,9 +451,10 @@ public abstract class BaseCommandManager implements Closeable {
       CommandStatus originalCommandStatusObject, AtomicBoolean running) {
     Future<T> future = _executorServiceWorker.submit(callable);
     Long instanceExecutionId = getInstanceExecutionId();
-    _workerRunningMap.put(instanceExecutionId, new ResponseFuture<T>(_runningCacheTombstoneTime, future,
-        commandExecuting, originalCommandStatusObject, running));
-    return future;
+    ResponseFuture<T> responseFuture = new ResponseFuture<T>(_runningCacheTombstoneTime, future,
+        commandExecuting, originalCommandStatusObject, running);
+    _workerRunningMap.put(instanceExecutionId, responseFuture);
+    return responseFuture;
   }
 
   @Override

@@ -38,6 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.utils.ThreadValue;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.blur.zookeeper.ZookeeperPathConstants;
@@ -57,7 +58,7 @@ public class MasterBasedDistributedLayoutFactory implements DistributedLayoutFac
   private final String _storagePath;
   private final ZooKeeperLockManager _zooKeeperLockManager;
   private final String _locksStoragePath;
-  private final ThreadLocal<Random> _random = new ThreadLocal<Random>() {
+  private final ThreadValue<Random> _random = new ThreadValue<Random>() {
     @Override
     protected Random initialValue() {
       return new Random();

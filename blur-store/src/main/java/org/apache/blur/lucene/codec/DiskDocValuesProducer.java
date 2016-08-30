@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Tracer;
+import org.apache.blur.utils.ThreadValue;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.codecs.DocValuesProducer;
 import org.apache.lucene.index.BinaryDocValues;
@@ -236,7 +237,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
 
     return new LongBinaryDocValues() {
 
-      private final ThreadLocal<IndexInput> in = new ThreadLocal<IndexInput>() {
+      private final ThreadValue<IndexInput> in = new ThreadValue<IndexInput>() {
         @Override
         protected IndexInput initialValue() {
           return data.clone();
@@ -277,7 +278,7 @@ class DiskDocValuesProducer extends DocValuesProducer {
     }
     return new LongBinaryDocValues() {
       
-      private final ThreadLocal<IndexInput> _input = new ThreadLocal<IndexInput>() {
+      private final ThreadValue<IndexInput> _input = new ThreadValue<IndexInput>() {
         @Override
         protected IndexInput initialValue() {
           return data.clone();

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.thrift.generated.Column;
+import org.apache.blur.utils.ThreadValue;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.FieldType;
@@ -44,7 +45,7 @@ public class DateFieldTypeDefinition extends NumericFieldTypeDefinition {
   public static final String DATE_FORMAT = "dateFormat";
   public static final String NAME = "date";
   private FieldType _typeNotStored;
-  private ThreadLocal<SimpleDateFormat> _simpleDateFormat;
+  private ThreadValue<SimpleDateFormat> _simpleDateFormat;
   private TimeUnit _timeUnit = TimeUnit.SECONDS;
 
   @Override
@@ -62,7 +63,7 @@ public class DateFieldTypeDefinition extends NumericFieldTypeDefinition {
     if (timeUnitStr != null) {
       _timeUnit = TimeUnit.valueOf(timeUnitStr.trim().toUpperCase());
     }
-    _simpleDateFormat = new ThreadLocal<SimpleDateFormat>() {
+    _simpleDateFormat = new ThreadValue<SimpleDateFormat>() {
       @Override
       protected SimpleDateFormat initialValue() {
         return new SimpleDateFormat(dateFormat);

@@ -19,6 +19,8 @@ package org.apache.blur.user;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.blur.utils.ThreadValue;
+
 public class UserContext {
 
   private static User _defaultUser;
@@ -45,7 +47,7 @@ public class UserContext {
     return new User(user.getUsername(), null);
   }
 
-  private static ThreadLocal<User> _user = new ThreadLocal<User>() {
+  private static ThreadValue<User> _user = new ThreadValue<User>() {
     @Override
     protected User initialValue() {
       return getDefaultUser();

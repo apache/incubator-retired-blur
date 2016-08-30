@@ -16,8 +16,10 @@
  */
 package org.apache.blur.store.hdfs_v2;
 
+import org.apache.blur.utils.ThreadValue;
+
 public class StoreDirection {
-  public static ThreadLocal<Boolean> LONG_TERM = new ThreadLocal<Boolean>() {
+  public static ThreadValue<Boolean> LONG_TERM = new ThreadValue<Boolean>() {
     @Override
     protected Boolean initialValue() {
       return false;

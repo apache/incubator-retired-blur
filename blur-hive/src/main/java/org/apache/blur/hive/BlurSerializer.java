@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.apache.blur.mapreduce.lib.BlurRecord;
 import org.apache.blur.thrift.generated.ColumnDefinition;
+import org.apache.blur.utils.ThreadValue;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -39,7 +40,7 @@ public class BlurSerializer {
 
   private static final String DATE_FORMAT = "dateFormat";
   private static final String DATE = "date";
-  private Map<String, ThreadLocal<SimpleDateFormat>> _dateFormat = new HashMap<String, ThreadLocal<SimpleDateFormat>>();
+  private Map<String, ThreadValue<SimpleDateFormat>> _dateFormat = new HashMap<String, ThreadValue<SimpleDateFormat>>();
   private BlurColumnNameResolver _columnNameResolver;
 
   public BlurSerializer(Map<String, ColumnDefinition> colDefs, BlurColumnNameResolver columnNameResolver) {
@@ -52,7 +53,7 @@ public class BlurSerializer {
       if (fieldType.equals(DATE)) {
         Map<String, String> properties = columnDefinition.getProperties();
         final String dateFormat = properties.get(DATE_FORMAT);
-        ThreadLocal<SimpleDateFormat> threadLocal = new ThreadLocal<SimpleDateFormat>() {
+        ThreadValue<SimpleDateFormat> threadLocal = new ThreadValue<SimpleDateFormat>() {
           @Override
           protected SimpleDateFormat initialValue() {
             return new SimpleDateFormat(dateFormat);
@@ -184,7 +185,7 @@ public class BlurSerializer {
   }
 
   private SimpleDateFormat getSimpleDateFormat(String columnName) throws SerDeException {
-    ThreadLocal<SimpleDateFormat> threadLocal = _dateFormat.get(columnName);
+    ThreadValue<SimpleDateFormat> threadLocal = _dateFormat.get(columnName);
     if (threadLocal == null) {
       throw new SerDeException("Date format missing for column [" + columnName + "]");
     }

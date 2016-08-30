@@ -221,7 +221,7 @@ public class BlurUtil {
     final String prefix = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
     InvocationHandler handler = new InvocationHandler() {
       private final AtomicLong _requestCounter = new AtomicLong();
-      private ThreadLocal<LoggerArgsState> _loggerArgsState = new ThreadLocal<LoggerArgsState>() {
+      private ThreadValue<LoggerArgsState> _loggerArgsState = new ThreadValue<LoggerArgsState>() {
         @Override
         protected LoggerArgsState initialValue() {
           return new LoggerArgsState(1024);

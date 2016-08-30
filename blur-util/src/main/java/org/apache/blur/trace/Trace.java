@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.blur.utils.ThreadValue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -77,10 +78,10 @@ public class Trace {
 
     }
   };
-  private static ThreadLocal<TraceCollector> _tracer = new ThreadLocal<TraceCollector>();
+  private static ThreadValue<TraceCollector> _tracer = new ThreadValue<TraceCollector>();
   private static TraceStorage _storage;
   private static String _nodeName;
-  private static ThreadLocal<Random> _random = new ThreadLocal<Random>() {
+  private static ThreadValue<Random> _random = new ThreadValue<Random>() {
     @Override
     protected Random initialValue() {
       return new Random();

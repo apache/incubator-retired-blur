@@ -18,6 +18,7 @@ package org.apache.blur.lucene.codec;
 
 import java.io.IOException;
 
+import org.apache.blur.utils.ThreadValue;
 import org.apache.lucene.codecs.compressing.Decompressor;
 import org.apache.lucene.store.DataInput;
 import org.apache.lucene.store.IndexInput;
@@ -27,7 +28,7 @@ import org.apache.lucene.util.BytesRef;
 public class CachedDecompressor extends Decompressor {
 
   private final Decompressor _decompressor;
-  private final ThreadLocal<Entry> _entry = new ThreadLocal<Entry>() {
+  private final ThreadValue<Entry> _entry = new ThreadValue<Entry>() {
     @Override
     protected Entry initialValue() {
       return new Entry();

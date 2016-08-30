@@ -50,6 +50,7 @@ import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.Trace.TraceId;
 import org.apache.blur.trace.Tracer;
 import org.apache.blur.user.UserContext;
+import org.apache.blur.utils.ThreadValue;
 
 public class BlurClientManager {
 
@@ -141,7 +142,7 @@ public class BlurClientManager {
     List<Connection> shuffledConnections = new ArrayList<Connection>();
   }
 
-  private static ThreadLocal<Random> _random = new ThreadLocal<Random>() {
+  private static ThreadValue<Random> _random = new ThreadValue<Random>() {
     @Override
     protected Random initialValue() {
       return new Random();

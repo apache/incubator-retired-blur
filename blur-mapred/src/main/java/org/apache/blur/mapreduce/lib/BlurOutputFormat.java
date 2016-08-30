@@ -27,6 +27,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport;
 import org.apache.blur.thrift.BlurClient;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.utils.ThreadValue;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -77,8 +78,8 @@ public class BlurOutputFormat extends OutputFormat<Text, BlurMutate> {
   public static final String BLUR_OUTPUT_PATH = "blur.output.path";
 
   private static final String MAPRED_OUTPUT_COMMITTER_CLASS = "mapred.output.committer.class";
-  private static ThreadLocal<Progressable> _progressable = new ThreadLocal<Progressable>();
-  private static ThreadLocal<GetCounter> _getCounter = new ThreadLocal<GetCounter>();
+  private static ThreadValue<Progressable> _progressable = new ThreadValue<Progressable>();
+  private static ThreadValue<GetCounter> _getCounter = new ThreadValue<GetCounter>();
 
   public static void setProgressable(Progressable progressable) {
     _progressable.set(progressable);

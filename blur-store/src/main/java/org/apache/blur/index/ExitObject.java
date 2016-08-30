@@ -18,9 +18,11 @@ package org.apache.blur.index;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.blur.utils.ThreadValue;
+
 public class ExitObject {
 
-  private final ThreadLocal<AtomicBoolean> _running = new ThreadLocal<AtomicBoolean>() {
+  private final ThreadValue<AtomicBoolean> _running = new ThreadValue<AtomicBoolean>() {
     @Override
     protected AtomicBoolean initialValue() {
       return new AtomicBoolean(true);

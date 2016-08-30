@@ -39,6 +39,7 @@ import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.RowDocumentUtil;
 import org.apache.blur.utils.ShardUtil;
+import org.apache.blur.utils.ThreadValue;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -278,7 +279,7 @@ public class GenericBlurRecordWriter {
     return record;
   }
 
-  private static ThreadLocal<AtomicBoolean> _existingRow = new ThreadLocal<AtomicBoolean>() {
+  private static ThreadValue<AtomicBoolean> _existingRow = new ThreadValue<AtomicBoolean>() {
     @Override
     protected AtomicBoolean initialValue() {
       return new AtomicBoolean();

@@ -38,6 +38,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.transport.TMemoryInputTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TSocket;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
+import org.apache.blur.utils.ThreadValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -311,7 +312,7 @@ abstract class TSaslTransport extends TTransport {
     _currentConnection.set(null);
   }
 
-  static ThreadLocal<InetSocketAddress> _currentConnection = new ThreadLocal<InetSocketAddress>();
+  static ThreadValue<InetSocketAddress> _currentConnection = new ThreadValue<InetSocketAddress>();
 
   private void setupConnectionInfo() {
     if (underlyingTransport instanceof TSocket) {

@@ -52,7 +52,7 @@ public class HdfsFieldManagerTest extends BaseFieldManagerTest {
   @Test
   public void fieldManagerShouldIgnoreUnknownFiles() throws IOException {
     BaseFieldManager fieldManager = newFieldManager(true);
-    fieldManager.addColumnDefinition("unknowntest", "col1", null, true, "text", false, null);
+    fieldManager.addColumnDefinition("unknowntest", "col1", null, true, "text", false, false, null);
     FieldTypeDefinition fieldTypeDefinition1 = fieldManager.getFieldTypeDefinition("unknowntest.col1");
 
     assertNotNull(fieldTypeDefinition1);
@@ -70,7 +70,7 @@ public class HdfsFieldManagerTest extends BaseFieldManagerTest {
   @Test
   public void columnsWithNamesSimilarToOurSuffixShouldntCauseProblems() throws IOException {
     BaseFieldManager fieldManager = newFieldManager(true);
-    fieldManager.addColumnDefinition("similartest", "typeFoo", null, true, "text", false, null);
+    fieldManager.addColumnDefinition("similartest", "typeFoo", null, true, "text", false, false, null);
     FieldTypeDefinition fieldTypeDefinition1 = fieldManager.getFieldTypeDefinition("similartest.typeFoo");
 
     assertNotNull(fieldTypeDefinition1);
@@ -96,11 +96,11 @@ public class HdfsFieldManagerTest extends BaseFieldManagerTest {
   @Test
   public void testStoreMetaData() throws IOException {
     BaseFieldManager memoryFieldManager = newFieldManager(true);
-    memoryFieldManager.addColumnDefinition("fam1", "col1", null, true, "text", false, null);
-    memoryFieldManager.addColumnDefinition("fam2", "col2", null, false, "string", true, null);
-    memoryFieldManager.addColumnDefinition("fam2", "col2", "a", false, "text", false, null);
-    memoryFieldManager.addColumnDefinition("fam2", "col2", "b", false, "text", false, newMap(e("a", "b")));
-    memoryFieldManager.addColumnDefinition("fam2", "col3", null, false, "int", false, null);
+    memoryFieldManager.addColumnDefinition("fam1", "col1", null, true, "text", false, false, null);
+    memoryFieldManager.addColumnDefinition("fam2", "col2", null, false, "string", true, false, null);
+    memoryFieldManager.addColumnDefinition("fam2", "col2", "a", false, "text", false, false, null);
+    memoryFieldManager.addColumnDefinition("fam2", "col2", "b", false, "text", false, false, newMap(e("a", "b")));
+    memoryFieldManager.addColumnDefinition("fam2", "col3", null, false, "int", false, false, null);
 
     BaseFieldManager memoryFieldManager2 = newFieldManager(false);
     FieldTypeDefinition fieldTypeDefinition1 = memoryFieldManager2.getFieldTypeDefinition("fam1.col1");

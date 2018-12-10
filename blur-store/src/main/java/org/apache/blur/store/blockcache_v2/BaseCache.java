@@ -29,6 +29,7 @@ import static org.apache.blur.metrics.MetricsConstants.SIZE;
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -70,10 +71,14 @@ public class BaseCache extends Cache implements Closeable {
     }
   }
 
-  class BaseCacheWeigher implements Weigher<CacheValue> {
+  protected static class BaseCacheWeigher implements Weigher<CacheValue> {
     @Override
     public int weightOf(CacheValue value) {
-      return value.length();
+      try {
+        return value.length();
+      } catch (EvictionException e) {
+        return 0;
+      }
     }
   }
 
@@ -84,7 +89,6 @@ public class BaseCache extends Cache implements Closeable {
   private final Size _cacheBlockSize;
   private final Size _fileBufferSize;
   private final Map<FileIdKey, Long> _fileNameToId = new ConcurrentHashMap<FileIdKey, Long>();
-  private final Map<Long, FileIdKey> _oldFileNameIdMap = new ConcurrentHashMap<Long, FileIdKey>();
   private final AtomicLong _fileId = new AtomicLong();
   private final Quiet _quiet;
   private final Meter _hits;
@@ -114,13 +118,13 @@ public class BaseCache extends Cache implements Closeable {
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, ENTRIES), new Gauge<Long>() {
       @Override
       public Long value() {
-        return (long) _cacheMap.size();
+        return (long) getEntryCount();
       }
     });
     Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, CACHE, SIZE), new Gauge<Long>() {
       @Override
       public Long value() {
-        return _cacheMap.weightedSize();
+        return getWeightedSize();
       }
     });
     _oldFileDaemonThread = new Thread(new Runnable() {
@@ -142,6 +146,14 @@ public class BaseCache extends Cache implements Closeable {
     _oldFileDaemonThread.start();
   }
 
+  public int getEntryCount() {
+    return _cacheMap.size();
+  }
+
+  public long getWeightedSize() {
+    return _cacheMap.weightedSize();
+  }
+
   protected void cleanupOldFiles() {
     LOG.debug("Cleanup old files from cache.");
     Set<Long> validFileIds = new HashSet<Long>(_fileNameToId.values());
@@ -160,9 +172,17 @@ public class BaseCache extends Cache implements Closeable {
   @Override
   public void close() throws IOException {
     _running.set(false);
-    _cacheMap.clear();
+    closeCachMap();
     _oldFileDaemonThread.interrupt();
     _cacheValueBufferPool.close();
+  }
+
+  private void closeCachMap() {
+    Collection<CacheValue> values = _cacheMap.values();
+    for (CacheValue cacheValue : values) {
+      cacheValue.release();
+    }
+    _cacheMap.clear();
   }
 
   @Override
@@ -184,7 +204,6 @@ public class BaseCache extends Cache implements Closeable {
     }
     long newId = _fileId.incrementAndGet();
     _fileNameToId.put(cachedFileName, newId);
-    _oldFileNameIdMap.put(newId, cachedFileName);
     return newId;
   }
 
@@ -208,7 +227,6 @@ public class BaseCache extends Cache implements Closeable {
               + currentFileId + "] for key [" + oldKey + "]");
         }
         _fileNameToId.put(newKey, fileId);
-        _oldFileNameIdMap.put(fileId, newKey);
         _fileNameToId.remove(oldKey);
       }
     } else {
@@ -245,10 +263,11 @@ public class BaseCache extends Cache implements Closeable {
   }
 
   @Override
-  public CacheValue get(CacheKey key) {
+  public CacheValue get(CacheDirectory directory, String fileName, CacheKey key) {
     CacheValue cacheValue = _cacheMap.get(key);
     if (cacheValue == null) {
       _misses.mark();
+//      System.out.println("Loud Miss [" + fileName + "] Key [" + key + "]");
     } else {
       _hits.mark();
     }
@@ -256,16 +275,18 @@ public class BaseCache extends Cache implements Closeable {
   }
 
   @Override
-  public CacheValue getQuietly(CacheKey key) {
+  public CacheValue getQuietly(CacheDirectory directory, String fileName, CacheKey key) {
     CacheValue cacheValue = _cacheMap.getQuietly(key);
     if (cacheValue != null) {
       _hits.mark();
+    } else {
+//      System.out.println("Quiet Miss [" + fileName + "] Key [" + key + "]");
     }
     return cacheValue;
   }
 
   @Override
-  public void put(CacheKey key, CacheValue value) {
+  public void put(CacheDirectory directory, String fileName, CacheKey key, CacheValue value) {
     CacheValue cacheValue = _cacheMap.put(key, value);
     if (cacheValue != null) {
       _evictions.mark();
@@ -273,13 +294,13 @@ public class BaseCache extends Cache implements Closeable {
   }
 
   @Override
-  public void releaseDirectory(String directoryName) {
+  public void releaseDirectory(CacheDirectory directory) {
     Set<Entry<FileIdKey, Long>> entrySet = _fileNameToId.entrySet();
     Iterator<Entry<FileIdKey, Long>> iterator = entrySet.iterator();
     while (iterator.hasNext()) {
       Entry<FileIdKey, Long> entry = iterator.next();
       FileIdKey fileIdKey = entry.getKey();
-      if (fileIdKey._directoryName.equals(directoryName)) {
+      if (fileIdKey._directoryName.equals(directory.getDirectoryName())) {
         iterator.remove();
       }
     }

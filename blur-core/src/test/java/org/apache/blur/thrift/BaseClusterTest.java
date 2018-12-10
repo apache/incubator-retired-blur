@@ -1,4 +1,5 @@
 package org.apache.blur.thrift;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -23,41 +24,40 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 public class BaseClusterTest {
-	  protected static String TABLE_PATH = new File("./target/tmp/test-data/test-tables").getAbsolutePath();
-	  private static boolean _managing;
 
-	  @BeforeClass
-	  public static void startup() throws IOException {
-	    if (!SuiteCluster.isClusterSetup()) {
-	      SuiteCluster.setupMiniCluster();
-	      _managing = true;
-	    }
-	    File file = new File("test-data");
-	    if (file.exists()) {
-	      rmr(file);
-	    }
-	  }
+  protected static String TABLE_PATH = new File("./target/tmp/test-data/test-tables").getAbsolutePath();
 
-	  private static void rmr(File file) {
-	    if (!file.exists()) {
-	      return;
-	    }
-	    if (file.isDirectory()) {
-	      for (File f : file.listFiles()) {
-	        rmr(f);
-	      }
-	    }
-	    file.delete();
-	  }
+  @BeforeClass
+  public static void startup() throws IOException {
+    SuiteCluster.setupMiniCluster(BaseClusterTest.class);
+    File file = new File("test-data");
+    if (file.exists()) {
+      rmr(file);
+    }
+  }
 
-	  @AfterClass
-	  public static void shutdown() throws IOException {
-	    if (_managing) {
-	      SuiteCluster.shutdownMiniCluster();
-	    }
-	  }
-	  
-	  public Iface getClient() {
-	    return SuiteCluster.getClient();
-	  }
+  private static void rmr(File file) {
+    if (!file.exists()) {
+      return;
+    }
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        rmr(f);
+      }
+    }
+    file.delete();
+  }
+
+  @AfterClass
+  public static void shutdown() throws IOException {
+    SuiteCluster.shutdownMiniCluster(BaseClusterTest.class);
+  }
+
+  public Iface getClient() throws IOException {
+    return SuiteCluster.getClient();
+  }
+
+  protected String getZkConnString() {
+    return SuiteCluster.getZooKeeperConnStr();
+  }
 }

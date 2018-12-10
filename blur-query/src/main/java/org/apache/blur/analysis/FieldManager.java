@@ -61,13 +61,14 @@ public abstract class FieldManager {
    *          the field type name, required.
    * @param sortable
    *          makes this column sortable.
+   * @param multiValueField 
    * @param props
    *          the configuration properties for this column and type.
    * @return
    * @throws IOException
    */
   public abstract boolean addColumnDefinition(String family, String columnName, String subColumnName,
-      boolean fieldLessIndexed, String fieldType, boolean sortable, Map<String, String> props) throws IOException;
+      boolean fieldLessIndexed, String fieldType, boolean sortable, boolean multiValueField, Map<String, String> props) throws IOException;
 
   /**
    * Gets the analyzer for the indexing process.

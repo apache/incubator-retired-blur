@@ -28,19 +28,26 @@ import static org.apache.blur.utils.BlurConstants.SUPER;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import lucene.security.index.AccessControlFactory;
+import lucene.security.index.FilterAccessControlFactory;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.analysis.FieldTypeDefinition;
 import org.apache.blur.analysis.HdfsFieldManager;
 import org.apache.blur.analysis.NoStopWordStandardAnalyzer;
+import org.apache.blur.analysis.ThriftFieldManager;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
@@ -50,9 +57,12 @@ import org.apache.blur.manager.writer.BlurIndexCloser;
 import org.apache.blur.manager.writer.BlurIndexSimpleWriter;
 //import org.apache.blur.manager.writer.BlurNRTIndex;
 import org.apache.blur.manager.writer.SharedMergeScheduler;
+import org.apache.blur.server.cache.ThriftCache;
+import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -67,7 +77,6 @@ public class TableContext implements Cloneable {
 
   private static final Log LOG = LogFactory.getLog(TableContext.class);
 
-  private static final String LOGS = "logs";
   private static final String TYPES = "types";
 
   private static ConcurrentHashMap<String, TableContext> _cache = new ConcurrentHashMap<String, TableContext>();
@@ -82,7 +91,6 @@ public class TableContext implements Cloneable {
   };
 
   private Path _tablePath;
-  private Path _walTablePath;
   private String _defaultFieldName;
   private String _table;
   private IndexDeletionPolicy _indexDeletionPolicy;
@@ -96,6 +104,8 @@ public class TableContext implements Cloneable {
   private FieldManager _fieldManager;
   private BlurConfiguration _blurConfiguration;
   private ReadInterceptor _readInterceptor;
+  private AccessControlFactory _accessControlFactory;
+  private Set<String> _discoverableFields;
 
   protected TableContext() {
 
@@ -110,6 +120,10 @@ public class TableContext implements Cloneable {
   }
 
   public static TableContext create(TableDescriptor tableDescriptor) {
+    return create(tableDescriptor, false, null);
+  }
+
+  public static TableContext create(TableDescriptor tableDescriptor, boolean remote, Iface client) {
     if (tableDescriptor == null) {
       throw new NullPointerException("TableDescriptor can not be null.");
     }
@@ -123,12 +137,28 @@ public class TableContext implements Cloneable {
     }
     TableContext tableContext = _cache.get(name);
     if (tableContext != null) {
-      TableContext clone = tableContext.clone();
-      TableDescriptor newTd = new TableDescriptor(clone._descriptor);
-      clone._descriptor = newTd;
-      clone._descriptor.setEnabled(tableDescriptor.isEnabled());
-      return clone;
+      return clone(tableDescriptor, tableContext);
     }
+    synchronized (_cache) {
+      tableContext = _cache.get(name);
+      if (tableContext != null) {
+        return clone(tableDescriptor, tableContext);
+      }
+      return createInternal(tableDescriptor, remote, client, name, tableUri);
+    }
+  }
+
+  private static TableContext clone(TableDescriptor tableDescriptor, TableContext tableContext) {
+    TableContext clone = tableContext.clone();
+    TableDescriptor newTd = new TableDescriptor(clone._descriptor);
+    clone._descriptor = newTd;
+    clone._descriptor.setEnabled(tableDescriptor.isEnabled());
+    return clone;
+  }
+
+  private static TableContext createInternal(TableDescriptor tableDescriptor, boolean remote, Iface client,
+      String name, String tableUri) {
+    TableContext tableContext;
     LOG.info("Creating table context for table [{0}]", name);
     Configuration configuration = getSystemConfiguration();
     BlurConfiguration blurConfiguration = getSystemBlurConfiguration();
@@ -144,7 +174,6 @@ public class TableContext implements Cloneable {
     tableContext._configuration = configuration;
     tableContext._blurConfiguration = blurConfiguration;
     tableContext._tablePath = new Path(tableUri);
-    tableContext._walTablePath = new Path(tableContext._tablePath, LOGS);
 
     tableContext._defaultFieldName = SUPER;
     tableContext._table = name;
@@ -154,6 +183,13 @@ public class TableContext implements Cloneable {
     tableContext._defaultPrimeDocTerm = new Term(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE);
     tableContext._defaultScoreType = ScoreType.SUPER;
 
+    // TODO make configurable
+    tableContext._discoverableFields = new HashSet<String>(Arrays.asList(BlurConstants.ROW_ID, BlurConstants.RECORD_ID,
+        BlurConstants.FAMILY));
+
+    // TODO make configurable
+    tableContext._accessControlFactory = new FilterAccessControlFactory();
+
     boolean strict = tableDescriptor.isStrictTypes();
     String defaultMissingFieldType = tableDescriptor.getDefaultMissingFieldType();
     boolean defaultMissingFieldLessIndexing = tableDescriptor.isDefaultMissingFieldLessIndexing();
@@ -161,11 +197,17 @@ public class TableContext implements Cloneable {
 
     Path storagePath = new Path(tableContext._tablePath, TYPES);
     try {
-      HdfsFieldManager hdfsFieldManager = new HdfsFieldManager(SUPER, new NoStopWordStandardAnalyzer(), storagePath,
-          configuration, strict, defaultMissingFieldType, defaultMissingFieldLessIndexing, defaultMissingFieldProps);
-      loadCustomTypes(tableContext, blurConfiguration, hdfsFieldManager);
-      hdfsFieldManager.loadFromStorage();
-      tableContext._fieldManager = hdfsFieldManager;
+      FieldManager fieldManager;
+      if (remote) {
+        fieldManager = new ThriftFieldManager(SUPER, new NoStopWordStandardAnalyzer(), strict, defaultMissingFieldType,
+            defaultMissingFieldLessIndexing, defaultMissingFieldProps, configuration, client, name);
+      } else {
+        fieldManager = new HdfsFieldManager(SUPER, new NoStopWordStandardAnalyzer(), storagePath, configuration,
+            strict, defaultMissingFieldType, defaultMissingFieldLessIndexing, defaultMissingFieldProps);
+      }
+      loadCustomTypes(tableContext, blurConfiguration, fieldManager);
+      fieldManager.loadFromStorage();
+      tableContext._fieldManager = fieldManager;
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -205,6 +247,10 @@ public class TableContext implements Cloneable {
     TableDescriptor descriptor = tableContext._descriptor;
     for (Entry<String, String> entry : entrySet) {
       String key = entry.getKey();
+      String value = entry.getValue();
+      if (value == null || value.isEmpty()) {
+        continue;
+      }
       if (key.startsWith(BLUR_FIELDTYPE)) {
         String className = entry.getValue();
         descriptor.putToTableProperties(key, className);
@@ -276,10 +322,6 @@ public class TableContext implements Cloneable {
     return _tablePath;
   }
 
-  public Path getWalTablePath() {
-    return _walTablePath;
-  }
-
   public String getDefaultFieldName() {
     return _defaultFieldName;
   }
@@ -302,7 +344,7 @@ public class TableContext implements Cloneable {
 
   public static synchronized Configuration getSystemConfiguration() {
     if (_systemConfiguration == null) {
-      _systemConfiguration = new Configuration();
+      _systemConfiguration = BlurUtil.newHadoopConfiguration();
     }
     return new Configuration(_systemConfiguration);
   }
@@ -328,7 +370,8 @@ public class TableContext implements Cloneable {
 
   @SuppressWarnings("unchecked")
   public BlurIndex newInstanceBlurIndex(ShardContext shardContext, Directory dir, SharedMergeScheduler mergeScheduler,
-      ExecutorService searchExecutor, BlurIndexCloser indexCloser) throws IOException {
+      ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer, Timer bulkTimer,
+      ThriftCache thriftCache) throws IOException {
 
     String className = _blurConfiguration.get(BLUR_SHARD_BLURINDEX_CLASS, BlurIndexSimpleWriter.class.getName());
 
@@ -340,7 +383,8 @@ public class TableContext implements Cloneable {
     }
     Constructor<? extends BlurIndex> constructor = findConstructor(clazz);
     try {
-      return constructor.newInstance(shardContext, dir, mergeScheduler, searchExecutor, indexCloser);
+      return constructor.newInstance(shardContext, dir, mergeScheduler, searchExecutor, indexCloser,
+          indexImporterTimer, bulkTimer, thriftCache);
     } catch (InstantiationException e) {
       throw new IOException(e);
     } catch (IllegalAccessException e) {
@@ -355,7 +399,7 @@ public class TableContext implements Cloneable {
   private Constructor<? extends BlurIndex> findConstructor(Class<? extends BlurIndex> clazz) throws IOException {
     try {
       return clazz.getConstructor(new Class[] { ShardContext.class, Directory.class, SharedMergeScheduler.class,
-          ExecutorService.class, BlurIndexCloser.class });
+          ExecutorService.class, BlurIndexCloser.class, Timer.class, Timer.class, ThriftCache.class });
     } catch (NoSuchMethodException e) {
       throw new IOException(e);
     } catch (SecurityException e) {
@@ -376,4 +420,11 @@ public class TableContext implements Cloneable {
     }
   }
 
+  public Set<String> getDiscoverableFields() {
+    return _discoverableFields;
+  }
+
+  public AccessControlFactory getAccessControlFactory() {
+    return _accessControlFactory;
+  }
 }

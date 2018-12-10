@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-/*global blurconsole:false, confirm:false */
+/*global blurconsole:false, confirm:false, moment:false */
 blurconsole.search = (function () {
   'use strict';
 
@@ -65,7 +65,8 @@ blurconsole.search = (function () {
       $countHolder : $('#resultCount'),
       $facetTrigger : $('#facetTrigger'),
       $optionsTrigger: $('#searchOptionsTrigger'),
-      $searchTrigger : $('#searchTrigger')
+      $searchTrigger : $('#searchTrigger'),
+      $historyTrigger : $('#searchHistory')
     };
   }
 
@@ -192,11 +193,17 @@ blurconsole.search = (function () {
     });
     jqueryMap.$optionsTrigger.on('shown.bs.popover', _updateOptionPopover);
     $(document).on('change', '.popover select', _persistOptions);
-    jqueryMap.$facetTrigger.on('click', _popupFacetDialog);
+    //jqueryMap.$facetTrigger.on('click', _popupFacetDialog);
     jqueryMap.$tableField.on('change', function(evt) {
       stateMap.$currentTable = $(evt.currentTarget).val();
     });
     jqueryMap.$resultsHolder.on('click', 'a.fetchRow', _fetchRow);
+    jqueryMap.$historyTrigger.on('click', _showHistory);
+    $(document).on('click.history', '.rerunhistory', _setupSearchFromHistory);
+    jqueryMap.$facetTrigger.on('click', function() {
+      $.gevent.publish('facet-show', {table: stateMap.$currentTable, query: stateMap.$currentQuery});
+      return false;
+    });
   }
 
   function _unregisterPageEvents() {
@@ -210,8 +217,10 @@ blurconsole.search = (function () {
       jqueryMap.$optionsTrigger.popover('destroy');
       jqueryMap.$optionsTrigger.off('shown.bs.popover');
       $(document).off('change');
+      $(document).off('click.history');
       jqueryMap.$tableField.off('change');
-      //jqueryMap.$facetTrigger.off('click');
+      jqueryMap.$historyTrigger.off('click');
+      jqueryMap.$facetTrigger.off('click');
     }
   }
 
@@ -230,12 +239,49 @@ blurconsole.search = (function () {
     return cols;
   }
 
+  function _getHistoryList() {
+    if (_supportsLocalStorage()) {
+      return JSON.parse(localStorage.getItem('search-history')) || [];
+    } else {
+      return stateMap.searchHistory || [];
+    }
+  }
+
+  function _saveToHistory(runDate, query) {
+    var currentHistory = _getHistoryList();
+    if (currentHistory.length === 20) {
+      currentHistory.shift();
+    }
+
+    if (currentHistory.length === 0 || currentHistory[currentHistory.length-1].query !== query) {
+      currentHistory.push({runTime: runDate, query: query});
+      if (_supportsLocalStorage()) {
+        localStorage.setItem('search-history', JSON.stringify(currentHistory));
+      } else {
+        stateMap.searchHistory = currentHistory;
+      }
+    }
+  }
+
+  function _supportsLocalStorage() {
+    var b = 'blur';
+    try {
+      localStorage.setItem(b, b);
+      localStorage.removeItem(b);
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
+
   //------------------------------ Event Handlers and DOM Methods ---------------------
   function _updateOptionDisplay() {
     var displayText = '';
     displayText += configMap.superQueryMap[stateMap.$rowRecordOption];
-    displayText += '<br/>User: ';
-    displayText += stateMap.$userOption;
+    if (stateMap.$userOption && stateMap.$userOption !== 'null') {
+      displayText += '<br/>User: ';
+      displayText += stateMap.$userOption;
+    }
     jqueryMap.$optionsDisplay.html(displayText);
   }
 
@@ -348,6 +394,7 @@ blurconsole.search = (function () {
     if (stateMap.$currentDisplay === 'fetch') {
       _drawFetchHolder();
     } else {
+      _saveToHistory(new Date(), stateMap.$currentQuery);
       _drawSearchHolder();
     }
   }
@@ -407,8 +454,10 @@ blurconsole.search = (function () {
 
   function _drawResults(evt, families) {
     var results = blurconsole.model.search.getResults();
-    jqueryMap.$countHolder.html('<small>Found ' + blurconsole.utils.formatNumber(blurconsole.model.search.getTotal()) + ' total results</small>');
-    //jqueryMap.$facetTrigger.show();
+    jqueryMap.$countHolder.html('<small>Found ' + blurconsole.utils.formatNumber(blurconsole.model.search.getTotal()) + ' total results in ' + blurconsole.model.search.getTime() + 'ms</small>');
+    if (blurconsole.model.search.getTotal() > 0) {
+      jqueryMap.$facetTrigger.show();
+    }
 
     if (families != null) {
       $.each(families, function(i, fam) {
@@ -508,7 +557,12 @@ blurconsole.search = (function () {
       if (tables.length > 0) {
         optGroupString = '<optgroup label="' + cluster + '">';
         $.each(tables, function(t, table){
-          optGroupString += '<option value="' + table.name + '"' + (table.name === stateMap.$currentTable ? ' selected' : '') + '>' + table.name + '</option>';
+          var isSelected = false;
+          if ((stateMap.$currentTable === null && t === 0) || table.name === stateMap.$currentTable) {
+            isSelected = true;
+            stateMap.$currentTable = table.name;
+          }
+          optGroupString += '<option value="' + table.name + '"' + (isSelected ? ' selected' : '') + '>' + table.name + '</option>';
         });
         optGroupString += '</optgroup>';
         jqueryMap.$tableField.append(optGroupString);
@@ -521,9 +575,51 @@ blurconsole.search = (function () {
     }
   }
 
-  function _popupFacetDialog() {
-    jqueryMap.facetModal = $(blurconsole.browserUtils.modal('facetDialog', 'Facets for Current Search', 'TBD', null, 'large'));
-    jqueryMap.facetModal.modal();
+  // function _popupFacetDialog() {
+  //   var markup = '<div class="well">';
+    
+//     <form class="form-inline" role="form">
+//   <div class="form-group">
+//     <label class="sr-only" for="exampleInputEmail2">Email address</label>
+//     <input type="email" class="form-control" id="exampleInputEmail2" placeholder="Enter email">
+//   </div>
+//   <div class="form-group">
+//     <label class="sr-only" for="exampleInputPassword2">Password</label>
+//     <input type="password" class="form-control" id="exampleInputPassword2" placeholder="Password">
+//   </div>
+//   <div class="checkbox">
+//     <label>
+//       <input type="checkbox"> Remember me
+//     </label>
+//   </div>
+//   <button type="submit" class="btn btn-default">Sign in</button>
+// </form>
+    // var markup = '<div class="well"><input type="text" id="facetQueryField" placeholder="Enter facet query" ></textarea><button class="btn btn-primary" id="facetCountTrigger">Go</button></div><hr/><div id="facetResultHolder"></div>';
+  //   jqueryMap.facetModal = $(blurconsole.browserUtils.modal('facetDialog', 'Facets for Current Search', markup, null, 'large'));
+  //   jqueryMap.facetModal.modal();
+  // }
+
+  function _showHistory() {
+    var history = _getHistoryList();
+    history.sort(function(a, b){
+      return new Date(b.runTime) - new Date(a.runTime);
+    });
+
+    var markup = '<table class="table table-bordered table-condensed table-hover"><thead><tr><th>Query</th><th>Ran</th><th></th></tr></thead><tbody>';
+    $.each(history, function(i, his){
+      markup += '<tr><td>' + his.query + '</td><td>' + moment(his.runTime).fromNow() + '</td><td><button class="btn btn-default rerunhistory" type="button" title="Re-run search" data-query="' + his.query + '"><i class="glyphicon glyphicon-search"></i></button></td></tr>';
+    });
+    markup += '</tbody></table>';
+    jqueryMap.historyModal = $(blurconsole.browserUtils.modal('historyDialog', 'Search History', markup, null, 'large'));
+    jqueryMap.historyModal.modal();
+  }
+
+  function _setupSearchFromHistory(evt) {
+    jqueryMap.historyModal.modal('hide');
+    var query = $(evt.currentTarget).data('query');
+    jqueryMap.$queryField.val(query);
+    jqueryMap.$resultsHolder.html('');
+    jqueryMap.$countHolder.html('');
   }
 
   //--------------------------------- Public API ------------------------------------------
@@ -558,8 +654,28 @@ blurconsole.search = (function () {
     _unregisterPageEvents();
   }
 
+  function anchorChanged() {
+    var anchorMap = $.uriAnchor.makeAnchorMap();
+    if (anchorMap._tab && anchorMap._tab.query) {
+      stateMap.$currentQuery = anchorMap._tab.query;
+      jqueryMap.$queryField.val(stateMap.$currentQuery);
+      stateMap.$currentTable = anchorMap._tab.table;
+      jqueryMap.$tableField.val(stateMap.$currentTable);
+      stateMap.$rowRecordOption = anchorMap._tab.rr;
+      stateMap.$userOption = anchorMap._tab.user;
+      _updateOptionDisplay();
+      _sendSearch();
+    } else {
+      stateMap.$currentQuery = null;
+      jqueryMap.$queryField.val('');
+      jqueryMap.$resultsHolder.html('');
+      jqueryMap.$countHolder.html('');
+    }
+  }
+
   return {
     initModule : initModule,
-    unloadModule : unloadModule
+    unloadModule : unloadModule,
+    anchorChanged : anchorChanged
   };
 }());

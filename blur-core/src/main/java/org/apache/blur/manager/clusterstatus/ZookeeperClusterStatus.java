@@ -36,6 +36,7 @@ import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.FairSimilarity;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.TDeserializer;
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thirdparty.thrift_0_9_0.TSerializer;
@@ -49,6 +50,9 @@ import org.apache.blur.zookeeper.WatchNodeData;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.blur.zookeeper.ZooKeeperLockManager;
 import org.apache.blur.zookeeper.ZookeeperPathConstants;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -57,7 +61,14 @@ import org.apache.zookeeper.data.Stat;
 
 public class ZookeeperClusterStatus extends ClusterStatus {
 
+  private static final String TMP = "tmp";
+
   private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatus.class);
+
+  public static final String CACHE = "cache";
+  public static final String COMPLETE = "complete";
+  public static final String INPROGRESS = "inprogress";
+  public static final String NEW = "new";
 
   private final ZooKeeper _zk;
   private final BlurConfiguration _configuration;
@@ -73,8 +84,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private final Map<String, SafeModeCacheEntry> _clusterToSafeMode = new ConcurrentHashMap<String, ZookeeperClusterStatus.SafeModeCacheEntry>();
   private final ConcurrentMap<String, WatchNodeData> _enabledWatchNodeExistance = new ConcurrentHashMap<String, WatchNodeData>();
   private final Set<Action> _tableStateChange = Collections.newSetFromMap(new ConcurrentHashMap<Action, Boolean>());
+  private final Configuration _config;
 
-  public ZookeeperClusterStatus(ZooKeeper zooKeeper, BlurConfiguration configuration) {
+  public ZookeeperClusterStatus(ZooKeeper zooKeeper, BlurConfiguration configuration, Configuration config) {
+    _config = config;
     _zk = zooKeeper;
     _running.set(true);
     _clusterWatcher = new WatchChildren(_zk, ZookeeperPathConstants.getClustersPath());
@@ -87,21 +100,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
   }
 
-  public ZookeeperClusterStatus(String connectionStr, BlurConfiguration configuration) throws IOException {
-    this(new ZooKeeper(connectionStr, 30000, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
-
-      }
-    }), configuration);
-  }
-
   public ZookeeperClusterStatus(ZooKeeper zooKeeper) throws IOException {
-    this(zooKeeper, new BlurConfiguration());
-  }
-
-  public ZookeeperClusterStatus(String connectionStr) throws IOException {
-    this(connectionStr, new BlurConfiguration());
+    this(zooKeeper, new BlurConfiguration(), new Configuration());
   }
 
   class Clusters extends OnChange {
@@ -154,6 +154,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           watch.close();
         }
         _tableDescriptorCache.remove(table);
+        TableContext.clear(table);
       }
       for (final String table : newTables) {
         final String clusterTableKey = getClusterTableKey(_cluster, table);
@@ -163,6 +164,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           public void action(byte[] data) {
             runActions();
             _tableDescriptorCache.remove(table);
+            TableContext.clear(table);
           }
         });
         if (_enabledWatchNodeExistance.putIfAbsent(clusterTableKey, enabledWatcher) != null) {
@@ -544,6 +546,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       String table = BlurUtil.nullCheck(tableDescriptor.name, "tableDescriptor.name cannot be null.");
       String cluster = BlurUtil.nullCheck(tableDescriptor.cluster, "tableDescriptor.cluster cannot be null.");
       assignTableUri(tableDescriptor);
+      assignMapReduceWorkingPath(tableDescriptor);
       String uri = BlurUtil.nullCheck(tableDescriptor.tableUri, "tableDescriptor.tableUri cannot be null.");
       int shardCount = BlurUtil.zeroCheck(tableDescriptor.shardCount,
           "tableDescriptor.shardCount cannot be less than 1");
@@ -551,7 +554,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       if (_zk.exists(blurTablePath, false) != null) {
         throw new IOException("Table [" + table + "] already exists.");
       }
-      BlurUtil.setupFileSystem(uri, shardCount);
+      BlurUtil.setupFileSystem(uri, shardCount, _config);
       byte[] bytes = serializeTableDescriptor(tableDescriptor);
       BlurUtil.createPath(_zk, blurTablePath, bytes);
     } catch (IOException e) {
@@ -588,6 +591,39 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     String tableUri = parentPath + "/" + tableDescriptor.getName();
     LOG.info("Setting default table uri for table [{0}] of [{1}]", tableDescriptor.getName(), tableUri);
     tableDescriptor.setTableUri(tableUri);
+  }
+
+  private void assignMapReduceWorkingPath(TableDescriptor tableDescriptor) throws IOException {
+    Map<String, String> tableProperties = tableDescriptor.getTableProperties();
+    String mrIncWorkingPathStr = null;
+    if (tableProperties != null) {
+      mrIncWorkingPathStr = tableProperties.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
+    }
+    if (mrIncWorkingPathStr == null) {
+      // If not set on the table, try to use cluster default
+      mrIncWorkingPathStr = _configuration.get(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH);
+      if (mrIncWorkingPathStr == null) {
+        LOG.info("Could not setup map reduce working path for table [{0}]", tableDescriptor.getName());
+        return;
+      }
+      // Add table on the cluster default and add back to the table desc.
+      mrIncWorkingPathStr = new Path(mrIncWorkingPathStr, tableDescriptor.getName()).toString();
+      tableDescriptor.putToTableProperties(BlurConstants.BLUR_BULK_UPDATE_WORKING_PATH, mrIncWorkingPathStr);
+    }
+
+    Path mrIncWorkingPath = new Path(mrIncWorkingPathStr);
+    Path newData = new Path(mrIncWorkingPath, NEW);
+    Path tmpData = new Path(mrIncWorkingPath, TMP);
+    Path inprogressData = new Path(mrIncWorkingPath, INPROGRESS);
+    Path completeData = new Path(mrIncWorkingPath, COMPLETE);
+    Path fileCache = new Path(mrIncWorkingPath, CACHE);
+
+    FileSystem fileSystem = mrIncWorkingPath.getFileSystem(_config);
+    fileSystem.mkdirs(newData);
+    fileSystem.mkdirs(tmpData);
+    fileSystem.mkdirs(inprogressData);
+    fileSystem.mkdirs(completeData);
+    fileSystem.mkdirs(fileCache);
   }
 
   @Override
@@ -660,7 +696,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       String uri = tableDescriptor.getTableUri();
       BlurUtil.removeAll(_zk, blurTablePath);
       if (deleteIndexFiles) {
-        BlurUtil.removeIndexFiles(uri);
+        BlurUtil.removeIndexFiles(uri, _config);
       }
     } catch (IOException e) {
       throw new RuntimeException(e);

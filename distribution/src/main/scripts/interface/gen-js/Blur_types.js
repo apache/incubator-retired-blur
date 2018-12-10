@@ -152,10 +152,10 @@ BlurException.prototype.write = function(output) {
 };
 
 TimeoutException = function(args) {
-  this.executionId = null;
+  this.instanceExecutionId = null;
   if (args) {
-    if (args.executionId !== undefined) {
-      this.executionId = args.executionId;
+    if (args.instanceExecutionId !== undefined) {
+      this.instanceExecutionId = args.instanceExecutionId;
     }
   }
 };
@@ -175,8 +175,8 @@ TimeoutException.prototype.read = function(input) {
     switch (fid)
     {
       case 1:
-      if (ftype == Thrift.Type.STRING) {
-        this.executionId = input.readString().value;
+      if (ftype == Thrift.Type.I64) {
+        this.instanceExecutionId = input.readI64().value;
       } else {
         input.skip(ftype);
       }
@@ -195,9 +195,9 @@ TimeoutException.prototype.read = function(input) {
 
 TimeoutException.prototype.write = function(output) {
   output.writeStructBegin('TimeoutException');
-  if (this.executionId !== null && this.executionId !== undefined) {
-    output.writeFieldBegin('executionId', Thrift.Type.STRING, 1);
-    output.writeString(this.executionId);
+  if (this.instanceExecutionId !== null && this.instanceExecutionId !== undefined) {
+    output.writeFieldBegin('instanceExecutionId', Thrift.Type.I64, 1);
+    output.writeI64(this.instanceExecutionId);
     output.writeFieldEnd();
   }
   output.writeFieldStop();
@@ -2744,6 +2744,8 @@ TableStats = function(args) {
   this.bytes = null;
   this.recordCount = null;
   this.rowCount = null;
+  this.segmentImportPendingCount = 0;
+  this.segmentImportInProgressCount = 0;
   if (args) {
     if (args.tableName !== undefined) {
       this.tableName = args.tableName;
@@ -2756,6 +2758,12 @@ TableStats = function(args) {
     }
     if (args.rowCount !== undefined) {
       this.rowCount = args.rowCount;
+    }
+    if (args.segmentImportPendingCount !== undefined) {
+      this.segmentImportPendingCount = args.segmentImportPendingCount;
+    }
+    if (args.segmentImportInProgressCount !== undefined) {
+      this.segmentImportInProgressCount = args.segmentImportInProgressCount;
     }
   }
 };
@@ -2801,6 +2809,20 @@ TableStats.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 5:
+      if (ftype == Thrift.Type.I64) {
+        this.segmentImportPendingCount = input.readI64().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
+      case 6:
+      if (ftype == Thrift.Type.I64) {
+        this.segmentImportInProgressCount = input.readI64().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -2832,6 +2854,16 @@ TableStats.prototype.write = function(output) {
     output.writeI64(this.rowCount);
     output.writeFieldEnd();
   }
+  if (this.segmentImportPendingCount !== null && this.segmentImportPendingCount !== undefined) {
+    output.writeFieldBegin('segmentImportPendingCount', Thrift.Type.I64, 5);
+    output.writeI64(this.segmentImportPendingCount);
+    output.writeFieldEnd();
+  }
+  if (this.segmentImportInProgressCount !== null && this.segmentImportInProgressCount !== undefined) {
+    output.writeFieldBegin('segmentImportInProgressCount', Thrift.Type.I64, 6);
+    output.writeI64(this.segmentImportInProgressCount);
+    output.writeFieldEnd();
+  }
   output.writeFieldStop();
   output.writeStructEnd();
   return;
@@ -2845,6 +2877,7 @@ ColumnDefinition = function(args) {
   this.fieldType = null;
   this.properties = null;
   this.sortable = null;
+  this.multiValueField = true;
   if (args) {
     if (args.family !== undefined) {
       this.family = args.family;
@@ -2866,6 +2899,9 @@ ColumnDefinition = function(args) {
     }
     if (args.sortable !== undefined) {
       this.sortable = args.sortable;
+    }
+    if (args.multiValueField !== undefined) {
+      this.multiValueField = args.multiValueField;
     }
   }
 };
@@ -2954,6 +2990,13 @@ ColumnDefinition.prototype.read = function(input) {
         input.skip(ftype);
       }
       break;
+      case 8:
+      if (ftype == Thrift.Type.BOOL) {
+        this.multiValueField = input.readBool().value;
+      } else {
+        input.skip(ftype);
+      }
+      break;
       default:
         input.skip(ftype);
     }
@@ -3008,6 +3051,11 @@ ColumnDefinition.prototype.write = function(output) {
   if (this.sortable !== null && this.sortable !== undefined) {
     output.writeFieldBegin('sortable', Thrift.Type.BOOL, 7);
     output.writeBool(this.sortable);
+    output.writeFieldEnd();
+  }
+  if (this.multiValueField !== null && this.multiValueField !== undefined) {
+    output.writeFieldBegin('multiValueField', Thrift.Type.BOOL, 8);
+    output.writeBool(this.multiValueField);
     output.writeFieldEnd();
   }
   output.writeFieldStop();

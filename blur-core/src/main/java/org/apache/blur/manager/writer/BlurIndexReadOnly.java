@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.thrift.generated.RowMutation;
 
 public class BlurIndexReadOnly extends BlurIndex {
@@ -28,11 +28,11 @@ public class BlurIndexReadOnly extends BlurIndex {
   private final BlurIndex _blurIndex;
 
   public BlurIndexReadOnly(BlurIndex blurIndex) throws IOException {
-    super(null, null, null, null, null);
+    super(null, null, null, null, null, null, null, null);
     _blurIndex = blurIndex;
   }
 
-  public IndexSearcherClosable getIndexSearcher() throws IOException {
+  public IndexSearcherCloseable getIndexSearcher() throws IOException {
     return _blurIndex.getIndexSearcher();
   }
 
@@ -72,6 +72,31 @@ public class BlurIndexReadOnly extends BlurIndex {
   @Override
   public void enqueue(List<RowMutation> mutations) {
     throw new RuntimeException("Read-only shard");
+  }
+
+  @Override
+  public void finishBulkMutate(String bulkId, boolean apply, boolean blockUntilComplete) {
+    throw new RuntimeException("Read-only shard");
+  }
+
+  @Override
+  public void addBulkMutate(String bulkId, RowMutation mutation) {
+    throw new RuntimeException("Read-only shard");
+  }
+
+  @Override
+  public long getSegmentImportPendingCount() throws IOException {
+    return _blurIndex.getSegmentImportPendingCount();
+  }
+
+  @Override
+  public long getSegmentImportInProgressCount() throws IOException {
+    return _blurIndex.getSegmentImportInProgressCount();
+  }
+
+  @Override
+  public long getOnDiskSize() throws IOException {
+    return _blurIndex.getOnDiskSize();
   }
 
 }

@@ -30,20 +30,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.lucene.search.IndexSearcherCloseableBase;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.IndexAction;
-import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.TableContextFactory;
+import org.apache.blur.thrift.generated.Arguments;
+import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
@@ -71,7 +75,7 @@ public class ShardCommandManagerTest {
       throw new RuntimeException(e);
     }
   }
-  private String _tmpPath = "./target/tmp/ShardCommandManagerTest/tmp";
+  private File _tmpPath = new File("./target/tmp/ShardCommandManagerTest/tmp");
   private String _commandPath = "./target/tmp/ShardCommandManagerTest/command";
   private ShardCommandManager _manager;
   private Configuration _config;
@@ -90,9 +94,11 @@ public class ShardCommandManagerTest {
   @Test
   public void testGetCommands() {
     Map<String, BigInteger> commands = _manager.getCommands();
-    assertEquals(2, commands.size());
+    assertEquals(4, commands.size());
     assertTrue(commands.containsKey("wait"));
     assertTrue(commands.containsKey("error"));
+    assertTrue(commands.containsKey("RunSlowForTesting"));
+    assertTrue(commands.containsKey("currentUser"));
     assertEquals(BigInteger.ZERO, commands.get("wait"));
   }
 
@@ -114,7 +120,7 @@ public class ShardCommandManagerTest {
   @Test
   public void testNewCommandLoading() throws IOException, TimeoutException, InterruptedException, ExceptionCollector {
     _manager.close();
-    new File(_tmpPath).mkdirs();
+    _tmpPath.mkdirs();
     File commandPath = new File(_commandPath);
     rmr(commandPath);
     if (commandPath.exists()) {
@@ -183,7 +189,7 @@ public class ShardCommandManagerTest {
   @Test
   public void testShardCommandManagerNormalWait() throws IOException, TimeoutException, ExceptionCollector {
     Response response;
-    ExecutionId executionId = null;
+    Long instanceExecutionId = null;
 
     BlurObject args = new BlurObject();
     args.put("table", "test");
@@ -197,15 +203,15 @@ public class ShardCommandManagerTest {
         fail();
       }
       try {
-        if (executionId == null) {
+        if (instanceExecutionId == null) {
           TableContextFactory tableContextFactory = getTableContextFactory();
           response = _manager.execute(tableContextFactory, "wait", argumentOverlay);
         } else {
-          response = _manager.reconnect(executionId);
+          response = _manager.reconnect(instanceExecutionId);
         }
         break;
       } catch (TimeoutException te) {
-        executionId = te.getExecutionId();
+        instanceExecutionId = te.getInstanceExecutionId();
       }
     }
     System.out.println(response);
@@ -229,24 +235,66 @@ public class ShardCommandManagerTest {
   }
 
   @Test
-  public void testShardCommandManagerNormalWithCancel() throws IOException, TimeoutException, ExceptionCollector {
-    Response response;
-    ExecutionId executionId = null;
+  public void testShardCommandManagerNormalWithCancel() throws IOException, TimeoutException, ExceptionCollector,
+      BlurException, InterruptedException {
 
-    BlurObject args = new BlurObject();
-    args.put("table", "test");
-    args.put("seconds", 5);
+    String commandExecutionId = "TEST_COMMAND_ID1";
 
-    ArgumentOverlay argumentOverlay = new ArgumentOverlay(args, new BlurObjectSerDe());
+    BlurObjectSerDe serDe = new BlurObjectSerDe();
+    WaitForSeconds waitForSeconds = new WaitForSeconds();
+    waitForSeconds.setTable("test");
+    waitForSeconds.setSeconds(5);
+    waitForSeconds.setCommandExecutionId(commandExecutionId);
 
-    try {
-      TableContextFactory tableContextFactory = getTableContextFactory();
-      response = _manager.execute(tableContextFactory, "wait", argumentOverlay);
-    } catch (TimeoutException te) {
-      _manager.cancel(te.getExecutionId());
-      // some how validate the threads have cancelled.
+    Arguments arguments = CommandUtil.toArguments(waitForSeconds, serDe);
+    BlurObject args = CommandUtil.toBlurObject(arguments);
+    System.out.println(args.toString(1));
+    final ArgumentOverlay argumentOverlay = new ArgumentOverlay(args, serDe);
+
+    final AtomicBoolean fail = new AtomicBoolean();
+    final AtomicBoolean running = new AtomicBoolean(true);
+
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        TableContextFactory tableContextFactory = getTableContextFactory();
+        Long instanceExecutionId = null;
+        while (true) {
+          try {
+            Response response;
+            if (instanceExecutionId == null) {
+              response = _manager.execute(tableContextFactory, "wait", argumentOverlay);
+            } else {
+              response = _manager.reconnect(instanceExecutionId);
+            }
+            fail.set(true);
+            System.out.println(response);
+            return;
+          } catch (IOException e) {
+            if (e.getCause() instanceof CancellationException) {
+              return;
+            }
+            e.printStackTrace();
+            fail.set(true);
+            return;
+          } catch (TimeoutException e) {
+            instanceExecutionId = e.getInstanceExecutionId();
+          } catch (Exception e) {
+            e.printStackTrace();
+            fail.set(true);
+            return;
+          } finally {
+            running.set(false);
+          }
+        }
+      }
+    }).start();
+    Thread.sleep(1000);
+    _manager.cancelCommand(commandExecutionId);
+    Thread.sleep(5000);
+    if (fail.get() || running.get()) {
+      fail("Fail [" + fail.get() + "] Running [" + running.get() + "]");
     }
-
   }
 
   private TableContextFactory getTableContextFactory() {
@@ -272,7 +320,7 @@ public class ShardCommandManagerTest {
       public Map<String, BlurIndex> getIndexes(String table) throws IOException {
         Map<String, BlurIndex> indexes = new HashMap<String, BlurIndex>();
         for (int i = 0; i < 3; i++) {
-          String shardName = BlurUtil.getShardName(i);
+          String shardName = ShardUtil.getShardName(i);
           indexes.put(shardName, getNullBlurIndex(shardName));
         }
         return indexes;
@@ -290,11 +338,6 @@ public class ShardCommandManagerTest {
 
       @Override
       public SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException {
-        throw new RuntimeException("Not implemented.");
-      }
-
-      @Override
-      public List<String> getShardList(String table) {
         throw new RuntimeException("Not implemented.");
       }
 
@@ -317,12 +360,22 @@ public class ShardCommandManagerTest {
       public void close() throws IOException {
         throw new RuntimeException("Not implemented.");
       }
+
+      @Override
+      public long getSegmentImportInProgressCount(String table) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getSegmentImportPendingCount(String table) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
     };
   }
 
   protected BlurIndex getNullBlurIndex(String shard) throws IOException {
     ShardContext shardContext = ShardContext.create(getTableContextFactory().getTableContext("test"), shard);
-    return new BlurIndex(shardContext, null, null, null, null) {
+    return new BlurIndex(shardContext, null, null, null, null, null, null, null) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {
@@ -355,18 +408,18 @@ public class ShardCommandManagerTest {
       }
 
       @Override
-      public IndexSearcherClosable getIndexSearcher() throws IOException {
+      public IndexSearcherCloseable getIndexSearcher() throws IOException {
         IndexReader reader = getEmtpyReader();
-        return new IndexSearcherClosable(reader, null) {
-
+        return new IndexSearcherCloseableBase(reader,null) {
+          
           @Override
           public Directory getDirectory() {
-            return getEmtpyDirectory();
+            throw new RuntimeException("Not implemented.");
           }
-
+          
           @Override
           public void close() throws IOException {
-
+            
           }
         };
       }
@@ -383,6 +436,31 @@ public class ShardCommandManagerTest {
 
       @Override
       public void close() throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public void finishBulkMutate(String bulkId, boolean apply, boolean blockUntilComplete) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public void addBulkMutate(String bulkId, RowMutation mutation) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getSegmentImportPendingCount() throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getSegmentImportInProgressCount() throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getOnDiskSize() throws IOException {
         throw new RuntimeException("Not implemented.");
       }
     };

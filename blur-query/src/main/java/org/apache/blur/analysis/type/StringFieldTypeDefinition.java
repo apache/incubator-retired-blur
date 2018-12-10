@@ -34,6 +34,7 @@ import org.apache.lucene.util.BytesRef;
 
 public class StringFieldTypeDefinition extends FieldTypeDefinition {
 
+  private static final KeywordAnalyzer KEYWORD_ANALYZER = new KeywordAnalyzer();
   public static final String NAME = "string";
 
   @Override
@@ -75,12 +76,12 @@ public class StringFieldTypeDefinition extends FieldTypeDefinition {
   @Override
   public Analyzer getAnalyzerForIndex(String fieldName) {
     // shouldn't be used ever
-    return new KeywordAnalyzer();
+    return KEYWORD_ANALYZER;
   }
 
   @Override
   public Analyzer getAnalyzerForQuery(String fieldName) {
-    return new KeywordAnalyzer();
+    return KEYWORD_ANALYZER;
   }
 
   @Override

@@ -64,4 +64,8 @@ public class StopExecutionCollector extends Collector {
     _collector.setScorer(scorer);
   }
 
+  public Collector getCollector() {
+    return _collector;
+  }
+
 }

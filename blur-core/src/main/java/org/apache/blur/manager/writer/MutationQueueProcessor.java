@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.BlurException;
@@ -135,7 +135,7 @@ public class MutationQueueProcessor implements Runnable, Closeable {
     }
 
     @Override
-    public void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+    public void performMutate(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
       List<RowMutation> lst = new ArrayList<RowMutation>();
       while (shouldContinueProcessing()) {
         if (_queue.drainTo(lst, _maxQueueBatch) > 0) {
@@ -166,7 +166,7 @@ public class MutationQueueProcessor implements Runnable, Closeable {
     }
 
     @Override
-    public void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) throws IOException {
+    public void doPreCommit(IndexSearcherCloseable indexSearcher, IndexWriter writer) throws IOException {
 
     }
 

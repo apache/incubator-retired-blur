@@ -37,7 +37,7 @@ public class SpatialTermQueryPrefixTreeStrategyFieldTypeDefinitionGeohashDocValu
     props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.GEOHASH_PREFIX_TREE);
     props.put(SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.DOC_VALUE, "true");
     fieldManager.addColumnDefinition("fam", "geo", null, false,
-        SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition.NAME, false, props);
+        SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition.NAME, false, false, props);
   }
 
 }

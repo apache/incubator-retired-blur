@@ -46,8 +46,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import lucene.security.index.SecureDirectoryReader;
+
 import org.apache.blur.analysis.FieldManager;
 import org.apache.blur.concurrent.Executors;
+import org.apache.blur.index.AtomicReaderUtil;
 import org.apache.blur.index.ExitableReader;
 import org.apache.blur.index.ExitableReader.ExitingReaderException;
 import org.apache.blur.log.Log;
@@ -55,6 +58,7 @@ import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.DeepPagingCache;
 import org.apache.blur.lucene.search.FacetExecutor;
 import org.apache.blur.lucene.search.FacetQuery;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.lucene.search.StopExecutionCollector.StopExecutionCollectorException;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.results.BlurResultIterable;
@@ -64,7 +68,8 @@ import org.apache.blur.manager.status.QueryStatus;
 import org.apache.blur.manager.status.QueryStatusManager;
 import org.apache.blur.manager.writer.BlurIndex;
 import org.apache.blur.manager.writer.MutatableAction;
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.memory.MemoryAllocationWatcher;
+import org.apache.blur.memory.Watcher;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
@@ -104,6 +109,7 @@ import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.BaseCompositeReader;
 import org.apache.lucene.index.BaseCompositeReaderUtil;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.FieldInfo;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiFields;
@@ -173,12 +179,14 @@ public class IndexManager {
   private final int _threadCount;
   private final int _mutateThreadCount;
   private final DeepPagingCache _deepPagingCache;
+  private final MemoryAllocationWatcher _memoryAllocationWatcher;
 
   public static AtomicBoolean DEBUG_RUN_SLOW = new AtomicBoolean(false);
 
   public IndexManager(IndexServer indexServer, ClusterStatus clusterStatus, BlurFilterCache filterCache,
       int maxHeapPerRowFetch, int fetchCount, int threadCount, int mutateThreadCount, long statusCleanupTimerDelay,
-      int facetThreadCount, DeepPagingCache deepPagingCache) {
+      int facetThreadCount, DeepPagingCache deepPagingCache, MemoryAllocationWatcher memoryAllocationWatcher) {
+    _memoryAllocationWatcher = memoryAllocationWatcher;
     _deepPagingCache = deepPagingCache;
     _indexServer = indexServer;
     _clusterStatus = clusterStatus;
@@ -269,7 +277,7 @@ public class IndexManager {
     BlurIndex index = null;
     String shard = null;
     Tracer trace = Trace.trace("manager fetch", Trace.param("table", table));
-    IndexSearcherClosable searcher = null;
+    IndexSearcherCloseable searcher = null;
     try {
       if (selector.getLocationId() == null) {
         // Not looking up by location id so we should resetSearchers.
@@ -370,7 +378,7 @@ public class IndexManager {
         getScoreType(query.scoreType), context);
   }
 
-  public static void populateSelector(IndexSearcherClosable searcher, String shardName, String table, Selector selector)
+  public static void populateSelector(IndexSearcherCloseable searcher, String shardName, String table, Selector selector)
       throws IOException {
     Tracer trace = Trace.trace("populate selector");
     String rowId = selector.rowId;
@@ -525,7 +533,7 @@ public class IndexManager {
       Sort sort = getSort(blurQuery, fieldManager);
       call = new SimpleQueryParallelCall(running, table, status, facetedQuery, blurQuery.selector,
           _queriesInternalMeter, shardServerContext, runSlow, _fetchCount, _maxHeapPerRowFetch,
-          context.getSimilarity(), context, sort, _deepPagingCache);
+          context.getSimilarity(), context, sort, _deepPagingCache, _memoryAllocationWatcher);
       trace.done();
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       BlurResultIterable merge = ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -848,7 +856,7 @@ public class IndexManager {
       int readerBase = BaseCompositeReaderUtil.readerBase(indexReader, readerIndex);
       int docId = notAdjustedDocId - readerBase;
       IndexReader orgReader = sequentialSubReaders.get(readerIndex);
-      SegmentReader sReader = BlurUtil.getSegmentReader(orgReader);
+      SegmentReader sReader = AtomicReaderUtil.getSegmentReader(orgReader);
       if (sReader != null) {
         SegmentReader segmentReader = (SegmentReader) sReader;
         DocIdSet docIdSet = filter.getDocIdSet(segmentReader.getContext(), segmentReader.getLiveDocs());
@@ -943,7 +951,7 @@ public class IndexManager {
       @Override
       public Long call(Entry<String, BlurIndex> input) throws Exception {
         BlurIndex index = input.getValue();
-        IndexSearcherClosable searcher = index.getIndexSearcher();
+        IndexSearcherCloseable searcher = index.getIndexSearcher();
         try {
           return recordFrequency(searcher.getIndexReader(), columnFamily, columnName, value);
         } finally {
@@ -979,7 +987,7 @@ public class IndexManager {
           @Override
           public List<String> call(Entry<String, BlurIndex> input) throws Exception {
             BlurIndex index = input.getValue();
-            IndexSearcherClosable searcher = index.getIndexSearcher();
+            IndexSearcherCloseable searcher = index.getIndexSearcher();
             try {
               return terms(searcher.getIndexReader(), columnFamily, columnName, startWith, size);
             } finally {
@@ -1015,18 +1023,18 @@ public class IndexManager {
     List<String> terms = new ArrayList<String>(size);
     AtomicReader areader = BlurUtil.getAtomicReader(reader);
     Terms termsAll = areader.terms(term.field());
-    
+
     if (termsAll == null) {
       return terms;
     }
 
     TermsEnum termEnum = termsAll.iterator(null);
     SeekStatus status = termEnum.seekCeil(term.bytes());
-    
+
     if (status == SeekStatus.END) {
       return terms;
     }
-    
+
     BytesRef currentTermText = termEnum.term();
     do {
       terms.add(currentTermText.utf8ToString());
@@ -1187,11 +1195,12 @@ public class IndexManager {
     private final TableContext _context;
     private final Sort _sort;
     private final DeepPagingCache _deepPagingCache;
+    private final MemoryAllocationWatcher _memoryAllocationWatcher;
 
     public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, Query query,
         Selector selector, Meter queriesInternalMeter, ShardServerContext shardServerContext, boolean runSlow,
         int fetchCount, int maxHeapPerRowFetch, Similarity similarity, TableContext context, Sort sort,
-        DeepPagingCache deepPagingCache) {
+        DeepPagingCache deepPagingCache, MemoryAllocationWatcher memoryAllocationWatcher) {
       _running = running;
       _table = table;
       _status = status;
@@ -1206,29 +1215,27 @@ public class IndexManager {
       _context = context;
       _sort = sort;
       _deepPagingCache = deepPagingCache;
+      _memoryAllocationWatcher = memoryAllocationWatcher;
     }
 
     @Override
     public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
-      String shard = entry.getKey();
+      final String shard = entry.getKey();
       _status.attachThread(shard);
       BlurIndex index = entry.getValue();
-      IndexSearcherClosable searcher = index.getIndexSearcher();
+      final IndexSearcherCloseable searcher = index.getIndexSearcher();
       Tracer trace2 = null;
       try {
         IndexReader indexReader = searcher.getIndexReader();
-        if (indexReader instanceof ExitableReader) {
-          ExitableReader er = (ExitableReader) indexReader;
-          er.setRunning(_running);
-        } else {
-          throw new IOException("IndexReader is not ExitableReader");
+        if (!resetExitableReader(indexReader, _running)) {
+          throw new IOException("Cannot find ExitableReader in stack.");
         }
         if (_shardServerContext != null) {
           _shardServerContext.setIndexSearcherClosable(_table, shard, searcher);
         }
         searcher.setSimilarity(_similarity);
         Tracer trace1 = Trace.trace("query rewrite", Trace.param("table", _table));
-        Query rewrite;
+        final Query rewrite;
         try {
           rewrite = searcher.rewrite((Query) _query.clone());
         } catch (ExitingReaderException e) {
@@ -1241,8 +1248,16 @@ public class IndexManager {
         // BlurResultIterableSearcher will close searcher, if shard server
         // context is null.
         trace2 = Trace.trace("query initial search");
-        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
-            _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch, _context, _sort, _deepPagingCache);
+        BlurResultIterableSearcher iterableSearcher = _memoryAllocationWatcher
+            .run(new Watcher<BlurResultIterableSearcher, BlurException>() {
+              @Override
+              public BlurResultIterableSearcher run() throws BlurException {
+                return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector,
+                    _shardServerContext == null, _runSlow, _fetchCount, _maxHeapPerRowFetch, _context, _sort,
+                    _deepPagingCache);
+              }
+            });
+        return iterableSearcher;
       } catch (BlurException e) {
         switch (_status.getQueryStatus().getState()) {
         case INTERRUPTED:
@@ -1263,6 +1278,21 @@ public class IndexManager {
         _status.deattachThread(shard);
       }
     }
+
+  }
+
+  private static boolean resetExitableReader(IndexReader indexReader, AtomicBoolean running) {
+    if (indexReader instanceof ExitableReader) {
+      ExitableReader exitableReader = (ExitableReader) indexReader;
+      exitableReader.setRunning(running);
+      return true;
+    }
+    if (indexReader instanceof SecureDirectoryReader) {
+      SecureDirectoryReader secureDirectoryReader = (SecureDirectoryReader) indexReader;
+      DirectoryReader original = secureDirectoryReader.getOriginal();
+      return resetExitableReader(original, running);
+    }
+    return false;
   }
 
   public void optimize(String table, int numberOfSegmentsPerShard) throws BException {
@@ -1287,6 +1317,33 @@ public class IndexManager {
 
   public void enqueue(RowMutation mutation) throws BlurException, IOException {
     enqueue(Arrays.asList(mutation));
+  }
+
+  public void bulkMutateAdd(String table, String bulkId, RowMutation mutation) throws BlurException, IOException {
+    String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), _blurPartitioner);
+    Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+    BlurIndex blurIndex = indexes.get(shard);
+    if (blurIndex == null) {
+      throw new BException("Shard [{0}] for table [{1}] not found on this server.", shard, table);
+    }
+    blurIndex.addBulkMutate(bulkId, mutation);
+  }
+
+  public void bulkMutateFinish(Set<String> potentialTables, String bulkId, boolean apply, boolean blockUntilComplete)
+      throws BlurException, IOException {
+    for (String table : potentialTables) {
+      Map<String, BlurIndex> indexes = _indexServer.getIndexes(table);
+      for (BlurIndex index : indexes.values()) {
+        index.finishBulkMutate(bulkId, apply, blockUntilComplete);
+      }
+    }
+  }
+
+  public void bulkMutateAddMultiple(String table, String bulkId, List<RowMutation> rowMutations) throws BlurException,
+      IOException {
+    for (RowMutation mutation : rowMutations) {
+      bulkMutateAdd(table, bulkId, mutation);
+    }
   }
 
 }

@@ -32,7 +32,7 @@ public class RunMiniCluster {
   private static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "./target/mini-cluster"));
 
   public static void main(String[] args) throws IOException {
-    //GCWatcher.init(0.60);
+    // GCWatcher.init(0.60);
     LocalFileSystem localFS = FileSystem.getLocal(new Configuration());
     File testDirectory = new File(TMPDIR, "blur-cluster-test").getAbsoluteFile();
     testDirectory.mkdirs();
@@ -51,7 +51,7 @@ public class RunMiniCluster {
     System.setProperty("dfs.datanode.data.dir.perm", dirPermissionNum);
     testDirectory.delete();
     MiniCluster miniCluster = new MiniCluster();
-    miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true);
+    miniCluster.startBlurCluster(new File(testDirectory, "cluster").getAbsolutePath(), 2, 3, true, false);
 
     System.out.println("ZK Connection String = [" + miniCluster.getZkConnectionString() + "]");
     System.out.println("Controller Connection String = [" + miniCluster.getControllerConnectionStr() + "]");

@@ -17,18 +17,27 @@ package org.apache.blur.console;
  * limitations under the License.
  */
 
-import org.apache.blur.console.filters.LoggedInFilter;
-import org.apache.blur.console.servlets.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.mortbay.jetty.Handler;
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.servlet.Context;
-import org.mortbay.jetty.webapp.WebAppContext;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import org.apache.blur.console.filters.LoggedInFilter;
+import org.apache.blur.console.servlets.AuthServlet;
+import org.apache.blur.console.servlets.JavascriptServlet;
+import org.apache.blur.console.servlets.NodesServlet;
+import org.apache.blur.console.servlets.QueriesServlet;
+import org.apache.blur.console.servlets.SearchServlet;
+import org.apache.blur.console.servlets.TablesServlet;
+import org.apache.blur.console.util.Config;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.server.ssl.SslSelectChannelConnector;
+import org.eclipse.jetty.servlet.FilterMapping;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 public class JettyServer {
   private int port;
@@ -61,6 +70,19 @@ public class JettyServer {
 
   private void createServer() throws MalformedURLException {
     server = new Server(port);
+    
+    if (Boolean.parseBoolean(Config.getBlurConfig().get("blur.console.ssl.enable", "false"))) {
+    	SslContextFactory factory = new SslContextFactory(Boolean.parseBoolean(Config.getBlurConfig().get("blur.console.ssl.hostname.match", "true")));
+    	factory.setKeyStorePath(Config.getBlurConfig().get("blur.console.ssl.keystore.path"));
+    	factory.setKeyStorePassword(Config.getBlurConfig().get("blur.console.ssl.keystore.password"));
+    	factory.setTrustStore(Config.getBlurConfig().get("blur.console.ssl.truststore.path"));
+    	factory.setTrustStorePassword(Config.getBlurConfig().get("blur.console.ssl.truststore.password"));
+    	
+    	SslSelectChannelConnector sslConnector = new SslSelectChannelConnector(factory);
+    	sslConnector.setPort(port);
+    	
+    	server.addConnector(sslConnector);
+    }
 
     // for localhost:port/console/index.html and whatever else is in the webapp directory
     URL warUrl = null;
@@ -70,23 +92,32 @@ public class JettyServer {
           warUrl = this.getClass().getClassLoader().getResource(PROD_WEBAPPDIR);
       }
     String warUrlString = warUrl.toExternalForm();
-    server.setHandler(new WebAppContext(warUrlString, CONTEXTPATH));
+    WebAppContext staticContext = new WebAppContext(warUrlString, CONTEXTPATH);
+    staticContext.setSessionHandler(new SessionHandler());
 
-    // for localhost:port/service/dashboard, etc.
-    Context serviceContext = new Context(server, "/service", Context.SESSIONS);
-    serviceContext.addServlet(AuthServlet.class, "/auth/*");
-    serviceContext.addServlet(NodesServlet.class, "/nodes/*");
-    serviceContext.addServlet(TablesServlet.class, "/tables/*");
-    serviceContext.addServlet(QueriesServlet.class, "/queries/*");
-    serviceContext.addServlet(SearchServlet.class, "/search/*");
-    serviceContext.addServlet(JavascriptServlet.class, "/config.js");
-    serviceContext.addFilter(LoggedInFilter.class, "/*", Handler.REQUEST);
+    // service calls
+//    ContextHandler servletContext = new ServletContextHandler(ServletContextHandler.SESSIONS);
+//    servletContext.setContextPath("/console/service");
+    ServletHandler serviceHandler = new ServletHandler();
+    serviceHandler.addServletWithMapping(AuthServlet.class, "/service/auth/*");
+    serviceHandler.addServletWithMapping(NodesServlet.class, "/service/nodes/*");
+    serviceHandler.addServletWithMapping(TablesServlet.class, "/service/tables/*");
+    serviceHandler.addServletWithMapping(QueriesServlet.class, "/service/queries/*");
+    serviceHandler.addServletWithMapping(SearchServlet.class, "/service/search/*");
+    serviceHandler.addServletWithMapping(JavascriptServlet.class, "/service/config.js");
+    serviceHandler.addFilterWithMapping(LoggedInFilter.class, "/service/*", FilterMapping.REQUEST);
+//    servletContext.setHandler(serviceHandler);
+    staticContext.setServletHandler(serviceHandler);
 
 
+//    ContextHandlerCollection handlers = new ContextHandlerCollection();
+//    handlers.setHandlers(new Handler[] { /*servletContext,*/ staticContext  });
 
+    server.setHandler(staticContext);
     System.out.println("started server on http://localhost:" + port + CONTEXTPATH);
     try {
       server.start();
+      System.out.println(server.getHandlers()[0]);
     } catch (Exception e) {
       log.error("Error starting Blur Console Jetty Server.  Exiting", e);
       System.exit(1);

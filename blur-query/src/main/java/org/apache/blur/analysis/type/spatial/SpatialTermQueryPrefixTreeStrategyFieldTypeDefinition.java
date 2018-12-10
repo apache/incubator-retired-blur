@@ -34,9 +34,6 @@ import com.spatial4j.core.shape.Point;
 
 public class SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition extends BaseSpatialFieldTypeDefinition {
 
-  private static final String QUAD = "Quad(";
-  private static final String END = ")";
-  private static final String GEO_HASH = "GeoHash(";
   private static final String DOC_VALUE = "docValue";
   public static final String NAME = "geo-termprefix";
   private static final Analyzer _keyword = new KeywordAnalyzer();

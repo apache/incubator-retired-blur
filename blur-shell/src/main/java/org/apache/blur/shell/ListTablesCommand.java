@@ -36,11 +36,23 @@ public class ListTablesCommand extends Command {
 
     Collections.sort(tableList);
     for (String table : tableList) {
-      TableDescriptor describe = client.describe(table);
-      if (describe.isEnabled()) {
-        out.println("enabled \t-\t" + table);
-      } else {
-        out.println("disabled\t-\t" + table);
+      try {
+        TableDescriptor describe = client.describe(table);
+        if (describe.isEnabled()) {
+          out.println("enabled \t-\t" + table);
+        } else {
+          out.println("disabled\t-\t" + table);
+        }
+      } catch (BlurException ex) {
+        out.println("ERROR   \t-\t" + table);
+        if (Main.debug) {
+          ex.printStackTrace(out);
+        }
+      } catch (TException ex) {
+        out.println("ERROR   \t-\t" + table);
+        if (Main.debug) {
+          ex.printStackTrace(out);
+        }
       }
     }
   }

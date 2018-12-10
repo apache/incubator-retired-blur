@@ -34,14 +34,10 @@ import org.apache.blur.utils.BlurIterable;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.FieldDoc;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TopDocsCollector;
-import org.apache.lucene.search.TopFieldCollector;
-import org.apache.lucene.search.TopScoreDocCollector;
 
 /**
  * The {@link IterablePaging} class allows for easy paging through lucene hits.
@@ -53,7 +49,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   private static final boolean DISABLED = true;
 
   private final DeepPagingCache _deepPagingCache;
-  private final IndexSearcher _searcher;
+  private final IndexSearcherCloseable _searcher;
   private final Query _query;
   private final AtomicBoolean _running;
   private final int _numHitsToCollect;
@@ -66,7 +62,7 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
   private int skipTo;
   private int gather = -1;
 
-  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect,
+  public IterablePaging(AtomicBoolean running, IndexSearcherCloseable searcher, Query query, int numHitsToCollect,
       TotalHitsRef totalHitsRef, ProgressRef progressRef, boolean runSlow, Sort sort, DeepPagingCache deepPagingCache)
       throws BlurException {
     _deepPagingCache = deepPagingCache;
@@ -228,17 +224,13 @@ public class IterablePaging implements BlurIterable<ScoreDoc, BlurException> {
       long s = System.currentTimeMillis();
       _progressRef.searchesPerformed.incrementAndGet();
       try {
-        TopDocsCollector<?> collector;
+        TopDocCollectorInterface collector;
         if (_sort == null) {
-          collector = TopScoreDocCollector.create(_numHitsToCollect, after, true);
+          collector = BlurScoreDocCollector.create(_numHitsToCollect, after, _runSlow, _running);
         } else {
-          collector = TopFieldCollector.create(_sort, _numHitsToCollect, (FieldDoc) after, true, true, false, true);
+          collector = BlurFieldCollector.create(_sort, _numHitsToCollect, (FieldDoc) after, _runSlow, _running);
         }
-        Collector col = new StopExecutionCollector(collector, _running);
-        if (_runSlow) {
-          col = new SlowCollector(col);
-        }
-        _searcher.search(_query, col);
+        _searcher.search(_query, (Collector) collector);
         _totalHitsRef.totalHits.set(collector.getTotalHits());
         TopDocs topDocs = collector.topDocs();
         scoreDocs = topDocs.scoreDocs;

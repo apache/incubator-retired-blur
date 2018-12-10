@@ -256,11 +256,6 @@ public class FilteredBlurServer implements Iface {
   }
 
   @Override
-  public Response reconnect(String executionId) throws BlurException, TimeoutException, TException {
-    return _iface.reconnect(executionId);
-  }
-
-  @Override
   public void refresh() throws TException {
     _iface.refresh();
   }
@@ -272,18 +267,64 @@ public class FilteredBlurServer implements Iface {
   }
 
   @Override
-  public CommandStatus commandStatus(String executionId) throws BlurException, TException {
-    return _iface.commandStatus(executionId);
-  }
-
-  @Override
-  public void commandCancel(String executionId) throws BlurException, TException {
-    _iface.commandCancel(executionId);
-  }
-
-  @Override
   public List<CommandDescriptor> listInstalledCommands() throws BlurException, TException {
     return _iface.listInstalledCommands();
+  }
+
+  @Override
+  public Response reconnect(long instanceExecutionId) throws BlurException, TimeoutException, TException {
+    return _iface.reconnect(instanceExecutionId);
+  }
+
+  @Override
+  public CommandStatus commandStatus(String commandExecutionId) throws BlurException, TException {
+    return _iface.commandStatus(commandExecutionId);
+  }
+
+  @Override
+  public void commandCancel(String commandExecutionId) throws BlurException, TException {
+    _iface.commandCancel(commandExecutionId);
+  }
+
+  @Override
+  public void loadData(String table, String location) throws BlurException, TException {
+    _iface.loadData(table, location);
+  }
+
+  @Override
+  public void bulkMutateStart(String bulkId) throws BlurException, TException {
+    _iface.bulkMutateStart(bulkId);
+  }
+
+  @Override
+  public void bulkMutateAdd(String bulkId, RowMutation rowMutation) throws BlurException, TException {
+    _iface.bulkMutateAdd(bulkId, rowMutation);
+  }
+
+  @Override
+  public void bulkMutateFinish(String bulkId, boolean apply, boolean blockUntilComplete) throws BlurException,
+      TException {
+    _iface.bulkMutateFinish(bulkId, apply, blockUntilComplete);
+  }
+
+  @Override
+  public void bulkMutateAddMultiple(String bulkId, List<RowMutation> rowMutations) throws BlurException, TException {
+    _iface.bulkMutateAddMultiple(bulkId, rowMutations);
+  }
+
+  @Override
+  public String configurationPerServer(String thriftServerPlusPort, String configName) throws BlurException, TException {
+    return _iface.configurationPerServer(thriftServerPlusPort, configName);
+  }
+
+  @Override
+  public void validateIndex(String table, List<String> externalIndexPaths) throws BlurException, TException {
+    _iface.validateIndex(table, externalIndexPaths);
+  }
+
+  @Override
+  public void loadIndex(String table, List<String> externalIndexPaths) throws BlurException, TException {
+    _iface.loadIndex(table, externalIndexPaths);
   }
 
 }

@@ -20,6 +20,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER;
 import static org.apache.blur.utils.BlurConstants.BLUR_CLUSTER_NAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_COMMAND_LIB_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_REMOTE_FETCH_COUNT;
+import static org.apache.blur.utils.BlurConstants.BLUR_GC_BACK_PRESSURE_HEAP_RATIO;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_SHARD_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_HTTP_STATUS_RUNNING_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_INDEXMANAGER_FACET_THREAD_COUNT;
@@ -28,6 +29,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREA
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_HEAP_PER_ROW_FETCH;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
+import static org.apache.blur.utils.BlurConstants.BLUR_NODENAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_TOTAL_SIZE;
@@ -41,23 +43,28 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_MERGE_THREAD_COUNT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_REQUEST_CACHE_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
+import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_SMALL_MERGE_THRESHOLD;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES;
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_THRIFT_SELECTOR_THREADS;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
-import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
+import java.io.Closeable;
+import java.io.File;
 import java.lang.reflect.Constructor;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Timer;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.BlurConfiguration;
@@ -65,7 +72,6 @@ import org.apache.blur.command.ShardCommandManager;
 import org.apache.blur.concurrent.SimpleUncaughtExceptionHandler;
 import org.apache.blur.concurrent.ThreadWatcher;
 import org.apache.blur.gui.HttpJettyServer;
-import org.apache.blur.gui.JSONReporterServlet;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.DeepPagingCache;
@@ -73,24 +79,32 @@ import org.apache.blur.manager.BlurFilterCache;
 import org.apache.blur.manager.BlurQueryChecker;
 import org.apache.blur.manager.DefaultBlurFilterCache;
 import org.apache.blur.manager.IndexManager;
+import org.apache.blur.manager.clusterstatus.ClusterStatus.Action;
 import org.apache.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.manager.indexserver.DistributedIndexServer;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactory;
 import org.apache.blur.manager.indexserver.DistributedLayoutFactoryImpl;
-import org.apache.blur.manager.writer.BlurIndexRefresher;
+import org.apache.blur.memory.MemoryAllocationWatcher;
+import org.apache.blur.memory.Watcher;
 import org.apache.blur.metrics.JSONReporter;
 import org.apache.blur.metrics.ReporterSetup;
+import org.apache.blur.server.ServerSecurityFilter;
+import org.apache.blur.server.ServerSecurityFilterFactory;
+import org.apache.blur.server.ServerSecurityUtil;
 import org.apache.blur.server.ShardServerEventHandler;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.cache.ThriftCache;
+import org.apache.blur.server.cache.ThriftCacheServer;
 import org.apache.blur.store.BlockCacheDirectoryFactory;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV1;
 import org.apache.blur.store.BlockCacheDirectoryFactoryV2;
 import org.apache.blur.store.buffer.BufferStore;
+import org.apache.blur.store.hdfs.SequentialReadControl;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerTransport;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.trace.Trace;
@@ -102,8 +116,8 @@ import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.zookeeper.ZooKeeper;
-import org.mortbay.jetty.servlet.ServletHolder;
-import org.mortbay.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 import sun.misc.VM;
 
@@ -123,8 +137,8 @@ public class ThriftBlurShardServer extends ThriftServer {
       ReporterSetup.setupReporters(configuration);
       MemoryReporter.enable();
       setupJvmMetrics();
-      // make this configurable
-      GCWatcher.init(0.75);
+      double ratio = configuration.getDouble(BLUR_GC_BACK_PRESSURE_HEAP_RATIO, 0.75);
+      GCWatcher.init(ratio);
       ThriftServer server = createServer(serverIndex, configuration);
       server.start();
     } catch (Throwable t) {
@@ -134,7 +148,7 @@ public class ThriftBlurShardServer extends ThriftServer {
   }
 
   public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
-    Configuration config = new Configuration();
+    Configuration config = BlurUtil.newHadoopConfiguration();
     TableContext.setSystemBlurConfiguration(configuration);
     TableContext.setSystemConfiguration(config);
 
@@ -144,15 +158,16 @@ public class ThriftBlurShardServer extends ThriftServer {
     if (configBindPort == 0) {
       instanceBindPort = 0;
     }
-    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress,
-        instanceBindPort);
-    if (configBindPort == 0) {
-      instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
-    }
+    TServerTransport serverTransport = ThriftServer.getTServerTransport(bindAddress, instanceBindPort, configuration);
+    instanceBindPort = ThriftServer.getBindingPort(serverTransport);
 
     Set<Entry<String, String>> set = configuration.getProperties().entrySet();
     for (Entry<String, String> e : set) {
       String key = e.getKey();
+      String value = e.getValue();
+      if (value == null || value.isEmpty()) {
+        continue;
+      }
       if (key.startsWith("blur.shard.buffercache.")) {
         int index = key.lastIndexOf('.');
         int bufferSize = Integer.parseInt(key.substring(index + 1));
@@ -161,7 +176,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     }
 
-    BlockCacheDirectoryFactory blockCacheDirectoryFactory;
+    final BlockCacheDirectoryFactory blockCacheDirectoryFactory;
     // Alternate BlockCacheDirectoryFactory support currently disabled in 0.2.0,
     // look for it in 0.2.1
     String blockCacheVersion = configuration.get(BLUR_SHARD_BLOCK_CACHE_VERSION, "v2");
@@ -177,25 +192,22 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
     String nodeName = nodeNameHostName + ":" + instanceBindPort;
-    String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
+    configuration.set(BLUR_NODENAME, nodeName);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
-    int sessionTimeout = configuration.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
-
-    final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
-
     String cluster = configuration.get(BLUR_CLUSTER_NAME, BLUR_CLUSTER);
-    BlurUtil.setupZookeeper(zooKeeper, cluster);
-
-    final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration);
-
-    final BlurIndexRefresher refresher = new BlurIndexRefresher();
+    
+    final ZooKeeper zooKeeper = setupZookeeper(configuration, cluster);
+    final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration, config);
 
     BlurFilterCache filterCache = getFilterCache(configuration);
 
     DistributedLayoutFactory distributedLayoutFactory = DistributedLayoutFactoryImpl.getDistributedLayoutFactory(
         configuration, cluster, zooKeeper);
+
+    long requestCacheSize = configuration.getLong(BLUR_SHARD_REQUEST_CACHE_SIZE, 10000000);
+    final ThriftCache thriftCache = new ThriftCache(requestCacheSize);
 
     long safeModeDelay = configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000);
     int shardOpenerThreadCount = configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16);
@@ -203,9 +215,15 @@ public class ThriftBlurShardServer extends ThriftServer {
     int minimumNumberOfNodesBeforeExitingSafeMode = configuration.getInt(
         BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT, 0);
     int internalSearchThreads = configuration.getInt(BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT, 16);
+    final Timer hdfsKeyValueTimer = new Timer("HDFS KV Store", true);
+    final Timer indexImporterTimer = new Timer("IndexImporter", true);
+    final Timer indexBulkTimer = new Timer("BulkIndex", true);
+    long smallMergeThreshold = configuration.getLong(BLUR_SHARD_SMALL_MERGE_THRESHOLD, 128 * 1000 * 1000);
+    SequentialReadControl sequentialReadControl = new SequentialReadControl(configuration);
     final DistributedIndexServer indexServer = new DistributedIndexServer(config, zooKeeper, clusterStatus,
         filterCache, blockCacheDirectoryFactory, distributedLayoutFactory, cluster, nodeName, safeModeDelay,
-        shardOpenerThreadCount, maxMergeThreads,internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode);
+        shardOpenerThreadCount, maxMergeThreads, internalSearchThreads, minimumNumberOfNodesBeforeExitingSafeMode,
+        hdfsKeyValueTimer, indexImporterTimer, smallMergeThreshold, indexBulkTimer, thriftCache, sequentialReadControl);
 
     BooleanQuery.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
 
@@ -223,19 +241,38 @@ public class ThriftBlurShardServer extends ThriftServer {
     int cacheSize = configuration.getInt(BLUR_SHARD_DEEP_PAGING_CACHE_SIZE, 1000);
     DeepPagingCache deepPagingCache = new DeepPagingCache(cacheSize);
 
+    MemoryAllocationWatcher memoryAllocationWatcher = new MemoryAllocationWatcher() {
+      @Override
+      public <T, E extends Exception> T run(Watcher<T, E> w) throws E {
+        return w.run();
+      }
+    };
+
     final IndexManager indexManager = new IndexManager(indexServer, clusterStatus, filterCache, maxHeapPerRowFetch,
         fetchCount, indexManagerThreadCount, mutateThreadCount, statusCleanupTimerDelay, facetThreadCount,
-        deepPagingCache);
+        deepPagingCache, memoryAllocationWatcher);
 
-    String tmpPath = configuration.get(BLUR_TMP_PATH, getDefaultTmpPath(BLUR_TMP_PATH));
+    File tmpPath = getTmpPath(configuration);
     int numberOfShardWorkerCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_WORKER_THREADS, 16);
     int numberOfShardDriverCommandThreads = configuration.getInt(BLUR_SHARD_COMMAND_DRIVER_THREADS, 16);
     String commandPath = configuration.get(BLUR_COMMAND_LIB_PATH, getCommandLibPath());
-
+    if (commandPath != null) {
+      LOG.info("Command Path was set to [{0}].", commandPath);
+    } else {
+      LOG.info("Command Path was not set.");
+    }
     final ShardCommandManager commandManager = new ShardCommandManager(indexServer, tmpPath, commandPath,
         numberOfShardWorkerCommandThreads, numberOfShardDriverCommandThreads, Connection.DEFAULT_TIMEOUT, config);
 
+    clusterStatus.registerActionOnTableStateChange(new Action() {
+      @Override
+      public void action() {
+        thriftCache.clear();
+      }
+    });
+
     final BlurShardServer shardServer = new BlurShardServer();
+    shardServer.setNodeName(nodeName);
     shardServer.setCommandManager(commandManager);
     shardServer.setIndexServer(indexServer);
     shardServer.setIndexManager(indexManager);
@@ -246,11 +283,16 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setConfiguration(configuration);
     shardServer.init();
 
-    final TraceStorage traceStorage = setupTraceStorage(configuration);
+    final TraceStorage traceStorage = setupTraceStorage(configuration, config);
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
-    Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, shardServer, true);
+    List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration,
+        ServerSecurityFilterFactory.ServerType.SHARD);
+
+    Iface iface = new ThriftCacheServer(configuration, shardServer, indexServer, thriftCache);
+    iface = BlurUtil.wrapFilteredBlurServer(configuration, iface, true);
+    iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, true);
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, false);
     iface = BlurUtil.runWithUser(iface, false);
     iface = BlurUtil.runTrace(iface, false);
@@ -275,7 +317,6 @@ public class ThriftBlurShardServer extends ThriftServer {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),
           new TJSONProtocol.Factory())), "/blur");
-      context.addServlet(new ServletHolder(new JSONReporterServlet()), "/livemetrics");
       if (enableJsonReporter) {
         JSONReporter.enable("json-reporter", 1, TimeUnit.SECONDS, 60);
       }
@@ -287,27 +328,33 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     final ThriftBlurShardServer server = new ThriftBlurShardServer();
     server.setNodeName(nodeName);
-    server.setServerTransport(tNonblockingServerSocket);
+    server.setServerTransport(serverTransport);
     server.setThreadCount(threadCount);
     server.setIface(iface);
     server.setEventHandler(eventHandler);
     server.setAcceptQueueSizePerThread(configuration.getInt(BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD, 4));
     server.setMaxReadBufferBytes(configuration.getLong(BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES, Long.MAX_VALUE));
     server.setSelectorThreads(configuration.getInt(BLUR_SHARD_THRIFT_SELECTOR_THREADS, 2));
-    server.setMaxFrameSize(config.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE));
+    server.setMaxFrameSize(configuration.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE));
+    server.setConfiguration(configuration);
 
     // This will shutdown the server when the correct path is set in zk
     BlurShutdown shutdown = new BlurShutdown() {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(commandManager, traceStorage, refresher, server, shardServer, indexManager, indexServer,
+        quietClose(makeCloseable(hdfsKeyValueTimer), makeCloseable(indexImporterTimer), makeCloseable(indexBulkTimer),
+            blockCacheDirectoryFactory, commandManager, traceStorage, server, shardServer, indexManager, indexServer,
             threadWatcher, clusterStatus, zooKeeper, httpServer);
       }
     };
     server.setShutdown(shutdown);
     new BlurServerShutDown().register(shutdown, zooKeeper);
     return server;
+  }
+
+  protected static Closeable makeCloseable(final Timer timer) {
+    return new CloseableTimer(timer);
   }
 
   @SuppressWarnings("unchecked")

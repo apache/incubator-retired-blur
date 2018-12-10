@@ -30,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.blur.log.Log;
+import org.apache.blur.log.LogFactory;
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
 import org.apache.blur.store.blockcache_v2.cachevalue.ByteArrayCacheValue;
 import org.apache.blur.store.blockcache_v2.cachevalue.UnsafeCacheValue;
@@ -39,6 +41,8 @@ import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
 public class CacheValueBufferPool implements Closeable {
+
+  private static final Log LOG = LogFactory.getLog(CacheValueBufferPool.class);
 
   private final STORE _store;
   private final ConcurrentMap<Integer, BlockingQueue<CacheValue>> _cacheValuePool = new ConcurrentHashMap<Integer, BlockingQueue<CacheValue>>();
@@ -67,7 +71,7 @@ public class CacheValueBufferPool implements Closeable {
   }
 
   private BlockingQueue<CacheValue> getPool(int cacheBlockSize) {
-    BlockingQueue<CacheValue> blockingQueue = _cacheValuePool.get(_cacheValuePool);
+    BlockingQueue<CacheValue> blockingQueue = _cacheValuePool.get(cacheBlockSize);
     if (blockingQueue == null) {
       blockingQueue = buildNewBlockQueue(cacheBlockSize);
     }
@@ -75,7 +79,9 @@ public class CacheValueBufferPool implements Closeable {
   }
 
   private BlockingQueue<CacheValue> buildNewBlockQueue(int cacheBlockSize) {
-    _cacheValuePool.putIfAbsent(cacheBlockSize, new ArrayBlockingQueue<CacheValue>(_capacity));
+    LOG.info("Allocating new ArrayBlockingQueue with capacity [{0}]", _capacity);
+    BlockingQueue<CacheValue> value = new ArrayBlockingQueue<CacheValue>(_capacity);
+    _cacheValuePool.putIfAbsent(cacheBlockSize, value);
     return _cacheValuePool.get(cacheBlockSize);
   }
 
@@ -91,13 +97,17 @@ public class CacheValueBufferPool implements Closeable {
   }
 
   public void returnToPool(CacheValue cacheValue) {
-    if (cacheValue == null) {
+    if (cacheValue == null || cacheValue.isEvicted()) {
       return;
     }
-    BlockingQueue<CacheValue> blockingQueue = getPool(cacheValue.length());
-    if (!blockingQueue.offer(cacheValue)) {
-      _detroyed.mark();
-      cacheValue.release();
+    try {
+      BlockingQueue<CacheValue> blockingQueue = getPool(cacheValue.length());
+      if (!blockingQueue.offer(cacheValue)) {
+        _detroyed.mark();
+        cacheValue.release();
+      }
+    } catch (EvictionException e) {
+      return;
     }
   }
 

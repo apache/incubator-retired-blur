@@ -28,6 +28,7 @@ import org.apache.blur.thirdparty.thrift_0_9_0.TException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.zookeeper.ZooKeeperClient;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -46,7 +47,7 @@ public class RemoveShardServerCommand extends Command {
         BlurConfiguration configuration = new BlurConfiguration();
         String connectString = configuration.get(BlurConstants.BLUR_ZOOKEEPER_CONNECTION);
         int sessionTimeout = configuration.getInt(BlurConstants.BLUR_ZOOKEEPER_TIMEOUT, 30000);
-        zooKeeper = new ZooKeeper(connectString, sessionTimeout, new Watcher() {
+        zooKeeper = new ZooKeeperClient(connectString, sessionTimeout, new Watcher() {
           @Override
           public void process(WatchedEvent event) {
 

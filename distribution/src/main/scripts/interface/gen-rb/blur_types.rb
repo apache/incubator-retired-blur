@@ -132,17 +132,10 @@ module Blur
 # happens so that the client can reconnect.
   class TimeoutException < ::Thrift::Exception
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    def initialize(message=nil)
-      super()
-      self.executionId = message
-    end
-
-    def message; executionId end
-
-    EXECUTIONID = 1
+    INSTANCEEXECUTIONID = 1
 
     FIELDS = {
-      EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+      INSTANCEEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'instanceExecutionId'}
     }
 
     def struct_fields; FIELDS; end
@@ -802,6 +795,8 @@ module Blur
     BYTES = 2
     RECORDCOUNT = 3
     ROWCOUNT = 4
+    SEGMENTIMPORTPENDINGCOUNT = 5
+    SEGMENTIMPORTINPROGRESSCOUNT = 6
 
     FIELDS = {
       # The table name.
@@ -811,7 +806,11 @@ module Blur
       # The record count.
       RECORDCOUNT => {:type => ::Thrift::Types::I64, :name => 'recordCount'},
       # The row count.
-      ROWCOUNT => {:type => ::Thrift::Types::I64, :name => 'rowCount'}
+      ROWCOUNT => {:type => ::Thrift::Types::I64, :name => 'rowCount'},
+      # The number of pending segment imports for this table.
+      SEGMENTIMPORTPENDINGCOUNT => {:type => ::Thrift::Types::I64, :name => 'segmentImportPendingCount', :default => 0},
+      # The number of segment imports in progress for this table.
+      SEGMENTIMPORTINPROGRESSCOUNT => {:type => ::Thrift::Types::I64, :name => 'segmentImportInProgressCount', :default => 0}
     }
 
     def struct_fields; FIELDS; end
@@ -832,6 +831,7 @@ module Blur
     FIELDTYPE = 5
     PROPERTIES = 6
     SORTABLE = 7
+    MULTIVALUEFIELD = 8
 
     FIELDS = {
       # Required. The family that this column exists within.
@@ -857,7 +857,9 @@ module Blur
       # For any custom field types, you can pass in configuration properties.
       PROPERTIES => {:type => ::Thrift::Types::MAP, :name => 'properties', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
       # This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
-      SORTABLE => {:type => ::Thrift::Types::BOOL, :name => 'sortable'}
+      SORTABLE => {:type => ::Thrift::Types::BOOL, :name => 'sortable'},
+      # This will attempt to enable the ability for multiple values per column name in a single Record.
+      MULTIVALUEFIELD => {:type => ::Thrift::Types::BOOL, :name => 'multiValueField', :default => true, :optional => true}
     }
 
     def struct_fields; FIELDS; end

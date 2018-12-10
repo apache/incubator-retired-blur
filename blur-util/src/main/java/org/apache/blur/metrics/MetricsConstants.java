@@ -45,6 +45,9 @@ public class MetricsConstants {
   public static final String REMOVAL = "Removal";
   public static final String MISS = "Miss";
   public static final String CACHE = "Cache";
+  public static final String THRIFT_CACHE = "ThriftCache";
+  public static final String COUNT = "Count";
+  public static final String THRIFT_CACHE_ATTRIBUTE_MAP = "ThriftCacheAttributeMap";
   public static final String HDFS_KV = "HDFS-KV";
   public static final String DEEP_PAGING_CACHE = "DeepPagingCache";
   public static final String CACHE_POOL = "CachePool";
@@ -55,6 +58,7 @@ public class MetricsConstants {
   public static final String TABLE_COUNT = "Table Count";
   public static final String FILES_IN_QUEUE_TO_BE_DELETED = "Files in Queue to be Deleted";
   public static final String INDEX_MEMORY_USAGE = "Index Memory Usage";
+  public static final String RECORD_COUNT = "Record Count";
   public static final String SEGMENT_COUNT = "Segment Count";
   public static final String INDEX_COUNT = "Index Count";
   public static final String INTERNAL_SEARCH = "internal search";

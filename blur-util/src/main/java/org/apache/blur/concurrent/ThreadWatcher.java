@@ -34,7 +34,6 @@ import java.util.concurrent.TimeoutException;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 
-
 public class ThreadWatcher {
 
   private static final Log LOG = LogFactory.getLog(ThreadWatcher.class);
@@ -47,9 +46,21 @@ public class ThreadWatcher {
 
     Thread _thread;
     final long _start = System.currentTimeMillis();
+    String _task;
+    float _complete;
+
+    public void status(String task, float complete) {
+      _task = task;
+      _complete = complete;
+    }
+
+    public void resetStatus() {
+      _complete = 0;
+      _task = null;
+    }
   }
 
-  private ConcurrentMap<Thread, Watch> _threads = new ConcurrentHashMap<Thread, Watch>();
+  private final ConcurrentMap<Thread, Watch> _threads = new ConcurrentHashMap<Thread, Watch>();
   private Timer _timer;
 
   private ThreadWatcher() {
@@ -90,7 +101,14 @@ public class ThreadWatcher {
   private void processWatch(Watch watch) {
     if (hasBeenExecutingLongerThan(TimeUnit.SECONDS.toMillis(5), watch)) {
       long now = System.currentTimeMillis();
-      LOG.info("Thread [{0}] has been executing for [{1} ms]", watch._thread, now - watch._start);
+      String task = watch._task;
+      float complete = watch._complete;
+      if (task == null) {
+        LOG.info("Thread [{0}] has been executing for [{1} ms]", watch._thread, now - watch._start);
+      } else {
+        LOG.info("Thread [{0}] has been executing task [{1}] is [{2}] complete for [{4} ms]", watch._thread, task,
+            complete, now - watch._start);
+      }
     }
   }
 
@@ -163,7 +181,8 @@ public class ThreadWatcher {
       _executorService.execute(wrap(command));
     }
 
-    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException {
+    public <T> List<Future<T>> invokeAll(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
+        throws InterruptedException {
       return _executorService.invokeAll(wrapCallableCollection(tasks), timeout, unit);
     }
 
@@ -171,7 +190,8 @@ public class ThreadWatcher {
       return _executorService.invokeAll(wrapCallableCollection(tasks));
     }
 
-    public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public <T> T invokeAny(Collection<? extends Callable<T>> tasks, long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException {
       return _executorService.invokeAny(wrapCallableCollection(tasks), timeout, unit);
     }
 
@@ -214,6 +234,30 @@ public class ThreadWatcher {
       _instance.init();
     }
     return _instance;
+  }
+
+  public static void status(String task, float complete) {
+    if (_instance == null) {
+      LOG.warn("Call to resetStatus on thread no being watched.");
+      return;
+    }
+    Watch watch = _instance._threads.get(Thread.currentThread());
+    if (watch == null) {
+      return;
+    }
+    watch.status(task, complete);
+  }
+
+  public static void resetStatus() {
+    if (_instance == null) {
+      LOG.warn("Call to resetStatus on thread no being watched.");
+      return;
+    }
+    Watch watch = _instance._threads.get(Thread.currentThread());
+    if (watch == null) {
+      return;
+    }
+    watch.resetStatus();
   }
 
 }

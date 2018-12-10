@@ -19,18 +19,20 @@ package org.apache.blur.store.blockcache_v2.cachevalue;
 
 import static org.junit.Assert.*;
 
+import org.apache.blur.store.blockcache_v2.EvictionException;
 import org.junit.Test;
 
 public class UnsafeCacheValueTest {
 
   @Test
-  public void test1() {
+  public void test1() throws EvictionException {
     UnsafeCacheValue value = new UnsafeCacheValue(10);
     byte[] buf = "hello world".getBytes();
     value.write(0, buf, 0, 10);
     byte[] buf2 = new byte[10];
     value.read(0, buf2, 0, 10);
     assertArrayEquals("hello worl".getBytes(), buf2);
+    value.release();
   }
 
   @Test
@@ -42,6 +44,7 @@ public class UnsafeCacheValueTest {
       fail();
     } catch (ArrayIndexOutOfBoundsException e) {
     }
+    value.release();
   }
 
   @Test
@@ -53,16 +56,18 @@ public class UnsafeCacheValueTest {
       fail();
     } catch (ArrayIndexOutOfBoundsException e) {
     }
+    value.release();
   }
 
   @Test
-  public void test4() {
+  public void test4() throws EvictionException {
     UnsafeCacheValue value = new UnsafeCacheValue(10);
     byte[] buf = "hello world".getBytes();
     value.write(8, buf, 0, 2);
 
     assertEquals('h', value.read(8));
     assertEquals('e', value.read(9));
+    value.release();
   }
 
 }

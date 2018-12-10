@@ -24,7 +24,11 @@ import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 import static org.apache.blur.metrics.MetricsConstants.SYSTEM;
 import static org.apache.blur.utils.BlurConstants.BLUR_HDFS_TRACE_PATH;
 import static org.apache.blur.utils.BlurConstants.BLUR_HOME;
-import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TRACE_PATH;
+import static org.apache.blur.utils.BlurConstants.BLUR_SERVER_SECURITY_FILTER_CLASS;
+import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
+import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,8 +42,12 @@ import java.lang.management.OperatingSystemMXBean;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
@@ -48,19 +56,34 @@ import org.apache.blur.concurrent.Executors;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
+import org.apache.blur.server.ServerSecurityFilter;
+import org.apache.blur.server.ServerSecurityFilterFactory;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TBinaryProtocol;
+import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServer;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServerEventHandler;
+import org.apache.blur.thirdparty.thrift_0_9_0.server.TThreadPoolServer;
+import org.apache.blur.thirdparty.thrift_0_9_0.server.TThreadPoolServer.Args;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TFramedTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerTransport;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerTransport;
 import org.apache.blur.thirdparty.thrift_0_9_0.transport.TTransportException;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
+import org.apache.blur.thrift.sasl.SaslHelper;
+import org.apache.blur.thrift.sasl.TSaslServerTransport;
 import org.apache.blur.thrift.server.TThreadedSelectorServer;
 import org.apache.blur.thrift.server.TThreadedSelectorServer.Args.AcceptPolicy;
 import org.apache.blur.trace.LogTraceStorage;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.trace.hdfs.HdfsTraceStorage;
+import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.zookeeper.ZkUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Gauge;
@@ -80,11 +103,12 @@ public class ThriftServer {
   private ExecutorService _queryExexutorService;
   private ExecutorService _mutateExecutorService;
   private TServerEventHandler _eventHandler;
-  private TNonblockingServerSocket _serverTransport;
+  private TServerTransport _serverTransport;
   private int _acceptQueueSizePerThread = 4;
   private long _maxReadBufferBytes = Long.MAX_VALUE;
   private int _selectorThreads = 2;
   private int _maxFrameSize = 16384000;
+  private BlurConfiguration _configuration;
 
   public int getMaxFrameSize() {
     return _maxFrameSize;
@@ -94,11 +118,11 @@ public class ThriftServer {
     _maxFrameSize = maxFrameSize;
   }
 
-  public TNonblockingServerSocket getServerTransport() {
+  public TServerTransport getServerTransport() {
     return _serverTransport;
   }
 
-  public void setServerTransport(TNonblockingServerSocket serverTransport) {
+  public void setServerTransport(TServerTransport serverTransport) {
     _serverTransport = serverTransport;
   }
 
@@ -107,14 +131,31 @@ public class ThriftServer {
     if (blurHomeDir == null) {
       return null;
     }
-    return new File(blurHomeDir, "commands").toURI().toString();
+    File file = new File(blurHomeDir, "commands");
+    file.mkdirs();
+    if (file.exists()) {
+      return file.toURI().toString();
+    }
+    return null;
   }
 
   public static String getBlurHomeDir() {
     return System.getenv(BLUR_HOME);
   }
 
-  public static String getDefaultTmpPath(String propName) throws IOException {
+  public static File getTmpPath(BlurConfiguration configuration) throws IOException {
+    File defaultTmpPath = getDefaultTmpPath(BLUR_TMP_PATH);
+    String configTmpPath = configuration.get(BLUR_TMP_PATH);
+    File tmpPath;
+    if (!(configTmpPath == null || configTmpPath.isEmpty())) {
+      tmpPath = new File(configTmpPath);
+    } else {
+      tmpPath = defaultTmpPath;
+    }
+    return tmpPath;
+  }
+
+  public static File getDefaultTmpPath(String propName) throws IOException {
     String blurHomeDir = getBlurHomeDir();
     File tmp;
     if (blurHomeDir == null) {
@@ -123,7 +164,7 @@ public class ThriftServer {
     } else {
       tmp = new File(blurHomeDir, "tmp");
       LOG.info("Attempting to use configured tmp directory [{0}]", tmp);
-      if (!tmp.mkdirs()) {
+      if (!tmp.exists() && !tmp.mkdirs()) {
         tmp = getTmpDir();
         LOG.info("Attempting to use default tmp directory [{0}]", tmp);
       }
@@ -137,22 +178,19 @@ public class ThriftServer {
       throw new IOException("Cannot create tmp file in [" + tmp.toURI() + "].");
     }
     file.delete();
-    return tmp.toURI().toString();
+    return tmp;
   }
 
   private static File getTmpDir() {
     return new File(System.getProperty("java.io.tmpdir"), "blur_tmp");
   }
 
-  public static TraceStorage setupTraceStorage(BlurConfiguration configuration) throws IOException {
-    String zKpath = configuration.get(BLUR_ZOOKEEPER_TRACE_PATH);
+  public static TraceStorage setupTraceStorage(BlurConfiguration configuration, Configuration conf) throws IOException {
     String hdfsPath = configuration.get(BLUR_HDFS_TRACE_PATH);
-    if (zKpath != null && hdfsPath != null) {
-      throw new RuntimeException("Cannot have both [" + BLUR_ZOOKEEPER_TRACE_PATH + "] and [" + BLUR_HDFS_TRACE_PATH
-          + "] set.");
-    }
     if (hdfsPath != null) {
-      return new HdfsTraceStorage(configuration);
+      HdfsTraceStorage hdfsTraceStorage = new HdfsTraceStorage(configuration);
+      hdfsTraceStorage.init(conf);
+      return hdfsTraceStorage;
     } else {
       return new LogTraceStorage(configuration);
     }
@@ -262,38 +300,38 @@ public class ThriftServer {
     return 0;
   }
 
-  public void start() throws TTransportException {
-    _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
+  public void start() throws TTransportException, IOException {
     Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(_iface);
+    if (SaslHelper.isSaslEnabled(_configuration)) {
+      _executorService = Executors.newThreadPool("thrift-processors", _threadCount, false);
+      TSaslServerTransport.Factory saslTransportFactory = SaslHelper.getTSaslServerTransportFactory(_configuration);
+      Args args = new TThreadPoolServer.Args(_serverTransport);
+      args.executorService(_executorService);
+      args.processor(processor);
+      args.protocolFactory(new TCompactProtocol.Factory());
+      args.transportFactory(saslTransportFactory);
 
-    TThreadedSelectorServer.Args args = new TThreadedSelectorServer.Args(_serverTransport);
-    args.processor(processor);
-    args.executorService(_executorService);
-    args.transportFactory(new TFramedTransport.Factory(_maxFrameSize));
-    args.protocolFactory(new TBinaryProtocol.Factory(true, true));
-    args.selectorThreads = _selectorThreads;
-    args.maxReadBufferBytes = _maxReadBufferBytes;
-    args.acceptQueueSizePerThread(_acceptQueueSizePerThread);
-    args.acceptPolicy(AcceptPolicy.FAIR_ACCEPT);
+      _server = new TThreadPoolServer(args);
+      _server.setServerEventHandler(_eventHandler);
+    } else {
+      _executorService = Executors.newThreadPool("thrift-processors", _threadCount);
+      TThreadedSelectorServer.Args args = new TThreadedSelectorServer.Args(
+          (TNonblockingServerTransport) _serverTransport);
+      args.processor(processor);
+      args.executorService(_executorService);
+      args.transportFactory(new TFramedTransport.Factory(_maxFrameSize));
+      args.protocolFactory(new TBinaryProtocol.Factory(true, true));
+      args.selectorThreads = _selectorThreads;
+      args.maxReadBufferBytes = _maxReadBufferBytes;
+      args.acceptQueueSizePerThread(_acceptQueueSizePerThread);
+      args.acceptPolicy(AcceptPolicy.FAIR_ACCEPT);
 
-    _server = new TThreadedSelectorServer(args);
-    _server.setServerEventHandler(_eventHandler);
+      _server = new TThreadedSelectorServer(args);
+      _server.setServerEventHandler(_eventHandler);
+    }
+
     LOG.info("Starting server [{0}]", _nodeName);
     _server.serve();
-  }
-
-  public static TNonblockingServerSocket getTNonblockingServerSocket(String bindAddress, int bindPort)
-      throws TTransportException {
-    InetSocketAddress bindInetSocketAddress = getBindInetSocketAddress(bindAddress, bindPort);
-    return new TNonblockingServerSocket(bindInetSocketAddress);
-  }
-
-  public int getLocalPort() {
-    ServerSocket serverSocket = _serverTransport.getServerSocket();
-    if (serverSocket == null) {
-      return 0;
-    }
-    return serverSocket.getLocalPort();
   }
 
   public static InetSocketAddress getBindInetSocketAddress(String bindAddress, int bindPort) {
@@ -389,5 +427,92 @@ public class ThriftServer {
 
   public void setSelectorThreads(int selectorThreads) {
     _selectorThreads = selectorThreads;
+  }
+
+  public BlurConfiguration getConfiguration() {
+    return _configuration;
+  }
+
+  public void setConfiguration(BlurConfiguration configuration) {
+    this._configuration = configuration;
+  }
+
+  public static TServerTransport getTServerTransport(String bindAddress, int bindPort, BlurConfiguration configuration)
+      throws TTransportException {
+    InetSocketAddress bindInetSocketAddress = getBindInetSocketAddress(bindAddress, bindPort);
+    if (SaslHelper.isSaslEnabled(configuration)) {
+      return new TServerSocket(bindInetSocketAddress);
+    } else {
+      return new TNonblockingServerSocket(bindInetSocketAddress);
+    }
+  }
+
+  public static int getBindingPort(TServerTransport serverTransport) {
+    if (serverTransport instanceof TNonblockingServerSocket) {
+      TNonblockingServerSocket nonblockingServerSocket = (TNonblockingServerSocket) serverTransport;
+      return nonblockingServerSocket.getServerSocket().getLocalPort();
+    } else if (serverTransport instanceof TServerSocket) {
+      TServerSocket serverSocket = (TServerSocket) serverTransport;
+      return serverSocket.getServerSocket().getLocalPort();
+    } else {
+      throw new RuntimeException("Server Transport [" + serverTransport + "] not supported.");
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public static List<ServerSecurityFilter> getServerSecurityList(BlurConfiguration configuration,
+      ServerSecurityFilterFactory.ServerType type) {
+    Map<String, String> properties = configuration.getProperties();
+    Map<String, String> classMap = new TreeMap<String, String>();
+    for (Entry<String, String> e : properties.entrySet()) {
+      String property = e.getKey();
+      String value = e.getValue();
+      if (value == null || value.isEmpty()) {
+        continue;
+      }
+      if (property.startsWith(BLUR_SERVER_SECURITY_FILTER_CLASS)) {
+        classMap.put(property, value);
+      }
+    }
+    if (classMap.isEmpty()) {
+      return null;
+    }
+    List<ServerSecurityFilter> result = new ArrayList<ServerSecurityFilter>();
+    for (Entry<String, String> entry : classMap.entrySet()) {
+      String className = entry.getValue();
+      try {
+        LOG.info("Loading factory class [{0}]", className);
+        Class<? extends ServerSecurityFilterFactory> clazz = (Class<? extends ServerSecurityFilterFactory>) Class
+            .forName(className);
+        ServerSecurityFilterFactory serverSecurityFactory = clazz.newInstance();
+        result.add(serverSecurityFactory.getServerSecurity(type, configuration));
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return result;
+  }
+
+  public static ZooKeeper setupZookeeper(BlurConfiguration conf, String cluster) throws IOException,
+      InterruptedException, KeeperException {
+    String zkConnectionStr = conf.getExpected(BLUR_ZOOKEEPER_CONNECTION);
+    int sessionTimeout = conf.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
+    int slash = zkConnectionStr.indexOf('/');
+
+    if ((slash != -1) && (slash != zkConnectionStr.length()-1)) {
+      ZooKeeper rootZk = ZkUtils.newZooKeeper(zkConnectionStr.substring(0, slash), sessionTimeout);
+      String rootPath = zkConnectionStr.substring(slash, zkConnectionStr.length());
+
+      if (!ZkUtils.exists(rootZk, rootPath)) {
+        LOG.info("Rooted ZooKeeper path [{0}] did not exist, creating now.", rootPath);
+        ZkUtils.mkNodesStr(rootZk, rootPath);
+      }
+      rootZk.close();
+    }
+    ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
+
+    BlurUtil.setupZookeeper(zooKeeper, cluster);
+
+    return zooKeeper;
   }
 }

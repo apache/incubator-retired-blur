@@ -27,14 +27,17 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.concurrent.Executors;
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.store.hdfs.BlurLockFactory;
+import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
@@ -48,12 +51,11 @@ import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.TraceCollector;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurConstants;
+import org.apache.blur.utils.BlurUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.store.FSDirectory;
-import org.json.JSONException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -76,9 +78,13 @@ public class BlurIndexSimpleWriterTest {
   private SharedMergeScheduler _mergeScheduler;
   private String uuid;
   private BlurIndexCloser _closer;
+  private Timer _timer;
+  private Timer _bulkTimer;
 
   @Before
   public void setup() throws IOException {
+    _timer = new Timer("Index Importer", true);
+    _bulkTimer = new Timer("Bulk Indexing", true);
     TableContext.clear();
     _base = new File(TMPDIR, "blur-index-writer-test");
     rmr(_base);
@@ -112,13 +118,23 @@ public class BlurIndexSimpleWriterTest {
     TableContext tableContext = TableContext.create(tableDescriptor);
     File path = new File(_base, "index_" + uuid);
     path.mkdirs();
-    FSDirectory directory = FSDirectory.open(path);
+
+    Path hdfsPath = new Path(path.toURI());
+    HdfsDirectory directory = new HdfsDirectory(_configuration, hdfsPath);
+    BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsPath, "unit-test", BlurUtil.getPid());
+    directory.setLockFactory(lockFactory);
+
+    // FSDirectory directory = FSDirectory.open(path);
+
     ShardContext shardContext = ShardContext.create(tableContext, "test-shard-" + uuid);
-    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer);
+    _writer = new BlurIndexSimpleWriter(shardContext, directory, _mergeScheduler, _service, _closer, _timer,
+        _bulkTimer, null);
   }
 
   @After
   public void tearDown() throws IOException {
+    _timer.cancel();
+    _timer.purge();
     _writer.close();
     _mergeScheduler.close();
     _service.shutdownNow();
@@ -141,7 +157,7 @@ public class BlurIndexSimpleWriterTest {
   public void testRollbackAndReopen() throws IOException {
     setupWriter(_configuration);
     {
-      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexSearcherCloseable searcher = _writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
       assertEquals(0, reader.numDocs());
       searcher.close();
@@ -156,7 +172,7 @@ public class BlurIndexSimpleWriterTest {
       // do nothing
     }
     {
-      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexSearcherCloseable searcher = _writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
       assertEquals(0, reader.numDocs());
       searcher.close();
@@ -166,7 +182,7 @@ public class BlurIndexSimpleWriterTest {
     _writer.process(action);
 
     {
-      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexSearcherCloseable searcher = _writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
       assertEquals(1, reader.numDocs());
       searcher.close();
@@ -187,11 +203,11 @@ public class BlurIndexSimpleWriterTest {
 
       @Override
       public void store(TraceCollector collector) {
-        try {
-          System.out.println(collector.toJsonObject());
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
+        // try {
+        // System.out.println(collector.toJsonObject().toString(1));
+        // } catch (JSONException e) {
+        // e.printStackTrace();
+        // }
       }
     });
     Trace.setupTrace("test");
@@ -199,7 +215,7 @@ public class BlurIndexSimpleWriterTest {
       MutatableAction action = new MutatableAction(_writer.getShardContext());
       action.replaceRow(genRow());
       _writer.process(action);
-      IndexSearcherClosable searcher = _writer.getIndexSearcher();
+      IndexSearcherCloseable searcher = _writer.getIndexSearcher();
       IndexReader reader = searcher.getIndexReader();
       assertEquals(i + 1, reader.numDocs());
       searcher.close();
@@ -210,7 +226,7 @@ public class BlurIndexSimpleWriterTest {
     double seconds = (e - s) / 1000000000.0;
     double rate = total / seconds;
     System.out.println("Rate " + rate);
-    IndexSearcherClosable searcher = _writer.getIndexSearcher();
+    IndexSearcherCloseable searcher = _writer.getIndexSearcher();
     IndexReader reader = searcher.getIndexReader();
     assertEquals(TEST_NUMBER_WAIT_VISIBLE, reader.numDocs());
     searcher.close();
@@ -220,7 +236,7 @@ public class BlurIndexSimpleWriterTest {
   @Test
   public void testBlurIndexWriterFaster() throws IOException, InterruptedException {
     setupWriter(_configuration);
-    IndexSearcherClosable searcher1 = _writer.getIndexSearcher();
+    IndexSearcherCloseable searcher1 = _writer.getIndexSearcher();
     IndexReader reader1 = searcher1.getIndexReader();
     assertEquals(0, reader1.numDocs());
     searcher1.close();
@@ -240,7 +256,7 @@ public class BlurIndexSimpleWriterTest {
     // refresh once every 25 ms
     Thread.sleep(1000);// Hack for now
     _writer.refresh();
-    IndexSearcherClosable searcher2 = _writer.getIndexSearcher();
+    IndexSearcherCloseable searcher2 = _writer.getIndexSearcher();
     IndexReader reader2 = searcher2.getIndexReader();
     assertEquals(TEST_NUMBER, reader2.numDocs());
     searcher2.close();

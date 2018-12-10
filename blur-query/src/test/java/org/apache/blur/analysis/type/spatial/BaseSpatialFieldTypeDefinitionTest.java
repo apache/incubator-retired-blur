@@ -33,6 +33,8 @@ import org.apache.blur.utils.BlurConstants;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.AtomicReader;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
@@ -66,6 +68,7 @@ public abstract class BaseSpatialFieldTypeDefinitionTest {
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_43, fieldManager.getAnalyzerForIndex());
 
     IndexWriter writer = new IndexWriter(_dir, conf);
+    fields.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
     writer.addDocument(fields);
     writer.close();
 

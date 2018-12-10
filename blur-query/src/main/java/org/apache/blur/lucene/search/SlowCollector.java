@@ -57,4 +57,8 @@ public class SlowCollector extends Collector {
     return _collector.acceptsDocsOutOfOrder();
   }
 
+  public Collector getCollector() {
+    return _collector;
+  }
+
 }

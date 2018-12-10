@@ -28,6 +28,8 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.blur.analysis.type.AclDiscoverFieldTypeDefinition;
+import org.apache.blur.analysis.type.AclReadFieldTypeDefinition;
 import org.apache.blur.analysis.type.DateFieldTypeDefinition;
 import org.apache.blur.analysis.type.DoubleFieldTypeDefinition;
 import org.apache.blur.analysis.type.FieldLessFieldTypeDefinition;
@@ -63,7 +65,8 @@ import org.apache.lucene.search.SortField;
 public abstract class BaseFieldManager extends FieldManager {
 
   private static final Log LOG = LogFactory.getLog(BaseFieldManager.class);
-  private static final Map<String, String> EMPTY_MAP = new HashMap<String, String>();;
+  private static final Map<String, String> EMPTY_MAP = new HashMap<String, String>();
+  private static final boolean DEFAULT_MULTI_VALUE_FIELD_VALUE = true;
 
   private final ConcurrentMap<String, Set<String>> _columnToSubColumn = new ConcurrentHashMap<String, Set<String>>();
   private final ConcurrentMap<String, FieldTypeDefinition> _fieldNameToDefMap = new ConcurrentHashMap<String, FieldTypeDefinition>();
@@ -115,6 +118,8 @@ public abstract class BaseFieldManager extends FieldManager {
     registerType(SpatialPointVectorStrategyFieldTypeDefinition.class);
     registerType(SpatialTermQueryPrefixTreeStrategyFieldTypeDefinition.class);
     registerType(SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.class);
+    registerType(AclReadFieldTypeDefinition.class);
+    registerType(AclDiscoverFieldTypeDefinition.class);
     _fieldLessField = fieldLessField;
     _strict = strict;
     _defaultMissingFieldLessIndexing = defaultMissingFieldLessIndexing;
@@ -221,6 +226,7 @@ public abstract class BaseFieldManager extends FieldManager {
     List<Column> columns = record.getColumns();
     addDefaultFields(fields, rowId, record);
     addFieldExistance(fields, record);
+    Map<String, Integer> fieldCounts = new HashMap<String, Integer>();
     for (Column column : columns) {
       String name = column.getName();
       String value = column.getValue();
@@ -234,15 +240,30 @@ public abstract class BaseFieldManager extends FieldManager {
           throw new IOException("Family [" + family + "] Column [" + column + "] not defined");
         }
         addColumnDefinition(family, name, null, getDefaultMissingFieldLessIndexing(), getDefaultMissingFieldType(),
-            false, getDefaultMissingFieldProps());
+            false, DEFAULT_MULTI_VALUE_FIELD_VALUE, getDefaultMissingFieldProps());
         fieldTypeDefinition = getFieldTypeDefinition(family, column);
       }
-      getAndAddFields(fields, family, column, fieldTypeDefinition);
+      String fieldName = fieldTypeDefinition.getFieldName();
+      Integer count = fieldCounts.get(fieldName);
+      if (count == null) {
+        count = 1;
+      } else {
+        count = count + 1;
+      }
+      fieldCounts.put(fieldName, count);
+      getAndAddFields(fields, family, column, fieldTypeDefinition, count);
       Collection<String> subColumns = getSubColumns(family, column);
       if (subColumns != null) {
         for (String subName : subColumns) {
           FieldTypeDefinition subFieldTypeDefinition = getFieldTypeDefinition(family, column, subName);
-          getAndAddFields(fields, family, column, subName, subFieldTypeDefinition);
+          fieldName = subFieldTypeDefinition.getFieldName();
+          count = fieldCounts.get(fieldName);
+          if (count == null) {
+            count = 1;
+          } else {
+            count = count + 1;
+          }
+          getAndAddFields(fields, family, column, subName, subFieldTypeDefinition, count);
         }
       }
     }
@@ -273,7 +294,11 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   private void getAndAddFields(List<Field> fields, String family, Column column, String subName,
-      FieldTypeDefinition fieldTypeDefinition) {
+      FieldTypeDefinition fieldTypeDefinition, int count) throws IOException {
+    if (count > 1 && !fieldTypeDefinition.isMultiValueField()) {
+      throw new IOException("Field [" + fieldTypeDefinition.getFieldName()
+          + "] does not allow more than one column value.");
+    }
     for (Field field : fieldTypeDefinition.getFieldsForSubColumn(family, column, subName)) {
       fields.add(field);
     }
@@ -302,7 +327,12 @@ public abstract class BaseFieldManager extends FieldManager {
     throw new IllegalArgumentException("Field [" + fieldName + "] cannot be null.");
   }
 
-  private void getAndAddFields(List<Field> fields, String family, Column column, FieldTypeDefinition fieldTypeDefinition) {
+  private void getAndAddFields(List<Field> fields, String family, Column column,
+      FieldTypeDefinition fieldTypeDefinition, int count) throws IOException {
+    if (count > 1 && !fieldTypeDefinition.isMultiValueField()) {
+      throw new IOException("Field [" + fieldTypeDefinition.getFieldName()
+          + "] does not allow more than one column value.");
+    }
     for (Field field : fieldTypeDefinition.getFieldsForColumn(family, column)) {
       fields.add(field);
     }
@@ -341,7 +371,7 @@ public abstract class BaseFieldManager extends FieldManager {
 
   @Override
   public boolean addColumnDefinition(String family, String columnName, String subColumnName, boolean fieldLessIndexed,
-      String fieldType, boolean sortable, Map<String, String> props) throws IOException {
+      String fieldType, boolean sortable, boolean multiValueField, Map<String, String> props) throws IOException {
     if (family == null) {
       family = BlurConstants.DEFAULT_FAMILY;
     }
@@ -362,19 +392,30 @@ public abstract class BaseFieldManager extends FieldManager {
       fieldName = baseFieldName;
     }
     return addFieldTypeDefinition(family, columnName, subColumnName, fieldName, fieldLessIndexed, fieldType, sortable,
-        props);
+        multiValueField, props);
   }
 
   private boolean addFieldTypeDefinition(String family, String columnName, String subColumnName, String fieldName,
-      boolean fieldLessIndexed, String fieldType, boolean sortable, Map<String, String> props) throws IOException {
+      boolean fieldLessIndexed, String fieldType, boolean sortable, boolean multiValueField, Map<String, String> props)
+      throws IOException {
     FieldTypeDefinition fieldTypeDefinition = getFieldTypeDefinition(fieldName);
     if (fieldTypeDefinition != null) {
       return false;
     }
-    fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexed, fieldType, sortable, props);
+    fieldTypeDefinition = newFieldTypeDefinition(fieldName, fieldLessIndexed, fieldType, sortable, multiValueField,
+        props);
     synchronized (_fieldNameToDefMap) {
+      boolean alternateFieldNamesSharedAcrossInstances = fieldTypeDefinition
+          .isAlternateFieldNamesSharedAcrossInstances();
       for (String alternateFieldName : fieldTypeDefinition.getAlternateFieldNames()) {
-        if (_fieldNameToDefMap.containsKey(alternateFieldName)) {
+        if (alternateFieldNamesSharedAcrossInstances && _fieldNameToDefMap.containsKey(alternateFieldName)) {
+          FieldTypeDefinition ftd = _fieldNameToDefMap.get(alternateFieldName);
+          if (!ftd.getName().equals(fieldTypeDefinition.getName())) {
+            throw new IllegalArgumentException("Alternate fieldName collision of [" + alternateFieldName
+                + "] from field type definition [" + fieldTypeDefinition
+                + "], this field type definition cannot be added.");
+          }
+        } else if (_fieldNameToDefMap.containsKey(alternateFieldName)) {
           throw new IllegalArgumentException("Alternate fieldName collision of [" + alternateFieldName
               + "] from field type definition [" + fieldTypeDefinition
               + "], this field type definition cannot be added.");
@@ -430,7 +471,7 @@ public abstract class BaseFieldManager extends FieldManager {
   }
 
   protected FieldTypeDefinition newFieldTypeDefinition(String fieldName, boolean fieldLessIndexed, String fieldType,
-      boolean sortable, Map<String, String> props) {
+      boolean sortable, boolean multiValueField, Map<String, String> props) {
     if (fieldType == null) {
       throw new IllegalArgumentException("Field type can not be null.");
     }
@@ -455,6 +496,7 @@ public abstract class BaseFieldManager extends FieldManager {
     }
     fieldTypeDefinition.setSortEnable(sortable);
     fieldTypeDefinition.setFieldLessIndexed(fieldLessIndexed);
+    fieldTypeDefinition.setMultiValueField(multiValueField);
     return fieldTypeDefinition;
   }
 
@@ -498,48 +540,56 @@ public abstract class BaseFieldManager extends FieldManager {
 
   public void addColumnDefinitionGisPointVector(String family, String columnName) throws IOException {
     addColumnDefinition(family, columnName, null, false, SpatialPointVectorStrategyFieldTypeDefinition.NAME, false,
-        null);
+        false, null);
   }
 
   public void addColumnDefinitionGisRecursivePrefixTree(String family, String columnName) throws IOException {
     Map<String, String> props = new HashMap<String, String>();
     props.put(BaseSpatialFieldTypeDefinition.SPATIAL_PREFIX_TREE, BaseSpatialFieldTypeDefinition.GEOHASH_PREFIX_TREE);
     addColumnDefinition(family, columnName, null, false, SpatialRecursivePrefixTreeStrategyFieldTypeDefinition.NAME,
-        false, props);
+        false, false, props);
   }
 
   public void addColumnDefinitionDate(String family, String columnName, String format) throws IOException {
     Map<String, String> props = new HashMap<String, String>();
     props.put(DateFieldTypeDefinition.DATE_FORMAT, format);
-    addColumnDefinition(family, columnName, null, false, DateFieldTypeDefinition.NAME, false, props);
+    addColumnDefinition(family, columnName, null, false, DateFieldTypeDefinition.NAME, false,
+        DEFAULT_MULTI_VALUE_FIELD_VALUE, props);
   }
 
   public void addColumnDefinitionInt(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, IntFieldTypeDefinition.NAME, false, null);
+    addColumnDefinition(family, columnName, null, false, IntFieldTypeDefinition.NAME, false,
+        DEFAULT_MULTI_VALUE_FIELD_VALUE, null);
   }
 
   public void addColumnDefinitionLong(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, LongFieldTypeDefinition.NAME, false, null);
+    addColumnDefinition(family, columnName, null, false, LongFieldTypeDefinition.NAME, false,
+        DEFAULT_MULTI_VALUE_FIELD_VALUE, null);
   }
 
   public void addColumnDefinitionFloat(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, FloatFieldTypeDefinition.NAME, false, null);
+    addColumnDefinition(family, columnName, null, false, FloatFieldTypeDefinition.NAME, false,
+        DEFAULT_MULTI_VALUE_FIELD_VALUE, null);
   }
 
   public void addColumnDefinitionDouble(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, DoubleFieldTypeDefinition.NAME, false, null);
+    addColumnDefinition(family, columnName, null, false, DoubleFieldTypeDefinition.NAME, false,
+        DEFAULT_MULTI_VALUE_FIELD_VALUE, null);
   }
 
   public void addColumnDefinitionString(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, StringFieldTypeDefinition.NAME, false, null);
+    addColumnDefinition(family, columnName, null, false, StringFieldTypeDefinition.NAME, false,
+        DEFAULT_MULTI_VALUE_FIELD_VALUE, null);
   }
 
   public void addColumnDefinitionText(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, false, TextFieldTypeDefinition.NAME, false, null);
+    addColumnDefinition(family, columnName, null, false, TextFieldTypeDefinition.NAME, false,
+        DEFAULT_MULTI_VALUE_FIELD_VALUE, null);
   }
 
   public void addColumnDefinitionTextFieldLess(String family, String columnName) throws IOException {
-    addColumnDefinition(family, columnName, null, true, TextFieldTypeDefinition.NAME, false, null);
+    addColumnDefinition(family, columnName, null, true, TextFieldTypeDefinition.NAME, false,
+        DEFAULT_MULTI_VALUE_FIELD_VALUE, null);
   }
 
   @Override

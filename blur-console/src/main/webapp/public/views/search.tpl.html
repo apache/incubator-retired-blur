@@ -36,8 +36,11 @@ under the License.
         </select>
       </div>
       <div class="col-xs-1">
-        <button class="btn btn-default" type="button" id="searchOptionsTrigger">
+        <button class="btn btn-default" type="button" id="searchOptionsTrigger" title="Search Options">
           <i class="glyphicon glyphicon-cog"></i>
+        </button>
+        <button class="btn btn-default" type="button" id="searchHistory" title="Search History">
+          <i class="glyphicon glyphicon-time"></i>
         </button>
       </div>
       <div id="searchOptionsDisplay" class="col-xs-3"></div>
@@ -45,7 +48,7 @@ under the License.
     <div id="resultInfo" class="row">
       <div id="resultCount" class="col-xs-2"></div>
       <div class="col-xs-2">
-        <button type="button" id="facetTrigger" class="btn btn-default btn-xs" style="display:none">Run Facets</button>
+        <button type="button" id="facetTrigger" class="btn btn-default btn-xs" style="display:none"><i class="glyphicon glyphicon-zoom-in"></i> Facet Search</button>
       </div>
     </div>
   </div>

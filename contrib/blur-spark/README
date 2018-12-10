@@ -1,0 +1,71 @@
+
+This Spark Blur connector index Kafka Messages to Apache Blur using following Kafka Consumer.
+
+https://github.com/dibbhatt/kafka-spark-consumer
+
+This Fault Tolerant Kafka Consumer uses Low Level Kafka API to pull messages from Kafka Topic Partition using Spark Custom Receiver.
+
+For more details please refer to : https://github.com/dibbhatt/kafka-spark-consumer
+
+Spark Blur Connector use this Kafka Consumer to index Kafka Messages using Spark Hadoop APIs. 
+
+This Project used Custom Blur Outputformat, RecordWriter and OutputComitter which has some minor modification from existing Blur Hadoop1 codebase.
+
+The Kafka DStream is repartitioned into number of partitions which is same as number of Shards of Target Blur Table.
+
+This connector uses a Custom Spark Partitioner to map keys to correct RDD partition which intern maps to same Blur Shard.
+
+
+Following are the instructions to build 
+========================================
+
+You need to install https://github.com/dibbhatt/kafka-spark-consumer first using maven
+
+Then package Blur Connector
+
+>git clone https://github.com/dibbhatt/spark-blur-connector
+
+>cd spark-blur-connector
+
+>mvn package
+
+Integrating Spark-Kafka-Consumer
+=================================
+
+Below are the properties file for Kafka Spark Consumer.
+
+spark-kafka.properties
+=====================
+#Kafka ZK details from where messages will be pulled
+
+#Kafka ZK host details
+zookeeper.hosts=host1,host2
+#Kafka ZK Port
+zookeeper.port=2181
+# Kafka Broker path in ZK
+zookeeper.broker.path=/brokers
+#Kafka Topic to consume
+kafka.topic=topic-name
+
+#Consumer ZK Path. This will be used to store the consumed offset
+zookeeper.consumer.connection=localhost:2182
+#ZK Path for storing Kafka Consumer offset
+zookeeper.consumer.path=/spark-kafka
+# Kafka Consumer ID. This ID will be used for accessing offset details in $zookeeper.consumer.path
+kafka.consumer.id=12345
+
+
+Running Spark Kafka Consumer
+===========================
+
+Launch this using spark-submit
+
+./bin/spark-submit --class org.apache.blur.spark.Consumer --master spark://x.x.x.x:7077 --executor-memory 5G /<Path_To>/spark-blur-connector-0.0.1-SNAPSHOT-jar-with-dependencies.jar -P /<Path_To>/spark-kafka.properties
+
+
+-P external properties filename
+-p properties filename from the classpath
+
+This will start the Spark Receiver and Fetch Kafka Messages for every partition of the given topic and generates the DStream and start writing indexing the Kafka Stream into Blur Table.
+
+ 

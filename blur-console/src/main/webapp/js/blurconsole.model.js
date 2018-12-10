@@ -52,11 +52,7 @@ blurconsole.model = (function() {
 
       $.each(stateMap.currentTables, function(idx, table) {
         if (table.cluster === cluster && table.enabled) {
-          data.push({
-            name:table.name,
-            rowCount:table.rows,
-            recordCount:table.records
-          });
+          data.push(table);
         }
       });
 
@@ -68,7 +64,7 @@ blurconsole.model = (function() {
 
       $.each(stateMap.currentTables, function(idx, table) {
         if (table.cluster === cluster && !table.enabled) {
-          data.push({name:table.name, rowCount:table.rows, recordCount:table.records});
+          data.push(table);
         }
       });
 
@@ -370,16 +366,16 @@ blurconsole.model = (function() {
     //-------------- Public API -----------------------
     function queriesForTable(table, sort, filter) {
       var queries = [], qSort, sortField, sortDir;
-
       qSort = (sort || 'startTime~desc').split('~');
       sortField = qSort[0];
       sortDir = qSort.length > 1 ? qSort[1] : 'asc';
-
-      $.each(stateMap.queries.queries, function(i, query){
-        if (query.table === table && _matchesFilter(query, filter)) {
-          queries.push(query);
-        }
-      });
+      if(stateMap.queries.queries) {
+        $.each(stateMap.queries.queries, function(i, query){
+          if (query.table === table && _matchesFilter(query, filter)) {
+            queries.push(query);
+          }
+        });
+      }
 
       queries.sort(function(a, b){
         if (sortDir === 'asc') {
@@ -388,7 +384,6 @@ blurconsole.model = (function() {
           return b[sortField] > a[sortField];
         }
       });
-
       return queries;
     }
 
@@ -415,7 +410,7 @@ blurconsole.model = (function() {
   }());
 
   var search = (function() {
-    var results = {}, totalRecords = 0, currentQuery, currentTable, currentArgs = {start: 0, fetch: 10, rowRecordOption: 'rowrow', families: null};
+    var results = {}, totalRecords = 0, currentQuery, currentTable, time = 0, currentArgs = {start: 0, fetch: 10, rowRecordOption: 'rowrow', families: null};
 
     //-------------- Private Methods -------------------------
     function _sendSearch() {
@@ -426,6 +421,7 @@ blurconsole.model = (function() {
       var dataFamilies = data.families;
       var dataResults = data.results;
       totalRecords = data.total;
+      time = data.time;
 
       if (typeof dataResults !== 'undefined' && dataResults !== null) {
         $.each(dataResults, function(family, resultList){
@@ -464,6 +460,10 @@ blurconsole.model = (function() {
       return totalRecords;
     }
 
+    function getTime() {
+      return time;
+    }
+
     function loadMoreResults(family) {
       var alreadyLoadedResults = results[family];
 
@@ -481,11 +481,17 @@ blurconsole.model = (function() {
       _sendSearch();
     }
 
+    function runFacetCount( query, table, family, column, terms, callback ) {
+      configMap.poller.runFacetCount(query, table, family, column, terms, callback);
+    }
+
     return {
       runSearch: runSearch,
       getResults: getResults,
       loadMoreResults: loadMoreResults,
-      getTotal: getTotal
+      getTotal: getTotal,
+      getTime: getTime,
+      runFacetCount: runFacetCount
     };
   }());
 

@@ -42,21 +42,18 @@ public class BlurConstants {
   public static final String BLUR_SHARD_QUEUE_MAX_QUEUE_BATCH_SIZE = "blur.shard.queue.max.queue.batch.size";
   public static final String BLUR_SHARD_QUEUE_MAX_INMEMORY_LENGTH = "blur.shard.queue.max.inmemory.length";
 
-  // public static final String BLUR_TABLE_INDEX_QUEUE_READER_CLASS =
-  // "blur.table.index.queue.reader.class";
-  // public static final String BLUR_TABLE_INDEX_QUEUE_READER_BACKOFF =
-  // "blur.table.index.queue.reader.backoff";
-  // public static final String BLUR_TABLE_INDEX_QUEUE_READER_MAX =
-  // "blur.table.index.queue.reader.max";
+  public static final String BLUR_RECORD_SECURITY = "blur.record.security";
+  public static final String ACL_DISCOVER = "acl-discover";
+  public static final String ACL_READ = "acl-read";
 
   public static final String FAST_DECOMPRESSION = "FAST_DECOMPRESSION";
   public static final String FAST = "FAST";
   public static final String HIGH_COMPRESSION = "HIGH_COMPRESSION";
   public static final String BLUR_SHARD_INDEX_CHUNKSIZE = "blur.shard.index.chunksize";
   public static final String BLUR_SHARD_INDEX_COMPRESSIONMODE = "blur.shard.index.compressionmode";
-  public static final String BLUR_TABLE_PATH = "blur.table.path";
+
+  // public static final String BLUR_TABLE_PATH = "blur.table.path";
   public static final String BLUR_ZOOKEEPER_CONNECTION = "blur.zookeeper.connection";
-  public static final String BLUR_ZOOKEEPER_TRACE_PATH = "blur.zookeeper.trace.path";
   public static final String BLUR_HDFS_TRACE_PATH = "blur.hdfs.trace.path";
   public static final String BLUR_ZOOKEEPER_TIMEOUT = "blur.zookeeper.timeout";
   public static final int BLUR_ZOOKEEPER_TIMEOUT_DEFAULT = 30000;
@@ -79,6 +76,10 @@ public class BlurConstants {
   public static final String BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST = "blur.max.records.per.row.fetch.request";
   public static final String BLUR_SHARD_READ_INTERCEPTOR = "blur.shard.read.interceptor";
   public static final String BLUR_SHARD_INTERNAL_SEARCH_THREAD_COUNT = "blur.shard.internal.search.thread.count";
+  public static final String BLUR_SHARD_INDEX_WRITER_SORT_MEMORY = "blur.shard.index.writer.sort.memory";
+  public static final String BLUR_SHARD_INDEX_WRITER_SORT_FACTOR = "blur.shard.index.writer.sort.factor";
+  public static final String BLUR_TABLE_DISABLE_FAST_DIR = "blur.table.disable.fast.dir";
+  public static final String BLUR_BULK_UPDATE_WORKING_PATH = "blur.bulk.update.working.path";
 
   public static final String BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT = "blur.shard.server.thrift.thread.count";
   public static final String BLUR_SHARD_CACHE_MAX_TIMETOLIVE = "blur.shard.cache.max.timetolive";
@@ -92,12 +93,10 @@ public class BlurConstants {
   public static final String BLUR_SHARD_OPENER_THREAD_COUNT = "blur.shard.opener.thread.count";
   public static final String BLUR_SHARD_MERGE_THREAD_COUNT = "blur.shard.merge.thread.count";
   public static final String BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE = "blur.shard.index.deletion.policy.maxage";
-  public static final String BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE = "blur.zookeeper.system.time.tolerance";
   public static final String BLUR_SHARD_INDEX_SIMILARITY = "blur.shard.index.similarity";
   public static final String BLUR_SHARD_THRIFT_SELECTOR_THREADS = "blur.shard.thrift.selector.threads";
   public static final String BLUR_SHARD_THRIFT_MAX_READ_BUFFER_BYTES = "blur.shard.thrift.max.read.buffer.bytes";
   public static final String BLUR_SHARD_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD = "blur.shard.thrift.accept.queue.size.per.thread";
-  public static final String BLUR_SHARD_DISTRIBUTED_LAYOUT_FACTORY_CLASS = "blur.shard.distributed.layout.factory.class";
   public static final String BLUR_SHARD_DEEP_PAGING_CACHE_SIZE = "blur.shard.deep.paging.cache.size";
 
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT = "blur.shard.block.cache.v2.read.cache.ext";
@@ -114,6 +113,14 @@ public class BlurConstants {
   public static final String BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE = "blur.shard.block.cache.v2.cacheBlockSize";
   public static final String BLUR_SHARD_BLURINDEX_CLASS = "blur.shard.blurindex.class";
   public static final String BLUR_SHARD_SERVER_MINIMUM_BEFORE_SAFEMODE_EXIT = "blur.shard.server.minimum.before.safemode.exit";
+  public static final String BLUR_SHARD_SMALL_MERGE_THRESHOLD = "blur.shard.small.merge.threshold";
+  public static final String BLUR_SHARD_REQUEST_CACHE_SIZE = "blur.shard.request.cache.size";
+  public static final String BLUR_GC_BACK_PRESSURE_HEAP_RATIO = "blur.gc.back.pressure.heap.ratio";
+  
+  public static final String BLUR_SHARD_DEFAULT_READ_SEQUENTIAL_SKIP_THRESHOLD = "blur.shard.default.read.sequential.skip.threshold";
+  public static final String BLUR_SHARD_DEFAULT_READ_SEQUENTIAL_THRESHOLD = "blur.shard.default.read.sequential.threshold";
+  public static final String BLUR_SHARD_MERGE_READ_SEQUENTIAL_SKIP_THRESHOLD = "blur.shard.merge.read.sequential.skip.threshold";
+  public static final String BLUR_SHARD_MERGE_READ_SEQUENTIAL_THRESHOLD = "blur.shard.merge.read.sequential.threshold";
 
   public static final String BLUR_FIELDTYPE = "blur.fieldtype.";
 
@@ -137,7 +144,8 @@ public class BlurConstants {
   public static final String BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS = "blur.controller.thrift.selector.threads";
   public static final String BLUR_CONTROLLER_THRIFT_MAX_READ_BUFFER_BYTES = "blur.controller.thrift.max.read.buffer.bytes";
   public static final String BLUR_CONTROLLER_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD = "blur.controller.thrift.accept.queue.size.per.thread";
-  public static final String BLUR_CLIENTPOOL_CLIENT_CLOSE_THRESHOLD = "blur.clientpool.client.close.threshold";
+  public static final String BLUR_CLIENTPOOL_CLIENT_MAX_CONNECTIONS_PER_HOST = "blur.clientpool.client.max.connections.per.host";
+  public static final String BLUR_CLIENTPOOL_CLIENT_STALE_THRESHOLD = "blur.clientpool.client.stale.threshold";
   public static final String BLUR_CLIENTPOOL_CLIENT_CLEAN_FREQUENCY = "blur.clientpool.client.clean.frequency";
   public static final String BLUR_LUCENE_FST_BYTEARRAY_FACTORY = "blur.lucene.fst.bytearray.factory";
 
@@ -161,6 +169,17 @@ public class BlurConstants {
   public static final String BLUR_CONTROLLER_COMMAND_WORKER_THREADS = "blur.controller.command.worker.threads";
   public static final String BLUR_COMMAND_LIB_PATH = "blur.command.lib.path";
   public static final String BLUR_TMP_PATH = "blur.tmp.path";
+  public static final String BLUR_NODENAME = "blur.nodename";
+
+  public static final String BLUR_SECURITY_SASL_TYPE = "blur.security.sasl.type";
+  public static final String BLUR_SECURITY_SASL_ENABLED = "blur.security.sasl.enabled";
+  public static final String BLUR_SECUTIRY_SASL_CUSTOM_CLASS = "blur.security.sasl.CUSTOM.class";
+
+  public static final String BLUR_SECURITY_SASL_LDAP_DOMAIN = "blur.security.sasl.LDAP.domain";
+  public static final String BLUR_SECURITY_SASL_LDAP_BASEDN = "blur.security.sasl.LDAP.basedn";
+  public static final String BLUR_SECURITY_SASL_LDAP_URL = "blur.security.sasl.LDAP.url";
+
+  public static final String BLUR_SERVER_SECURITY_FILTER_CLASS = "blur.server.security.filter.class.";
 
   public static final String BLUR_HOME = "BLUR_HOME";
 
@@ -168,7 +187,7 @@ public class BlurConstants {
   public static final String DELETE_MARKER_VALUE = "delete";
   public static final String DELETE_MARKER = "_deletemarker_";
 
-  public static final String SHARED_MERGE_SCHEDULER = "sharedMergeScheduler";
+  public static final String SHARED_MERGE_SCHEDULER_PREFIX = "shared-merge-scheduler";
 
   public static final String BLUR_FILTER_ALIAS = "blur.filter.alias.";
 

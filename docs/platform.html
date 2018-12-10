@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<!-- 
+  Licensed to the Apache Software Foundation (ASF) under one or more
+  contributor license agreements.  See the NOTICE file distributed with
+  this work for additional information regarding copyright ownership.
+  The ASF licenses this file to You under the Apache License, Version 2.0
+  (the "License"); you may not use this file except in compliance with
+  the License.  You may obtain a copy of the License at
+  
+       http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<html>
+  <head>
+    <title>Platform - Apache Blur (Incubator) Documentation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="resources/css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="resources/css/bs-docs.css" rel="stylesheet" media="screen">
+  </head>
+  <body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://incubator.apache.org/blur">Apache Blur (Incubator)</a>
+        </div>
+        <div class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li><a href="index.html">Main</a></li>
+            <li><a href="getting-started.html">Getting Started</a></li>
+            <li class="active"><a href="platform.html">Platform</a></li>
+            <li><a href="data-model.html">Data Model</a></li>
+            <li><a href="cluster-setup.html">Cluster Setup</a></li>
+            <li><a href="using-blur.html">Using Blur</a></li>
+            <li><a href="Blur.html">Blur API</a></li>
+            <li><a href="console.html">Console</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container bs-docs-container">
+      <div class="row">
+        <div class="col-md-3">
+          <div class="bs-sidebar hidden-print affix" role="complementary">
+            <ul class="nav bs-sidenav">
+            <li><a href="#intro">Introduction</a></li>
+            <li><a href="#motivation">Motivation</a></li>
+            <li><a href="#arch">Blur Architecture Review</a></li>  
+            <li><a href="#affordances">Platform Affordances</a></li>             
+            <li><a href="#commands">Command Overview</a></li>
+            <li><a href="#arguments">Arguments</a></li>
+            <li><a href="#installation">Installation</a></li>
+            <li><a href="#docs">Documentation</a></li>            
+            <li><a href="#cli">CLI</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-9" role="main">
+        <!-- In some places, we need to describe both where the system is heading and 
+           describe its current limitations.  For ease of documentation maintenance, let
+           us try to write in a way that disclaimers are in their own paragraphs that can
+           easily be stripped out when they no longer apply, thus not requiring a bunch
+           of re-writing.  
+        -->
+          <section>
+            <div class="page-header">
+              <h1 id="intro">Introduction</h1>
+            </div>
+            <p class="lead">
+      				While many users of Blur will find the search system sufficient for their
+      				needs out of the box, the Blur platform exposes a simple set of lower-level 
+      				primitives that allow the user to easily and quickly introduce new system behavior.
+          </p>
+          <!-- Disclaimer para for 0.2.4 -->
+          <p class="lead">
+          With this release, we expose the initial read-only constructs for the platform.  
+          Future releases, will allow introduce more rich read-write constructs.
+          </p>
+          <!-- Disclaimer para for 0.2.4 -->
+          <p class="alert">
+          <strong>NOTE:</strong> In 0.2.4, the platform capability described here exists,
+          but existing functionality of Blur has not yet been ported to use it.
+          </p>
+          </section>
+          <section>
+            <div class="page-header">
+              <h2 id="motivation">Motivation</h2>
+            </div>
+            <p>
+							In modern open source search platforms, we find Lucene at the very core and 
+							a monolithic application stack implemented on top of it handling the distributed 
+							indexing, searching, failures, features, etc. Indeed, this was true of Blur
+							as well.
+						</p>	
+						<p>We wanted more flexibility.  We wanted to rapidly be able to introduce brand new
+							features into the system.  So, we supposed it would be helpful if an 
+							intermediate abstraction could be introduced providing the primitives for a 
+							distributed Lucene server on which specific search applications could be built. 
+          	</p>
+          	<p>Some specific goals we had in mind:</p>
+          	<ul>
+          	  <li>To allow for indexing/searching based on other/new data models (e.g. 
+          	  		more than just the Row/Record constructs).</li>
+							<li>Allow implementations to build whole new APIs given direct access to the Lucene primitives.</li>
+							<li>Allow flexibility to build totally custom applications.</li>
+							<li>Remove the complexities of threading, networking and concurrency from 
+									new feature creation.</li>
+ 						</ul>
+          </section>
+          <section>
+            <div class="page-header">
+              <h2 id="arch">Blur Architecture Review</h2>
+            </div>
+          	<p>
+          		The Blur platform provides a set of <code>Command</code> classes that can 
+							be implemented to achieve new functionality.  A basic understanding of how Blur
+							works will greatly help in understanding how to implement commands.  So let's
+							take a moment to review.
+          	</p>
+          	<!-- 
+          		@TODO: Does this content exist somewhere we can just point to? 
+          	  @TODO: If the answer is no, we should beef up this quick-n-dirty explanation.
+          	-->
+          	<p>In Blur, we refer to a logical Lucene index as a table.  Tables are typically
+          	very large, and so we divide them up into 'shards'.  Now, each shard is exposed 
+          	through a Shard Server, which is sort of a container of shards.  The Shard Server(s)
+          	are organized into a cluster that work together to make all the shards of the table(s)
+          	available.  For scalability, we've divided up the logical table into shards spread
+          	across the Shard Server(s).  We then put another type of server, called a Controller, 
+          	in front of the cluster to present all the shards as a single logical table.
+          	</p>
+          	<!-- 
+          	  @TODO: Find a graphic of the architecture so the bevy of words above can be simplified.
+             -->
+          	<p>For the controller to present all the shards as a single index, it needs to accept 
+          	a request, then scatter the request to all the shard servers, combine the results in 
+          	some meaningful way, and send them back to the client.
+          	</p>         	 
+          </section>
+          <section>
+            <div class="page-header">
+              <h2 id="affordances">Platform Affordances</h2>
+            </div>
+            <p>
+							<code>@TODO</code>
+						</p>	
+						
+          </section>          
+          <section>
+            <div class="page-header">
+              <h2 id="commands">Command Overview</h2>
+            </div>
+            <p>
+						As we've gathered from above, the heart of a distributed search system is the ability
+						to execute some function across a set of indices and combine the results in a logical 
+						way to be returned to the user. Not surprisingly, this is also at the heart of the 
+						Blur Platform.  As an introduction, we'll explore how to take a look at finding the number
+						of documents that contain a particular term across all shards in a table.
+						</p>	
+						<p>Our first step will be to find the answer for a single shard/index.  Lucene's 
+						<code>IndexReader</code>, to which we'll have access in our command, conveniently 
+						gives us that.  Getting the answer for a single index requires implementing an <code>execute</code>
+						method.
+						</p>
+						<pre>@Override
+public Long execute(IndexContext context) throws IOException {
+  return (long) context.getIndexReader().numDocs();
+}</pre>
+						<p>We'll learn where the field name and term are defined later in the Arguments
+						 section. Inside of the <code>execute</code> method, we're focused on finding the answer for
+						 a single shard/index.  To find our answer, we're given an <code>IndexContext</code> which
+						 provides us access to the underlying Lucene index, so for our trivial command we can simply
+						 return the answer directly from the IndexReader.
+						 </p>
+						 <p>Now we need to let Blur know how to combine the results from the individual shards
+						 into a single logical response.  We do this by implementing the <code>combine</code> method.
+						 </p>
+						 <pre>@Override
+public Long combine(CombiningContext context, Map&lt;? extends Location&lt;?&gt;, Long&gt; results) throws IOException {
+  long total = 0;
+  for (Long l : results.values()) {
+    total += l;
+  }
+  return total;
+}</pre>
+						 <p>
+						 Again, we're given some execution context (which we don't need for our sample command) and we're
+						 given an <code>Map&lt;? extends Location&lt;?&gt;, Long&gt;</code> of result values.
+						 </p>
+
+          </section>  
+          <section>
+            <div class="page-header">
+              <h2 id="arguments">Arguments</h2>
+            </div>
+            <p>
+							Recall from above that in the execute method we were able to use some member variables that
+							were treated like arguments to the command.  Now, let's take a closer look how they were provided.
+						</p>	
+						<p>
+							We've kept it very simple for you to declare arguments and for your users	to provide arguments. We provide
+							two simple annotations that you can place right on your member field declarations indicating whether 
+							they are required or optional.  You can [and are encouraged to] provide some helpful documentation
+							on the intent of the argument.  As an example, by extending the <code>TableReadCommand</code> you get
+							the <code>table</code> argument as required for free.  Let's look at how it's declared:
+						</p>
+						<pre>
+@RequiredArgument("The name of the table.")
+private String table;						
+						</pre>
+						<p>Naturally, we can also declare optional arguments as well:</p>
+						<pre>
+@OptionalArgument("The number of results to be returned. default=10")
+private short size = 10;						
+						</pre>
+						<p>
+						  By annotating your parameters, the Blur Platform is able to do the basic requirement checking for you 
+						  allowing you to keep the inside of your execute/combine clean of argument validation.
+						</p>
+          </section>  
+          <section>
+            <div class="page-header">
+              <h2 id="installation">Installation</h2>
+            </div>
+            <p>
+							<code>@TODO</code>			
+						</p>	
+
+          </section>   
+          <section>
+            <div class="page-header">
+              <h2 id="docs">Documentation</h2>
+            </div>
+            <p>
+							Commands should be self-documenting starting with a good name.  But good naming
+							is not sufficient, so Blur offers a <code>@Description</code> annotation to provide
+							a nice way to better express what your command does.  It's simply used like so:	
+						</p>	
+						<pre>
+@Description("Returns the number of documents containing the term in the given field.")
+public class DocFreqCommand extends TableReadCommand<Long> {
+  ...
+}						
+						</pre>
+
+          </section>             
+          <section>
+            <div class="page-header">
+              <h2 id="cli">CLI</h2>
+            </div>
+            <p>
+See Using Blur -> Shell -> <a href="using-blur.html#shell_platform_commands">Platform Commands</a>.
+						</p>	
+
+          </section>                             
+        </div>
+      </div>
+    </div>
+    
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="resources/js/jquery-2.0.3.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="resources/js/bootstrap.min.js"></script>
+    <!-- Enable responsive features in IE8 with Respond.js (https://github.com/scottjehl/Respond) -->
+    <script src="resources/js/respond.min.js"></script>
+    <script src="resources/js/docs.js"></script>
+  </body>
+</html>

@@ -15,3 +15,5 @@
 
 org.apache.blur.command.WaitForSeconds
 org.apache.blur.command.ThrowException
+org.apache.blur.command.RunSlowForTesting
+org.apache.blur.command.UserCurrentUser

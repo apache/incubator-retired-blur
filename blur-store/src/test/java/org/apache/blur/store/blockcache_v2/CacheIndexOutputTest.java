@@ -52,10 +52,9 @@ public class CacheIndexOutputTest {
   public void test1() throws IOException {
     Random random = new Random(seed);
     RAMDirectory directory = new RAMDirectory();
-    IndexOutput output = directory.createOutput("test", IOContext.DEFAULT);
 
     Cache cache = CacheIndexInputTest.getCache();
-    CacheIndexOutput indexOutput = new CacheIndexOutput(null, "test", output, cache);
+    CacheIndexOutput indexOutput = new CacheIndexOutput(null, "test", cache, directory, IOContext.DEFAULT);
     indexOutput.writeByte((byte) 1);
     indexOutput.writeByte((byte) 2);
     byte[] b = new byte[16000];
@@ -87,8 +86,7 @@ public class CacheIndexOutputTest {
     long size = (10 * 1024 * 1024) + 13;
 
     IndexOutput output = directory.createOutput(name, IOContext.DEFAULT);
-    IndexOutput output2 = directory2.createOutput(name, IOContext.DEFAULT);
-    CacheIndexOutput cacheIndexOutput = new CacheIndexOutput(null, name, output2, cache);
+    CacheIndexOutput cacheIndexOutput = new CacheIndexOutput(null, name, cache, directory2, IOContext.DEFAULT);
     CacheIndexInputTest.writeRandomData(size, random, output, cacheIndexOutput);
     output.close();
     cacheIndexOutput.close();

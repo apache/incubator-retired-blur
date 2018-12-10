@@ -16,17 +16,10 @@
  */
 package org.apache.blur.store.hdfs_v2;
 
-import static org.apache.blur.metrics.MetricsConstants.HDFS_KV;
-import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
-import static org.apache.blur.metrics.MetricsConstants.SIZE;
-
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -34,11 +27,12 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -60,26 +54,22 @@ import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.lucene.util.BytesRef;
 
-import com.yammer.metrics.Metrics;
-import com.yammer.metrics.core.Gauge;
-import com.yammer.metrics.core.MetricName;
-
 public class HdfsKeyValueStore implements Store {
 
+  public static final int DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE = 64 * 1024 * 1024;
+  public static final long DEFAULT_MAX_OPEN_FOR_WRITING = TimeUnit.MINUTES.toMillis(1);
+
+  private static final String UTF_8 = "UTF-8";
   private static final String BLUR_KEY_VALUE = "blur_key_value";
-  private static final String IN = "in";
-  private static final String GET_FILE_LENGTH = "getFileLength";
-  private static final int DEFAULT_MAX = 64 * 1024 * 1024;
   private static final Log LOG = LogFactory.getLog(HdfsKeyValueStore.class);
   private static final byte[] MAGIC;
   private static final int VERSION = 1;
-  private static final long MAX_OPEN_FOR_WRITING = TimeUnit.MINUTES.toMillis(1);
   private static final long DAEMON_POLL_TIME = TimeUnit.SECONDS.toMillis(5);
   private static final int VERSION_LENGTH = 4;
 
   static {
     try {
-      MAGIC = BLUR_KEY_VALUE.getBytes("UTF-8");
+      MAGIC = BLUR_KEY_VALUE.getBytes(UTF_8);
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
@@ -134,7 +124,7 @@ public class HdfsKeyValueStore implements Store {
     public int compare(BytesRef b1, BytesRef b2) {
       return WritableComparator.compareBytes(b1.bytes, b1.offset, b1.length, b2.bytes, b2.offset, b2.length);
     }
-  };;
+  };
 
   static class Value {
     Value(BytesRef bytesRef, Path path) {
@@ -147,7 +137,6 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private final ConcurrentNavigableMap<BytesRef, Value> _pointers = new ConcurrentSkipListMap<BytesRef, Value>(COMP);
-  private final Configuration _configuration;
   private final Path _path;
   private final ReentrantReadWriteLock _readWriteLock;
   private final AtomicReference<SortedSet<FileStatus>> _fileStatus = new AtomicReference<SortedSet<FileStatus>>();
@@ -155,26 +144,37 @@ public class HdfsKeyValueStore implements Store {
   private final AtomicLong _currentFileCounter = new AtomicLong();
   private final WriteLock _writeLock;
   private final ReadLock _readLock;
-  private final Thread _daemon;
   private final AtomicLong _size = new AtomicLong();
-
-  private final AtomicBoolean _running = new AtomicBoolean(true);
+  private final long _maxAmountAllowedPerFile;
+  private final TimerTask _idleLogTimerTask;
+  private final TimerTask _oldFileCleanerTimerTask;
   private final AtomicLong _lastWrite = new AtomicLong();
+  private final Timer _hdfsKeyValueTimer;
+  private final long _maxOpenForWriting;
+  private final boolean _readOnly;
+
   private FSDataOutputStream _output;
   private Path _outputPath;
-  private final long _maxAmountAllowedPerFile;
   private boolean _isClosed;
 
-  public HdfsKeyValueStore(Configuration configuration, Path path) throws IOException {
-    this(configuration, path, DEFAULT_MAX);
+  public HdfsKeyValueStore(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path)
+      throws IOException {
+    this(readOnly, hdfsKeyValueTimer, configuration, path, DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE,
+        DEFAULT_MAX_OPEN_FOR_WRITING);
   }
 
-  public HdfsKeyValueStore(Configuration configuration, Path path, long maxAmountAllowedPerFile) throws IOException {
+  public HdfsKeyValueStore(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path,
+      long maxAmountAllowedPerFile) throws IOException {
+    this(readOnly, hdfsKeyValueTimer, configuration, path, maxAmountAllowedPerFile, DEFAULT_MAX_OPEN_FOR_WRITING);
+  }
+
+  public HdfsKeyValueStore(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path,
+      long maxAmountAllowedPerFile, long maxOpenForWriting) throws IOException {
+    _readOnly = readOnly;
+    _maxOpenForWriting = maxOpenForWriting;
     _maxAmountAllowedPerFile = maxAmountAllowedPerFile;
-    _configuration = configuration;
     _path = path;
-    _configuration.setBoolean("fs.hdfs.impl.disable.cache", true);
-    _fileSystem = FileSystem.get(_path.toUri(), _configuration);
+    _fileSystem = _path.getFileSystem(configuration);
     _fileSystem.mkdirs(_path);
     _readWriteLock = new ReentrantReadWriteLock();
     _writeLock = _readWriteLock.writeLock();
@@ -185,20 +185,32 @@ public class HdfsKeyValueStore implements Store {
     }
     removeAnyTruncatedFiles();
     loadIndexes();
-    _daemon = startDaemon();
-    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, HDFS_KV, SIZE, path.getParent().toString()), new Gauge<Long>() {
-      @Override
-      public Long value() {
-        return _size.get();
-      }
-    });
+    cleanupOldFiles();
+    if (!_readOnly) {
+      _idleLogTimerTask = getIdleLogTimer();
+      _oldFileCleanerTimerTask = getOldFileCleanerTimer();
+      _hdfsKeyValueTimer = hdfsKeyValueTimer;
+      _hdfsKeyValueTimer.schedule(_idleLogTimerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
+      _hdfsKeyValueTimer.schedule(_oldFileCleanerTimerTask, DAEMON_POLL_TIME, DAEMON_POLL_TIME);
+    } else {
+      _idleLogTimerTask = null;
+      _oldFileCleanerTimerTask = null;
+      _hdfsKeyValueTimer = null;
+    }
+    // Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, HDFS_KV, SIZE,
+    // path.getParent().toString()), new Gauge<Long>() {
+    // @Override
+    // public Long value() {
+    // return _size.get();
+    // }
+    // });
   }
 
   private void removeAnyTruncatedFiles() throws IOException {
     for (FileStatus fileStatus : _fileStatus.get()) {
       Path path = fileStatus.getPath();
       FSDataInputStream inputStream = _fileSystem.open(path);
-      long len = getFileLength(path, inputStream);
+      long len = HdfsUtils.getFileLength(_fileSystem, path, inputStream);
       inputStream.close();
       if (len < MAGIC.length + VERSION_LENGTH) {
         // Remove invalid file
@@ -209,54 +221,31 @@ public class HdfsKeyValueStore implements Store {
     }
   }
 
-  private Thread startDaemon() {
-    Thread thread = new Thread(new Runnable() {
+  private TimerTask getOldFileCleanerTimer() {
+    return new TimerTask() {
       @Override
       public void run() {
-        _writeLock.lock();
         try {
-          try {
-            cleanupOldFiles();
-          } catch (IOException e) {
-            LOG.error("Unknown error while trying to clean up old files.", e);
-          }
-        } finally {
-          _writeLock.unlock();
-        }
-        while (_running.get()) {
-          _writeLock.lock();
-          try {
-            if (_output != null && _lastWrite.get() + MAX_OPEN_FOR_WRITING < System.currentTimeMillis()) {
-              // Close writer
-              LOG.info("Closing KV log due to inactivity [{0}].", _path);
-              try {
-                _output.close();
-              } catch (IOException e) {
-                LOG.error("Unknown error while trying to close output file.", e);
-              } finally {
-                _output = null;
-              }
-              try {
-                cleanupOldFiles();
-              } catch (IOException e) {
-                LOG.error("Unknown error while trying to clean up old files.", e);
-              }
-            }
-          } finally {
-            _writeLock.unlock();
-          }
-          try {
-            Thread.sleep(DAEMON_POLL_TIME);
-          } catch (InterruptedException e) {
-            return;
-          }
+          cleanupOldFiles();
+        } catch (IOException e) {
+          LOG.error("Unknown error while trying to clean up old files.", e);
         }
       }
-    });
-    thread.setName("HDFS KV Store [" + _path + "]");
-    thread.setDaemon(true);
-    thread.start();
-    return thread;
+    };
+  }
+
+  private TimerTask getIdleLogTimer() {
+    return new TimerTask() {
+      @Override
+      public void run() {
+        try {
+          closeLogFileIfIdle();
+        } catch (IOException e) {
+          LOG.error("Unknown error while trying to close output file.", e);
+        }
+      }
+
+    };
   }
 
   @Override
@@ -370,32 +359,62 @@ public class HdfsKeyValueStore implements Store {
   private void rollFile() throws IOException {
     LOG.info("Rolling file [" + _outputPath + "]");
     _output.close();
+    _output = null;
     openWriter();
   }
 
   public void cleanupOldFiles() throws IOException {
-    SortedSet<FileStatus> fileStatusSet = getSortedSet(_path);
-    if (fileStatusSet == null || fileStatusSet.size() < 1) {
-      return;
+    _writeLock.lock();
+    try {
+      if (!isOpenForWriting()) {
+        return;
+      }
+      SortedSet<FileStatus> fileStatusSet = getSortedSet(_path);
+      if (fileStatusSet == null || fileStatusSet.size() < 1) {
+        return;
+      }
+      Path newestGen = fileStatusSet.last().getPath();
+      if (!newestGen.equals(_outputPath)) {
+        throw new IOException("No longer the owner of [" + _path + "]");
+      }
+      Set<Path> existingFiles = new HashSet<Path>();
+      for (FileStatus fileStatus : fileStatusSet) {
+        existingFiles.add(fileStatus.getPath());
+      }
+      Set<Entry<BytesRef, Value>> entrySet = _pointers.entrySet();
+      existingFiles.remove(_outputPath);
+      for (Entry<BytesRef, Value> e : entrySet) {
+        Path p = e.getValue()._path;
+        existingFiles.remove(p);
+      }
+      for (Path p : existingFiles) {
+        LOG.info("Removing file no longer referenced [{0}]", p);
+        _fileSystem.delete(p, false);
+      }
+    } finally {
+      _writeLock.unlock();
     }
-    Path newestGen = fileStatusSet.last().getPath();
-    if (!newestGen.equals(_outputPath)) {
-      throw new IOException("No longer the owner of [" + _path + "]");
+  }
+
+  private void closeLogFileIfIdle() throws IOException {
+    _writeLock.lock();
+    try {
+      if (_output != null && _lastWrite.get() + _maxOpenForWriting < System.currentTimeMillis()) {
+        // Close writer
+        LOG.info("Closing KV log due to inactivity [{0}].", _path);
+        try {
+          _output.close();
+        } finally {
+          _output = null;
+        }
+      }
+    } finally {
+      _writeLock.unlock();
     }
-    Set<Path> existingFiles = new HashSet<Path>();
-    for (FileStatus fileStatus : fileStatusSet) {
-      existingFiles.add(fileStatus.getPath());
-    }
-    Set<Entry<BytesRef, Value>> entrySet = _pointers.entrySet();
-    existingFiles.remove(_outputPath);
-    for (Entry<BytesRef, Value> e : entrySet) {
-      Path p = e.getValue()._path;
-      existingFiles.remove(p);
-    }
-    for (Path p : existingFiles) {
-      LOG.info("Removing file no longer referenced [{0}]", p);
-      _fileSystem.delete(p, false);
-    }
+  }
+
+  private boolean isOpenForWriting() {
+    return _output != null;
   }
 
   private Operation getPutOperation(OperationType put, BytesRef key, BytesRef value) {
@@ -452,17 +471,24 @@ public class HdfsKeyValueStore implements Store {
 
   @Override
   public void close() throws IOException {
-    if (_isClosed) {
+    if (!_isClosed) {
+      _isClosed = true;
+      if (_idleLogTimerTask != null) {
+        _idleLogTimerTask.cancel();
+      }
+      if (_oldFileCleanerTimerTask != null) {
+        _oldFileCleanerTimerTask.cancel();
+      }
+      if (_hdfsKeyValueTimer != null) {
+        _hdfsKeyValueTimer.purge();
+      }
       _writeLock.lock();
-      _running.set(false);
-      _daemon.interrupt();
       try {
-        syncInternal();
-        if (_output != null) {
+        if (isOpenForWriting()) {
+          syncInternal();
           _output.close();
+          _output = null;
         }
-        _fileSystem.close();
-        _isClosed = true;
       } finally {
         _writeLock.unlock();
       }
@@ -470,6 +496,9 @@ public class HdfsKeyValueStore implements Store {
   }
 
   private void openWriter() throws IOException {
+    if (_readOnly) {
+      throw new IOException("Key value store is set in read only mode.");
+    }
     long nextSegment = _currentFileCounter.incrementAndGet();
     String name = buffer(nextSegment);
     _outputPath = new Path(_path, name);
@@ -501,16 +530,12 @@ public class HdfsKeyValueStore implements Store {
     }
   }
 
-  private long getFileLength(Path path, FSDataInputStream inputStream) throws IOException {
-    FileStatus fileStatus = _fileSystem.getFileStatus(path);
-    long dfsLength = getDFSLength(inputStream);
-    return Math.max(dfsLength, fileStatus.getLen());
-  }
-
   private void syncInternal() throws IOException {
     _output.flush();
     _output.sync();
     _lastWrite.set(System.currentTimeMillis());
+    // System.out.println("Sync Output Path [" + _outputPath + "] Position [" +
+    // _output.getPos() + "]");
   }
 
   private void loadIndex(Path path) throws IOException {
@@ -522,7 +547,7 @@ public class HdfsKeyValueStore implements Store {
     }
     int version = inputStream.readInt();
     if (version == 1) {
-      long fileLength = getFileLength(path, inputStream);
+      long fileLength = HdfsUtils.getFileLength(_fileSystem, path, inputStream);
       Operation operation = new Operation();
       try {
         while (inputStream.getPos() < fileLength) {
@@ -575,16 +600,4 @@ public class HdfsKeyValueStore implements Store {
     return new TreeSet<FileStatus>();
   }
 
-  private long getDFSLength(FSDataInputStream inputStream) throws IOException {
-    try {
-      Field field = FilterInputStream.class.getDeclaredField(IN);
-      field.setAccessible(true);
-      Object dfs = field.get(inputStream);
-      Method method = dfs.getClass().getMethod(GET_FILE_LENGTH, new Class[] {});
-      Object length = method.invoke(dfs, new Object[] {});
-      return (Long) length;
-    } catch (Exception e) {
-      throw new IOException(e);
-    }
-  }
 }

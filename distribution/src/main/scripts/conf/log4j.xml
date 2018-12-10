@@ -66,6 +66,19 @@ under the License.
 		</layout>
 	</appender>
 	
+	<appender name="ASYNC_LUCENE_WRITER_INFO_STREAM_FILE" class="org.apache.log4j.AsyncAppender">
+		<appender-ref ref="LUCENE_WRITER_INFO_STREAM_FILE" />
+	</appender>
+	
+	<appender name="LUCENE_WRITER_INFO_STREAM_FILE" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="${blur.logs.dir}/${blur.log.file}_infostream.log" />
+		<param name="DatePattern" value="'.'yyyyMMdd" />
+		<param name="Append" value="true" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="%-5p %d{yyyyMMdd_HH:mm:ss:SSS_z} [%t] %c{2}: %m%n" />
+		</layout>
+	</appender>
+	
 	<logger name="org.apache.hadoop">
     	<level value="ERROR" />
 	    <appender-ref ref="ASYNC"/>
@@ -81,6 +94,12 @@ under the License.
 		<!-- Make value = "INFO"to enable -->
     	<level value="ERROR" />
 	    <appender-ref ref="ASYNC_RESPONSE_LOG_FILE"/>
+	</logger>
+	
+	<logger name="LUCENE_WRITER_INFO_STREAM" additivity="false">
+		<!-- Make value = "INFO"to enable -->
+    	<level value="ERROR" />
+	    <appender-ref ref="ASYNC_LUCENE_WRITER_INFO_STREAM_FILE"/>
 	</logger>
 
 	<!--root>

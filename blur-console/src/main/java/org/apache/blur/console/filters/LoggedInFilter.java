@@ -39,7 +39,7 @@ public class LoggedInFilter implements Filter {
     HttpSession session = request.getSession();
     String path = request.getServletPath();
     User user = (User) session.getAttribute("user");
-    if(path.startsWith("/auth") || path.startsWith("/config.js") || user != null) {
+    if(path.startsWith("/service/auth") || path.startsWith("/service/config.js") || user != null) {
       try {
         filterChain.doFilter(servletRequest, servletResponse);
       } catch(UnauthorizedException e) {

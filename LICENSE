@@ -366,6 +366,10 @@ respond
 ./docs/resources/js/respond.min.js
 Copyright (c) 2012 Scott Jehl
 
+moment.js
+./blur-console/src/main/webapp/libs/moment/moment.js
+Copyright (c) 2011-2014 Tim Wood, Iskren Chernev, Moment.js contributors
+
 ==========================================================================
 The following license applies to the following libraries: d3
 ./blur-gui/src/main/webapp/js/d3.v2.js
@@ -397,4 +401,11 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
 OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
 NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+===========================================================================
+The following license applies to the following libraries: tagmanager
+./blur-console/src/main/webapp/libs/tagmanager/tagmanager.js
+---------------------------------------------------------------------------
+Copyright 2012 MaxFavilli.com
+Licensed under the Mozilla Public License, Version 2.0
 

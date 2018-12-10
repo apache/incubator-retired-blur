@@ -44,4 +44,34 @@ public abstract class AbstractIndexServer implements IndexServer {
     return rowCount;
   }
 
+  @Override
+  public long getSegmentImportInProgressCount(String table) throws IOException {
+    long segmentImportInProgressCount = 0;
+    Map<String, BlurIndex> indexes = getIndexes(table);
+    for (Map.Entry<String, BlurIndex> index : indexes.entrySet()) {
+      segmentImportInProgressCount += index.getValue().getSegmentImportInProgressCount();
+    }
+    return segmentImportInProgressCount;
+  }
+
+  @Override
+  public long getSegmentImportPendingCount(String table) throws IOException {
+    long segmentImportPendingCount = 0;
+    Map<String, BlurIndex> indexes = getIndexes(table);
+    for (Map.Entry<String, BlurIndex> index : indexes.entrySet()) {
+      segmentImportPendingCount += index.getValue().getSegmentImportPendingCount();
+    }
+    return segmentImportPendingCount;
+  }
+
+  @Override
+  public long getTableSize(String table) throws IOException {
+    long tableSize = 0;
+    Map<String, BlurIndex> indexes = getIndexes(table);
+    for (Map.Entry<String, BlurIndex> index : indexes.entrySet()) {
+      tableSize += index.getValue().getOnDiskSize();
+    }
+    return tableSize;
+  }
+
 }

@@ -1,4 +1,5 @@
 package org.apache.blur.thrift;
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -28,39 +29,32 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ TermsTests.class, FacetTests.class })
+@Suite.SuiteClasses({ TermsTestsIT.class, FacetTestsIT.class })
 public class IntegrationTestSuite {
   @ClassRule
   public static ExternalResource testCluster = new ExternalResource() {
 
-    private boolean _managing;
-
     @Override
     protected void after() {
-      if (_managing) {
-        try {
-          SuiteCluster.shutdownMiniCluster();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
+      try {
+        SuiteCluster.shutdownMiniCluster(IntegrationTestSuite.class);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
     }
 
     @Override
     protected void before() throws Throwable {
-      if (!SuiteCluster.isClusterSetup()) {
-        _managing = true;
-        try {
-          SuiteCluster.setupMiniCluster();
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
+      try {
+        SuiteCluster.setupMiniCluster(IntegrationTestSuite.class);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
       }
     }
   };
-  
+
   @After
-  public void tearDown() throws BlurException, TException {
+  public void tearDown() throws BlurException, TException, IOException {
     Iface client = SuiteCluster.getClient();
     List<String> tableList = client.tableList();
     for (String table : tableList) {

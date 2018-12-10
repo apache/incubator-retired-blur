@@ -53,7 +53,6 @@ import org.apache.blur.command.BlurObject;
 import org.apache.blur.command.BlurObjectSerDe;
 import org.apache.blur.command.CommandUtil;
 import org.apache.blur.command.ControllerCommandManager;
-import org.apache.blur.command.ExecutionId;
 import org.apache.blur.command.Response;
 import org.apache.blur.command.Server;
 import org.apache.blur.command.Shard;
@@ -113,12 +112,17 @@ import org.apache.blur.utils.BlurExecutorCompletionService;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.blur.utils.ForkJoin;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.blur.utils.ForkJoin.Merger;
 import org.apache.blur.utils.ForkJoin.ParallelCall;
 import org.apache.blur.zookeeper.WatchChildren;
 import org.apache.blur.zookeeper.WatchChildren.OnChange;
 import org.apache.blur.zookeeper.WatchNodeExistance;
 import org.apache.blur.zookeeper.ZookeeperPathConstants;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -180,7 +184,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private AtomicBoolean _closed = new AtomicBoolean();
   private Map<String, Integer> _tableShardCountMap = new ConcurrentHashMap<String, Integer>();
   private BlurPartitioner _blurPartitioner = new BlurPartitioner();
-  private String _nodeName;
   private int _remoteFetchCount = 100;
   private BlurQueryChecker _queryChecker;
   private AtomicBoolean _running = new AtomicBoolean();
@@ -476,6 +479,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
       BlurUtil.setStartTime(blurQuery);
 
+      QueryCoundNotBeCompletedReport report = null;
       OUTER: for (int retries = 0; retries < _maxDefaultRetries; retries++) {
         Tracer selectorTrace = Trace.trace("selector - setup", Trace.param("retries", retries));
         final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
@@ -535,6 +539,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           if (!validResults(results, shardCount, blurQuery)) {
             BlurClientManager.sleep(_defaultDelay, _maxDefaultDelay, retries, _maxDefaultRetries);
             Map<String, String> map = getTableLayout(table);
+            Map<String, Long> shardInfo = results.getShardInfo();
+            report = new QueryCoundNotBeCompletedReport(map, shardCount, shardInfo, blurQuery);
             LOG.info("Current layout for table [{0}] is [{1}]", table, map);
             continue OUTER;
           }
@@ -545,7 +551,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           }
         }
       }
-      throw new BException("Query could not be completed.");
+      throw new BException("Query could not be completed, report [{0}].", report);
     } catch (Exception e) {
       LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
       if (e instanceof BlurException) {
@@ -1052,14 +1058,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     });
   }
 
-  private String getCluster(String table) throws BlurException, TException {
-    TableDescriptor describe = describe(table);
-    if (describe == null) {
-      throw new BException("Table [" + table + "] not found.");
-    }
-    return describe.cluster;
-  }
-
   public static Schema merge(Schema result, Schema schema) {
     Map<String, Map<String, ColumnDefinition>> destColumnFamilies = result.getFamilies();
     Map<String, Map<String, ColumnDefinition>> srcColumnFamilies = schema.getFamilies();
@@ -1385,10 +1383,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
   }
 
-  public void setNodeName(String nodeName) {
-    _nodeName = nodeName;
-  }
-
   public int getRemoteFetchCount() {
     return _remoteFetchCount;
   }
@@ -1525,7 +1519,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       return CommandUtil.fromObjectToThrift(response, _serDe);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getInstanceExecutionId());
       }
       LOG.error("Unknown error while trying to execute command [{0}]", e, commandName);
       if (e instanceof BlurException) {
@@ -1605,7 +1599,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             return true;
           }
           Map<String, Map<String, String>> layout = _shardServerLayout.get();
+          if (layout == null) {
+            return false;
+          }
           Map<String, String> shardIdToServerMap = layout.get(table);
+          if (shardIdToServerMap == null) {
+            return false;
+          }
           for (Shard shard : shards) {
             String serverId = shardIdToServerMap.get(shard.getShard());
             if (serverId.equals(server.getServer())) {
@@ -1623,16 +1623,16 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public org.apache.blur.thrift.generated.Response reconnect(String executionId) throws BlurException,
+  public org.apache.blur.thrift.generated.Response reconnect(long instanceExecutionId) throws BlurException,
       TimeoutException, TException {
     try {
-      Response response = _commandManager.reconnect(new ExecutionId(executionId));
+      Response response = _commandManager.reconnect(instanceExecutionId);
       return CommandUtil.fromObjectToThrift(response, _serDe);
     } catch (Exception e) {
       if (e instanceof org.apache.blur.command.TimeoutException) {
-        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getExecutionId().getId());
+        throw new TimeoutException(((org.apache.blur.command.TimeoutException) e).getInstanceExecutionId());
       }
-      LOG.error("Unknown error while trying to reconnect to executing command [{0}]", e, executionId);
+      LOG.error("Unknown error while trying to reconnect to executing command [{0}]", e, instanceExecutionId);
       if (e instanceof BlurException) {
         throw (BlurException) e;
       }
@@ -1665,13 +1665,212 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public CommandStatus commandStatus(String executionId) throws BlurException, TException {
+  public CommandStatus commandStatus(String commandExecutionId) throws BlurException, TException {
     throw new BException("Not Implemented");
   }
 
   @Override
-  public void commandCancel(String executionId) throws BlurException, TException {
+  public void commandCancel(String commandExecutionId) throws BlurException, TException {
     throw new BException("Not Implemented");
   }
 
+  // @Override
+  // public void bulkMutateStart(final String bulkId) throws BlurException,
+  // TException {
+  // String cluster = getCluster(table);
+  // try {
+  // scatter(cluster, new BlurCommand<Void>() {
+  // @Override
+  // public Void call(Client client) throws BlurException, TException {
+  // client.bulkMutateStart(bulkId);
+  // return null;
+  // }
+  // });
+  // } catch (Exception e) {
+  // LOG.error("Unknown error while trying to get start a bulk mutate [{0}] [{1}]",
+  // e, bulkId);
+  // if (e instanceof BlurException) {
+  // throw (BlurException) e;
+  // }
+  // throw new BException(e.getMessage(), e);
+  // }
+  // }
+  //
+  @Override
+  public void bulkMutateAdd(final String bulkId, final RowMutation mutation) throws BlurException, TException {
+    try {
+      String table = mutation.getTable();
+      checkTable(table);
+      checkForUpdates(table);
+      MutationHelper.validateMutation(mutation);
+
+      int numberOfShards = getShardCount(table);
+      Map<String, String> tableLayout = getTableLayout(table);
+      if (tableLayout.size() != numberOfShards) {
+        throw new BException("Cannot update data while shard is missing");
+      }
+      String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
+      String node = tableLayout.get(shardName);
+      _client.execute(node, new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          client.bulkMutateAdd(bulkId, mutation);
+          return null;
+        }
+      }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+    } catch (Exception e) {
+      LOG.error("Unknown error during bulk mutation of [{0}]", e, bulkId);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error during bulk mutation of [{0}]", e, bulkId);
+    }
+  }
+
+  @Override
+  public void bulkMutateAddMultiple(final String bulkId, List<RowMutation> rowMutations) throws BlurException,
+      TException {
+    try {
+      Map<String, List<RowMutation>> batches = batchByServer(rowMutations);
+      for (Entry<String, List<RowMutation>> entry : batches.entrySet()) {
+        String node = entry.getKey();
+        final List<RowMutation> batch = entry.getValue();
+        _client.execute(node, new BlurCommand<Void>() {
+          @Override
+          public Void call(Client client) throws BlurException, TException {
+            client.bulkMutateAddMultiple(bulkId, batch);
+            return null;
+          }
+        }, _maxMutateRetries, _mutateDelay, _maxMutateDelay);
+      }
+    } catch (Exception e) {
+      LOG.error("Unknown error during bulk mutation of [{0}]", e, bulkId);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error during bulk mutation of [{0}]", e, bulkId);
+    }
+  }
+
+  private Map<String, List<RowMutation>> batchByServer(List<RowMutation> rowMutations) throws TException {
+    Map<String, List<RowMutation>> result = new HashMap<String, List<RowMutation>>();
+    for (RowMutation rowMutation : rowMutations) {
+      String table = rowMutation.getTable();
+      checkTable(table);
+      checkForUpdates(table);
+      int numberOfShards = getShardCount(table);
+      Map<String, String> tableLayout = getTableLayout(table);
+      if (tableLayout.size() != numberOfShards) {
+        throw new BException("Cannot update data while shard is missing");
+      }
+      String shardName = MutationHelper.getShardName(table, rowMutation.getRowId(), numberOfShards, _blurPartitioner);
+      String node = tableLayout.get(shardName);
+
+      List<RowMutation> list = result.get(node);
+      if (list == null) {
+        result.put(node, list = new ArrayList<RowMutation>());
+      }
+      MutationHelper.validateMutation(rowMutation);
+      list.add(rowMutation);
+    }
+    return result;
+  }
+
+  @Override
+  public void bulkMutateFinish(final String bulkId, final boolean apply, final boolean blockUntilComplete)
+      throws BlurException, TException {
+    List<String> shardClusterList = shardClusterList();
+    for (String cluster : shardClusterList) {
+      try {
+        scatter(cluster, new BlurCommand<Void>() {
+          @Override
+          public Void call(Client client) throws BlurException, TException {
+            client.bulkMutateFinish(bulkId, apply, blockUntilComplete);
+            return null;
+          }
+        });
+      } catch (Exception e) {
+        LOG.error("Unknown error while trying to get finish a bulk mutate [{0}] [{1}]", e, bulkId);
+        if (e instanceof BlurException) {
+          throw (BlurException) e;
+        }
+        throw new BException(e.getMessage(), e);
+      }
+    }
+  }
+
+  @Override
+  public void loadData(String table, String location) throws BlurException, TException {
+    try {
+      String cluster = getCluster(table);
+      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
+      TableContext tableContext = TableContext.create(tableDescriptor);
+      Configuration configuration = tableContext.getConfiguration();
+      Path path = new Path(location);
+      FileSystem fileSystem = path.getFileSystem(configuration);
+      validateOrLoadIndexes(cluster, table, path, fileSystem, tableDescriptor, configuration, false);
+      validateOrLoadIndexes(cluster, table, path, fileSystem, tableDescriptor, configuration, true);
+    } catch (IOException e) {
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  private void validateOrLoadIndexes(String cluster, final String table, Path path, FileSystem fileSystem,
+      TableDescriptor descriptor, Configuration configuration, final boolean load) throws IOException, BlurException,
+      TException {
+    int shardCount = descriptor.getShardCount();
+    FileStatus[] listStatus = fileSystem.listStatus(path);
+    int count = 0;
+    final Map<String, List<String>> shardServerPathMap = new HashMap<String, List<String>>();
+    Map<String, String> shardServerLayout = shardServerLayout(descriptor.getName());
+    for (FileStatus fileStatus : listStatus) {
+      Path shardPath = fileStatus.getPath();
+      String shardId = shardPath.getName();
+      String server = shardServerLayout.get(shardId);
+
+      int shardIndex = ShardUtil.getShardIndex(shardId);
+      if (shardIndex >= shardCount) {
+        throw new IOException("Too many shards [" + shardIndex + "].");
+      }
+      List<String> paths = shardServerPathMap.get(server);
+      if (paths == null) {
+        shardServerPathMap.put(server, paths = new ArrayList<String>());
+      }
+      paths.add(shardPath.toString());
+      count++;
+    }
+    if (shardCount != count) {
+      throw new IOException("Not enough shards [" + count + "] should be [" + shardCount + "].");
+    }
+    try {
+      scatter(cluster, new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          throw new RuntimeException("Not Used.");
+        }
+
+        @Override
+        public Void call(Client client, Connection connection) throws BlurException, TException {
+          String server = connection.getHost() + ":" + connection.getPort();
+          List<String> externalIndexPaths = shardServerPathMap.get(server);
+          if (externalIndexPaths == null || externalIndexPaths.isEmpty()) {
+            return null;
+          }
+          if (load) {
+            client.loadIndex(table, externalIndexPaths);
+          } else {
+            client.validateIndex(table, externalIndexPaths);
+          }
+          return null;
+        }
+
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to validate indexes for table [{0}]", e, table);
+      if (e instanceof BlurException) {
+        throw (BlurException) e;
+      }
+      throw new BException("Unknown error while trying to validate indexes for table [{0}]", e, table);
+    }
+  }
 }

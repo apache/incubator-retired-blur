@@ -21,16 +21,15 @@ import static org.apache.blur.metrics.MetricsConstants.DETACHES;
 import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.blur.store.blockcache_v2.CacheValue;
+import org.apache.blur.store.blockcache_v2.EvictionException;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.Meter;
 import com.yammer.metrics.core.MetricName;
 
-@SuppressWarnings("serial")
-public class DetachableCacheValue extends AtomicInteger implements CacheValue {
+public class DetachableCacheValue implements CacheValue {
 
   private static final Meter _detaches;
 
@@ -39,6 +38,7 @@ public class DetachableCacheValue extends AtomicInteger implements CacheValue {
   }
 
   private volatile CacheValue _baseCacheValue;
+  private volatile boolean _evicted;
 
   public DetachableCacheValue(CacheValue cacheValue) {
     _baseCacheValue = cacheValue;
@@ -46,23 +46,16 @@ public class DetachableCacheValue extends AtomicInteger implements CacheValue {
 
   @Override
   public CacheValue detachFromCache() {
+    _evicted = true;
     if (_baseCacheValue instanceof ByteArrayCacheValue) {
       // already detached
       return null;
     } else if (_baseCacheValue instanceof UnsafeCacheValue) {
       final CacheValue result = _baseCacheValue;
-      if (get() == 0) {
-        // No one is using this so don't copy
-        // NULL out reference so just in case there can't be a seg fault.
-        _baseCacheValue = null;
-      } else {
-        // Copy data, because someone might access at some point
-        _detaches.mark();
-        int length = _baseCacheValue.length();
-        ByteArrayCacheValue byteArrayCacheValue = new ByteArrayCacheValue(length);
-        _baseCacheValue.read(0, byteArrayCacheValue._buffer, 0, length);
-        _baseCacheValue = byteArrayCacheValue;
-      }
+      // No one is using this so don't copy
+      // NULL out reference so just in case there can't be a seg fault.
+      _baseCacheValue = null;
+      _detaches.mark();
       return result;
     } else {
       throw new RuntimeException("Unsupported type of [" + _baseCacheValue + "]");
@@ -70,7 +63,8 @@ public class DetachableCacheValue extends AtomicInteger implements CacheValue {
   }
 
   @Override
-  public int length() {
+  public int length() throws EvictionException {
+    checkEviction();
     return _baseCacheValue.length();
   }
 
@@ -80,32 +74,45 @@ public class DetachableCacheValue extends AtomicInteger implements CacheValue {
   }
 
   @Override
-  public void read(int position, byte[] buf, int offset, int length) {
+  public void read(int position, byte[] buf, int offset, int length) throws EvictionException {
+    checkEviction();
     _baseCacheValue.read(position, buf, offset, length);
   }
 
+  private void checkEviction() throws EvictionException {
+    if (_evicted) {
+      throw new EvictionException();
+    }
+  }
+
   @Override
-  public byte read(int position) {
+  public byte read(int position) throws EvictionException {
+    checkEviction();
     return _baseCacheValue.read(position);
   }
 
   @Override
   public void release() {
-    _baseCacheValue.release();
+    if (_baseCacheValue != null) {
+      _baseCacheValue.release();
+    }
   }
 
   @Override
-  public short readShort(int position) {
+  public short readShort(int position) throws EvictionException {
+    checkEviction();
     return _baseCacheValue.readShort(position);
   }
 
   @Override
-  public int readInt(int position) {
+  public int readInt(int position) throws EvictionException {
+    checkEviction();
     return _baseCacheValue.readInt(position);
   }
 
   @Override
-  public long readLong(int position) {
+  public long readLong(int position) throws EvictionException {
+    checkEviction();
     return _baseCacheValue.readLong(position);
   }
 
@@ -115,13 +122,8 @@ public class DetachableCacheValue extends AtomicInteger implements CacheValue {
   }
 
   @Override
-  public void decRef() {
-    decrementAndGet();
-  }
-
-  @Override
-  public void incRef() {
-    incrementAndGet();
+  public boolean isEvicted() {
+    return _evicted;
   }
 
 }

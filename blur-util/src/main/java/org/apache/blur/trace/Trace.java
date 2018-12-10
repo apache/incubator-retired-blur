@@ -61,10 +61,10 @@ public class Trace {
 
   public static class Parameter {
 
-    final Object _name;
+    final String _name;
     final Object _value;
 
-    public Parameter(Object name, Object value) {
+    public Parameter(String name, Object value) {
       _name = name;
       _value = value;
     }

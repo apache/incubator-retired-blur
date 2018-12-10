@@ -30,6 +30,9 @@ import org.apache.blur.thrift.generated.Blur.Iface;
 
 public abstract class Command<R> implements Cloneable {
 
+  @OptionalArgument("The ")
+  private String commandExecutionId;
+
   public abstract String getName();
 
   public abstract R run() throws IOException;
@@ -115,6 +118,14 @@ public abstract class Command<R> implements Cloneable {
     }
     builder.append('>');
     return builder.toString();
+  }
+
+  public String getCommandExecutionId() {
+    return commandExecutionId;
+  }
+
+  public void setCommandExecutionId(String commandExecutionId) {
+    this.commandExecutionId = commandExecutionId;
   }
 
 }

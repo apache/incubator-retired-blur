@@ -19,6 +19,7 @@ package org.apache.blur.manager.writer;
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,19 +29,19 @@ import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.manager.BlurPartitioner;
-import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
+import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.store.hdfs.HdfsDirectory;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -61,6 +62,7 @@ import org.apache.lucene.util.BytesRef;
 
 public class IndexImporter extends TimerTask implements Closeable {
 
+  private static final String INPROGRESS = ".inprogress";
   private static final String BADROWIDS = ".badrowids";
   private static final String COMMIT = ".commit";
   private static final String INUSE = ".inuse";
@@ -71,22 +73,24 @@ public class IndexImporter extends TimerTask implements Closeable {
 
   private final BlurIndex _blurIndex;
   private final ShardContext _shardContext;
-  private final Timer _timer;
   private final String _table;
   private final String _shard;
-  private final AtomicBoolean _running = new AtomicBoolean();
   private final long _cleanupDelay;
+  private final Timer _inindexImporterTimer;
+  private final ThriftCache _thriftCache;
 
   private long _lastCleanup;
+  private Runnable _testError;
 
-  public IndexImporter(BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit, long refreshAmount) {
-    _running.set(true);
+  public IndexImporter(Timer indexImporterTimer, BlurIndex blurIndex, ShardContext shardContext, TimeUnit refreshUnit,
+      long refreshAmount, ThriftCache thriftCache) {
+    _thriftCache = thriftCache;
     _blurIndex = blurIndex;
     _shardContext = shardContext;
-    _timer = new Timer("IndexImporter [" + shardContext.getShard() + "/" + shardContext.getTableContext().getTable()
-        + "]", true);
+
     long period = refreshUnit.toMillis(refreshAmount);
-    _timer.schedule(this, period, period);
+    indexImporterTimer.schedule(this, period, period);
+    _inindexImporterTimer = indexImporterTimer;
     _table = _shardContext.getTableContext().getTable();
     _shard = _shardContext.getShard();
     _cleanupDelay = TimeUnit.MINUTES.toMillis(10);
@@ -94,11 +98,71 @@ public class IndexImporter extends TimerTask implements Closeable {
 
   @Override
   public void close() throws IOException {
-    if (_running.get()) {
-      _running.set(false);
-      _timer.cancel();
-      _timer.purge();
+    cancel();
+    _inindexImporterTimer.purge();
+  }
+
+  public long getSegmentImportPendingCount() throws IOException {
+    Path path = _shardContext.getHdfsDirPath();
+    Configuration configuration = _shardContext.getTableContext().getConfiguration();
+    FileSystem fileSystem = path.getFileSystem(configuration);
+    for (int i = 0; i < 10; i++) {
+      try {
+        FileStatus[] listStatus = fileSystem.listStatus(path, new PathFilter() {
+          @Override
+          public boolean accept(Path path) {
+            if (path != null && path.getName().endsWith(COMMIT)) {
+              return true;
+            }
+            return false;
+          }
+        });
+        return listStatus.length;
+      } catch (FileNotFoundException e) {
+        LOG.warn("File not found error, retrying.");
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        return 0L;
+      }
     }
+    throw new IOException("Received too many errors. Give up.");
+  }
+
+  public long getSegmentImportInProgressCount() throws IOException {
+    Path path = _shardContext.getHdfsDirPath();
+    Configuration configuration = _shardContext.getTableContext().getConfiguration();
+    FileSystem fileSystem = path.getFileSystem(configuration);
+    for (int i = 0; i < 10; i++) {
+      try {
+        FileStatus[] listStatus = fileSystem.listStatus(path, new PathFilter() {
+          @Override
+          public boolean accept(Path path) {
+            if (path != null && path.getName().endsWith(INUSE)) {
+              return true;
+            }
+            return false;
+          }
+        });
+        long count = 0;
+        for (FileStatus fileStatus : listStatus) {
+          Path p = fileStatus.getPath();
+          if (fileSystem.exists(new Path(p, INPROGRESS))) {
+            count++;
+          }
+        }
+        return count;
+      } catch (FileNotFoundException e) {
+        LOG.warn("File not found error, retrying.");
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        return 0L;
+      }
+    }
+    throw new IOException("Received too many errors. Give up.");
   }
 
   @Override
@@ -120,9 +184,6 @@ public class IndexImporter extends TimerTask implements Closeable {
         FileSystem fileSystem = path.getFileSystem(configuration);
         SortedSet<FileStatus> listStatus;
         while (true) {
-          if (!_running.get()) {
-            return;
-          }
           try {
             listStatus = sort(fileSystem.listStatus(path, new PathFilter() {
               @Override
@@ -148,20 +209,28 @@ public class IndexImporter extends TimerTask implements Closeable {
           if (fileStatus.isDir() && file.getName().endsWith(COMMIT)) {
             // rename to inuse, if good continue else rename to badindex
             Path inuse = new Path(file.getParent(), rename(file.getName(), INUSE));
+            touch(fileSystem, new Path(file, INPROGRESS));
             if (fileSystem.rename(file, inuse)) {
+              if (_testError != null) {
+                _testError.run();
+              }
               HdfsDirectory hdfsDirectory = new HdfsDirectory(configuration, inuse);
-              if (DirectoryReader.indexExists(hdfsDirectory)) {
-                IndexAction indexAction = getIndexAction(hdfsDirectory, fileSystem);
-                _blurIndex.process(indexAction);
-                return;
-              } else {
-                Path badindex = new Path(file.getParent(), rename(file.getName(), BADINDEX));
-                if (fileSystem.rename(inuse, badindex)) {
-                  LOG.error("Directory found at [{0}] is not a vaild index, renaming to [{1}].", inuse, badindex);
+              try {
+                if (DirectoryReader.indexExists(hdfsDirectory)) {
+                  IndexAction indexAction = getIndexAction(hdfsDirectory, fileSystem);
+                  _blurIndex.process(indexAction);
+                  return;
                 } else {
-                  LOG.fatal("Directory found at [{0}] is not a vaild index, could not rename to [{1}].", inuse,
-                      badindex);
+                  Path badindex = new Path(file.getParent(), rename(file.getName(), BADINDEX));
+                  if (fileSystem.rename(inuse, badindex)) {
+                    LOG.error("Directory found at [{0}] is not a vaild index, renaming to [{1}].", inuse, badindex);
+                  } else {
+                    LOG.fatal("Directory found at [{0}] is not a vaild index, could not rename to [{1}].", inuse,
+                        badindex);
+                  }
                 }
+              } finally {
+                hdfsDirectory.close();
               }
             } else {
               LOG.fatal("Could not rename [{0}] to inuse dir.", file);
@@ -176,6 +245,10 @@ public class IndexImporter extends TimerTask implements Closeable {
     }
   }
 
+  private void touch(FileSystem fileSystem, Path path) throws IOException {
+    fileSystem.create(path, true).close();
+  }
+
   private String rename(String name, String newSuffix) {
     int lastIndexOf = name.lastIndexOf('.');
     return name.substring(0, lastIndexOf) + newSuffix;
@@ -185,7 +258,7 @@ public class IndexImporter extends TimerTask implements Closeable {
     return new IndexAction() {
 
       @Override
-      public void performMutate(IndexSearcherClosable searcher, IndexWriter writer) throws IOException {
+      public void performMutate(IndexSearcherCloseable searcher, IndexWriter writer) throws IOException {
         LOG.info("About to import [{0}] into [{1}/{2}]", directory, _shard, _table);
         boolean emitDeletes = searcher.getIndexReader().numDocs() != 0;
         applyDeletes(directory, writer, _shard, emitDeletes);
@@ -197,13 +270,16 @@ public class IndexImporter extends TimerTask implements Closeable {
       }
 
       @Override
-      public void doPreCommit(IndexSearcherClosable indexSearcher, IndexWriter writer) throws IOException {
+      public void doPreCommit(IndexSearcherCloseable indexSearcher, IndexWriter writer) throws IOException {
 
       }
 
       @Override
       public void doPostCommit(IndexWriter writer) throws IOException {
+        Path path = directory.getPath();
+        fileSystem.delete(new Path(path, INPROGRESS), false);
         LOG.info("Import complete on [{0}/{1}]", _shard, _table);
+        writer.maybeMerge();
       }
 
       @Override
@@ -239,7 +315,7 @@ public class IndexImporter extends TimerTask implements Closeable {
       BlurPartitioner blurPartitioner = new BlurPartitioner();
       Text key = new Text();
       int numberOfShards = _shardContext.getTableContext().getDescriptor().getShardCount();
-      int shardId = BlurUtil.getShardIndex(shard);
+      int shardId = ShardUtil.getShardIndex(shard);
       for (AtomicReaderContext context : leaves) {
         AtomicReader atomicReader = context.reader();
         Fields fields = atomicReader.fields();
@@ -289,10 +365,31 @@ public class IndexImporter extends TimerTask implements Closeable {
       Path realPath = HdfsDirectory.readRealPathDataFromSymlinkPath(fileSystem, status.getPath());
       Path inuseDir = inuseFileToDir.get(realPath);
       inuseDirs.remove(inuseDir);
+      // if the inuse dir has an inprogress file then remove it because there
+      // are files that reference this dir so it had to be committed.
+      Path path = new Path(inuseDir, INPROGRESS);
+      if (fileSystem.exists(path)) {
+        fileSystem.delete(path, false);
+        if (_thriftCache != null) {
+          _thriftCache.clearTable(_table);
+        }
+      }
+    }
+
+    // Check if any inuse dirs have inprogress files.
+    // If they do, rename inuse to commit to retry import.
+    for (Path inuse : new HashSet<Path>(inuseDirs)) {
+      Path path = new Path(inuse, INPROGRESS);
+      if (fileSystem.exists(path)) {
+        LOG.info("Path [{0}] is not imported but has inprogress file, retrying import.", path);
+        inuseDirs.remove(inuse);
+        Path commit = new Path(inuse.getParent(), rename(inuse.getName(), COMMIT));
+        fileSystem.rename(inuse, commit);
+      }
     }
 
     for (Path p : inuseDirs) {
-      LOG.info("Deleteing path [{0}] no longer in use.", p);
+      LOG.info("Deleting path [{0}] no longer in use.", p);
       fileSystem.delete(p, true);
     }
   }
@@ -317,4 +414,13 @@ public class IndexImporter extends TimerTask implements Closeable {
     }
     return result;
   }
+
+  public Runnable getTestError() {
+    return _testError;
+  }
+
+  public void setTestError(Runnable testError) {
+    _testError = testError;
+  }
+
 }

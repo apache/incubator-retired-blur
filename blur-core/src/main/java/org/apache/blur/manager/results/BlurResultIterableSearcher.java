@@ -22,10 +22,10 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.lucene.search.DeepPagingCache;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.lucene.search.IterablePaging;
 import org.apache.blur.lucene.search.IterablePaging.ProgressRef;
 import org.apache.blur.lucene.search.IterablePaging.TotalHitsRef;
-import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurResult;
@@ -54,11 +54,11 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private final IterablePaging _iterablePaging;
   private final Sort _sort;
 
-  private IndexSearcherClosable _searcher;
+  private IndexSearcherCloseable _searcher;
   private long _skipTo;
 
   public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard,
-      IndexSearcherClosable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount,
+      IndexSearcherCloseable searcher, Selector selector, boolean closeSearcher, boolean runSlow, int fetchCount,
       int maxHeapPerRowFetch, TableContext context, Sort sort, DeepPagingCache deepPagingCache) throws BlurException {
     _sort = sort;
     _running = running;

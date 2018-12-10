@@ -38,13 +38,12 @@
           <ul class="nav navbar-nav">
 	        <li><a href="index.html">Main</a></li>
             <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="platform.html">Platform</a></li>
             <li><a href="data-model.html">Data Model</a></li>
             <li><a href="cluster-setup.html">Cluster Setup</a></li>
             <li class="active"><a href="using-blur.html">Using Blur</a></li>
             <li><a href="Blur.html">Blur API</a></li>
             <li><a href="console.html">Console</a></li>
-            <li><a href="site/index.html" target="_blank">Maven Site</a></li>
-            <li><a href="site/apidocs/index.html" target="_blank">Javadocs</a></li>
           </ul>
         </div>
       </div>
@@ -88,6 +87,7 @@
 <li><a href="#shell_command_parse">&nbsp;&nbsp;parse</a></li>
 <li><a href="#shell_command_definecolumn">&nbsp;&nbsp;definecolumn</a></li>
 <li><a href="#shell_command_optimize">&nbsp;&nbsp;optimize</a></li>
+<li><a href="#shell_command_copy">&nbsp;&nbsp;copy</a></li>
 </ul></li>
 <li><a href="#shell_data_commands">Data Commands</a>
 <ul class="nav">
@@ -110,6 +110,18 @@
 <li><a href="#shell_command_cluster">&nbsp;&nbsp;cluster</a></li>
 <li><a href="#shell_command_safemodewait">&nbsp;&nbsp;safemodewait</a></li>
 <li><a href="#shell_command_top">&nbsp;&nbsp;top</a></li>
+</ul></li>
+<li><a href="#shell_server_commands">Server Commands</a>
+<ul class="nav">
+<li><a href="#shell_command_logger">&nbsp;&nbsp;logger</a></li>
+<li><a href="#shell_command_logger-reset">&nbsp;&nbsp;logger-reset</a></li>
+<li><a href="#shell_command_remove-shard">&nbsp;&nbsp;remove-shard</a></li>
+</ul></li>
+<li><a href="#shell_platform_commands">Platform Commands</a>
+<ul class="nav">
+<li><a href="#shell_command_command-list">&nbsp;&nbsp;command-list</a></li>
+<li><a href="#shell_command_command-exec">&nbsp;&nbsp;command-exec</a></li>
+<li><a href="#shell_command_command-desc">&nbsp;&nbsp;command-desc</a></li>
 </ul></li>
 <li><a href="#shell_shell_commands">Shell Commands</a>
 <ul class="nav">
@@ -411,7 +423,7 @@ The following rules are used when interacting with the shell:
 <h3 id="shell_table_commands">Table Commands</h3>
 <h4 id="shell_command_create">create</h4>
 <p>Description: Create the named table.  Run -h for full argument list.<br/>
-<pre><code class="bash">create -t &lt;tablename&gt; -c &lt;shardcount&gt;</code></pre></p>
+<pre><code class="bash">create -t &lt;tablename&gt; -c &lt;shardcount&gt; -l &lt;location&gt;</code></pre></p>
 <h4 id="shell_command_enable">enable</h4>
 <p>Description: Enable the named table.<br/>
 <pre><code class="bash">enable &lt;tablename&gt;</code></pre></p>
@@ -448,10 +460,13 @@ The following rules are used when interacting with the shell:
 <h4 id="shell_command_optimize">optimize</h4>
 <p>Description: Optimize the named table.<br/>
 <pre><code class="bash">optimize &lt;tablename&gt; &lt;number of segments per shard&gt;</code></pre></p>
+<h4 id="shell_command_copy">copy</h4>
+<p>Description: Copy the table definitions to a new table.  Run -h for full argument list.<br/>
+<pre><code class="bash">copy -src &lt;tablename&gt; -dest &lt;desttable&gt; -l &lt;location&gt; -c &lt;cluster&gt;</code></pre></p>
 <h3 id="shell_data_commands">Data Commands</h3>
 <h4 id="shell_command_query">query</h4>
-<p>Description: Query the named table.<br/>
-<pre><code class="bash">query &lt;tablename&gt; &lt;query&gt;</code></pre></p>
+<p>Description: Query the named table.  Run -h for full argument list.<br/>
+<pre><code class="bash">query &lt;tablename&gt; &lt;query&gt; [&lt;options&gt;]</code></pre></p>
 <h4 id="shell_command_get">get</h4>
 <p>Description: display the specified row<br/>
 <pre><code class="bash">get &lt;tablename&gt; &lt;rowid&gt;</code></pre></p>
@@ -498,6 +513,26 @@ The following rules are used when interacting with the shell:
 <h4 id="shell_command_top">top</h4>
 <p>Description: Top for watching shard clusters.<br/>
 <pre><code class="bash">top [&lt;cluster&gt;]</code></pre></p>
+<h3 id="shell_server_commands">Server Commands</h3>
+<h4 id="shell_command_logger">logger</h4>
+<p>Description: Change log levels of a server.  Levels are: OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE, ALL<br/>
+<pre><code class="bash">logger &lt;node:port&gt; &lt;log level&gt; &lt;logger name or class name&gt;</code></pre></p>
+<h4 id="shell_command_logger-reset">logger-reset</h4>
+<p>Description: Reset/reload log configuration of a server.<br/>
+<pre><code class="bash">logger-reset &lt;node:port&gt;</code></pre></p>
+<h4 id="shell_command_remove-shard">remove-shard</h4>
+<p>Description: Remove a node from ZooKeeper which will cause the cluster to consider it dead.<br/>
+<pre><code class="bash">remove-shard &lt;node:port&gt;</code></pre></p>
+<h3 id="shell_platform_commands">Platform Commands</h3>
+<h4 id="shell_command_command-list">command-list</h4>
+<p>Description: List platform commands that are installed.<br/>
+<pre><code class="bash">command-list </code></pre></p>
+<h4 id="shell_command_command-exec">command-exec</h4>
+<p>Description: Execute a platform command.  Run -h for full argument list.<br/>
+<pre><code class="bash">command-exec &lt;command name&gt; ...</code></pre></p>
+<h4 id="shell_command_command-desc">command-desc</h4>
+<p>Description: Describes the specifed command.<br/>
+<pre><code class="bash">command-desc &lt;command name&gt;</code></pre></p>
 <h3 id="shell_shell_commands">Shell Commands</h3>
 <h4 id="shell_command_help">help</h4>
 <p>Description: Display help.<br/>

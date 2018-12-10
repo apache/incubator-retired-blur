@@ -1,6 +1,7 @@
 package org.apache.blur.command;
 
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -118,6 +119,12 @@ public class CommandUtil {
     } else if (o instanceof byte[]) {
       value.setBinaryValue((byte[]) o);
       return value;
+    } else if (o instanceof ByteBuffer) {
+      ByteBuffer buff = (ByteBuffer) o;
+      byte[] temp = new byte[buff.remaining()];
+      buff.get(temp);
+      value.setBinaryValue(temp);
+      return value;
     } else if (o instanceof Double) {
       value.setDoubleValue((Double) o);
       return value;
@@ -216,6 +223,10 @@ public class CommandUtil {
     Map<String, Object> args = new HashMap<String, Object>();
     addArguments(clazz, args, command);
     BlurObject blurObject = serde.serialize(args);
+    return toArguments(blurObject);
+  }
+
+  public static Arguments toArguments(BlurObject blurObject) throws BlurException {
     Arguments arguments = new Arguments();
     Iterator<String> keys = blurObject.keys();
     while (keys.hasNext()) {

@@ -160,16 +160,16 @@ sub write {
 package Blur::TimeoutException;
 use base qw(Thrift::TException);
 use base qw(Class::Accessor);
-Blur::TimeoutException->mk_accessors( qw( executionId ) );
+Blur::TimeoutException->mk_accessors( qw( instanceExecutionId ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{executionId} = undef;
+  $self->{instanceExecutionId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{executionId}) {
-      $self->{executionId} = $vals->{executionId};
+    if (defined $vals->{instanceExecutionId}) {
+      $self->{instanceExecutionId} = $vals->{instanceExecutionId};
     }
   }
   return bless ($self, $classname);
@@ -194,8 +194,8 @@ sub read {
     }
     SWITCH: for($fid)
     {
-      /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{executionId});
+      /^1$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{instanceExecutionId});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -212,9 +212,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('TimeoutException');
-  if (defined $self->{executionId}) {
-    $xfer += $output->writeFieldBegin('executionId', TType::STRING, 1);
-    $xfer += $output->writeString($self->{executionId});
+  if (defined $self->{instanceExecutionId}) {
+    $xfer += $output->writeFieldBegin('instanceExecutionId', TType::I64, 1);
+    $xfer += $output->writeI64($self->{instanceExecutionId});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -2928,7 +2928,7 @@ sub write {
 
 package Blur::TableStats;
 use base qw(Class::Accessor);
-Blur::TableStats->mk_accessors( qw( tableName bytes recordCount rowCount ) );
+Blur::TableStats->mk_accessors( qw( tableName bytes recordCount rowCount segmentImportPendingCount segmentImportInProgressCount ) );
 
 sub new {
   my $classname = shift;
@@ -2938,6 +2938,8 @@ sub new {
   $self->{bytes} = undef;
   $self->{recordCount} = undef;
   $self->{rowCount} = undef;
+  $self->{segmentImportPendingCount} = 0;
+  $self->{segmentImportInProgressCount} = 0;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{tableName}) {
       $self->{tableName} = $vals->{tableName};
@@ -2950,6 +2952,12 @@ sub new {
     }
     if (defined $vals->{rowCount}) {
       $self->{rowCount} = $vals->{rowCount};
+    }
+    if (defined $vals->{segmentImportPendingCount}) {
+      $self->{segmentImportPendingCount} = $vals->{segmentImportPendingCount};
+    }
+    if (defined $vals->{segmentImportInProgressCount}) {
+      $self->{segmentImportInProgressCount} = $vals->{segmentImportInProgressCount};
     }
   }
   return bless ($self, $classname);
@@ -2998,6 +3006,18 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^5$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{segmentImportPendingCount});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^6$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{segmentImportInProgressCount});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -3030,6 +3050,16 @@ sub write {
     $xfer += $output->writeI64($self->{rowCount});
     $xfer += $output->writeFieldEnd();
   }
+  if (defined $self->{segmentImportPendingCount}) {
+    $xfer += $output->writeFieldBegin('segmentImportPendingCount', TType::I64, 5);
+    $xfer += $output->writeI64($self->{segmentImportPendingCount});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{segmentImportInProgressCount}) {
+    $xfer += $output->writeFieldBegin('segmentImportInProgressCount', TType::I64, 6);
+    $xfer += $output->writeI64($self->{segmentImportInProgressCount});
+    $xfer += $output->writeFieldEnd();
+  }
   $xfer += $output->writeFieldStop();
   $xfer += $output->writeStructEnd();
   return $xfer;
@@ -3037,7 +3067,7 @@ sub write {
 
 package Blur::ColumnDefinition;
 use base qw(Class::Accessor);
-Blur::ColumnDefinition->mk_accessors( qw( family columnName subColumnName fieldLessIndexed fieldType properties sortable ) );
+Blur::ColumnDefinition->mk_accessors( qw( family columnName subColumnName fieldLessIndexed fieldType properties sortable multiValueField ) );
 
 sub new {
   my $classname = shift;
@@ -3050,6 +3080,7 @@ sub new {
   $self->{fieldType} = undef;
   $self->{properties} = undef;
   $self->{sortable} = undef;
+  $self->{multiValueField} = 1;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{family}) {
       $self->{family} = $vals->{family};
@@ -3071,6 +3102,9 @@ sub new {
     }
     if (defined $vals->{sortable}) {
       $self->{sortable} = $vals->{sortable};
+    }
+    if (defined $vals->{multiValueField}) {
+      $self->{multiValueField} = $vals->{multiValueField};
     }
   }
   return bless ($self, $classname);
@@ -3152,6 +3186,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^8$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{multiValueField});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -3207,6 +3247,11 @@ sub write {
   if (defined $self->{sortable}) {
     $xfer += $output->writeFieldBegin('sortable', TType::BOOL, 7);
     $xfer += $output->writeBool($self->{sortable});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{multiValueField}) {
+    $xfer += $output->writeFieldBegin('multiValueField', TType::BOOL, 8);
+    $xfer += $output->writeBool($self->{multiValueField});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

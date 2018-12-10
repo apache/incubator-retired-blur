@@ -1,0 +1,128 @@
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<html>
+<head>
+<title>Blur - Home</title>
+<meta charset="utf-8">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/bs-docs.css" rel="stylesheet" media="screen">
+</head>
+
+<script src="js/jquery-1.9.1.min.js"></script>
+<script src="js/thrift.js"></script>
+<script src="js/Blur.js"></script>
+<script src="js/Blur_types.js"></script>
+<script>
+function displayPage() {
+    var transport = new Thrift.Transport("/blur");
+    var protocol  = new Thrift.Protocol(transport);
+    var client    = new BlurClient(protocol);
+        
+    try {
+	  var clusters = client.shardClusterList();
+	  var body = $("#page_body");
+      body.append("<h2>Current Node [" + getNodeName(client) + "]</h2>");
+	  for (var i = 0; i < clusters.length; i++) {
+        var cluster = clusters[i];
+        body.append("<h2>Tables [" + cluster + "]</h2>");
+	    var tables = client.tableListByCluster(cluster);
+	    tables.sort();
+	
+		var s = "<table border=1 class=\"table-bordered table-striped table-condensed\">";
+s += "<tr><th>Name</th><th>Enabled</th><th>Totals Shards</th><th>Online Shards</th><th>Location</th></tr>";
+		for (var t = 0; t < tables.length; t++) {
+		  var table = tables[t];
+          var descriptor = client.describe(table);
+          var layout = client.shardServerLayoutState(table);
+		  s += "<tr>";
+          s += "<td>"+descriptor.name+"</td>";
+          s += "<td>"+descriptor.enabled+"</td>";
+
+          s += "<td>"+descriptor.shardCount+"</td>";
+          s += "<td>"+Object.keys(layout).length+"</td>";
+          s += "<td>"+descriptor.tableUri+"</td>";
+		  s += "</tr>";
+		}
+		body.append(s + "</table>");
+		
+		body.append("<h2>All Controller Servers</h2>");
+        var cservers = client.controllerServerList();
+        cservers.sort();
+        var l = "<ul>";
+	    for (var t = 0; t < cservers.length; t++) {
+		  var server = cservers[t];
+		  var hostname = getHttpName(client, server);
+		  l += "<li><a href=\"http://"+hostname+"\">" + server + "</a></li>";
+		}
+		body.append(l + "</ul>");
+
+        body.append("<h2>All Shard Servers in [" + cluster + "]</h2>");
+        var servers = client.shardServerList(cluster);
+        servers.sort();
+        var l = "<ul>";
+	    for (var t = 0; t < servers.length; t++) {
+		  var server = servers[t];
+		  var hostname = getHttpName(client, server);
+		  l += "<li><a href=\"http://"+hostname+"\">" + server + "</a></li>";
+		}
+		body.append(l + "</ul>");
+      }
+    } catch(ouch){
+alert (ouch);
+    }
+}
+function getNodeName(client) {
+  return client.configurationPerServer(null, "blur.nodename");
+}
+function getHttpName(client,hostnamePlusPort) {
+  var indexOf = hostnamePlusPort.indexOf("\:");
+  var port = client.configurationPerServer(hostnamePlusPort, "blur.http.status.running.port");
+  return hostnamePlusPort.substring(0,indexOf) + ":" + port;
+}
+$(window).bind("load", displayPage);
+</script>
+<body>
+	<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="http://incubator.apache.org/blur">Apache Blur (Incubator)</a>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="index.html">Home</a></li>
+          <li><a href="config.html">Configuration</a></li>
+          <li><a href="metrics.html">Metrics</a></li>
+          <li><a href="traces.html">Traces</a></li>
+          <li><a href="logs.html">Logs</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <table class="table-bordered table-condensed">
+  	<tbody>
+  		<tr><td id="page_body"></td></tr>
+  	</tbody>
+  </table>
+</body>
+</html>

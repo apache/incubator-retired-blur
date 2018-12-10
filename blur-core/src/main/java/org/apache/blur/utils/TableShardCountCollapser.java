@@ -114,7 +114,7 @@ public class TableShardCountCollapser extends Configured implements Tool {
   private void validateShards(SortedSet<String> shards) {
     int count = shards.size();
     for (int i = 0; i < count; i++) {
-      if (!shards.contains(BlurUtil.getShardName(i))) {
+      if (!shards.contains(ShardUtil.getShardName(i))) {
         throw new RuntimeException("Invalid table");
       }
     }

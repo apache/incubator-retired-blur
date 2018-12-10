@@ -30,6 +30,6 @@ if [ -f $PID_FILE ]; then
 fi
 
 PROC_NAME=console-$HOSTNAME
-nohup "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH -Dblur-console $BLUR_CONSOLE_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -cp $BLUR_CLASSPATH org.apache.blur.console.Main > "$BLUR_LOGS/blur-$USER-$PROC_NAME.out" 2>&1 < /dev/null &
+nohup "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Dblur-console -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_CONSOLE_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -cp $BLUR_CLASSPATH org.apache.blur.console.Main > "$BLUR_LOGS/blur-$USER-$PROC_NAME.out" 2>&1 < /dev/null &
 echo $! > $PID_FILE
 echo Console starting as process `cat $PID_FILE`.

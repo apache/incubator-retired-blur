@@ -16,16 +16,36 @@
  */
 package org.apache.blur.lucene.fst;
 
+import static org.apache.blur.metrics.MetricsConstants.ORG_APACHE_BLUR;
+import static org.apache.blur.metrics.MetricsConstants.SIZE;
+
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.blur.BlurConfiguration;
+
+import com.yammer.metrics.Metrics;
+import com.yammer.metrics.core.Gauge;
+import com.yammer.metrics.core.MetricName;
 
 public class ByteArrayPrimitiveFactory extends ByteArrayFactory {
 
+  private static final String FST = "FST";
+
+  private final AtomicLong _size = new AtomicLong();
+
   public ByteArrayPrimitiveFactory(BlurConfiguration configuration) {
     super(configuration);
+    Metrics.newGauge(new MetricName(ORG_APACHE_BLUR, FST, SIZE), new Gauge<Long>() {
+      @Override
+      public Long value() {
+        return _size.get();
+      }
+    });
   }
 
   @Override
   public ByteArray newByteArray(int size) {
+    _size.addAndGet(size);
     return new ByteArrayPrimitive(size);
   }
 

@@ -43,6 +43,8 @@ module.exports = function (grunt) {
         'libs/flot/jquery.flot.categories.js',
         'libs/flot/jquery.flot.stack.js',
         'libs/typeahead/typeahead.jquery.js',
+        'libs/tagmanager/tagmanager.js',
+        'libs/moment/moment.js',
         'js/blurconsole.js',
         'js/*\.js'
     ];

@@ -339,16 +339,16 @@ sub write {
 
 package Blur::Blur_reconnect_args;
 use base qw(Class::Accessor);
-Blur::Blur_reconnect_args->mk_accessors( qw( executionId ) );
+Blur::Blur_reconnect_args->mk_accessors( qw( instanceExecutionId ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{executionId} = undef;
+  $self->{instanceExecutionId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{executionId}) {
-      $self->{executionId} = $vals->{executionId};
+    if (defined $vals->{instanceExecutionId}) {
+      $self->{instanceExecutionId} = $vals->{instanceExecutionId};
     }
   }
   return bless ($self, $classname);
@@ -373,8 +373,8 @@ sub read {
     }
     SWITCH: for($fid)
     {
-      /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{executionId});
+      /^1$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{instanceExecutionId});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -391,9 +391,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_reconnect_args');
-  if (defined $self->{executionId}) {
-    $xfer += $output->writeFieldBegin('executionId', TType::STRING, 1);
-    $xfer += $output->writeString($self->{executionId});
+  if (defined $self->{instanceExecutionId}) {
+    $xfer += $output->writeFieldBegin('instanceExecutionId', TType::I64, 1);
+    $xfer += $output->writeI64($self->{instanceExecutionId});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -695,16 +695,16 @@ sub write {
 
 package Blur::Blur_commandStatus_args;
 use base qw(Class::Accessor);
-Blur::Blur_commandStatus_args->mk_accessors( qw( executionId ) );
+Blur::Blur_commandStatus_args->mk_accessors( qw( commandExecutionId ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{executionId} = undef;
+  $self->{commandExecutionId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{executionId}) {
-      $self->{executionId} = $vals->{executionId};
+    if (defined $vals->{commandExecutionId}) {
+      $self->{commandExecutionId} = $vals->{commandExecutionId};
     }
   }
   return bless ($self, $classname);
@@ -730,7 +730,7 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{executionId});
+        $xfer += $input->readString(\$self->{commandExecutionId});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -747,9 +747,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_commandStatus_args');
-  if (defined $self->{executionId}) {
-    $xfer += $output->writeFieldBegin('executionId', TType::STRING, 1);
-    $xfer += $output->writeString($self->{executionId});
+  if (defined $self->{commandExecutionId}) {
+    $xfer += $output->writeFieldBegin('commandExecutionId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{commandExecutionId});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -840,16 +840,16 @@ sub write {
 
 package Blur::Blur_commandCancel_args;
 use base qw(Class::Accessor);
-Blur::Blur_commandCancel_args->mk_accessors( qw( executionId ) );
+Blur::Blur_commandCancel_args->mk_accessors( qw( commandExecutionId ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{executionId} = undef;
+  $self->{commandExecutionId} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{executionId}) {
-      $self->{executionId} = $vals->{executionId};
+    if (defined $vals->{commandExecutionId}) {
+      $self->{commandExecutionId} = $vals->{commandExecutionId};
     }
   }
   return bless ($self, $classname);
@@ -875,7 +875,7 @@ sub read {
     SWITCH: for($fid)
     {
       /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{executionId});
+        $xfer += $input->readString(\$self->{commandExecutionId});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -892,9 +892,9 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_commandCancel_args');
-  if (defined $self->{executionId}) {
-    $xfer += $output->writeFieldBegin('executionId', TType::STRING, 1);
-    $xfer += $output->writeString($self->{executionId});
+  if (defined $self->{commandExecutionId}) {
+    $xfer += $output->writeFieldBegin('commandExecutionId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{commandExecutionId});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -3916,6 +3916,480 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_loadData_args;
+use base qw(Class::Accessor);
+Blur::Blur_loadData_args->mk_accessors( qw( table location ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{table} = undef;
+  $self->{location} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{table}) {
+      $self->{table} = $vals->{table};
+    }
+    if (defined $vals->{location}) {
+      $self->{location} = $vals->{location};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_loadData_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{table});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{location});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_loadData_args');
+  if (defined $self->{table}) {
+    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
+    $xfer += $output->writeString($self->{table});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{location}) {
+    $xfer += $output->writeFieldBegin('location', TType::STRING, 2);
+    $xfer += $output->writeString($self->{location});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_loadData_result;
+use base qw(Class::Accessor);
+Blur::Blur_loadData_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_loadData_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_loadData_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_validateIndex_args;
+use base qw(Class::Accessor);
+Blur::Blur_validateIndex_args->mk_accessors( qw( table externalIndexPaths ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{table} = undef;
+  $self->{externalIndexPaths} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{table}) {
+      $self->{table} = $vals->{table};
+    }
+    if (defined $vals->{externalIndexPaths}) {
+      $self->{externalIndexPaths} = $vals->{externalIndexPaths};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_validateIndex_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{table});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size316 = 0;
+          $self->{externalIndexPaths} = [];
+          my $_etype319 = 0;
+          $xfer += $input->readListBegin(\$_etype319, \$_size316);
+          for (my $_i320 = 0; $_i320 < $_size316; ++$_i320)
+          {
+            my $elem321 = undef;
+            $xfer += $input->readString(\$elem321);
+            push(@{$self->{externalIndexPaths}},$elem321);
+          }
+          $xfer += $input->readListEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_validateIndex_args');
+  if (defined $self->{table}) {
+    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
+    $xfer += $output->writeString($self->{table});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{externalIndexPaths}) {
+    $xfer += $output->writeFieldBegin('externalIndexPaths', TType::LIST, 2);
+    {
+      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{externalIndexPaths}}));
+      {
+        foreach my $iter322 (@{$self->{externalIndexPaths}}) 
+        {
+          $xfer += $output->writeString($iter322);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_validateIndex_result;
+use base qw(Class::Accessor);
+Blur::Blur_validateIndex_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_validateIndex_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_validateIndex_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_loadIndex_args;
+use base qw(Class::Accessor);
+Blur::Blur_loadIndex_args->mk_accessors( qw( table externalIndexPaths ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{table} = undef;
+  $self->{externalIndexPaths} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{table}) {
+      $self->{table} = $vals->{table};
+    }
+    if (defined $vals->{externalIndexPaths}) {
+      $self->{externalIndexPaths} = $vals->{externalIndexPaths};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_loadIndex_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{table});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size323 = 0;
+          $self->{externalIndexPaths} = [];
+          my $_etype326 = 0;
+          $xfer += $input->readListBegin(\$_etype326, \$_size323);
+          for (my $_i327 = 0; $_i327 < $_size323; ++$_i327)
+          {
+            my $elem328 = undef;
+            $xfer += $input->readString(\$elem328);
+            push(@{$self->{externalIndexPaths}},$elem328);
+          }
+          $xfer += $input->readListEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_loadIndex_args');
+  if (defined $self->{table}) {
+    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
+    $xfer += $output->writeString($self->{table});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{externalIndexPaths}) {
+    $xfer += $output->writeFieldBegin('externalIndexPaths', TType::LIST, 2);
+    {
+      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{externalIndexPaths}}));
+      {
+        foreach my $iter329 (@{$self->{externalIndexPaths}}) 
+        {
+          $xfer += $output->writeString($iter329);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_loadIndex_result;
+use base qw(Class::Accessor);
+Blur::Blur_loadIndex_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_loadIndex_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_loadIndex_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::Blur_mutate_args;
 use base qw(Class::Accessor);
 Blur::Blur_mutate_args->mk_accessors( qw( mutation ) );
@@ -4214,16 +4688,16 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size316 = 0;
+          my $_size330 = 0;
           $self->{mutations} = [];
-          my $_etype319 = 0;
-          $xfer += $input->readListBegin(\$_etype319, \$_size316);
-          for (my $_i320 = 0; $_i320 < $_size316; ++$_i320)
+          my $_etype333 = 0;
+          $xfer += $input->readListBegin(\$_etype333, \$_size330);
+          for (my $_i334 = 0; $_i334 < $_size330; ++$_i334)
           {
-            my $elem321 = undef;
-            $elem321 = new Blur::RowMutation();
-            $xfer += $elem321->read($input);
-            push(@{$self->{mutations}},$elem321);
+            my $elem335 = undef;
+            $elem335 = new Blur::RowMutation();
+            $xfer += $elem335->read($input);
+            push(@{$self->{mutations}},$elem335);
           }
           $xfer += $input->readListEnd();
         }
@@ -4248,9 +4722,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{mutations}}));
       {
-        foreach my $iter322 (@{$self->{mutations}}) 
+        foreach my $iter336 (@{$self->{mutations}}) 
         {
-          $xfer += ${iter322}->write($output);
+          $xfer += ${iter336}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -4365,16 +4839,16 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size323 = 0;
+          my $_size337 = 0;
           $self->{mutations} = [];
-          my $_etype326 = 0;
-          $xfer += $input->readListBegin(\$_etype326, \$_size323);
-          for (my $_i327 = 0; $_i327 < $_size323; ++$_i327)
+          my $_etype340 = 0;
+          $xfer += $input->readListBegin(\$_etype340, \$_size337);
+          for (my $_i341 = 0; $_i341 < $_size337; ++$_i341)
           {
-            my $elem328 = undef;
-            $elem328 = new Blur::RowMutation();
-            $xfer += $elem328->read($input);
-            push(@{$self->{mutations}},$elem328);
+            my $elem342 = undef;
+            $elem342 = new Blur::RowMutation();
+            $xfer += $elem342->read($input);
+            push(@{$self->{mutations}},$elem342);
           }
           $xfer += $input->readListEnd();
         }
@@ -4399,9 +4873,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{mutations}}));
       {
-        foreach my $iter329 (@{$self->{mutations}}) 
+        foreach my $iter343 (@{$self->{mutations}}) 
         {
-          $xfer += ${iter329}->write($output);
+          $xfer += ${iter343}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -4468,6 +4942,605 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_enqueueMutateBatch_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_bulkMutateStart_args;
+use base qw(Class::Accessor);
+Blur::Blur_bulkMutateStart_args->mk_accessors( qw( bulkId ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{bulkId} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{bulkId}) {
+      $self->{bulkId} = $vals->{bulkId};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_bulkMutateStart_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{bulkId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_bulkMutateStart_args');
+  if (defined $self->{bulkId}) {
+    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{bulkId});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_bulkMutateStart_result;
+use base qw(Class::Accessor);
+Blur::Blur_bulkMutateStart_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_bulkMutateStart_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_bulkMutateStart_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_bulkMutateAdd_args;
+use base qw(Class::Accessor);
+Blur::Blur_bulkMutateAdd_args->mk_accessors( qw( bulkId rowMutation ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{bulkId} = undef;
+  $self->{rowMutation} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{bulkId}) {
+      $self->{bulkId} = $vals->{bulkId};
+    }
+    if (defined $vals->{rowMutation}) {
+      $self->{rowMutation} = $vals->{rowMutation};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_bulkMutateAdd_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{bulkId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{rowMutation} = new Blur::RowMutation();
+        $xfer += $self->{rowMutation}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_bulkMutateAdd_args');
+  if (defined $self->{bulkId}) {
+    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{bulkId});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{rowMutation}) {
+    $xfer += $output->writeFieldBegin('rowMutation', TType::STRUCT, 2);
+    $xfer += $self->{rowMutation}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_bulkMutateAdd_result;
+use base qw(Class::Accessor);
+Blur::Blur_bulkMutateAdd_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_bulkMutateAdd_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_bulkMutateAdd_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_bulkMutateAddMultiple_args;
+use base qw(Class::Accessor);
+Blur::Blur_bulkMutateAddMultiple_args->mk_accessors( qw( bulkId rowMutations ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{bulkId} = undef;
+  $self->{rowMutations} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{bulkId}) {
+      $self->{bulkId} = $vals->{bulkId};
+    }
+    if (defined $vals->{rowMutations}) {
+      $self->{rowMutations} = $vals->{rowMutations};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_bulkMutateAddMultiple_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{bulkId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size344 = 0;
+          $self->{rowMutations} = [];
+          my $_etype347 = 0;
+          $xfer += $input->readListBegin(\$_etype347, \$_size344);
+          for (my $_i348 = 0; $_i348 < $_size344; ++$_i348)
+          {
+            my $elem349 = undef;
+            $elem349 = new Blur::RowMutation();
+            $xfer += $elem349->read($input);
+            push(@{$self->{rowMutations}},$elem349);
+          }
+          $xfer += $input->readListEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_bulkMutateAddMultiple_args');
+  if (defined $self->{bulkId}) {
+    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{bulkId});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{rowMutations}) {
+    $xfer += $output->writeFieldBegin('rowMutations', TType::LIST, 2);
+    {
+      $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{rowMutations}}));
+      {
+        foreach my $iter350 (@{$self->{rowMutations}}) 
+        {
+          $xfer += ${iter350}->write($output);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_bulkMutateAddMultiple_result;
+use base qw(Class::Accessor);
+Blur::Blur_bulkMutateAddMultiple_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_bulkMutateAddMultiple_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_bulkMutateAddMultiple_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_bulkMutateFinish_args;
+use base qw(Class::Accessor);
+Blur::Blur_bulkMutateFinish_args->mk_accessors( qw( bulkId apply blockUntilComplete ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{bulkId} = undef;
+  $self->{apply} = undef;
+  $self->{blockUntilComplete} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{bulkId}) {
+      $self->{bulkId} = $vals->{bulkId};
+    }
+    if (defined $vals->{apply}) {
+      $self->{apply} = $vals->{apply};
+    }
+    if (defined $vals->{blockUntilComplete}) {
+      $self->{blockUntilComplete} = $vals->{blockUntilComplete};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_bulkMutateFinish_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{bulkId});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{apply});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^3$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{blockUntilComplete});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_bulkMutateFinish_args');
+  if (defined $self->{bulkId}) {
+    $xfer += $output->writeFieldBegin('bulkId', TType::STRING, 1);
+    $xfer += $output->writeString($self->{bulkId});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{apply}) {
+    $xfer += $output->writeFieldBegin('apply', TType::BOOL, 2);
+    $xfer += $output->writeBool($self->{apply});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{blockUntilComplete}) {
+    $xfer += $output->writeFieldBegin('blockUntilComplete', TType::BOOL, 3);
+    $xfer += $output->writeBool($self->{blockUntilComplete});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_bulkMutateFinish_result;
+use base qw(Class::Accessor);
+Blur::Blur_bulkMutateFinish_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_bulkMutateFinish_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_bulkMutateFinish_result');
   if (defined $self->{ex}) {
     $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
     $xfer += $self->{ex}->write($output);
@@ -4728,15 +5801,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size330 = 0;
+          my $_size351 = 0;
           $self->{success} = [];
-          my $_etype333 = 0;
-          $xfer += $input->readListBegin(\$_etype333, \$_size330);
-          for (my $_i334 = 0; $_i334 < $_size330; ++$_i334)
+          my $_etype354 = 0;
+          $xfer += $input->readListBegin(\$_etype354, \$_size351);
+          for (my $_i355 = 0; $_i355 < $_size351; ++$_i355)
           {
-            my $elem335 = undef;
-            $xfer += $input->readString(\$elem335);
-            push(@{$self->{success}},$elem335);
+            my $elem356 = undef;
+            $xfer += $input->readString(\$elem356);
+            push(@{$self->{success}},$elem356);
           }
           $xfer += $input->readListEnd();
         }
@@ -4768,9 +5841,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter336 (@{$self->{success}}) 
+        foreach my $iter357 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter336);
+          $xfer += $output->writeString($iter357);
         }
       }
       $xfer += $output->writeListEnd();
@@ -5113,15 +6186,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size337 = 0;
+          my $_size358 = 0;
           $self->{success} = [];
-          my $_etype340 = 0;
-          $xfer += $input->readListBegin(\$_etype340, \$_size337);
-          for (my $_i341 = 0; $_i341 < $_size337; ++$_i341)
+          my $_etype361 = 0;
+          $xfer += $input->readListBegin(\$_etype361, \$_size358);
+          for (my $_i362 = 0; $_i362 < $_size358; ++$_i362)
           {
-            my $elem342 = undef;
-            $xfer += $input->readString(\$elem342);
-            push(@{$self->{success}},$elem342);
+            my $elem363 = undef;
+            $xfer += $input->readString(\$elem363);
+            push(@{$self->{success}},$elem363);
           }
           $xfer += $input->readListEnd();
         }
@@ -5153,9 +6226,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter343 (@{$self->{success}}) 
+        foreach my $iter364 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter343);
+          $xfer += $output->writeString($iter364);
         }
       }
       $xfer += $output->writeListEnd();
@@ -5449,15 +6522,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size344 = 0;
+          my $_size365 = 0;
           $self->{success} = [];
-          my $_etype347 = 0;
-          $xfer += $input->readListBegin(\$_etype347, \$_size344);
-          for (my $_i348 = 0; $_i348 < $_size344; ++$_i348)
+          my $_etype368 = 0;
+          $xfer += $input->readListBegin(\$_etype368, \$_size365);
+          for (my $_i369 = 0; $_i369 < $_size365; ++$_i369)
           {
-            my $elem349 = undef;
-            $xfer += $input->readString(\$elem349);
-            push(@{$self->{success}},$elem349);
+            my $elem370 = undef;
+            $xfer += $input->readString(\$elem370);
+            push(@{$self->{success}},$elem370);
           }
           $xfer += $input->readListEnd();
         }
@@ -5489,9 +6562,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter350 (@{$self->{success}}) 
+        foreach my $iter371 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter350);
+          $xfer += $output->writeString($iter371);
         }
       }
       $xfer += $output->writeListEnd();
@@ -5614,15 +6687,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size351 = 0;
+          my $_size372 = 0;
           $self->{success} = [];
-          my $_etype354 = 0;
-          $xfer += $input->readListBegin(\$_etype354, \$_size351);
-          for (my $_i355 = 0; $_i355 < $_size351; ++$_i355)
+          my $_etype375 = 0;
+          $xfer += $input->readListBegin(\$_etype375, \$_size372);
+          for (my $_i376 = 0; $_i376 < $_size372; ++$_i376)
           {
-            my $elem356 = undef;
-            $xfer += $input->readString(\$elem356);
-            push(@{$self->{success}},$elem356);
+            my $elem377 = undef;
+            $xfer += $input->readString(\$elem377);
+            push(@{$self->{success}},$elem377);
           }
           $xfer += $input->readListEnd();
         }
@@ -5654,9 +6727,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter357 (@{$self->{success}}) 
+        foreach my $iter378 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter357);
+          $xfer += $output->writeString($iter378);
         }
       }
       $xfer += $output->writeListEnd();
@@ -5761,15 +6834,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size358 = 0;
+          my $_size379 = 0;
           $self->{success} = [];
-          my $_etype361 = 0;
-          $xfer += $input->readListBegin(\$_etype361, \$_size358);
-          for (my $_i362 = 0; $_i362 < $_size358; ++$_i362)
+          my $_etype382 = 0;
+          $xfer += $input->readListBegin(\$_etype382, \$_size379);
+          for (my $_i383 = 0; $_i383 < $_size379; ++$_i383)
           {
-            my $elem363 = undef;
-            $xfer += $input->readString(\$elem363);
-            push(@{$self->{success}},$elem363);
+            my $elem384 = undef;
+            $xfer += $input->readString(\$elem384);
+            push(@{$self->{success}},$elem384);
           }
           $xfer += $input->readListEnd();
         }
@@ -5801,9 +6874,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter364 (@{$self->{success}}) 
+        foreach my $iter385 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter364);
+          $xfer += $output->writeString($iter385);
         }
       }
       $xfer += $output->writeListEnd();
@@ -5926,18 +6999,18 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size365 = 0;
+          my $_size386 = 0;
           $self->{success} = {};
-          my $_ktype366 = 0;
-          my $_vtype367 = 0;
-          $xfer += $input->readMapBegin(\$_ktype366, \$_vtype367, \$_size365);
-          for (my $_i369 = 0; $_i369 < $_size365; ++$_i369)
+          my $_ktype387 = 0;
+          my $_vtype388 = 0;
+          $xfer += $input->readMapBegin(\$_ktype387, \$_vtype388, \$_size386);
+          for (my $_i390 = 0; $_i390 < $_size386; ++$_i390)
           {
-            my $key370 = '';
-            my $val371 = '';
-            $xfer += $input->readString(\$key370);
-            $xfer += $input->readString(\$val371);
-            $self->{success}->{$key370} = $val371;
+            my $key391 = '';
+            my $val392 = '';
+            $xfer += $input->readString(\$key391);
+            $xfer += $input->readString(\$val392);
+            $self->{success}->{$key391} = $val392;
           }
           $xfer += $input->readMapEnd();
         }
@@ -5969,10 +7042,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{success}}));
       {
-        while( my ($kiter372,$viter373) = each %{$self->{success}}) 
+        while( my ($kiter393,$viter394) = each %{$self->{success}}) 
         {
-          $xfer += $output->writeString($kiter372);
-          $xfer += $output->writeString($viter373);
+          $xfer += $output->writeString($kiter393);
+          $xfer += $output->writeString($viter394);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -6095,33 +7168,33 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size374 = 0;
+          my $_size395 = 0;
           $self->{success} = {};
-          my $_ktype375 = 0;
-          my $_vtype376 = 0;
-          $xfer += $input->readMapBegin(\$_ktype375, \$_vtype376, \$_size374);
-          for (my $_i378 = 0; $_i378 < $_size374; ++$_i378)
+          my $_ktype396 = 0;
+          my $_vtype397 = 0;
+          $xfer += $input->readMapBegin(\$_ktype396, \$_vtype397, \$_size395);
+          for (my $_i399 = 0; $_i399 < $_size395; ++$_i399)
           {
-            my $key379 = '';
-            my $val380 = [];
-            $xfer += $input->readString(\$key379);
+            my $key400 = '';
+            my $val401 = [];
+            $xfer += $input->readString(\$key400);
             {
-              my $_size381 = 0;
-              $val380 = {};
-              my $_ktype382 = 0;
-              my $_vtype383 = 0;
-              $xfer += $input->readMapBegin(\$_ktype382, \$_vtype383, \$_size381);
-              for (my $_i385 = 0; $_i385 < $_size381; ++$_i385)
+              my $_size402 = 0;
+              $val401 = {};
+              my $_ktype403 = 0;
+              my $_vtype404 = 0;
+              $xfer += $input->readMapBegin(\$_ktype403, \$_vtype404, \$_size402);
+              for (my $_i406 = 0; $_i406 < $_size402; ++$_i406)
               {
-                my $key386 = '';
-                my $val387 = 0;
-                $xfer += $input->readString(\$key386);
-                $xfer += $input->readI32(\$val387);
-                $val380->{$key386} = $val387;
+                my $key407 = '';
+                my $val408 = 0;
+                $xfer += $input->readString(\$key407);
+                $xfer += $input->readI32(\$val408);
+                $val401->{$key407} = $val408;
               }
               $xfer += $input->readMapEnd();
             }
-            $self->{success}->{$key379} = $val380;
+            $self->{success}->{$key400} = $val401;
           }
           $xfer += $input->readMapEnd();
         }
@@ -6153,16 +7226,16 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::MAP, scalar(keys %{$self->{success}}));
       {
-        while( my ($kiter388,$viter389) = each %{$self->{success}}) 
+        while( my ($kiter409,$viter410) = each %{$self->{success}}) 
         {
-          $xfer += $output->writeString($kiter388);
+          $xfer += $output->writeString($kiter409);
           {
-            $xfer += $output->writeMapBegin(TType::STRING, TType::I32, scalar(keys %{${viter389}}));
+            $xfer += $output->writeMapBegin(TType::STRING, TType::I32, scalar(keys %{${viter410}}));
             {
-              while( my ($kiter390,$viter391) = each %{${viter389}}) 
+              while( my ($kiter411,$viter412) = each %{${viter410}}) 
               {
-                $xfer += $output->writeString($kiter390);
-                $xfer += $output->writeI32($viter391);
+                $xfer += $output->writeString($kiter411);
+                $xfer += $output->writeI32($viter412);
               }
             }
             $xfer += $output->writeMapEnd();
@@ -6415,18 +7488,18 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size392 = 0;
+          my $_size413 = 0;
           $self->{success} = {};
-          my $_ktype393 = 0;
-          my $_vtype394 = 0;
-          $xfer += $input->readMapBegin(\$_ktype393, \$_vtype394, \$_size392);
-          for (my $_i396 = 0; $_i396 < $_size392; ++$_i396)
+          my $_ktype414 = 0;
+          my $_vtype415 = 0;
+          $xfer += $input->readMapBegin(\$_ktype414, \$_vtype415, \$_size413);
+          for (my $_i417 = 0; $_i417 < $_size413; ++$_i417)
           {
-            my $key397 = '';
-            my $val398 = '';
-            $xfer += $input->readString(\$key397);
-            $xfer += $input->readString(\$val398);
-            $self->{success}->{$key397} = $val398;
+            my $key418 = '';
+            my $val419 = '';
+            $xfer += $input->readString(\$key418);
+            $xfer += $input->readString(\$val419);
+            $self->{success}->{$key418} = $val419;
           }
           $xfer += $input->readMapEnd();
         }
@@ -6458,14 +7531,173 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRING, scalar(keys %{$self->{success}}));
       {
-        while( my ($kiter399,$viter400) = each %{$self->{success}}) 
+        while( my ($kiter420,$viter421) = each %{$self->{success}}) 
         {
-          $xfer += $output->writeString($kiter399);
-          $xfer += $output->writeString($viter400);
+          $xfer += $output->writeString($kiter420);
+          $xfer += $output->writeString($viter421);
         }
       }
       $xfer += $output->writeMapEnd();
     }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_configurationPerServer_args;
+use base qw(Class::Accessor);
+Blur::Blur_configurationPerServer_args->mk_accessors( qw( thriftServerPlusPort configName ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{thriftServerPlusPort} = undef;
+  $self->{configName} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{thriftServerPlusPort}) {
+      $self->{thriftServerPlusPort} = $vals->{thriftServerPlusPort};
+    }
+    if (defined $vals->{configName}) {
+      $self->{configName} = $vals->{configName};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_configurationPerServer_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{thriftServerPlusPort});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{configName});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_configurationPerServer_args');
+  if (defined $self->{thriftServerPlusPort}) {
+    $xfer += $output->writeFieldBegin('thriftServerPlusPort', TType::STRING, 1);
+    $xfer += $output->writeString($self->{thriftServerPlusPort});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{configName}) {
+    $xfer += $output->writeFieldBegin('configName', TType::STRING, 2);
+    $xfer += $output->writeString($self->{configName});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_configurationPerServer_result;
+use base qw(Class::Accessor);
+Blur::Blur_configurationPerServer_result->mk_accessors( qw( success ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{success} = undef;
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{success}) {
+      $self->{success} = $vals->{success};
+    }
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_configurationPerServer_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^0$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{success});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_configurationPerServer_result');
+  if (defined $self->{success}) {
+    $xfer += $output->writeFieldBegin('success', TType::STRING, 0);
+    $xfer += $output->writeString($self->{success});
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{ex}) {
@@ -6516,15 +7748,15 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::SET) {
         {
-          my $_size401 = 0;
+          my $_size422 = 0;
           $self->{metrics} = {};
-          my $_etype404 = 0;
-          $xfer += $input->readSetBegin(\$_etype404, \$_size401);
-          for (my $_i405 = 0; $_i405 < $_size401; ++$_i405)
+          my $_etype425 = 0;
+          $xfer += $input->readSetBegin(\$_etype425, \$_size422);
+          for (my $_i426 = 0; $_i426 < $_size422; ++$_i426)
           {
-            my $elem406 = undef;
-            $xfer += $input->readString(\$elem406);
-            $self->{metrics}->{$elem406} = 1;
+            my $elem427 = undef;
+            $xfer += $input->readString(\$elem427);
+            $self->{metrics}->{$elem427} = 1;
           }
           $xfer += $input->readSetEnd();
         }
@@ -6549,9 +7781,9 @@ sub write {
     {
       $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{metrics}}));
       {
-        foreach my $iter407 (@{$self->{metrics}})
+        foreach my $iter428 (@{$self->{metrics}})
         {
-          $xfer += $output->writeString($iter407);
+          $xfer += $output->writeString($iter428);
         }
       }
       $xfer += $output->writeSetEnd();
@@ -6605,19 +7837,19 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::MAP) {
         {
-          my $_size408 = 0;
+          my $_size429 = 0;
           $self->{success} = {};
-          my $_ktype409 = 0;
-          my $_vtype410 = 0;
-          $xfer += $input->readMapBegin(\$_ktype409, \$_vtype410, \$_size408);
-          for (my $_i412 = 0; $_i412 < $_size408; ++$_i412)
+          my $_ktype430 = 0;
+          my $_vtype431 = 0;
+          $xfer += $input->readMapBegin(\$_ktype430, \$_vtype431, \$_size429);
+          for (my $_i433 = 0; $_i433 < $_size429; ++$_i433)
           {
-            my $key413 = '';
-            my $val414 = new Blur::Metric();
-            $xfer += $input->readString(\$key413);
-            $val414 = new Blur::Metric();
-            $xfer += $val414->read($input);
-            $self->{success}->{$key413} = $val414;
+            my $key434 = '';
+            my $val435 = new Blur::Metric();
+            $xfer += $input->readString(\$key434);
+            $val435 = new Blur::Metric();
+            $xfer += $val435->read($input);
+            $self->{success}->{$key434} = $val435;
           }
           $xfer += $input->readMapEnd();
         }
@@ -6649,10 +7881,10 @@ sub write {
     {
       $xfer += $output->writeMapBegin(TType::STRING, TType::STRUCT, scalar(keys %{$self->{success}}));
       {
-        while( my ($kiter415,$viter416) = each %{$self->{success}}) 
+        while( my ($kiter436,$viter437) = each %{$self->{success}}) 
         {
-          $xfer += $output->writeString($kiter415);
-          $xfer += ${viter416}->write($output);
+          $xfer += $output->writeString($kiter436);
+          $xfer += ${viter437}->write($output);
         }
       }
       $xfer += $output->writeMapEnd();
@@ -6882,15 +8114,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size417 = 0;
+          my $_size438 = 0;
           $self->{success} = [];
-          my $_etype420 = 0;
-          $xfer += $input->readListBegin(\$_etype420, \$_size417);
-          for (my $_i421 = 0; $_i421 < $_size417; ++$_i421)
+          my $_etype441 = 0;
+          $xfer += $input->readListBegin(\$_etype441, \$_size438);
+          for (my $_i442 = 0; $_i442 < $_size438; ++$_i442)
           {
-            my $elem422 = undef;
-            $xfer += $input->readString(\$elem422);
-            push(@{$self->{success}},$elem422);
+            my $elem443 = undef;
+            $xfer += $input->readString(\$elem443);
+            push(@{$self->{success}},$elem443);
           }
           $xfer += $input->readListEnd();
         }
@@ -6922,9 +8154,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter423 (@{$self->{success}}) 
+        foreach my $iter444 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter423);
+          $xfer += $output->writeString($iter444);
         }
       }
       $xfer += $output->writeListEnd();
@@ -7047,15 +8279,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size424 = 0;
+          my $_size445 = 0;
           $self->{success} = [];
-          my $_etype427 = 0;
-          $xfer += $input->readListBegin(\$_etype427, \$_size424);
-          for (my $_i428 = 0; $_i428 < $_size424; ++$_i428)
+          my $_etype448 = 0;
+          $xfer += $input->readListBegin(\$_etype448, \$_size445);
+          for (my $_i449 = 0; $_i449 < $_size445; ++$_i449)
           {
-            my $elem429 = undef;
-            $xfer += $input->readString(\$elem429);
-            push(@{$self->{success}},$elem429);
+            my $elem450 = undef;
+            $xfer += $input->readString(\$elem450);
+            push(@{$self->{success}},$elem450);
           }
           $xfer += $input->readListEnd();
         }
@@ -7087,9 +8319,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter430 (@{$self->{success}}) 
+        foreach my $iter451 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter430);
+          $xfer += $output->writeString($iter451);
         }
       }
       $xfer += $output->writeListEnd();
@@ -7762,7 +8994,7 @@ sub execute{
 
 sub reconnect{
   my $self = shift;
-  my $executionId = shift;
+  my $instanceExecutionId = shift;
 
   die 'implement interface';
 }
@@ -7778,14 +9010,14 @@ sub commandStatusList{
 
 sub commandStatus{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
   die 'implement interface';
 }
 
 sub commandCancel{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
   die 'implement interface';
 }
@@ -7937,6 +9169,30 @@ sub fetchRowBatch{
   die 'implement interface';
 }
 
+sub loadData{
+  my $self = shift;
+  my $table = shift;
+  my $location = shift;
+
+  die 'implement interface';
+}
+
+sub validateIndex{
+  my $self = shift;
+  my $table = shift;
+  my $externalIndexPaths = shift;
+
+  die 'implement interface';
+}
+
+sub loadIndex{
+  my $self = shift;
+  my $table = shift;
+  my $externalIndexPaths = shift;
+
+  die 'implement interface';
+}
+
 sub mutate{
   my $self = shift;
   my $mutation = shift;
@@ -7961,6 +9217,38 @@ sub mutateBatch{
 sub enqueueMutateBatch{
   my $self = shift;
   my $mutations = shift;
+
+  die 'implement interface';
+}
+
+sub bulkMutateStart{
+  my $self = shift;
+  my $bulkId = shift;
+
+  die 'implement interface';
+}
+
+sub bulkMutateAdd{
+  my $self = shift;
+  my $bulkId = shift;
+  my $rowMutation = shift;
+
+  die 'implement interface';
+}
+
+sub bulkMutateAddMultiple{
+  my $self = shift;
+  my $bulkId = shift;
+  my $rowMutations = shift;
+
+  die 'implement interface';
+}
+
+sub bulkMutateFinish{
+  my $self = shift;
+  my $bulkId = shift;
+  my $apply = shift;
+  my $blockUntilComplete = shift;
 
   die 'implement interface';
 }
@@ -8051,6 +9339,14 @@ sub isInSafeMode{
 
 sub configuration{
   my $self = shift;
+
+  die 'implement interface';
+}
+
+sub configurationPerServer{
+  my $self = shift;
+  my $thriftServerPlusPort = shift;
+  my $configName = shift;
 
   die 'implement interface';
 }
@@ -8147,8 +9443,8 @@ sub execute{
 sub reconnect{
   my ($self, $request) = @_;
 
-  my $executionId = ($request->{'executionId'}) ? $request->{'executionId'} : undef;
-  return $self->{impl}->reconnect($executionId);
+  my $instanceExecutionId = ($request->{'instanceExecutionId'}) ? $request->{'instanceExecutionId'} : undef;
+  return $self->{impl}->reconnect($instanceExecutionId);
 }
 
 sub commandStatusList{
@@ -8163,15 +9459,15 @@ sub commandStatusList{
 sub commandStatus{
   my ($self, $request) = @_;
 
-  my $executionId = ($request->{'executionId'}) ? $request->{'executionId'} : undef;
-  return $self->{impl}->commandStatus($executionId);
+  my $commandExecutionId = ($request->{'commandExecutionId'}) ? $request->{'commandExecutionId'} : undef;
+  return $self->{impl}->commandStatus($commandExecutionId);
 }
 
 sub commandCancel{
   my ($self, $request) = @_;
 
-  my $executionId = ($request->{'executionId'}) ? $request->{'executionId'} : undef;
-  return $self->{impl}->commandCancel($executionId);
+  my $commandExecutionId = ($request->{'commandExecutionId'}) ? $request->{'commandExecutionId'} : undef;
+  return $self->{impl}->commandCancel($commandExecutionId);
 }
 
 sub refresh{
@@ -8321,6 +9617,30 @@ sub fetchRowBatch{
   return $self->{impl}->fetchRowBatch($table, $selectors);
 }
 
+sub loadData{
+  my ($self, $request) = @_;
+
+  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
+  my $location = ($request->{'location'}) ? $request->{'location'} : undef;
+  return $self->{impl}->loadData($table, $location);
+}
+
+sub validateIndex{
+  my ($self, $request) = @_;
+
+  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
+  my $externalIndexPaths = ($request->{'externalIndexPaths'}) ? $request->{'externalIndexPaths'} : undef;
+  return $self->{impl}->validateIndex($table, $externalIndexPaths);
+}
+
+sub loadIndex{
+  my ($self, $request) = @_;
+
+  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
+  my $externalIndexPaths = ($request->{'externalIndexPaths'}) ? $request->{'externalIndexPaths'} : undef;
+  return $self->{impl}->loadIndex($table, $externalIndexPaths);
+}
+
 sub mutate{
   my ($self, $request) = @_;
 
@@ -8347,6 +9667,38 @@ sub enqueueMutateBatch{
 
   my $mutations = ($request->{'mutations'}) ? $request->{'mutations'} : undef;
   return $self->{impl}->enqueueMutateBatch($mutations);
+}
+
+sub bulkMutateStart{
+  my ($self, $request) = @_;
+
+  my $bulkId = ($request->{'bulkId'}) ? $request->{'bulkId'} : undef;
+  return $self->{impl}->bulkMutateStart($bulkId);
+}
+
+sub bulkMutateAdd{
+  my ($self, $request) = @_;
+
+  my $bulkId = ($request->{'bulkId'}) ? $request->{'bulkId'} : undef;
+  my $rowMutation = ($request->{'rowMutation'}) ? $request->{'rowMutation'} : undef;
+  return $self->{impl}->bulkMutateAdd($bulkId, $rowMutation);
+}
+
+sub bulkMutateAddMultiple{
+  my ($self, $request) = @_;
+
+  my $bulkId = ($request->{'bulkId'}) ? $request->{'bulkId'} : undef;
+  my $rowMutations = ($request->{'rowMutations'}) ? $request->{'rowMutations'} : undef;
+  return $self->{impl}->bulkMutateAddMultiple($bulkId, $rowMutations);
+}
+
+sub bulkMutateFinish{
+  my ($self, $request) = @_;
+
+  my $bulkId = ($request->{'bulkId'}) ? $request->{'bulkId'} : undef;
+  my $apply = ($request->{'apply'}) ? $request->{'apply'} : undef;
+  my $blockUntilComplete = ($request->{'blockUntilComplete'}) ? $request->{'blockUntilComplete'} : undef;
+  return $self->{impl}->bulkMutateFinish($bulkId, $apply, $blockUntilComplete);
 }
 
 sub cancelQuery{
@@ -8437,6 +9789,14 @@ sub configuration{
   my ($self, $request) = @_;
 
   return $self->{impl}->configuration();
+}
+
+sub configurationPerServer{
+  my ($self, $request) = @_;
+
+  my $thriftServerPlusPort = ($request->{'thriftServerPlusPort'}) ? $request->{'thriftServerPlusPort'} : undef;
+  my $configName = ($request->{'configName'}) ? $request->{'configName'} : undef;
+  return $self->{impl}->configurationPerServer($thriftServerPlusPort, $configName);
 }
 
 sub metrics{
@@ -8612,19 +9972,19 @@ sub recv_execute{
 }
 sub reconnect{
   my $self = shift;
-  my $executionId = shift;
+  my $instanceExecutionId = shift;
 
-    $self->send_reconnect($executionId);
+    $self->send_reconnect($instanceExecutionId);
   return $self->recv_reconnect();
 }
 
 sub send_reconnect{
   my $self = shift;
-  my $executionId = shift;
+  my $instanceExecutionId = shift;
 
   $self->{output}->writeMessageBegin('reconnect', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_reconnect_args();
-  $args->{executionId} = $executionId;
+  $args->{instanceExecutionId} = $instanceExecutionId;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
@@ -8713,19 +10073,19 @@ sub recv_commandStatusList{
 }
 sub commandStatus{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
-    $self->send_commandStatus($executionId);
+    $self->send_commandStatus($commandExecutionId);
   return $self->recv_commandStatus();
 }
 
 sub send_commandStatus{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
   $self->{output}->writeMessageBegin('commandStatus', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_commandStatus_args();
-  $args->{executionId} = $executionId;
+  $args->{commandExecutionId} = $commandExecutionId;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
@@ -8759,19 +10119,19 @@ sub recv_commandStatus{
 }
 sub commandCancel{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
-    $self->send_commandCancel($executionId);
+    $self->send_commandCancel($commandExecutionId);
   $self->recv_commandCancel();
 }
 
 sub send_commandCancel{
   my $self = shift;
-  my $executionId = shift;
+  my $commandExecutionId = shift;
 
   $self->{output}->writeMessageBegin('commandCancel', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_commandCancel_args();
-  $args->{executionId} = $executionId;
+  $args->{commandExecutionId} = $commandExecutionId;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
   $self->{output}->getTransport()->flush();
@@ -9664,6 +11024,144 @@ sub recv_fetchRowBatch{
   }
   die "fetchRowBatch failed: unknown result";
 }
+sub loadData{
+  my $self = shift;
+  my $table = shift;
+  my $location = shift;
+
+    $self->send_loadData($table, $location);
+  $self->recv_loadData();
+}
+
+sub send_loadData{
+  my $self = shift;
+  my $table = shift;
+  my $location = shift;
+
+  $self->{output}->writeMessageBegin('loadData', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_loadData_args();
+  $args->{table} = $table;
+  $args->{location} = $location;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_loadData{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_loadData_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
+sub validateIndex{
+  my $self = shift;
+  my $table = shift;
+  my $externalIndexPaths = shift;
+
+    $self->send_validateIndex($table, $externalIndexPaths);
+  $self->recv_validateIndex();
+}
+
+sub send_validateIndex{
+  my $self = shift;
+  my $table = shift;
+  my $externalIndexPaths = shift;
+
+  $self->{output}->writeMessageBegin('validateIndex', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_validateIndex_args();
+  $args->{table} = $table;
+  $args->{externalIndexPaths} = $externalIndexPaths;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_validateIndex{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_validateIndex_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
+sub loadIndex{
+  my $self = shift;
+  my $table = shift;
+  my $externalIndexPaths = shift;
+
+    $self->send_loadIndex($table, $externalIndexPaths);
+  $self->recv_loadIndex();
+}
+
+sub send_loadIndex{
+  my $self = shift;
+  my $table = shift;
+  my $externalIndexPaths = shift;
+
+  $self->{output}->writeMessageBegin('loadIndex', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_loadIndex_args();
+  $args->{table} = $table;
+  $args->{externalIndexPaths} = $externalIndexPaths;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_loadIndex{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_loadIndex_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
 sub mutate{
   my $self = shift;
   my $mutation = shift;
@@ -9828,6 +11326,190 @@ sub recv_enqueueMutateBatch{
     die $x;
   }
   my $result = new Blur::Blur_enqueueMutateBatch_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
+sub bulkMutateStart{
+  my $self = shift;
+  my $bulkId = shift;
+
+    $self->send_bulkMutateStart($bulkId);
+  $self->recv_bulkMutateStart();
+}
+
+sub send_bulkMutateStart{
+  my $self = shift;
+  my $bulkId = shift;
+
+  $self->{output}->writeMessageBegin('bulkMutateStart', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_bulkMutateStart_args();
+  $args->{bulkId} = $bulkId;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_bulkMutateStart{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_bulkMutateStart_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
+sub bulkMutateAdd{
+  my $self = shift;
+  my $bulkId = shift;
+  my $rowMutation = shift;
+
+    $self->send_bulkMutateAdd($bulkId, $rowMutation);
+  $self->recv_bulkMutateAdd();
+}
+
+sub send_bulkMutateAdd{
+  my $self = shift;
+  my $bulkId = shift;
+  my $rowMutation = shift;
+
+  $self->{output}->writeMessageBegin('bulkMutateAdd', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_bulkMutateAdd_args();
+  $args->{bulkId} = $bulkId;
+  $args->{rowMutation} = $rowMutation;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_bulkMutateAdd{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_bulkMutateAdd_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
+sub bulkMutateAddMultiple{
+  my $self = shift;
+  my $bulkId = shift;
+  my $rowMutations = shift;
+
+    $self->send_bulkMutateAddMultiple($bulkId, $rowMutations);
+  $self->recv_bulkMutateAddMultiple();
+}
+
+sub send_bulkMutateAddMultiple{
+  my $self = shift;
+  my $bulkId = shift;
+  my $rowMutations = shift;
+
+  $self->{output}->writeMessageBegin('bulkMutateAddMultiple', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_bulkMutateAddMultiple_args();
+  $args->{bulkId} = $bulkId;
+  $args->{rowMutations} = $rowMutations;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_bulkMutateAddMultiple{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_bulkMutateAddMultiple_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
+sub bulkMutateFinish{
+  my $self = shift;
+  my $bulkId = shift;
+  my $apply = shift;
+  my $blockUntilComplete = shift;
+
+    $self->send_bulkMutateFinish($bulkId, $apply, $blockUntilComplete);
+  $self->recv_bulkMutateFinish();
+}
+
+sub send_bulkMutateFinish{
+  my $self = shift;
+  my $bulkId = shift;
+  my $apply = shift;
+  my $blockUntilComplete = shift;
+
+  $self->{output}->writeMessageBegin('bulkMutateFinish', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_bulkMutateFinish_args();
+  $args->{bulkId} = $bulkId;
+  $args->{apply} = $apply;
+  $args->{blockUntilComplete} = $blockUntilComplete;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_bulkMutateFinish{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_bulkMutateFinish_result();
   $result->read($self->{input});
   $self->{input}->readMessageEnd();
 
@@ -10403,6 +12085,55 @@ sub recv_configuration{
   }
   die "configuration failed: unknown result";
 }
+sub configurationPerServer{
+  my $self = shift;
+  my $thriftServerPlusPort = shift;
+  my $configName = shift;
+
+    $self->send_configurationPerServer($thriftServerPlusPort, $configName);
+  return $self->recv_configurationPerServer();
+}
+
+sub send_configurationPerServer{
+  my $self = shift;
+  my $thriftServerPlusPort = shift;
+  my $configName = shift;
+
+  $self->{output}->writeMessageBegin('configurationPerServer', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_configurationPerServer_args();
+  $args->{thriftServerPlusPort} = $thriftServerPlusPort;
+  $args->{configName} = $configName;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_configurationPerServer{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_configurationPerServer_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{success} ) {
+    return $result->{success};
+  }
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  die "configurationPerServer failed: unknown result";
+}
 sub metrics{
   my $self = shift;
   my $metrics = shift;
@@ -10851,7 +12582,7 @@ sub process_reconnect {
     $input->readMessageEnd();
     my $result = new Blur::Blur_reconnect_result();
     eval {
-      $result->{success} = $self->{handler}->reconnect($args->executionId);
+      $result->{success} = $self->{handler}->reconnect($args->instanceExecutionId);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{bex} = $@;
         }; if( UNIVERSAL::isa($@,'Blur::TimeoutException') ){ 
@@ -10887,7 +12618,7 @@ sub process_commandStatus {
     $input->readMessageEnd();
     my $result = new Blur::Blur_commandStatus_result();
     eval {
-      $result->{success} = $self->{handler}->commandStatus($args->executionId);
+      $result->{success} = $self->{handler}->commandStatus($args->commandExecutionId);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }
@@ -10904,7 +12635,7 @@ sub process_commandCancel {
     $input->readMessageEnd();
     my $result = new Blur::Blur_commandCancel_result();
     eval {
-      $self->{handler}->commandCancel($args->executionId);
+      $self->{handler}->commandCancel($args->commandExecutionId);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }
@@ -11236,6 +12967,57 @@ sub process_fetchRowBatch {
     $output->getTransport()->flush();
 }
 
+sub process_loadData {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_loadData_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_loadData_result();
+    eval {
+      $self->{handler}->loadData($args->table, $args->location);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('loadData', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_validateIndex {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_validateIndex_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_validateIndex_result();
+    eval {
+      $self->{handler}->validateIndex($args->table, $args->externalIndexPaths);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('validateIndex', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_loadIndex {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_loadIndex_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_loadIndex_result();
+    eval {
+      $self->{handler}->loadIndex($args->table, $args->externalIndexPaths);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('loadIndex', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
 sub process_mutate {
     my ($self, $seqid, $input, $output) = @_;
     my $args = new Blur::Blur_mutate_args();
@@ -11299,6 +13081,74 @@ sub process_enqueueMutateBatch {
       $result->{ex} = $@;
     }
     $output->writeMessageBegin('enqueueMutateBatch', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_bulkMutateStart {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_bulkMutateStart_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_bulkMutateStart_result();
+    eval {
+      $self->{handler}->bulkMutateStart($args->bulkId);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('bulkMutateStart', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_bulkMutateAdd {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_bulkMutateAdd_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_bulkMutateAdd_result();
+    eval {
+      $self->{handler}->bulkMutateAdd($args->bulkId, $args->rowMutation);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('bulkMutateAdd', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_bulkMutateAddMultiple {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_bulkMutateAddMultiple_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_bulkMutateAddMultiple_result();
+    eval {
+      $self->{handler}->bulkMutateAddMultiple($args->bulkId, $args->rowMutations);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('bulkMutateAddMultiple', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_bulkMutateFinish {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_bulkMutateFinish_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_bulkMutateFinish_result();
+    eval {
+      $self->{handler}->bulkMutateFinish($args->bulkId, $args->apply, $args->blockUntilComplete);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('bulkMutateFinish', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();
@@ -11503,6 +13353,23 @@ sub process_configuration {
       $result->{ex} = $@;
     }
     $output->writeMessageBegin('configuration', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_configurationPerServer {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_configurationPerServer_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_configurationPerServer_result();
+    eval {
+      $result->{success} = $self->{handler}->configurationPerServer($args->thriftServerPlusPort, $args->configName);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('configurationPerServer', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();

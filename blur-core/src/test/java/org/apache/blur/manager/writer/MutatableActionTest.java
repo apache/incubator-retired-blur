@@ -24,7 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.lucene.search.IndexSearcherCloseableBase;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.Column;
@@ -113,8 +114,8 @@ public class MutatableActionTest {
     assertEquals(2, reader.numDocs());
   }
 
-  private IndexSearcherClosable getSearcher(DirectoryReader reader, final Directory directory) {
-    return new IndexSearcherClosable(reader, null) {
+  private IndexSearcherCloseable getSearcher(DirectoryReader reader, final Directory directory) {
+    return new IndexSearcherCloseableBase(reader, null) {
 
       @Override
       public Directory getDirectory() {

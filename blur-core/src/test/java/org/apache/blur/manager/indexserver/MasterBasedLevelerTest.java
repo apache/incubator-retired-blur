@@ -29,7 +29,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -258,7 +258,7 @@ public class MasterBasedLevelerTest {
 
   private void populateCurrentLayout(Random random, Map<String, String> newLayoutMap, int shards, List<String> servers) {
     for (int i = 0; i < shards; i++) {
-      String shardName = BlurUtil.getShardName(i);
+      String shardName = ShardUtil.getShardName(i);
       int server = random.nextInt(servers.size());
       newLayoutMap.put(shardName, servers.get(server));
     }

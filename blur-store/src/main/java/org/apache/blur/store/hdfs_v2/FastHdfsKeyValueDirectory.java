@@ -25,11 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
+import org.apache.blur.memory.MemoryLeakDetector;
 import org.apache.blur.store.blockcache.LastModified;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -41,6 +44,8 @@ import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.BytesRef;
 
 public class FastHdfsKeyValueDirectory extends Directory implements LastModified {
+
+  private static final String MISSING_METADATA_MESSAGE = "Missing meta data for file [{0}], setting length to '0'.  This can occur when a kv log files writes across blocks in hdfs.";
 
   private static final long GC_DELAY = TimeUnit.HOURS.toMillis(1);
 
@@ -55,31 +60,47 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
   private final HdfsKeyValueStore _store;
   private final int _blockSize = 4096;
   private final Path _path;
+  private final boolean _readOnly;
+
   private long _lastGc;
 
-  public FastHdfsKeyValueDirectory(Configuration configuration, Path path) throws IOException {
+  public FastHdfsKeyValueDirectory(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path)
+      throws IOException {
+    this(readOnly, hdfsKeyValueTimer, configuration, path, HdfsKeyValueStore.DEFAULT_MAX_AMOUNT_ALLOWED_PER_FILE,
+        HdfsKeyValueStore.DEFAULT_MAX_OPEN_FOR_WRITING);
+  }
+
+  public FastHdfsKeyValueDirectory(boolean readOnly, Timer hdfsKeyValueTimer, Configuration configuration, Path path,
+      long maxAmountAllowedPerFile, long maxOpenForWriting) throws IOException {
     _path = path;
-    _store = new HdfsKeyValueStore(configuration, path);
+    _readOnly = readOnly;
+    _store = new HdfsKeyValueStore(readOnly, hdfsKeyValueTimer, configuration, path, maxAmountAllowedPerFile,
+        maxOpenForWriting);
+    MemoryLeakDetector.record(_store, "HdfsKeyValueStore", path.toString());
     BytesRef value = new BytesRef();
     if (_store.get(FILES, value)) {
       String filesString = value.utf8ToString();
-      String[] files = filesString.split("\\" + SEP);
-      for (String file : files) {
-        if (file.isEmpty()) {
-          continue;
-        }
-        BytesRef key = new BytesRef(file + LENGTH);
-        if (_store.get(key, value)) {
-          _files.put(file, Long.parseLong(value.utf8ToString()));
-        } else {
-          // _files.put(file, 0L);
-          LOG.warn("Missing meta data for file [{0}], setting length to '0'.", file);
+      // System.out.println("Open Files String [" + filesString + "]");
+      if (!filesString.isEmpty()) {
+        String[] files = filesString.split("\\" + SEP);
+        for (String file : files) {
+          if (file.isEmpty()) {
+            throw new IOException("Empty file names should not occur [" + filesString + "]");
+          }
+          BytesRef key = new BytesRef(file + LENGTH);
+          if (_store.get(key, value)) {
+            _files.put(file, Long.parseLong(value.utf8ToString()));
+          } else {
+            LOG.warn(MISSING_METADATA_MESSAGE, file);
+          }
         }
       }
     }
     setLockFactory(NoLockFactory.getNoLockFactory());
-    writeFilesNames();
-    gc();
+    if (!_readOnly) {
+      writeFileNamesAndSync();
+      gc();
+    }
   }
 
   public void gc() throws IOException {
@@ -127,7 +148,8 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   private void writeFilesNames() throws IOException {
     StringBuilder builder = new StringBuilder();
-    for (String n : _files.keySet()) {
+    Set<String> fileNames = new TreeSet<String>(_files.keySet());
+    for (String n : fileNames) {
       if (builder.length() != 0) {
         builder.append(SEP);
       }
@@ -143,13 +165,18 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   @Override
   public IndexOutput createOutput(final String name, IOContext context) throws IOException {
+    if (_readOnly) {
+      throw new IOException("Directory is in read only mode.");
+    }
+    if (fileExists(name)) {
+      deleteFile(name);
+    }
     return new FastHdfsKeyValueIndexOutput(name, _blockSize, this);
   }
 
   @Override
   public String[] listAll() throws IOException {
     Set<String> fileNames = new HashSet<String>(_files.keySet());
-    fileNames.remove(null);
     return fileNames.toArray(new String[fileNames.size()]);
   }
 
@@ -162,6 +189,9 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   @Override
   public void deleteFile(String name) throws IOException {
+    if (_readOnly) {
+      throw new IOException("Directory is in read only mode.");
+    }
     Long length = _files.remove(name);
     if (length != null) {
       LOG.debug("Removing file [{0}] with length [{1}].", name, length);
@@ -171,6 +201,7 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
       for (long l = 0; l <= blocks; l++) {
         _store.delete(new BytesRef(name + "/" + l));
       }
+      writeFileNamesAndSync();
     }
   }
 
@@ -184,11 +215,15 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
 
   @Override
   public void sync(Collection<String> names) throws IOException {
-    writeFilesNames();
-    _store.sync();
+    writeFileNamesAndSync();
     if (shouldPerformGC()) {
       gc();
     }
+  }
+
+  private void writeFileNamesAndSync() throws IOException {
+    writeFilesNames();
+    _store.sync();
   }
 
   private boolean shouldPerformGC() {
@@ -211,4 +246,5 @@ public class FastHdfsKeyValueDirectory extends Directory implements LastModified
     }
     throw new FileNotFoundException(name);
   }
+
 }

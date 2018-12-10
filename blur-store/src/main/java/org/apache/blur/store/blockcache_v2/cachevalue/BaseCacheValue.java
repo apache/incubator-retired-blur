@@ -25,20 +25,16 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.blur.metrics.AtomicLongGauge;
 import org.apache.blur.store.blockcache_v2.CacheValue;
+import org.apache.blur.store.blockcache_v2.EvictionException;
 
 import com.yammer.metrics.Metrics;
 import com.yammer.metrics.core.MetricName;
 
-@SuppressWarnings("serial")
 public abstract class BaseCacheValue implements CacheValue {
 
   private static final AtomicLong _neededFinalizedCall = new AtomicLong();
 
-  public static class Evicted extends RuntimeException {
-
-  }
-
-  private final int _length;
+  protected final int _length;
   protected volatile boolean _released = false;
   protected volatile boolean _evicted = false;
 
@@ -58,21 +54,21 @@ public abstract class BaseCacheValue implements CacheValue {
 
   @Override
   public void write(int position, byte[] buf, int offset, int length) {
-    checkForEviction();
+
     if (position + length > _length) {
       throw new ArrayIndexOutOfBoundsException(position + length);
     }
     writeInternal(position, buf, offset, length);
   }
 
-  private void checkForEviction() {
+  private void checkForEviction() throws EvictionException {
     if (_evicted) {
-      throw new Evicted();
+      throw new EvictionException();
     }
   }
 
   @Override
-  public void read(int position, byte[] buf, int offset, int length) {
+  public void read(int position, byte[] buf, int offset, int length) throws EvictionException {
     checkForEviction();
     if (position + length > _length) {
       throw new ArrayIndexOutOfBoundsException(position + length);
@@ -81,7 +77,7 @@ public abstract class BaseCacheValue implements CacheValue {
   }
 
   @Override
-  public byte read(int position) {
+  public byte read(int position) throws EvictionException {
     checkForEviction();
     if (position >= _length) {
       throw new ArrayIndexOutOfBoundsException(position);
@@ -90,7 +86,7 @@ public abstract class BaseCacheValue implements CacheValue {
   }
 
   @Override
-  public short readShort(int position) {
+  public short readShort(int position) throws EvictionException {
     checkForEviction();
     if (position + 2 > _length) {
       throw new ArrayIndexOutOfBoundsException(position + 2);
@@ -103,7 +99,7 @@ public abstract class BaseCacheValue implements CacheValue {
   }
 
   @Override
-  public int readInt(int position) {
+  public int readInt(int position) throws EvictionException {
     checkForEviction();
     if (position + 4 > _length) {
       throw new ArrayIndexOutOfBoundsException(position + 4);
@@ -117,7 +113,7 @@ public abstract class BaseCacheValue implements CacheValue {
   }
 
   @Override
-  public long readLong(int position) {
+  public long readLong(int position) throws EvictionException {
     checkForEviction();
     if (position + 8 > _length) {
       throw new ArrayIndexOutOfBoundsException(position + 4);
@@ -136,15 +132,6 @@ public abstract class BaseCacheValue implements CacheValue {
   protected abstract void readInternal(int position, byte[] buf, int offset, int length);
 
   @Override
-  protected void finalize() throws Throwable {
-    // @TODO this may not be needed.
-    if (!_released) {
-      release();
-      _neededFinalizedCall.incrementAndGet();
-    }
-  }
-
-  @Override
   public CacheValue trim(int length) {
     return this;
   }
@@ -155,13 +142,8 @@ public abstract class BaseCacheValue implements CacheValue {
   }
 
   @Override
-  public void decRef() {
-
-  }
-
-  @Override
-  public void incRef() {
-
+  public final boolean isEvicted() {
+    return _evicted;
   }
 
 }

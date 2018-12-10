@@ -60,7 +60,7 @@ exception BlurException {
   * happens so that the client can reconnect. 
   */
 exception TimeoutException {
-  1:string executionId
+  1:i64 instanceExecutionId
 }
 
 /**
@@ -681,7 +681,15 @@ struct TableStats {
   /**
    * The row count.
    */
-  4:i64 rowCount
+  4:i64 rowCount,
+  /**
+   * The number of pending segment imports for this table.
+   */
+  5:i64 segmentImportPendingCount = 0,
+  /**
+   * The number of segment imports in progress for this table.
+   */
+  6:i64 segmentImportInProgressCount = 0
 }
 
 /**
@@ -725,7 +733,11 @@ struct ColumnDefinition {
   /**
    * This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
    */
-  7:bool sortable
+  7:bool sortable,
+  /**
+   * This will attempt to enable the ability for multiple values per column name in a single Record.
+   */
+  8:optional bool multiValueField = 1
 }
 
 /**
@@ -937,7 +949,7 @@ service Blur {
    * network tcp timeout this method allows the client to reconnect to the already 
    * executing command.
    */
-  Response reconnect(1:string executionId) throws (1:BlurException bex, 2:TimeoutException tex)
+  Response reconnect(1:i64 instanceExecutionId) throws (1:BlurException bex, 2:TimeoutException tex)
 
   /**
    * Fetches the command status ids in the order they were submitted.
@@ -945,14 +957,14 @@ service Blur {
   list<string> commandStatusList(1:i32 startingAt, 2:i16 fetch, 3:CommandStatusState state) throws (1:BlurException ex)
 
   /**
-   * Retrieves the command status by the given execution id.
+   * Retrieves the command status by the given command execution id.
    */
-  CommandStatus commandStatus(1:string executionId) throws (1:BlurException ex)
+  CommandStatus commandStatus(1:string commandExecutionId) throws (1:BlurException ex)
 
   /**
-   * Cancels the command with the given execution id.
+   * Cancels the command with the given command execution id.
    */
-  void commandCancel(1:string executionId) throws (1:BlurException ex)
+  void commandCancel(1:string commandExecutionId) throws (1:BlurException ex)
 
   /**
    * Releases and refreshes the read snapshots of the indexes in the session for the 
@@ -1133,6 +1145,20 @@ service Blur {
   ) throws (1:BlurException ex)
 
   /**
+   * Loads data from external location.
+   */
+  void loadData(
+     /** The table name. */
+     1:string table,
+     /** Location of bulk data load. */
+     2:string location
+  ) throws (1:BlurException ex)
+
+  void validateIndex(1:string table, 2:list<string> externalIndexPaths) throws (1:BlurException ex)
+
+  void loadIndex(1:string table, 2:list<string> externalIndexPaths) throws (1:BlurException ex)
+
+  /**
    * Mutates a Row given the RowMutation that is provided.
    */
   void mutate(
@@ -1162,6 +1188,46 @@ service Blur {
   void enqueueMutateBatch(
     /** the batch of RowMutations.*/
     1:list<RowMutation> mutations
+  ) throws (1:BlurException ex)
+
+  /**
+   * Starts a transaction for update (e.g. Mutate).  Returns a transaction id.
+   */
+  void bulkMutateStart(
+    /** The bulk id. */
+    1:string bulkId
+  ) throws (1:BlurException ex)
+
+  /**
+   * Adds to the specified transaction.
+   */
+  void bulkMutateAdd(
+    /** The bulk id. */
+    1:string bulkId, 
+    /** The row mutation. */
+    2:RowMutation rowMutation
+  ) throws (1:BlurException ex)
+
+  /**
+   * Adds to the specified transaction.
+   */
+  void bulkMutateAddMultiple(
+    /** The bulk id. */
+    1:string bulkId, 
+    /** The row mutation. */
+    2:list<RowMutation> rowMutations
+  ) throws (1:BlurException ex)
+
+  /**
+   * Finishes the bulk mutate.  If apply is true the mutations are applied and committed.  If false the bulk mutate is deleted and not applied.
+   */
+  void bulkMutateFinish(
+    /** The bulk id. */
+    1:string bulkId,
+    /** Apply the bulk mutate flag. */
+    2:bool apply,
+    /** If true this call will not block on bulk completion.  This may be required for loader bulk loads. */
+    3:bool blockUntilComplete
   ) throws (1:BlurException ex)
 
   /**
@@ -1297,6 +1363,12 @@ service Blur {
    * @return Map of property name to value.
    */
   map<string,string> configuration() throws (1:BlurException ex)
+
+  /**
+   * Fetches the Blur configuration.
+   * @return Map of property name to value.
+   */
+  string configurationPerServer(1:string thriftServerPlusPort, 2:string configName) throws (1:BlurException ex)
 
   /**
    * Fetches the Blur metrics by name.  If the metrics parameter is null all the Metrics are returned.

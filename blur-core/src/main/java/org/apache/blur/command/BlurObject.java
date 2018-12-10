@@ -16,6 +16,7 @@
  */
 package org.apache.blur.command;
 
+import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -162,7 +163,14 @@ public class BlurObject {
   }
 
   public byte[] getBinary(String name) {
-    return (byte[]) _valueMap.get(name);
+    Object val = _valueMap.get(name);
+    if (val instanceof ByteBuffer) {
+      ByteBuffer buff = (ByteBuffer) val;
+      byte[] temp = new byte[buff.remaining()];
+      buff.get(temp);
+      return temp;
+    }
+    return (byte[]) val;
   }
 
   public byte[] getBinary(String name, byte[] defaultVal) {
@@ -350,6 +358,31 @@ public class BlurObject {
 
   public boolean hasKey(String key) {
     return _valueMap.containsKey(key);
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((_valueMap == null) ? 0 : _valueMap.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    BlurObject other = (BlurObject) obj;
+    if (_valueMap == null) {
+      if (other._valueMap != null)
+        return false;
+    } else if (!_valueMap.equals(other._valueMap))
+      return false;
+    return true;
   }
 
 }

@@ -241,7 +241,7 @@ public class BlurUtilsTest {
 
   private void createShardDirs(int shardCount, FileSystem fileSystem, Path path) throws IOException {
     for (int i = 0; i < shardCount; i++) {
-      fileSystem.mkdirs(new Path(path, BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i)));
+      fileSystem.mkdirs(new Path(path, ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, i)));
     }
   }
 
@@ -250,6 +250,7 @@ public class BlurUtilsTest {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     IndexWriter writer = new IndexWriter(directory, conf);
     Document doc = new Document();
+    doc.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
     doc.add(new StringField("a", "b", Store.YES));
     doc.add(new StringField("family", "f1", Store.YES));
 
@@ -267,6 +268,7 @@ public class BlurUtilsTest {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer());
     IndexWriter writer = new IndexWriter(directory, conf);
     Document doc = new Document();
+    doc.add(new StringField(BlurConstants.PRIME_DOC, BlurConstants.PRIME_DOC_VALUE, Store.NO));
     doc.add(new StringField("a", "b", Store.YES));
     doc.add(new StringField("family", "f2", Store.YES));
 

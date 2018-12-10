@@ -33,7 +33,7 @@ while [  $INSTANCE -lt $BLUR_NUMBER_OF_SHARD_SERVER_INSTANCES_PER_MACHINE ]; do
   fi
 
   PROC_NAME=shard-server-$HOSTNAME-$INSTANCE
-  nohup "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH -Dblur-shard-$INSTANCE $BLUR_SHARD_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -cp $BLUR_CLASSPATH org.apache.blur.thrift.ThriftBlurShardServer -s $INSTANCE > "$BLUR_LOGS/blur-$USER-$PROC_NAME.out" 2>&1 < /dev/null &
+  nohup "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Dblur-shard-$INSTANCE -Djava.library.path=$JAVA_LIBRARY_PATH  $BLUR_SHARD_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -cp $BLUR_CLASSPATH org.apache.blur.thrift.ThriftBlurShardServer -s $INSTANCE > "$BLUR_LOGS/blur-$USER-$PROC_NAME.out" 2>&1 < /dev/null &
   echo $! > $PID_FILE
   echo Shard [$INSTANCE] starting as process `cat $PID_FILE`.
 

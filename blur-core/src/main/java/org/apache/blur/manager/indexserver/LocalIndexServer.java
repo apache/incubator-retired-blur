@@ -18,15 +18,15 @@ package org.apache.blur.manager.indexserver;
  */
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.Timer;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -43,7 +43,7 @@ import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.ShardState;
 import org.apache.blur.thrift.generated.TableDescriptor;
 import org.apache.blur.utils.BlurConstants;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
@@ -67,19 +67,30 @@ public class LocalIndexServer extends AbstractIndexServer {
   private final Closer _closer;
   private final boolean _ramDir;
   private final BlurIndexCloser _indexCloser;
+  private final Timer _timer;
+  private final Timer _bulkTimer;
 
   public LocalIndexServer(TableDescriptor tableDescriptor) throws IOException {
     this(tableDescriptor, false);
   }
 
   public LocalIndexServer(TableDescriptor tableDescriptor, boolean ramDir) throws IOException {
+    _timer = new Timer("Index Importer", true);
+    _bulkTimer = new Timer("Bulk Indexing", true);
     _closer = Closer.create();
     _tableContext = TableContext.create(tableDescriptor);
-    _mergeScheduler = _closer.register(new SharedMergeScheduler(3));
+    _mergeScheduler = _closer.register(new SharedMergeScheduler(3, 128 * 1000 * 1000));
     _searchExecutor = Executors.newCachedThreadPool();
     _closer.register(new CloseableExecutorService(_searchExecutor));
     _ramDir = ramDir;
     _indexCloser = _closer.register(new BlurIndexCloser());
+    _closer.register(new Closeable() {
+      @Override
+      public void close() throws IOException {
+        _timer.cancel();
+        _timer.purge();
+      }
+    });
     getIndexes(_tableContext.getTable());
   }
 
@@ -136,7 +147,7 @@ public class LocalIndexServer extends AbstractIndexServer {
       int shardCount = _tableContext.getDescriptor().getShardCount();
       for (int i = 0; i < shardCount; i++) {
         Directory directory;
-        String shardName = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i);
+        String shardName = ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, i);
         if (_ramDir) {
           directory = new RAMDirectory();
         } else {
@@ -157,27 +168,8 @@ public class LocalIndexServer extends AbstractIndexServer {
   private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
     ShardContext shardContext = ShardContext.create(_tableContext, shard);
     BlurIndexSimpleWriter index = new BlurIndexSimpleWriter(shardContext, dir, _mergeScheduler, _searchExecutor,
-        _indexCloser);
+        _indexCloser, _timer, _bulkTimer, null);
     return index;
-  }
-
-  @Override
-  public List<String> getShardList(String table) {
-    try {
-      List<String> result = new ArrayList<String>();
-      Path tablePath = _tableContext.getTablePath();
-      File tableFile = new File(new File(tablePath.toUri()), table);
-      if (tableFile.isDirectory()) {
-        for (File f : tableFile.listFiles()) {
-          if (f.isDirectory()) {
-            result.add(f.getName());
-          }
-        }
-      }
-      return result;
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
   }
 
   @Override
@@ -210,5 +202,15 @@ public class LocalIndexServer extends AbstractIndexServer {
   @Override
   public Map<String, ShardState> getShardState(String table) {
     throw new RuntimeException("Not supported yet.");
+  }
+
+  @Override
+  public long getSegmentImportInProgressCount(String table) {
+    return 0l;
+  }
+
+  @Override
+  public long getSegmentImportPendingCount(String table) {
+    return 0l;
   }
 }

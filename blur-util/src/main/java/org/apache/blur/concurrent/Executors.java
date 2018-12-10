@@ -43,7 +43,7 @@ public class Executors {
 
   public static ExecutorService newThreadPool(BlockingQueue<Runnable> workQueue, String prefix, int threadCount,
       boolean watch) {
-    BlurThreadPoolExecutor executorService = new BlurThreadPoolExecutor(threadCount, threadCount, 60L,
+    BlurThreadPoolExecutor executorService = new BlurThreadPoolExecutor(threadCount, threadCount, 10L,
         TimeUnit.SECONDS, workQueue, new BlurThreadFactory(prefix));
     executorService.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
     executorService.add(new UserThreadBoundaryProcessor());

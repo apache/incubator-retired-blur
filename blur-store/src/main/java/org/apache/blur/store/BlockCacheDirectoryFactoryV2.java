@@ -28,7 +28,7 @@ import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_WRIT
 import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_BLOCK_CACHE_V2_WRITE_NOCACHE_EXT;
 import static org.apache.blur.utils.BlurConstants.DEFAULT_VALUE;
 import static org.apache.blur.utils.BlurConstants.OFF_HEAP;
-import static org.apache.blur.utils.BlurConstants.SHARED_MERGE_SCHEDULER;
+import static org.apache.blur.utils.BlurConstants.SHARED_MERGE_SCHEDULER_PREFIX;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -45,8 +45,11 @@ import org.apache.blur.store.blockcache_v2.BaseCache;
 import org.apache.blur.store.blockcache_v2.BaseCache.STORE;
 import org.apache.blur.store.blockcache_v2.Cache;
 import org.apache.blur.store.blockcache_v2.CacheDirectory;
+import org.apache.blur.store.blockcache_v2.CachePoolStrategy;
 import org.apache.blur.store.blockcache_v2.FileNameFilter;
+import org.apache.blur.store.blockcache_v2.PooledCache;
 import org.apache.blur.store.blockcache_v2.Quiet;
+import org.apache.blur.store.blockcache_v2.SingleCachePoolStrategy;
 import org.apache.blur.store.blockcache_v2.Size;
 import org.apache.lucene.store.Directory;
 
@@ -63,15 +66,18 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     final int cacheBlockSizeInt = configuration.getInt(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE, 8192);
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE, cacheBlockSizeInt);
 
-    final Map<String,Integer> cacheBlockSizeMap = new HashMap<String, Integer>();
+    final Map<String, Integer> cacheBlockSizeMap = new HashMap<String, Integer>();
     Map<String, String> properties = configuration.getProperties();
     for (Entry<String, String> prop : properties.entrySet()) {
       String key = prop.getKey();
+      String value = prop.getValue();
+      if (value == null || value.isEmpty()) {
+        continue;
+      }
       if (key.startsWith(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX)) {
-        String value = prop.getValue();
         int cacheBlockSizeForFile = Integer.parseInt(value);
         String fieldType = key.substring(BLUR_SHARD_BLOCK_CACHE_V2_CACHE_BLOCK_SIZE_PREFIX.length());
-        
+
         cacheBlockSizeMap.put(fieldType, cacheBlockSizeForFile);
         LOG.info("{0}={1} for file type [{2}]", key, cacheBlockSizeForFile, fieldType);
       }
@@ -80,28 +86,27 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
     final STORE store = STORE.valueOf(configuration.get(BLUR_SHARD_BLOCK_CACHE_V2_STORE, OFF_HEAP));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_STORE, store);
 
-    final Set<String> cachingFileExtensionsForRead = getSet(configuration.get(
-        BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT, DEFAULT_VALUE));
+    final Set<String> cachingFileExtensionsForRead = getSet(configuration.get(BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT,
+        DEFAULT_VALUE));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_READ_CACHE_EXT, cachingFileExtensionsForRead);
-    
+
     final Set<String> nonCachingFileExtensionsForRead = getSet(configuration.get(
         BLUR_SHARD_BLOCK_CACHE_V2_READ_NOCACHE_EXT, DEFAULT_VALUE));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_READ_NOCACHE_EXT, nonCachingFileExtensionsForRead);
-    
+
     final boolean defaultReadCaching = configuration.getBoolean(BLUR_SHARD_BLOCK_CACHE_V2_READ_DEFAULT, true);
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_READ_DEFAULT, defaultReadCaching);
 
     final Set<String> cachingFileExtensionsForWrite = getSet(configuration.get(
         BLUR_SHARD_BLOCK_CACHE_V2_WRITE_CACHE_EXT, DEFAULT_VALUE));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_WRITE_CACHE_EXT, cachingFileExtensionsForWrite);
-    
+
     final Set<String> nonCachingFileExtensionsForWrite = getSet(configuration.get(
         BLUR_SHARD_BLOCK_CACHE_V2_WRITE_NOCACHE_EXT, DEFAULT_VALUE));
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_WRITE_NOCACHE_EXT, nonCachingFileExtensionsForWrite);
-    
+
     final boolean defaultWriteCaching = configuration.getBoolean(BLUR_SHARD_BLOCK_CACHE_V2_WRITE_DEFAULT, true);
     LOG.info("{0}={1}", BLUR_SHARD_BLOCK_CACHE_V2_WRITE_DEFAULT, defaultWriteCaching);
-    
 
     Size fileBufferSize = new Size() {
       @Override
@@ -153,14 +158,17 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
       public boolean shouldBeQuiet(CacheDirectory directory, String fileName) {
         Thread thread = Thread.currentThread();
         String name = thread.getName();
-        if (name.startsWith(SHARED_MERGE_SCHEDULER)) {
+        if (name.startsWith(SHARED_MERGE_SCHEDULER_PREFIX)) {
           return true;
         }
         return false;
       }
     };
 
-    _cache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter, quiet, store);
+    BaseCache baseCache = new BaseCache(totalNumberOfBytes, fileBufferSize, cacheBlockSize, readFilter, writeFilter,
+        quiet, store);
+    CachePoolStrategy cachePoolStrategy = new SingleCachePoolStrategy(baseCache);
+    _cache = new PooledCache(cachePoolStrategy);
   }
 
   private Set<String> getSet(String value) {
@@ -180,6 +188,15 @@ public class BlockCacheDirectoryFactoryV2 extends BlockCacheDirectoryFactory {
       return DEFAULT_VALUE;
     }
     return fileName.substring(indexOf + 1);
+  }
+
+  @Override
+  public void close() throws IOException {
+    _cache.close();
+  }
+
+  public Cache getCache() {
+    return _cache;
   }
 
 }

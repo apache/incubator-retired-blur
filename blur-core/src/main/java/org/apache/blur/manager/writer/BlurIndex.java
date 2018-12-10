@@ -18,17 +18,18 @@ package org.apache.blur.manager.writer;
  */
 import java.io.IOException;
 import java.util.List;
+import java.util.Timer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.server.ShardContext;
+import org.apache.blur.server.cache.ThriftCache;
 import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.utils.BlurUtil;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexReaderContext;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
@@ -41,11 +42,12 @@ public abstract class BlurIndex {
   protected ShardContext _shardContext;
 
   public BlurIndex(ShardContext shardContext, Directory directory, SharedMergeScheduler mergeScheduler,
-      ExecutorService searchExecutor, BlurIndexCloser indexCloser) throws IOException {
+      ExecutorService searchExecutor, BlurIndexCloser indexCloser, Timer indexImporterTimer, Timer bulkIndexingTimer,
+      ThriftCache thriftCache) throws IOException {
     _shardContext = shardContext;
   }
 
-  public abstract IndexSearcherClosable getIndexSearcher() throws IOException;
+  public abstract IndexSearcherCloseable getIndexSearcher() throws IOException;
 
   public abstract void close() throws IOException;
 
@@ -62,7 +64,7 @@ public abstract class BlurIndex {
   public abstract List<String> getSnapshots() throws IOException;
 
   public long getRecordCount() throws IOException {
-    IndexSearcherClosable searcher = getIndexSearcher();
+    IndexSearcherCloseable searcher = getIndexSearcher();
     try {
       return searcher.getIndexReader().numDocs();
     } finally {
@@ -73,7 +75,7 @@ public abstract class BlurIndex {
   }
 
   public long getRowCount() throws IOException {
-    IndexSearcherClosable searcher = getIndexSearcher();
+    IndexSearcherCloseable searcher = getIndexSearcher();
     try {
       return getRowCount(searcher);
     } finally {
@@ -83,7 +85,7 @@ public abstract class BlurIndex {
     }
   }
 
-  protected long getRowCount(IndexSearcher searcher) throws IOException {
+  protected long getRowCount(IndexSearcherCloseable searcher) throws IOException {
     TopDocs topDocs = searcher.search(new TermQuery(BlurUtil.PRIME_DOC_TERM), 1);
     return topDocs.totalHits;
   }
@@ -117,7 +119,7 @@ public abstract class BlurIndex {
   }
 
   public long getSegmentCount() throws IOException {
-    IndexSearcherClosable indexSearcherClosable = getIndexSearcher();
+    IndexSearcherCloseable indexSearcherClosable = getIndexSearcher();
     try {
       IndexReader indexReader = indexSearcherClosable.getIndexReader();
       IndexReaderContext context = indexReader.getContext();
@@ -134,5 +136,15 @@ public abstract class BlurIndex {
   public abstract void process(IndexAction indexAction) throws IOException;
 
   public abstract void enqueue(List<RowMutation> mutations) throws IOException;
+
+  public abstract void finishBulkMutate(String bulkId, boolean apply, boolean blockUntilComplete) throws IOException;
+
+  public abstract void addBulkMutate(String bulkId, RowMutation mutation) throws IOException;
+
+  public abstract long getSegmentImportPendingCount() throws IOException;
+
+  public abstract long getSegmentImportInProgressCount() throws IOException;
+
+  public abstract long getOnDiskSize() throws IOException;
 
 }

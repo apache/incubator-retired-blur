@@ -32,7 +32,6 @@ under the License.
       <unpack>false</unpack>
       <includes>
         <include>org.apache.blur:*</include>
-
         <include>org.apache.zookeeper:zookeeper</include>
         <include>org.slf4j:slf4j-api</include>
         <include>org.slf4j:slf4j-log4j12</include>
@@ -44,47 +43,51 @@ under the License.
         <include>org.apache.lucene:*</include>
         <include>com.spatial4j:spatial4j</include>
         <include>commons-cli:commons-cli</include>
+        <include>org.eclipse.jetty:*</include>
         <include>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</include>
         <include>jline:jline</include>
         <include>com.fasterxml.jackson.core:*</include>
+        <include>com.github.amccurry:lucene-document-security</include>
       </includes>
     </dependencySet>
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>apache-blur-${project.version}-bin/lib/hadoop-${hadoop.version}</outputDirectory>
       <unpack>false</unpack>
-	<includes>
-	  <include>org.apache.hadoop:*</include>
-	</includes>
+      <includes>
+        <include>org.apache.hadoop:*</include>
+      </includes>
     </dependencySet>
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
       <outputDirectory>apache-blur-${project.version}-bin/lib/hadoop-${hadoop.version}/lib</outputDirectory>
       <unpack>false</unpack>
-	<excludes>
-	  <exclude>org.apache.blur:*</exclude>
+      <excludes>
+        <exclude>org.apache.blur:*</exclude>
 
-      <!-- No need to package eclipse stuff in there -->
-	  <exclude>org.eclipse.jdt:core</exclude>
+        <!-- No need to package eclipse stuff in there -->
+        <exclude>org.eclipse.jdt:core</exclude>
 
-      <!-- Removing dup -->
-	  <exclude>org.apache.hadoop:*</exclude>
+        <!-- Removing dup -->
+        <exclude>org.apache.hadoop:*</exclude>
 
-	  <exclude>org.apache.zookeeper:zookeeper</exclude>
-	  <exclude>org.slf4j:slf4j-api</exclude>
-	  <exclude>org.slf4j:slf4j-log4j12</exclude>
-	  <exclude>org.json:json</exclude>
-	  <exclude>log4j:log4j</exclude>
-	  <exclude>com.yammer.metrics:*</exclude>
-	  <exclude>com.google.guava:guava</exclude>
-	  <exclude>org.apache.httpcomponents:*</exclude>
-	  <exclude>org.apache.lucene:*</exclude>
-      <exclude>com.spatial4j:spatial4j</exclude>
-	  <exclude>commons-cli:commons-cli</exclude>
-	  <exclude>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</exclude>
-	  <exclude>jline:jline</exclude>
-      <exclude>com.fasterxml.jackson.core:*</exclude>
-	</excludes>
+        <exclude>org.apache.zookeeper:zookeeper</exclude>
+        <exclude>org.slf4j:slf4j-api</exclude>
+        <exclude>org.slf4j:slf4j-log4j12</exclude>
+        <exclude>org.json:json</exclude>
+        <exclude>log4j:log4j</exclude>
+        <exclude>com.yammer.metrics:*</exclude>
+        <exclude>com.google.guava:guava</exclude>
+        <exclude>org.apache.httpcomponents:*</exclude>
+        <exclude>org.apache.lucene:*</exclude>
+        <exclude>com.spatial4j:spatial4j</exclude>
+        <exclude>commons-cli:commons-cli</exclude>
+        <exclude>com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru</exclude>
+        <exclude>jline:jline</exclude>
+        <exclude>com.fasterxml.jackson.core:*</exclude>
+        <exclude>org.apache.commons:commons-collections4</exclude>
+        <exclude>org.eclipse.jetty:*</exclude>
+      </excludes>
     </dependencySet>
   </dependencySets>
 

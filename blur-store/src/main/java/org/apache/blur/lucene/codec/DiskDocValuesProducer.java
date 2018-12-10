@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.blur.trace.Trace;
+import org.apache.blur.trace.Tracer;
 import org.apache.lucene.codecs.CodecUtil;
 import org.apache.lucene.codecs.DocValuesProducer;
 import org.apache.lucene.index.BinaryDocValues;
@@ -45,11 +47,6 @@ class DiskDocValuesProducer extends DocValuesProducer {
   private final Map<Integer,NumericEntry> ordIndexes;
   private final IndexInput data;
 
-  // memory-resident structures
-  private final Map<Integer,BlockPackedReader> ordinalInstances = new HashMap<Integer,BlockPackedReader>();
-  private final Map<Integer,MonotonicBlockPackedReader> addressInstances = new HashMap<Integer,MonotonicBlockPackedReader>();
-  private final Map<Integer,MonotonicBlockPackedReader> ordIndexInstances = new HashMap<Integer,MonotonicBlockPackedReader>();
-  
   DiskDocValuesProducer(SegmentReadState state, String dataCodec, String dataExtension, String metaCodec, String metaExtension) throws IOException {
     String metaName = IndexFileNames.segmentFileName(state.segmentInfo.name, state.segmentSuffix, metaExtension);
     // read in the entries from the metadata file.
@@ -221,17 +218,14 @@ class DiskDocValuesProducer extends DocValuesProducer {
   private BinaryDocValues getVariableBinary(FieldInfo field, final BinaryEntry bytes) throws IOException {
     final IndexInput data = this.data.clone();
     
+    Tracer trace = Trace.trace("getSorted - BlockPackedReader - create");
     final MonotonicBlockPackedReader addresses;
-    synchronized (addressInstances) {
-      MonotonicBlockPackedReader addrInstance = addressInstances.get(field.number);
-      if (addrInstance == null) {
-        data.seek(bytes.addressesOffset);
-        addrInstance = new MonotonicBlockPackedReader(data, bytes.packedIntsVersion, bytes.blockSize, bytes.count, true);
-        addressInstances.put(field.number, addrInstance);
-      }
-      addresses = addrInstance;
+    try {
+      data.seek(bytes.addressesOffset);
+      addresses = new MonotonicBlockPackedReader(data, bytes.packedIntsVersion, bytes.blockSize, bytes.count, true);
+    } finally {
+      trace.done();
     }
-
     return new LongBinaryDocValues() {
       @Override
       public void get(long id, BytesRef result) {
@@ -258,17 +252,15 @@ class DiskDocValuesProducer extends DocValuesProducer {
   public SortedDocValues getSorted(FieldInfo field) throws IOException {
     final int valueCount = (int) binaries.get(field.number).count;
     final BinaryDocValues binary = getBinary(field);
+    Tracer trace = Trace.trace("getSorted - BlockPackedReader - create");
     final BlockPackedReader ordinals;
-    synchronized (ordinalInstances) {
-      BlockPackedReader ordsInstance = ordinalInstances.get(field.number);
-      if (ordsInstance == null) {
-        NumericEntry entry = ords.get(field.number);
-        IndexInput data = this.data.clone();
-        data.seek(entry.offset);
-        ordsInstance = new BlockPackedReader(data, entry.packedIntsVersion, entry.blockSize, entry.count, true);
-        ordinalInstances.put(field.number, ordsInstance);
-      }
-      ordinals = ordsInstance;
+    try{
+      NumericEntry entry = ords.get(field.number);
+      IndexInput data = this.data.clone();
+      data.seek(entry.offset);
+      ordinals = new BlockPackedReader(data, entry.packedIntsVersion, entry.blockSize, entry.count, true);
+    } finally {
+      trace.done();
     }
     return new SortedDocValues() {
 
@@ -295,20 +287,18 @@ class DiskDocValuesProducer extends DocValuesProducer {
     // we keep the byte[]s and list of ords on disk, these could be large
     final LongBinaryDocValues binary = (LongBinaryDocValues) getBinary(field);
     final LongNumericDocValues ordinals = getNumeric(ords.get(field.number));
-    // but the addresses to the ord stream are in RAM
+
+    Tracer trace = Trace.trace("getSortedSet - MonotonicBlockPackedReader - create");
     final MonotonicBlockPackedReader ordIndex;
-    synchronized (ordIndexInstances) {
-      MonotonicBlockPackedReader ordIndexInstance = ordIndexInstances.get(field.number);
-      if (ordIndexInstance == null) {
-        NumericEntry entry = ordIndexes.get(field.number);
-        IndexInput data = this.data.clone();
-        data.seek(entry.offset);
-        ordIndexInstance = new MonotonicBlockPackedReader(data, entry.packedIntsVersion, entry.blockSize, entry.count, true);
-        ordIndexInstances.put(field.number, ordIndexInstance);
-      }
-      ordIndex = ordIndexInstance;
+    try{
+      NumericEntry entry = ordIndexes.get(field.number);
+      IndexInput data = this.data.clone();
+      data.seek(entry.offset);
+      ordIndex = new MonotonicBlockPackedReader(data, entry.packedIntsVersion, entry.blockSize, entry.count, true);
+    } finally {
+      trace.done();
     }
-    
+
     return new SortedSetDocValues() {
       long offset;
       long endOffset;

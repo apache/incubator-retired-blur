@@ -62,6 +62,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField FIELD_TYPE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("fieldType", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)5);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("properties", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.MAP, (short)6);
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField SORTABLE_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("sortable", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)7);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField MULTI_VALUE_FIELD_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("multiValueField", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL, (short)8);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -107,6 +108,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
    * This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
    */
   public boolean sortable; // required
+  /**
+   * This will attempt to enable the ability for multiple values per column name in a single Record.
+   */
+  public boolean multiValueField; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
@@ -147,7 +152,11 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     /**
      * This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
      */
-    SORTABLE((short)7, "sortable");
+    SORTABLE((short)7, "sortable"),
+    /**
+     * This will attempt to enable the ability for multiple values per column name in a single Record.
+     */
+    MULTI_VALUE_FIELD((short)8, "multiValueField");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -176,6 +185,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
           return PROPERTIES;
         case 7: // SORTABLE
           return SORTABLE;
+        case 8: // MULTI_VALUE_FIELD
+          return MULTI_VALUE_FIELD;
         default:
           return null;
       }
@@ -218,7 +229,9 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
   // isset id assignments
   private static final int __FIELDLESSINDEXED_ISSET_ID = 0;
   private static final int __SORTABLE_ISSET_ID = 1;
+  private static final int __MULTIVALUEFIELD_ISSET_ID = 2;
   private byte __isset_bitfield = 0;
+  private _Fields optionals[] = {_Fields.MULTI_VALUE_FIELD};
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
@@ -238,11 +251,15 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
             new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING))));
     tmpMap.put(_Fields.SORTABLE, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("sortable", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
         new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.MULTI_VALUE_FIELD, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("multiValueField", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.OPTIONAL, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(ColumnDefinition.class, metaDataMap);
   }
 
   public ColumnDefinition() {
+    this.multiValueField = true;
+
   }
 
   public ColumnDefinition(
@@ -300,6 +317,7 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       this.properties = __this__properties;
     }
     this.sortable = other.sortable;
+    this.multiValueField = other.multiValueField;
   }
 
   public ColumnDefinition deepCopy() {
@@ -317,6 +335,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     this.properties = null;
     setSortableIsSet(false);
     this.sortable = false;
+    this.multiValueField = true;
+
   }
 
   /**
@@ -558,6 +578,35 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SORTABLE_ISSET_ID, value);
   }
 
+  /**
+   * This will attempt to enable the ability for multiple values per column name in a single Record.
+   */
+  public boolean isMultiValueField() {
+    return this.multiValueField;
+  }
+
+  /**
+   * This will attempt to enable the ability for multiple values per column name in a single Record.
+   */
+  public ColumnDefinition setMultiValueField(boolean multiValueField) {
+    this.multiValueField = multiValueField;
+    setMultiValueFieldIsSet(true);
+    return this;
+  }
+
+  public void unsetMultiValueField() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __MULTIVALUEFIELD_ISSET_ID);
+  }
+
+  /** Returns true if field multiValueField is set (has been assigned a value) and false otherwise */
+  public boolean isSetMultiValueField() {
+    return EncodingUtils.testBit(__isset_bitfield, __MULTIVALUEFIELD_ISSET_ID);
+  }
+
+  public void setMultiValueFieldIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __MULTIVALUEFIELD_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case FAMILY:
@@ -616,6 +665,14 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       }
       break;
 
+    case MULTI_VALUE_FIELD:
+      if (value == null) {
+        unsetMultiValueField();
+      } else {
+        setMultiValueField((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -642,6 +699,9 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     case SORTABLE:
       return Boolean.valueOf(isSortable());
 
+    case MULTI_VALUE_FIELD:
+      return Boolean.valueOf(isMultiValueField());
+
     }
     throw new IllegalStateException();
   }
@@ -667,6 +727,8 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       return isSetProperties();
     case SORTABLE:
       return isSetSortable();
+    case MULTI_VALUE_FIELD:
+      return isSetMultiValueField();
     }
     throw new IllegalStateException();
   }
@@ -744,6 +806,15 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (!(this_present_sortable && that_present_sortable))
         return false;
       if (this.sortable != that.sortable)
+        return false;
+    }
+
+    boolean this_present_multiValueField = true && this.isSetMultiValueField();
+    boolean that_present_multiValueField = true && that.isSetMultiValueField();
+    if (this_present_multiValueField || that_present_multiValueField) {
+      if (!(this_present_multiValueField && that_present_multiValueField))
+        return false;
+      if (this.multiValueField != that.multiValueField)
         return false;
     }
 
@@ -833,6 +904,16 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetMultiValueField()).compareTo(typedOther.isSetMultiValueField());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetMultiValueField()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.multiValueField, typedOther.multiValueField);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -900,6 +981,12 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
     sb.append("sortable:");
     sb.append(this.sortable);
     first = false;
+    if (isSetMultiValueField()) {
+      if (!first) sb.append(", ");
+      sb.append("multiValueField:");
+      sb.append(this.multiValueField);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -1013,6 +1100,14 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 8: // MULTI_VALUE_FIELD
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.BOOL) {
+              struct.multiValueField = iprot.readBool();
+              struct.setMultiValueFieldIsSet(true);
+            } else { 
+              org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -1067,6 +1162,11 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       oprot.writeFieldBegin(SORTABLE_FIELD_DESC);
       oprot.writeBool(struct.sortable);
       oprot.writeFieldEnd();
+      if (struct.isSetMultiValueField()) {
+        oprot.writeFieldBegin(MULTI_VALUE_FIELD_FIELD_DESC);
+        oprot.writeBool(struct.multiValueField);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -1106,7 +1206,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (struct.isSetSortable()) {
         optionals.set(6);
       }
-      oprot.writeBitSet(optionals, 7);
+      if (struct.isSetMultiValueField()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetFamily()) {
         oprot.writeString(struct.family);
       }
@@ -1135,12 +1238,15 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (struct.isSetSortable()) {
         oprot.writeBool(struct.sortable);
       }
+      if (struct.isSetMultiValueField()) {
+        oprot.writeBool(struct.multiValueField);
+      }
     }
 
     @Override
     public void read(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, ColumnDefinition struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(7);
+      BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.family = iprot.readString();
         struct.setFamilyIsSet(true);
@@ -1179,6 +1285,10 @@ public class ColumnDefinition implements org.apache.blur.thirdparty.thrift_0_9_0
       if (incoming.get(6)) {
         struct.sortable = iprot.readBool();
         struct.setSortableIsSet(true);
+      }
+      if (incoming.get(7)) {
+        struct.multiValueField = iprot.readBool();
+        struct.setMultiValueFieldIsSet(true);
       }
     }
   }

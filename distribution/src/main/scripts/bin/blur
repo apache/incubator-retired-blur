@@ -23,15 +23,15 @@ PROC_NAME=$1
 if [ $# -eq 0 ]; then
   "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -Dlog4j.configuration=file://$BLUR_HOME/conf/log4j-command.xml -cp $BLUR_CLASSPATH org.apache.blur.shell.Main shell help
 elif [ $1 = "shell" ]; then
-  "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -Dlog4j.configuration=file://$BLUR_HOME/conf/log4j-command.xml -cp $BLUR_CLASSPATH org.apache.blur.shell.Main ${@:2}
+  "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -Dlog4j.configuration=file://$BLUR_HOME/conf/log4j-command.xml -cp $BLUR_CLASSPATH org.apache.blur.shell.Main "${@:2}"
 elif [ $1 = "execute" ]; then
-  "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -Dlog4j.configuration=file://$BLUR_HOME/conf/log4j-command.xml -cp $BLUR_CLASSPATH ${@:2}
+  "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -Dlog4j.configuration=file://$BLUR_HOME/conf/log4j-command.xml -cp $BLUR_CLASSPATH "${@:2}"
 elif [ $1 = "csvloader" ]; then
   for f in $BLUR_HOME/lib/*.jar; do
     BLUR_BASE_CLASSPATH=${BLUR_BASE_CLASSPATH}:$f;
   done
   export HADOOP_CLASSPATH=$BLUR_BASE_CLASSPATH
-  hadoop jar $BLUR_HOME/lib/blur-mapred-*.jar org.apache.blur.mapreduce.lib.CsvBlurDriver ${@:2}
+  hadoop jar $BLUR_HOME/lib/blur-mapred-*.jar org.apache.blur.mapreduce.lib.CsvBlurDriver "${@:2}"
 else
-  "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -Dlog4j.configuration=file://$BLUR_HOME/conf/log4j-command.xml -cp $BLUR_CLASSPATH org.apache.blur.shell.Main shell ${@:1}
+  "$JAVA_HOME"/bin/java -Dblur.name=$PROC_NAME -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=blur-$USER-$PROC_NAME -Dlog4j.configuration=file://$BLUR_HOME/conf/log4j-command.xml -cp $BLUR_CLASSPATH org.apache.blur.shell.Main shell "${@:1}"
 fi

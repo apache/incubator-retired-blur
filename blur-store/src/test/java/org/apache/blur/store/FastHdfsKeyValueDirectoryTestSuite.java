@@ -19,6 +19,7 @@ package org.apache.blur.store;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Timer;
 
 import org.apache.blur.store.hdfs_v2.FastHdfsKeyValueDirectory;
 import org.apache.hadoop.conf.Configuration;
@@ -28,12 +29,15 @@ import org.junit.Test;
 
 public class FastHdfsKeyValueDirectoryTestSuite extends BaseDirectoryTestSuite {
 
+  private Timer _timer;
+
   @Override
   protected Directory setupDirectory() throws IOException {
     URI uri = new File(file, "hdfs").toURI();
     Path hdfsDirPath = new Path(uri.toString());
     Configuration conf = new Configuration();
-    return new FastHdfsKeyValueDirectory(conf, hdfsDirPath);
+    _timer = new Timer("IndexImporter", true);
+    return new FastHdfsKeyValueDirectory(false, _timer, conf, hdfsDirPath);
   }
 
   @Test
@@ -42,7 +46,8 @@ public class FastHdfsKeyValueDirectoryTestSuite extends BaseDirectoryTestSuite {
 
   @Override
   protected void close() throws IOException {
-
+    _timer.cancel();
+    _timer.purge();
   }
 
 }

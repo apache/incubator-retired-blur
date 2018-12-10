@@ -20,6 +20,7 @@ package org.apache.blur.store.blockcache_v2;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.blur.store.blockcache_v2.cachevalue.ByteArrayCacheValue;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.blur.store.buffer.Store;
 import org.apache.lucene.store.AlreadyClosedException;
@@ -39,7 +40,7 @@ public class CacheIndexInput extends IndexInput {
   private IndexInput _indexInput;
   private CacheKey _key = new CacheKey();
   private CacheValue _cacheValue;
-  private CacheValue _cacheValueQuietRef;
+  private CacheValue _cacheValueQuietRefCannotBeReleased;
 
   private long _position;
   private int _blockPosition;
@@ -67,23 +68,44 @@ public class CacheIndexInput extends IndexInput {
   @Override
   public int readVInt() throws IOException {
     if (isCacheValueValid() && remaining() >= 5) {
-      byte b = readByteFromCache();
+      byte b;
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       if (b >= 0)
         return b;
       int i = b & 0x7F;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       i |= (b & 0x7F) << 7;
       if (b >= 0)
         return i;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       i |= (b & 0x7F) << 14;
       if (b >= 0)
         return i;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       i |= (b & 0x7F) << 21;
       if (b >= 0)
         return i;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       // Warning: the next ands use 0x0F / 0xF0 - beware copy/paste errors:
       i |= (b & 0x0F) << 28;
       if ((b & 0xF0) == 0)
@@ -94,7 +116,7 @@ public class CacheIndexInput extends IndexInput {
   }
 
   private boolean isCacheValueValid() {
-    if (_cacheValue != null) {
+    if (_cacheValue != null && !_cacheValue.isEvicted()) {
       return true;
     }
     return false;
@@ -103,39 +125,76 @@ public class CacheIndexInput extends IndexInput {
   @Override
   public long readVLong() throws IOException {
     if (isCacheValueValid() && remaining() >= 9) {
-      byte b = readByteFromCache();
+      byte b;
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       if (b >= 0)
         return b;
       long i = b & 0x7FL;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       i |= (b & 0x7FL) << 7;
       if (b >= 0)
         return i;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       i |= (b & 0x7FL) << 14;
       if (b >= 0)
         return i;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       i |= (b & 0x7FL) << 21;
       if (b >= 0)
         return i;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       i |= (b & 0x7FL) << 28;
       if (b >= 0)
         return i;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       i |= (b & 0x7FL) << 35;
       if (b >= 0)
         return i;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e2) {
+        b = readByte();
+      }
       i |= (b & 0x7FL) << 42;
       if (b >= 0)
         return i;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e1) {
+        b = readByte();
+      }
       i |= (b & 0x7FL) << 49;
       if (b >= 0)
         return i;
-      b = readByteFromCache();
+      try {
+        b = readByteFromCache();
+      } catch (EvictionException e) {
+        b = readByte();
+      }
       i |= (b & 0x7FL) << 56;
       if (b >= 0)
         return i;
@@ -147,8 +206,14 @@ public class CacheIndexInput extends IndexInput {
   @Override
   public byte readByte() throws IOException {
     ensureOpen();
+    byte b;
     tryToFill();
-    byte b = _cacheValue.read(_blockPosition);
+    try {
+      b = _cacheValue.read(_blockPosition);
+    } catch (EvictionException e) {
+      releaseCache();
+      return readByte();
+    }
     _position++;
     _blockPosition++;
     return b;
@@ -161,7 +226,13 @@ public class CacheIndexInput extends IndexInput {
       tryToFill();
       int remaining = remaining();
       int length = Math.min(len, remaining);
-      _cacheValue.read(_blockPosition, b, offset, length);
+      try {
+        _cacheValue.read(_blockPosition, b, offset, length);
+      } catch (EvictionException e) {
+        releaseCache();
+        readBytes(b, offset, len);
+        return;
+      }
       offset += length;
       len -= length;
       _position += length;
@@ -173,7 +244,12 @@ public class CacheIndexInput extends IndexInput {
   public short readShort() throws IOException {
     ensureOpen();
     if (isCacheValueValid() && remaining() >= 2) {
-      short s = _cacheValue.readShort(_blockPosition);
+      short s;
+      try {
+        s = _cacheValue.readShort(_blockPosition);
+      } catch (EvictionException e) {
+        return super.readShort();
+      }
       _blockPosition += 2;
       _position += 2;
       return s;
@@ -185,7 +261,12 @@ public class CacheIndexInput extends IndexInput {
   public int readInt() throws IOException {
     ensureOpen();
     if (isCacheValueValid() && remaining() >= 4) {
-      int i = _cacheValue.readInt(_blockPosition);
+      int i;
+      try {
+        i = _cacheValue.readInt(_blockPosition);
+      } catch (EvictionException e) {
+        return super.readInt();
+      }
       _blockPosition += 4;
       _position += 4;
       return i;
@@ -197,7 +278,12 @@ public class CacheIndexInput extends IndexInput {
   public long readLong() throws IOException {
     ensureOpen();
     if (isCacheValueValid() && remaining() >= 8) {
-      long l = _cacheValue.readLong(_blockPosition);
+      long l;
+      try {
+        l = _cacheValue.readLong(_blockPosition);
+      } catch (EvictionException e) {
+        return super.readLong();
+      }
       _blockPosition += 8;
       _position += 8;
       return l;
@@ -211,11 +297,6 @@ public class CacheIndexInput extends IndexInput {
       _isClosed = true;
       _indexInput.close();
       releaseCache();
-    }
-    if (_cacheValueQuietRef != null) {
-      CacheValue ref = _cacheValueQuietRef;
-      _cacheValueQuietRef = null;
-      ref.release();
     }
   }
 
@@ -236,6 +317,7 @@ public class CacheIndexInput extends IndexInput {
     ensureOpen();
     if (pos >= _fileLength) {
       _position = pos;
+      releaseCache();
       return;
     }
     if (_position == pos) {
@@ -271,19 +353,11 @@ public class CacheIndexInput extends IndexInput {
     clone._key = _key.clone();
     clone._indexInput = _indexInput.clone();
     clone._quiet = _cache.shouldBeQuiet(_directory, _fileName);
-    if (clone._cacheValue != null) {
-      clone._cacheValue.incRef();
-    }
-    clone._cacheValueQuietRef = null;
+    clone._cacheValueQuietRefCannotBeReleased = null;
     return clone;
   }
 
-  @Override
-  protected void finalize() throws Throwable {
-    close();
-  }
-
-  private byte readByteFromCache() {
+  private byte readByteFromCache() throws EvictionException {
     byte b = _cacheValue.read(_blockPosition);
     _position++;
     _blockPosition++;
@@ -291,7 +365,11 @@ public class CacheIndexInput extends IndexInput {
   }
 
   private int remaining() {
-    return _cacheValue.length() - _blockPosition;
+    try {
+      return _cacheValue.length() - _blockPosition;
+    } catch (EvictionException e) {
+      return 0;
+    }
   }
 
   private void tryToFill() throws IOException {
@@ -306,20 +384,20 @@ public class CacheIndexInput extends IndexInput {
 
   private void releaseCache() {
     if (_cacheValue != null) {
-      _cacheValue.decRef();
       _cacheValue = null;
     }
   }
 
   private void fillQuietly() throws IOException {
     _key.setBlockId(getBlockId());
-    _cacheValue = _cache.getQuietly(_key);
+    _cacheValue = _cache.getQuietly(_directory, _fileName, _key);
     if (_cacheValue == null) {
-      if (_cacheValueQuietRef == null) {
-        _cacheValueQuietRef = _cache.newInstance(_directory, _fileName);
+      if (_cacheValueQuietRefCannotBeReleased == null) {
+        // @TODO this could be improved.
+        int cacheBlockSize = _cache.getCacheBlockSize(_directory, _fileName);
+        _cacheValueQuietRefCannotBeReleased = new ByteArrayCacheValue(cacheBlockSize);
       }
-      _cacheValue = _cacheValueQuietRef;
-      _cacheValue.incRef();
+      _cacheValue = _cacheValueQuietRefCannotBeReleased;
       long filePosition = getFilePosition();
       _indexInput.seek(filePosition);
       byte[] buffer = _store.takeBuffer(_bufferSize);
@@ -333,18 +411,15 @@ public class CacheIndexInput extends IndexInput {
         cachePosition += length;
       }
       _store.putBuffer(buffer);
-    } else {
-      _cacheValue.incRef();
     }
     _blockPosition = getBlockPosition();
   }
 
   private void fillNormally() throws IOException {
     _key.setBlockId(getBlockId());
-    _cacheValue = _cache.get(_key);
+    _cacheValue = _cache.get(_directory, _fileName, _key);
     if (_cacheValue == null) {
       _cacheValue = _cache.newInstance(_directory, _fileName);
-      _cacheValue.incRef();
       long filePosition = getFilePosition();
       _indexInput.seek(filePosition);
       byte[] buffer = _store.takeBuffer(_bufferSize);
@@ -358,9 +433,7 @@ public class CacheIndexInput extends IndexInput {
         cachePosition += length;
       }
       _store.putBuffer(buffer);
-      _cache.put(_key.clone(), _cacheValue);
-    } else {
-      _cacheValue.incRef();
+      _cache.put(_directory, _fileName, _key.clone(), _cacheValue);
     }
     _blockPosition = getBlockPosition();
   }

@@ -18,18 +18,21 @@ package org.apache.blur.manager.writer;
  */
 
 import static org.apache.blur.lucene.LuceneVersionConstant.LUCENE_VERSION;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.blur.analysis.FieldManager;
-import org.apache.blur.server.IndexSearcherClosable;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
+import org.apache.blur.lucene.search.IndexSearcherCloseableBase;
 import org.apache.blur.server.ShardContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.store.buffer.BufferStore;
@@ -71,9 +74,11 @@ public class IndexImporterTest {
   private Path _inUsePath;
   private Path _shardPath;
   private HdfsDirectory _mainDirectory;
+  private Timer _timer;
 
   @Before
   public void setup() throws IOException {
+    _timer = new Timer("Index Importer", true);
     TableContext.clear();
     _configuration = new Configuration();
     _base = new Path(TMPDIR, "blur-index-importer-test");
@@ -116,11 +121,12 @@ public class IndexImporterTest {
     _mainWriter = new IndexWriter(_mainDirectory, conf.clone());
     BufferStore.initNewBuffer(128, 128 * 128);
 
-    _indexImporter = new IndexImporter(getBlurIndex(shardContext, _mainDirectory), shardContext, TimeUnit.MINUTES, 10);
+    _indexImporter = new IndexImporter(_timer, getBlurIndex(shardContext, _mainDirectory), shardContext,
+        TimeUnit.MINUTES, 10, null);
   }
 
   private BlurIndex getBlurIndex(ShardContext shardContext, final Directory mainDirectory) throws IOException {
-    return new BlurIndex(shardContext, mainDirectory, null, null, null) {
+    return new BlurIndex(shardContext, mainDirectory, null, null, null, null, null, null) {
 
       @Override
       public void removeSnapshot(String name) throws IOException {
@@ -135,7 +141,7 @@ public class IndexImporterTest {
       @Override
       public void process(IndexAction indexAction) throws IOException {
         final DirectoryReader reader = DirectoryReader.open(mainDirectory);
-        IndexSearcherClosable searcherClosable = new IndexSearcherClosable(reader, null) {
+        IndexSearcherCloseable searcherClosable = new IndexSearcherCloseableBase(reader, null) {
 
           @Override
           public Directory getDirectory() {
@@ -144,7 +150,7 @@ public class IndexImporterTest {
 
           @Override
           public void close() throws IOException {
-            reader.close();
+
           }
         };
         try {
@@ -175,7 +181,7 @@ public class IndexImporterTest {
       }
 
       @Override
-      public IndexSearcherClosable getIndexSearcher() throws IOException {
+      public IndexSearcherCloseable getIndexSearcher() throws IOException {
         throw new RuntimeException("Not Implemented");
       }
 
@@ -193,12 +199,38 @@ public class IndexImporterTest {
       public void enqueue(List<RowMutation> mutations) {
         throw new RuntimeException("Not Implemented");
       }
+
+      @Override
+      public void finishBulkMutate(String bulkId, boolean apply, boolean blockUntilComplete) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public void addBulkMutate(String bulkId, RowMutation mutation) throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getSegmentImportPendingCount() throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getSegmentImportInProgressCount() throws IOException {
+        throw new RuntimeException("Not implemented.");
+      }
+
+      @Override
+      public long getOnDiskSize() throws IOException {
+        throw new RuntimeException("Not Implemented");
+      }
     };
   }
 
   @After
   public void tearDown() throws IOException {
-    IOUtils.closeQuietly(_commitWriter);
+    _timer.cancel();
+    _timer.purge();
     IOUtils.closeQuietly(_mainWriter);
     IOUtils.closeQuietly(_indexImporter);
     _base.getFileSystem(_configuration).delete(_base, true);
@@ -206,6 +238,7 @@ public class IndexImporterTest {
 
   @Test
   public void testIndexImporterWithBadIndex() throws IOException {
+    _commitWriter.close();
     _fileSystem.delete(_path, true);
     _fileSystem.mkdirs(_path);
     _indexImporter.run();
@@ -273,6 +306,32 @@ public class IndexImporterTest {
     assertFalse(_fileSystem.exists(_path));
     assertTrue(_fileSystem.exists(_badRowIdsPath));
     assertFalse(_fileSystem.exists(_inUsePath));
+    validateIndex();
+  }
+
+  @Test
+  public void testIndexImporterWhenThereIsAFailureOnDuringImport() throws IOException {
+    List<Field> document = _fieldManager.getFields("1", genRecord("1"));
+    _commitWriter.addDocument(document);
+    _commitWriter.commit();
+    _commitWriter.close();
+    _indexImporter.setTestError(new Runnable() {
+      @Override
+      public void run() {
+        throw new RuntimeException("test");
+      }
+    });
+    try {
+      _indexImporter.run();
+    } catch (RuntimeException e) {
+      assertEquals("test", e.getMessage());
+    }
+    _indexImporter.cleanupOldDirs();
+    _indexImporter.setTestError(null);
+    _indexImporter.run();
+    assertFalse(_fileSystem.exists(_path));
+    assertFalse(_fileSystem.exists(_badRowIdsPath));
+    assertTrue(_fileSystem.exists(_inUsePath));
     validateIndex();
   }
 

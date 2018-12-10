@@ -36,7 +36,10 @@ public abstract class BaseConsoleServlet extends HttpServlet {
 
   protected void sendError(HttpServletResponse response, Exception e) throws IOException {
     log.error("Error processing request.", e);
-    String body = e.getMessage();
+    String body = "Error processing request";
+    if(e != null && e.getMessage() != null) {
+      body = e.getMessage();
+    }
     response.setContentType("application/json");
     response.setContentLength(body.getBytes().length);
     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

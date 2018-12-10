@@ -61,14 +61,9 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
     return _table;
   }
 
-  @Override
-  protected void finalize() throws Throwable {
-    _cache.releaseDirectory(getDirectoryName());
-  }
-
   public IndexInput openInput(String name, IOContext context) throws IOException {
     IndexInput indexInput = _internal.openInput(name, context);
-    if (_cache.cacheFileForReading(this, name, context) || isCachableFile(name)) {
+    if (_cache.cacheFileForReading(this, name, context) || (_tableBlockCacheFileTypes != null && isCachableFile(name))) {
       return new CacheIndexInput(this, name, indexInput, _cache);
     }
     return indexInput;
@@ -89,11 +84,10 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
   }
 
   public IndexOutput createOutput(String name, IOContext context) throws IOException {
-    IndexOutput indexOutput = _internal.createOutput(name, context);
-    if (_cache.cacheFileForWriting(this, name, context) || isCachableFile(name)) {
-      return new CacheIndexOutput(this, name, indexOutput, _cache);
+    if (_cache.cacheFileForWriting(this, name, context) || (_tableBlockCacheFileTypes != null && isCachableFile(name))) {
+      return new CacheIndexOutput(this, name, _cache, _internal, context);
     }
-    return indexOutput;
+    return _internal.createOutput(name, context);
   }
 
   public void deleteFile(String name) throws IOException {
@@ -126,6 +120,7 @@ public class CacheDirectory extends Directory implements DirectoryDecorator, Las
   }
 
   public void close() throws IOException {
+    _cache.releaseDirectory(this);
     _internal.close();
   }
 

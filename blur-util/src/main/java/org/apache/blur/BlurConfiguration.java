@@ -16,9 +16,12 @@ package org.apache.blur;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,13 +36,6 @@ import java.util.Properties;
 public class BlurConfiguration implements Cloneable {
 
   private Properties _properties = new Properties();
-
-  public static void main(String[] args) throws IOException {
-    BlurConfiguration configuration = new BlurConfiguration();
-    System.out.println(configuration.get("test"));
-    System.out.println(configuration.get("test2"));
-    System.out.println(configuration.get("test3", "def"));
-  }
 
   /**
    * Create a BlurConfiguration including default properties.
@@ -63,15 +59,36 @@ public class BlurConfiguration implements Cloneable {
   }
 
   private void init() throws IOException {
-    _properties.putAll(load("/blur-default.properties"));
-    _properties.putAll(load("/blur-site.properties"));
+    _properties.putAll(loadInternal("/blur-default.properties"));
+    _properties.putAll(loadInternal("/blur-site.properties"));
   }
 
-  private Properties load(String path) throws IOException {
+  public void load(InputStream inputStream) throws IOException {
+    _properties.putAll(loadInternal(inputStream));
+  }
+
+  public void load(File path) throws IOException {
+    FileInputStream inputStream = new FileInputStream(path);
+    try {
+      _properties.putAll(loadInternal(inputStream));
+    } finally {
+      inputStream.close();
+    }
+  }
+
+  private Properties loadInternal(String path) throws IOException {
     InputStream inputStream = getClass().getResourceAsStream(path);
     if (inputStream == null) {
       throw new FileNotFoundException(path);
     }
+    try {
+      return loadInternal(inputStream);
+    } finally {
+      inputStream.close();
+    }
+  }
+
+  private Properties loadInternal(InputStream inputStream) throws IOException {
     Properties properties = new Properties();
     properties.load(inputStream);
     return properties;
@@ -88,13 +105,13 @@ public class BlurConfiguration implements Cloneable {
   public String get(String name) {
     return get(name, null);
   }
-  
+
   public String getExpected(String name) {
-	  String val = get(name);
-	  if (val == null || val.trim().isEmpty()) {
-	      throw new IllegalArgumentException("Property [" + name + "] is missing or blank.");
-	    }
-	    return val;
+    String val = get(name);
+    if (val == null || val.trim().isEmpty()) {
+      throw new IllegalArgumentException("Property [" + name + "] is missing or blank.");
+    }
+    return val;
   }
 
   public String get(String name, String defaultValue) {
@@ -156,6 +173,10 @@ public class BlurConfiguration implements Cloneable {
     }
     clone._properties = (Properties) _properties.clone();
     return clone;
+  }
+
+  public void write(OutputStream outputStream) throws IOException {
+    _properties.store(outputStream, null);
   }
 
 }

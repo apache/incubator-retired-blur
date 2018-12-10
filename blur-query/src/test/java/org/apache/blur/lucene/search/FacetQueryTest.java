@@ -55,6 +55,8 @@ public class FacetQueryTest {
 
   private static final boolean TRACE = false;
 
+  private int _docCount = 10000;
+
   @Test
   public void testFacetQueryNoSuper() throws IOException, InterruptedException {
     System.out.println("testFacetQueryNoSuper");
@@ -93,8 +95,8 @@ public class FacetQueryTest {
     BlurConfiguration configuration = new BlurConfiguration();
     Trace.setStorage(new LogTraceStorage(configuration));
     int facetCount = 200;
-    int docCount = 1000000;
-    IndexReader reader = createIndex(docCount, facetCount, false);
+
+    IndexReader reader = createIndex(_docCount, facetCount, false);
 
     Query[] facets = new Query[facetCount];
     for (int i = 0; i < facetCount; i++) {
@@ -123,7 +125,7 @@ public class FacetQueryTest {
         System.out.println((t2 - t1) / 1000000.0);
 
         for (int i = 0; i < facetExecutor.length(); i++) {
-          assertEquals((long) docCount, facetExecutor.get(i));
+          assertEquals((long) _docCount, facetExecutor.get(i));
         }
       }
     } finally {
@@ -137,8 +139,7 @@ public class FacetQueryTest {
     BlurConfiguration configuration = new BlurConfiguration();
     Trace.setStorage(new LogTraceStorage(configuration));
     int facetCount = 200;
-    int docCount = 1000000;
-    IndexReader reader = createIndex(docCount, facetCount, false);
+    IndexReader reader = createIndex(_docCount, facetCount, false);
 
     Query[] facets = new Query[facetCount];
     for (int i = 0; i < facetCount; i++) {
@@ -179,8 +180,7 @@ public class FacetQueryTest {
   public void testFacetQueryPerformanceWithMins() throws IOException, InterruptedException {
     System.out.println("testFacetQueryPerformanceWithMins");
     int facetCount = 200;
-    int docCount = 1000000;
-    IndexReader reader = createIndex(docCount, facetCount, false);
+    IndexReader reader = createIndex(_docCount, facetCount, false);
 
     Query[] facets = new Query[facetCount];
     for (int i = 0; i < facetCount; i++) {
@@ -231,12 +231,14 @@ public class FacetQueryTest {
       File dir = new File("./target/tmp/facet_tmp");
       if (dir.exists()) {
         directory = FSDirectory.open(dir);
-        DirectoryReader reader = DirectoryReader.open(directory);
-        if (reader.numDocs() == docCount) {
-          return reader;
+        if (DirectoryReader.indexExists(directory)) {
+          DirectoryReader reader = DirectoryReader.open(directory);
+          if (reader.numDocs() == docCount) {
+            return reader;
+          }
+          reader.close();
+          directory.close();
         }
-        reader.close();
-        directory.close();
       }
       rmr(dir);
       directory = FSDirectory.open(dir);

@@ -33,21 +33,19 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.blur.thirdparty.thrift_0_9_0.TException;
-import org.apache.commons.collections.CollectionUtils;
 
 public class NodeUtil {
   private static Set<String> onlineControllers = new HashSet<String>();
   private static Map<String, Set<String>> onlineShards = new HashMap<String, Set<String>>();
 
-  @SuppressWarnings("unchecked")
   public static Map<String, Object> getControllerStatus() throws IOException, TException {
     CachingBlurClient client = Config.getCachingBlurClient();
-    
+
     List<String> currentControllers = client.controllerList();
-    
-    Collection<String> newControllers = CollectionUtils.subtract(currentControllers, onlineControllers);
-    Collection<String> missingControllers = CollectionUtils.subtract(onlineControllers, currentControllers);
-    
+
+    Collection<String> newControllers = subtract(currentControllers, onlineControllers);
+    Collection<String> missingControllers = subtract(onlineControllers, currentControllers);
+
     onlineControllers.addAll(newControllers);
 
     Map<String, Object> data = new HashMap<String, Object>();
@@ -58,24 +56,35 @@ public class NodeUtil {
     return data;
   }
 
+  public static Collection<String> subtract(final Collection<String> a, final Collection<String> b) {
+    final List<String> list = new ArrayList<String>();
+    final Set<String> bag = new HashSet<String>(b);
+    for (final String element : a) {
+      if (!bag.contains(element)) {
+        list.add(element);
+      }
+    }
+    return list;
+  }
+
   @SuppressWarnings("unchecked")
   public static List<Map<String, Object>> getClusterStatus() throws IOException, TException {
     List<Map<String, Object>> data = new ArrayList<Map<String, Object>>();
     CachingBlurClient client = Config.getCachingBlurClient();
-    
+
     for (String cluster : client.shardClusterList()) {
       if (!onlineShards.containsKey(cluster)) {
         onlineShards.put(cluster, new HashSet<String>());
       }
-      
+
       Set<String> onlineShardsForCluster = onlineShards.get(cluster);
       List<String> currentShards = client.shardList(cluster);
-      
-      Collection<String> newShards = CollectionUtils.subtract(currentShards, onlineShardsForCluster);
-      Collection<String> missingShards = CollectionUtils.subtract(onlineShardsForCluster, currentShards);
-      
+
+      Collection<String> newShards = subtract(currentShards, onlineShardsForCluster);
+      Collection<String> missingShards = subtract(onlineShardsForCluster, currentShards);
+
       onlineShardsForCluster.addAll(newShards);
-      
+
       Map<String, Object> clusterObj = new HashMap<String, Object>();
       clusterObj.put("name", cluster);
       clusterObj.put("online", onlineShardsForCluster);

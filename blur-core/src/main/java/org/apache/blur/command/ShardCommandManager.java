@@ -16,6 +16,7 @@
  */
 package org.apache.blur.command;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,21 +28,20 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import org.apache.blur.BlurConfiguration;
+import org.apache.blur.lucene.search.IndexSearcherCloseable;
 import org.apache.blur.manager.IndexServer;
 import org.apache.blur.manager.writer.BlurIndex;
-import org.apache.blur.server.IndexSearcherClosable;
 import org.apache.blur.server.ShardServerContext;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.server.TableContextFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.IndexSearcher;
 
 public class ShardCommandManager extends BaseCommandManager {
 
   private final IndexServer _indexServer;
 
-  public ShardCommandManager(IndexServer indexServer, String tmpPath, String commandPath, int workerThreadCount,
+  public ShardCommandManager(IndexServer indexServer, File tmpPath, String commandPath, int workerThreadCount,
       int driverThreadCount, long connectionTimeout, Configuration configuration) throws IOException {
     super(tmpPath, commandPath, workerThreadCount, driverThreadCount, connectionTimeout, configuration);
     _indexServer = indexServer;
@@ -50,10 +50,10 @@ public class ShardCommandManager extends BaseCommandManager {
   public Response execute(final TableContextFactory tableContextFactory, final String commandName,
       final ArgumentOverlay argumentOverlay) throws IOException, TimeoutException, ExceptionCollector {
     final ShardServerContext shardServerContext = getShardServerContext();
+    final Command<?> command = getCommandObject(commandName, argumentOverlay);
     Callable<Response> callable = new Callable<Response>() {
       @Override
       public Response call() throws Exception {
-        Command<?> command = getCommandObject(commandName, argumentOverlay);
         if (command == null) {
           throw new IOException("Command with name [" + commandName + "] not found.");
         }
@@ -79,7 +79,7 @@ public class ShardCommandManager extends BaseCommandManager {
         };
       }
     };
-    return submitDriverCallable(callable);
+    return submitDriverCallable(callable, command);
   }
 
   private ShardServerContext getShardServerContext() {
@@ -136,16 +136,17 @@ public class ShardCommandManager extends BaseCommandManager {
         }
         final BlurIndex blurIndex = e.getValue();
         Callable<Object> callable;
-        if (command instanceof IndexRead) {
-          final IndexRead<?> readCommand = (IndexRead<?>) command.clone();
+        Command<?> clone = command.clone();
+        if (clone instanceof IndexRead) {
+          final IndexRead<?> readCommand = (IndexRead<?>) clone;
           callable = getCallable(shardServerContext, tableContextFactory, table, shard, blurIndex, readCommand);
-        } else if (command instanceof ServerRead) {
-          final ServerRead<?, ?> readCombiningCommand = (ServerRead<?, ?>) command.clone();
+        } else if (clone instanceof ServerRead) {
+          final ServerRead<?, ?> readCombiningCommand = (ServerRead<?, ?>) clone;
           callable = getCallable(shardServerContext, tableContextFactory, table, shard, blurIndex, readCombiningCommand);
         } else {
-          throw new IOException("Command type of [" + command.getClass() + "] not supported.");
+          throw new IOException("Command type of [" + clone.getClass() + "] not supported.");
         }
-        Future<Object> future = submitToExecutorService(callable);
+        Future<Object> future = submitToExecutorService(callable, clone);
         futureMap.put(shard, future);
       }
     }
@@ -193,7 +194,7 @@ public class ShardCommandManager extends BaseCommandManager {
       @Override
       public Object call() throws Exception {
         String shardId = shard.getShard();
-        IndexSearcherClosable searcher = shardServerContext.getIndexSearcherClosable(table, shardId);
+        IndexSearcherCloseable searcher = shardServerContext.getIndexSearcherClosable(table, shardId);
         if (searcher == null) {
           searcher = blurIndex.getIndexSearcher();
           shardServerContext.setIndexSearcherClosable(table, shardId, searcher);
@@ -211,7 +212,7 @@ public class ShardCommandManager extends BaseCommandManager {
       public Object call() throws Exception {
 
         String shardId = shard.getShard();
-        IndexSearcherClosable searcher = shardServerContext.getIndexSearcherClosable(table, shardId);
+        IndexSearcherCloseable searcher = shardServerContext.getIndexSearcherClosable(table, shardId);
         if (searcher == null) {
           searcher = blurIndex.getIndexSearcher();
           shardServerContext.setIndexSearcherClosable(table, shardId, searcher);
@@ -224,11 +225,11 @@ public class ShardCommandManager extends BaseCommandManager {
   static class ShardIndexContext extends IndexContext {
 
     private final Shard _shard;
-    private final IndexSearcher _searcher;
+    private final IndexSearcherCloseable _searcher;
     private final TableContextFactory _tableContextFactory;
     private final String _table;
 
-    public ShardIndexContext(TableContextFactory tableContextFactory, String table, Shard shard, IndexSearcher searcher) {
+    public ShardIndexContext(TableContextFactory tableContextFactory, String table, Shard shard, IndexSearcherCloseable searcher) {
       _tableContextFactory = tableContextFactory;
       _table = table;
       _shard = shard;
@@ -241,7 +242,7 @@ public class ShardCommandManager extends BaseCommandManager {
     }
 
     @Override
-    public IndexSearcher getIndexSearcher() {
+    public IndexSearcherCloseable getIndexSearcher() {
       return _searcher;
     }
 
@@ -270,11 +271,6 @@ public class ShardCommandManager extends BaseCommandManager {
       return _tableContextFactory.getTableContext(table);
     }
 
-  }
-
-  public void cancel(ExecutionId executionId) {
-    // TODO
-    System.out.println("IMPLEMENT ME!!!!");
   }
 
 }

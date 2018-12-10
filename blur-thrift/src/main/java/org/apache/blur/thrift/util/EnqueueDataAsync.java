@@ -96,11 +96,14 @@ public class EnqueueDataAsync {
   private static void loadWords() throws IOException {
     InputStream inputStream = EnqueueDataAsync.class.getResourceAsStream("words.txt");
     BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-    String word;
-    while ((word = reader.readLine()) != null) {
-      words.add(word.trim());
+    try {
+      String word;
+      while ((word = reader.readLine()) != null) {
+        words.add(word.trim());
+      }
+    } finally {
+      reader.close();
     }
-    reader.close();
   }
 
   protected static RecordMutation getRecordMutation(int numberOfColumns, int numberOfFamilies, int numberOfWords) {

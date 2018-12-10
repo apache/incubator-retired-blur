@@ -16,8 +16,6 @@
  */
 package org.apache.blur.manager.indexserver;
 
-import static org.apache.blur.utils.BlurConstants.BLUR_SHARD_DISTRIBUTED_LAYOUT_FACTORY_CLASS;
-
 import org.apache.blur.BlurConfiguration;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -25,16 +23,7 @@ public class DistributedLayoutFactoryImpl {
 
   public static DistributedLayoutFactory getDistributedLayoutFactory(BlurConfiguration configuration, String cluster,
       ZooKeeper zooKeeper) {
-    String distributedLayoutFactoryClass = configuration.get(BLUR_SHARD_DISTRIBUTED_LAYOUT_FACTORY_CLASS, "");
-    if (distributedLayoutFactoryClass.isEmpty()) {
-      return new MasterBasedDistributedLayoutFactory(zooKeeper, cluster);
-    }
-    try {
-      Class<?> clazz = Class.forName(distributedLayoutFactoryClass);
-      return (DistributedLayoutFactory) clazz.newInstance();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    return new MasterBasedDistributedLayoutFactory(zooKeeper, cluster);
   }
 
 }

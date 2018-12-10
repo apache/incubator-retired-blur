@@ -54,7 +54,7 @@ public class TableContextTest {
 
     FieldManager fieldManager = context.getFieldManager();
     try {
-      boolean result = fieldManager.addColumnDefinition("fam", "col", null, false, "test", false, null);
+      boolean result = fieldManager.addColumnDefinition("fam", "col", null, false, "test", false, false, null);
       fail("should fail because new type is not loaded [" + result + "].");
     } catch (IllegalArgumentException e) {
 
@@ -71,7 +71,7 @@ public class TableContextTest {
     TableContext context = TableContext.create(tableDescriptor);
     FieldManager fieldManager = context.getFieldManager();
 
-    fieldManager.addColumnDefinition("fam", "col", null, false, "test", false, null);
+    fieldManager.addColumnDefinition("fam", "col", null, false, "test", false, false, null);
   }
 
   @Test
@@ -88,7 +88,7 @@ public class TableContextTest {
     TableContext context = TableContext.create(tableDescriptor);
     FieldManager fieldManager = context.getFieldManager();
 
-    fieldManager.addColumnDefinition("fam", "col", null, false, "test", false, null);
+    fieldManager.addColumnDefinition("fam", "col", null, false, "test", false, false, null);
   }
 
   private void rm(File file) {

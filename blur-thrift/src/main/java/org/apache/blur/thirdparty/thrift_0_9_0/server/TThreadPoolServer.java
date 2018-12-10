@@ -193,7 +193,7 @@ public class TThreadPoolServer extends TServer {
 
         eventHandler = getEventHandler();
         if (eventHandler != null) {
-          connectionContext = eventHandler.createContext(inputProtocol, outputProtocol, null);
+          connectionContext = eventHandler.createContext(inputProtocol, outputProtocol, client_);
         }
         // we check stopped_ first to make sure we're not supposed to be shutting
         // down. this is necessary for graceful shutdown.

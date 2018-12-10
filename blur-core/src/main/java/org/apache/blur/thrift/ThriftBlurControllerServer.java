@@ -38,9 +38,11 @@ import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_SHARD_CONNECTI
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_ACCEPT_QUEUE_SIZE_PER_THREAD;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_MAX_READ_BUFFER_BYTES;
 import static org.apache.blur.utils.BlurConstants.BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS;
+import static org.apache.blur.utils.BlurConstants.BLUR_GC_BACK_PRESSURE_HEAP_RATIO;
 import static org.apache.blur.utils.BlurConstants.BLUR_GUI_CONTROLLER_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_HTTP_STATUS_RUNNING_PORT;
 import static org.apache.blur.utils.BlurConstants.BLUR_MAX_RECORDS_PER_ROW_FETCH_REQUEST;
+import static org.apache.blur.utils.BlurConstants.BLUR_NODENAME;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_THRIFT_MAX_FRAME_SIZE;
 import static org.apache.blur.utils.BlurConstants.BLUR_TMP_PATH;
@@ -49,12 +51,14 @@ import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT;
 import static org.apache.blur.utils.BlurConstants.BLUR_ZOOKEEPER_TIMEOUT_DEFAULT;
 import static org.apache.blur.utils.BlurUtil.quietClose;
 
+import java.io.File;
+import java.util.List;
+
 import org.apache.blur.BlurConfiguration;
 import org.apache.blur.command.ControllerCommandManager;
 import org.apache.blur.concurrent.SimpleUncaughtExceptionHandler;
 import org.apache.blur.concurrent.ThreadWatcher;
 import org.apache.blur.gui.HttpJettyServer;
-import org.apache.blur.gui.JSONReporterServlet;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.manager.BlurQueryChecker;
@@ -63,20 +67,25 @@ import org.apache.blur.manager.indexserver.BlurServerShutDown;
 import org.apache.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import org.apache.blur.metrics.ReporterSetup;
 import org.apache.blur.server.ControllerServerEventHandler;
+import org.apache.blur.server.ServerSecurityFilter;
+import org.apache.blur.server.ServerSecurityFilterFactory;
+import org.apache.blur.server.ServerSecurityUtil;
+import org.apache.blur.server.TableContext;
 import org.apache.blur.thirdparty.thrift_0_9_0.protocol.TJSONProtocol;
 import org.apache.blur.thirdparty.thrift_0_9_0.server.TServlet;
-import org.apache.blur.thirdparty.thrift_0_9_0.transport.TNonblockingServerSocket;
+import org.apache.blur.thirdparty.thrift_0_9_0.transport.TServerTransport;
 import org.apache.blur.thrift.generated.Blur;
 import org.apache.blur.thrift.generated.Blur.Iface;
 import org.apache.blur.trace.Trace;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.GCWatcher;
 import org.apache.blur.utils.MemoryReporter;
 import org.apache.blur.zookeeper.ZkUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.zookeeper.ZooKeeper;
-import org.mortbay.jetty.servlet.ServletHolder;
-import org.mortbay.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 public class ThriftBlurControllerServer extends ThriftServer {
 
@@ -91,6 +100,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
       ReporterSetup.setupReporters(configuration);
       MemoryReporter.enable();
       setupJvmMetrics();
+      double ratio = configuration.getDouble(BLUR_GC_BACK_PRESSURE_HEAP_RATIO, 0.75);
+      GCWatcher.init(ratio);
       ThriftServer server = createServer(serverIndex, configuration);
       server.start();
     } catch (Throwable t) {
@@ -100,6 +111,10 @@ public class ThriftBlurControllerServer extends ThriftServer {
   }
 
   public static ThriftServer createServer(int serverIndex, BlurConfiguration configuration) throws Exception {
+    Configuration config = BlurUtil.newHadoopConfiguration();
+    TableContext.setSystemBlurConfiguration(configuration);
+    TableContext.setSystemConfiguration(config);
+    
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
     int configBindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
@@ -107,38 +122,43 @@ public class ThriftBlurControllerServer extends ThriftServer {
     if (configBindPort == 0) {
       instanceBindPort = 0;
     }
-    TNonblockingServerSocket tNonblockingServerSocket = ThriftServer.getTNonblockingServerSocket(bindAddress,
-        instanceBindPort);
-    if (configBindPort == 0) {
-      instanceBindPort = tNonblockingServerSocket.getServerSocket().getLocalPort();
-    }
+    TServerTransport serverTransport = ThriftServer.getTServerTransport(bindAddress, instanceBindPort, configuration);
+    instanceBindPort = ThriftServer.getBindingPort(serverTransport);
 
     LOG.info("Controller Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":"
         + instanceBindPort);
 
     String nodeName = getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
     nodeName = nodeName + ":" + instanceBindPort;
-    String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
+    configuration.set(BLUR_NODENAME, nodeName);
+    
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
-    int sessionTimeout = configuration.getInt(BLUR_ZOOKEEPER_TIMEOUT, BLUR_ZOOKEEPER_TIMEOUT_DEFAULT);
-
-    final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr, sessionTimeout);
-
-    BlurUtil.setupZookeeper(zooKeeper, null);
-
-    final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration);
+    final ZooKeeper zooKeeper = setupZookeeper(configuration, null);
+    
+    final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper, configuration, config);
 
     int timeout = configuration.getInt(BLUR_CONTROLLER_SHARD_CONNECTION_TIMEOUT, 60000);
     BlurControllerServer.BlurClient client = new BlurControllerServer.BlurClientRemote(timeout);
 
-    String tmpPath = configuration.get(BLUR_TMP_PATH, getDefaultTmpPath(BLUR_TMP_PATH));
+    File defaultTmpPath = getDefaultTmpPath(BLUR_TMP_PATH);
+    String configTmpPath = configuration.get(BLUR_TMP_PATH);
+    File tmpPath;
+    if (!(configTmpPath == null || configTmpPath.isEmpty())) {
+      tmpPath = new File(configTmpPath);
+    } else {
+      tmpPath = defaultTmpPath;
+    }
+
     int numberOfControllerWorkerCommandThreads = configuration.getInt(BLUR_CONTROLLER_COMMAND_WORKER_THREADS, 16);
     int numberOfControllerDriverCommandThreads = configuration.getInt(BLUR_CONTROLLER_COMMAND_DRIVER_THREADS, 16);
     String commandPath = configuration.get(BLUR_COMMAND_LIB_PATH, getCommandLibPath());
-
-    Configuration config = new Configuration();
+    if (commandPath != null) {
+      LOG.info("Command Path was set to [{0}].", commandPath);
+    } else {
+      LOG.info("Command Path was not set.");
+    }
     final ControllerCommandManager controllerCommandManager = new ControllerCommandManager(tmpPath, commandPath,
         numberOfControllerWorkerCommandThreads, numberOfControllerDriverCommandThreads, Connection.DEFAULT_TIMEOUT,
         config);
@@ -167,11 +187,14 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     controllerServer.init();
 
-    final TraceStorage traceStorage = setupTraceStorage(configuration);
+    final TraceStorage traceStorage = setupTraceStorage(configuration, config);
     Trace.setStorage(traceStorage);
     Trace.setNodeName(nodeName);
 
+    List<ServerSecurityFilter> serverSecurity = getServerSecurityList(configuration, ServerSecurityFilterFactory.ServerType.CONTROLLER);
+
     Iface iface = BlurUtil.wrapFilteredBlurServer(configuration, controllerServer, false);
+    iface = ServerSecurityUtil.applySecurity(iface, serverSecurity, false);
     iface = BlurUtil.recordMethodCallsAndAverageTimes(iface, Iface.class, true);
     iface = BlurUtil.runWithUser(iface, true);
     iface = BlurUtil.runTrace(iface, true);
@@ -182,7 +205,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     final ThriftBlurControllerServer server = new ThriftBlurControllerServer();
     server.setNodeName(nodeName);
-    server.setServerTransport(tNonblockingServerSocket);
+    server.setServerTransport(serverTransport);
     server.setThreadCount(threadCount);
     server.setEventHandler(eventHandler);
     server.setIface(iface);
@@ -190,6 +213,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setMaxReadBufferBytes(configuration.getLong(BLUR_CONTROLLER_THRIFT_MAX_READ_BUFFER_BYTES, Long.MAX_VALUE));
     server.setSelectorThreads(configuration.getInt(BLUR_CONTROLLER_THRIFT_SELECTOR_THREADS, 2));
     server.setMaxFrameSize(configuration.getInt(BLUR_THRIFT_MAX_FRAME_SIZE, BLUR_THRIFT_DEFAULT_MAX_FRAME_SIZE));
+    server.setConfiguration(configuration);
 
     int configGuiPort = Integer.parseInt(configuration.get(BLUR_GUI_CONTROLLER_PORT));
     int instanceGuiPort = configGuiPort + serverIndex;
@@ -211,7 +235,6 @@ public class ThriftBlurControllerServer extends ThriftServer {
       WebAppContext context = httpServer.getContext();
       context.addServlet(new ServletHolder(new TServlet(new Blur.Processor<Blur.Iface>(iface),
           new TJSONProtocol.Factory())), "/blur");
-      context.addServlet(new ServletHolder(new JSONReporterServlet()), "/livemetrics");
     }
 
     // This will shutdown the server when the correct path is set in zk

@@ -45,13 +45,13 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'execute failed: unknown result')
       end
 
-      def reconnect(executionId)
-        send_reconnect(executionId)
+      def reconnect(instanceExecutionId)
+        send_reconnect(instanceExecutionId)
         return recv_reconnect()
       end
 
-      def send_reconnect(executionId)
-        send_message('reconnect', Reconnect_args, :executionId => executionId)
+      def send_reconnect(instanceExecutionId)
+        send_message('reconnect', Reconnect_args, :instanceExecutionId => instanceExecutionId)
       end
 
       def recv_reconnect()
@@ -78,13 +78,13 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'commandStatusList failed: unknown result')
       end
 
-      def commandStatus(executionId)
-        send_commandStatus(executionId)
+      def commandStatus(commandExecutionId)
+        send_commandStatus(commandExecutionId)
         return recv_commandStatus()
       end
 
-      def send_commandStatus(executionId)
-        send_message('commandStatus', CommandStatus_args, :executionId => executionId)
+      def send_commandStatus(commandExecutionId)
+        send_message('commandStatus', CommandStatus_args, :commandExecutionId => commandExecutionId)
       end
 
       def recv_commandStatus()
@@ -94,13 +94,13 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'commandStatus failed: unknown result')
       end
 
-      def commandCancel(executionId)
-        send_commandCancel(executionId)
+      def commandCancel(commandExecutionId)
+        send_commandCancel(commandExecutionId)
         recv_commandCancel()
       end
 
-      def send_commandCancel(executionId)
-        send_message('commandCancel', CommandCancel_args, :executionId => executionId)
+      def send_commandCancel(commandExecutionId)
+        send_message('commandCancel', CommandCancel_args, :commandExecutionId => commandExecutionId)
       end
 
       def recv_commandCancel()
@@ -404,6 +404,51 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'fetchRowBatch failed: unknown result')
       end
 
+      def loadData(table, location)
+        send_loadData(table, location)
+        recv_loadData()
+      end
+
+      def send_loadData(table, location)
+        send_message('loadData', LoadData_args, :table => table, :location => location)
+      end
+
+      def recv_loadData()
+        result = receive_message(LoadData_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def validateIndex(table, externalIndexPaths)
+        send_validateIndex(table, externalIndexPaths)
+        recv_validateIndex()
+      end
+
+      def send_validateIndex(table, externalIndexPaths)
+        send_message('validateIndex', ValidateIndex_args, :table => table, :externalIndexPaths => externalIndexPaths)
+      end
+
+      def recv_validateIndex()
+        result = receive_message(ValidateIndex_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def loadIndex(table, externalIndexPaths)
+        send_loadIndex(table, externalIndexPaths)
+        recv_loadIndex()
+      end
+
+      def send_loadIndex(table, externalIndexPaths)
+        send_message('loadIndex', LoadIndex_args, :table => table, :externalIndexPaths => externalIndexPaths)
+      end
+
+      def recv_loadIndex()
+        result = receive_message(LoadIndex_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
       def mutate(mutation)
         send_mutate(mutation)
         recv_mutate()
@@ -460,6 +505,66 @@ module Blur
 
       def recv_enqueueMutateBatch()
         result = receive_message(EnqueueMutateBatch_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def bulkMutateStart(bulkId)
+        send_bulkMutateStart(bulkId)
+        recv_bulkMutateStart()
+      end
+
+      def send_bulkMutateStart(bulkId)
+        send_message('bulkMutateStart', BulkMutateStart_args, :bulkId => bulkId)
+      end
+
+      def recv_bulkMutateStart()
+        result = receive_message(BulkMutateStart_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def bulkMutateAdd(bulkId, rowMutation)
+        send_bulkMutateAdd(bulkId, rowMutation)
+        recv_bulkMutateAdd()
+      end
+
+      def send_bulkMutateAdd(bulkId, rowMutation)
+        send_message('bulkMutateAdd', BulkMutateAdd_args, :bulkId => bulkId, :rowMutation => rowMutation)
+      end
+
+      def recv_bulkMutateAdd()
+        result = receive_message(BulkMutateAdd_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def bulkMutateAddMultiple(bulkId, rowMutations)
+        send_bulkMutateAddMultiple(bulkId, rowMutations)
+        recv_bulkMutateAddMultiple()
+      end
+
+      def send_bulkMutateAddMultiple(bulkId, rowMutations)
+        send_message('bulkMutateAddMultiple', BulkMutateAddMultiple_args, :bulkId => bulkId, :rowMutations => rowMutations)
+      end
+
+      def recv_bulkMutateAddMultiple()
+        result = receive_message(BulkMutateAddMultiple_result)
+        raise result.ex unless result.ex.nil?
+        return
+      end
+
+      def bulkMutateFinish(bulkId, apply, blockUntilComplete)
+        send_bulkMutateFinish(bulkId, apply, blockUntilComplete)
+        recv_bulkMutateFinish()
+      end
+
+      def send_bulkMutateFinish(bulkId, apply, blockUntilComplete)
+        send_message('bulkMutateFinish', BulkMutateFinish_args, :bulkId => bulkId, :apply => apply, :blockUntilComplete => blockUntilComplete)
+      end
+
+      def recv_bulkMutateFinish()
+        result = receive_message(BulkMutateFinish_result)
         raise result.ex unless result.ex.nil?
         return
       end
@@ -655,6 +760,22 @@ module Blur
         raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'configuration failed: unknown result')
       end
 
+      def configurationPerServer(thriftServerPlusPort, configName)
+        send_configurationPerServer(thriftServerPlusPort, configName)
+        return recv_configurationPerServer()
+      end
+
+      def send_configurationPerServer(thriftServerPlusPort, configName)
+        send_message('configurationPerServer', ConfigurationPerServer_args, :thriftServerPlusPort => thriftServerPlusPort, :configName => configName)
+      end
+
+      def recv_configurationPerServer()
+        result = receive_message(ConfigurationPerServer_result)
+        return result.success unless result.success.nil?
+        raise result.ex unless result.ex.nil?
+        raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'configurationPerServer failed: unknown result')
+      end
+
       def metrics(metrics)
         send_metrics(metrics)
         return recv_metrics()
@@ -818,7 +939,7 @@ module Blur
         args = read_args(iprot, Reconnect_args)
         result = Reconnect_result.new()
         begin
-          result.success = @handler.reconnect(args.executionId)
+          result.success = @handler.reconnect(args.instanceExecutionId)
         rescue ::Blur::BlurException => bex
           result.bex = bex
         rescue ::Blur::TimeoutException => tex
@@ -842,7 +963,7 @@ module Blur
         args = read_args(iprot, CommandStatus_args)
         result = CommandStatus_result.new()
         begin
-          result.success = @handler.commandStatus(args.executionId)
+          result.success = @handler.commandStatus(args.commandExecutionId)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -853,7 +974,7 @@ module Blur
         args = read_args(iprot, CommandCancel_args)
         result = CommandCancel_result.new()
         begin
-          @handler.commandCancel(args.executionId)
+          @handler.commandCancel(args.commandExecutionId)
         rescue ::Blur::BlurException => ex
           result.ex = ex
         end
@@ -1070,6 +1191,39 @@ module Blur
         write_result(result, oprot, 'fetchRowBatch', seqid)
       end
 
+      def process_loadData(seqid, iprot, oprot)
+        args = read_args(iprot, LoadData_args)
+        result = LoadData_result.new()
+        begin
+          @handler.loadData(args.table, args.location)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'loadData', seqid)
+      end
+
+      def process_validateIndex(seqid, iprot, oprot)
+        args = read_args(iprot, ValidateIndex_args)
+        result = ValidateIndex_result.new()
+        begin
+          @handler.validateIndex(args.table, args.externalIndexPaths)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'validateIndex', seqid)
+      end
+
+      def process_loadIndex(seqid, iprot, oprot)
+        args = read_args(iprot, LoadIndex_args)
+        result = LoadIndex_result.new()
+        begin
+          @handler.loadIndex(args.table, args.externalIndexPaths)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'loadIndex', seqid)
+      end
+
       def process_mutate(seqid, iprot, oprot)
         args = read_args(iprot, Mutate_args)
         result = Mutate_result.new()
@@ -1112,6 +1266,50 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'enqueueMutateBatch', seqid)
+      end
+
+      def process_bulkMutateStart(seqid, iprot, oprot)
+        args = read_args(iprot, BulkMutateStart_args)
+        result = BulkMutateStart_result.new()
+        begin
+          @handler.bulkMutateStart(args.bulkId)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'bulkMutateStart', seqid)
+      end
+
+      def process_bulkMutateAdd(seqid, iprot, oprot)
+        args = read_args(iprot, BulkMutateAdd_args)
+        result = BulkMutateAdd_result.new()
+        begin
+          @handler.bulkMutateAdd(args.bulkId, args.rowMutation)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'bulkMutateAdd', seqid)
+      end
+
+      def process_bulkMutateAddMultiple(seqid, iprot, oprot)
+        args = read_args(iprot, BulkMutateAddMultiple_args)
+        result = BulkMutateAddMultiple_result.new()
+        begin
+          @handler.bulkMutateAddMultiple(args.bulkId, args.rowMutations)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'bulkMutateAddMultiple', seqid)
+      end
+
+      def process_bulkMutateFinish(seqid, iprot, oprot)
+        args = read_args(iprot, BulkMutateFinish_args)
+        result = BulkMutateFinish_result.new()
+        begin
+          @handler.bulkMutateFinish(args.bulkId, args.apply, args.blockUntilComplete)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'bulkMutateFinish', seqid)
       end
 
       def process_cancelQuery(seqid, iprot, oprot)
@@ -1244,6 +1442,17 @@ module Blur
           result.ex = ex
         end
         write_result(result, oprot, 'configuration', seqid)
+      end
+
+      def process_configurationPerServer(seqid, iprot, oprot)
+        args = read_args(iprot, ConfigurationPerServer_args)
+        result = ConfigurationPerServer_result.new()
+        begin
+          result.success = @handler.configurationPerServer(args.thriftServerPlusPort, args.configName)
+        rescue ::Blur::BlurException => ex
+          result.ex = ex
+        end
+        write_result(result, oprot, 'configurationPerServer', seqid)
       end
 
       def process_metrics(seqid, iprot, oprot)
@@ -1413,10 +1622,10 @@ module Blur
 
     class Reconnect_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      EXECUTIONID = 1
+      INSTANCEEXECUTIONID = 1
 
       FIELDS = {
-        EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+        INSTANCEEXECUTIONID => {:type => ::Thrift::Types::I64, :name => 'instanceExecutionId'}
       }
 
       def struct_fields; FIELDS; end
@@ -1490,10 +1699,10 @@ module Blur
 
     class CommandStatus_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      EXECUTIONID = 1
+      COMMANDEXECUTIONID = 1
 
       FIELDS = {
-        EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+        COMMANDEXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'commandExecutionId'}
       }
 
       def struct_fields; FIELDS; end
@@ -1524,10 +1733,10 @@ module Blur
 
     class CommandCancel_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      EXECUTIONID = 1
+      COMMANDEXECUTIONID = 1
 
       FIELDS = {
-        EXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'executionId'}
+        COMMANDEXECUTIONID => {:type => ::Thrift::Types::STRING, :name => 'commandExecutionId'}
       }
 
       def struct_fields; FIELDS; end
@@ -2252,6 +2461,110 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    class LoadData_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      LOCATION = 2
+
+      FIELDS = {
+        # The table name.
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # Location of bulk data load.
+        LOCATION => {:type => ::Thrift::Types::STRING, :name => 'location'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class LoadData_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ValidateIndex_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      EXTERNALINDEXPATHS = 2
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        EXTERNALINDEXPATHS => {:type => ::Thrift::Types::LIST, :name => 'externalIndexPaths', :element => {:type => ::Thrift::Types::STRING}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ValidateIndex_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class LoadIndex_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      EXTERNALINDEXPATHS = 2
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        EXTERNALINDEXPATHS => {:type => ::Thrift::Types::LIST, :name => 'externalIndexPaths', :element => {:type => ::Thrift::Types::STRING}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class LoadIndex_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
     class Mutate_args
       include ::Thrift::Struct, ::Thrift::Struct_Union
       MUTATION = 1
@@ -2369,6 +2682,150 @@ module Blur
     end
 
     class EnqueueMutateBatch_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateStart_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      BULKID = 1
+
+      FIELDS = {
+        # The bulk id.
+        BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateStart_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateAdd_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      BULKID = 1
+      ROWMUTATION = 2
+
+      FIELDS = {
+        # The bulk id.
+        BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'},
+        # The row mutation.
+        ROWMUTATION => {:type => ::Thrift::Types::STRUCT, :name => 'rowMutation', :class => ::Blur::RowMutation}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateAdd_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateAddMultiple_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      BULKID = 1
+      ROWMUTATIONS = 2
+
+      FIELDS = {
+        # The bulk id.
+        BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'},
+        # The row mutation.
+        ROWMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'rowMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Blur::RowMutation}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateAddMultiple_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      EX = 1
+
+      FIELDS = {
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateFinish_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      BULKID = 1
+      APPLY = 2
+      BLOCKUNTILCOMPLETE = 3
+
+      FIELDS = {
+        # The bulk id.
+        BULKID => {:type => ::Thrift::Types::STRING, :name => 'bulkId'},
+        # Apply the bulk mutate flag.
+        APPLY => {:type => ::Thrift::Types::BOOL, :name => 'apply'},
+        # If true this call will not block on bulk completion.  This may be required for loader bulk loads.
+        BLOCKUNTILCOMPLETE => {:type => ::Thrift::Types::BOOL, :name => 'blockUntilComplete'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BulkMutateFinish_result
       include ::Thrift::Struct, ::Thrift::Struct_Union
       EX = 1
 
@@ -2812,6 +3269,42 @@ module Blur
 
       FIELDS = {
         SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
+        EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ConfigurationPerServer_args
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      THRIFTSERVERPLUSPORT = 1
+      CONFIGNAME = 2
+
+      FIELDS = {
+        THRIFTSERVERPLUSPORT => {:type => ::Thrift::Types::STRING, :name => 'thriftServerPlusPort'},
+        CONFIGNAME => {:type => ::Thrift::Types::STRING, :name => 'configName'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ConfigurationPerServer_result
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SUCCESS = 0
+      EX = 1
+
+      FIELDS = {
+        SUCCESS => {:type => ::Thrift::Types::STRING, :name => 'success'},
         EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => ::Blur::BlurException}
       }
 

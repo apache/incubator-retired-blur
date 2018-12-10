@@ -51,6 +51,8 @@ import org.apache.blur.lucene.search.DeepPagingCache;
 import org.apache.blur.manager.clusterstatus.ClusterStatus;
 import org.apache.blur.manager.indexserver.LocalIndexServer;
 import org.apache.blur.manager.results.BlurResultIterable;
+import org.apache.blur.memory.MemoryAllocationWatcher;
+import org.apache.blur.memory.Watcher;
 import org.apache.blur.server.TableContext;
 import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
@@ -76,7 +78,7 @@ import org.apache.blur.trace.TraceCollector;
 import org.apache.blur.trace.TraceStorage;
 import org.apache.blur.utils.BlurConstants;
 import org.apache.blur.utils.BlurIterator;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.QueryWrapperFilter;
@@ -90,10 +92,16 @@ public class IndexManagerTest {
 
   private static final File TMPDIR = new File("./target/tmp");
 
-  private static final String SHARD_NAME = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, 0);
+  private static final String SHARD_NAME = ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, 0);
   private static final String TABLE = "table";
   private static final String FAMILY = "test-family";
   private static final String FAMILY2 = "test-family2";
+  private static final MemoryAllocationWatcher NOTHING = new MemoryAllocationWatcher() {
+    @Override
+    public <T, E extends Exception> T run(Watcher<T, E> w) throws E {
+      return w.run();
+    }
+  };
   private LocalIndexServer server;
   private IndexManager indexManager;
   private File base;
@@ -121,7 +129,7 @@ public class IndexManagerTest {
     BlurFilterCache filterCache = new DefaultBlurFilterCache(new BlurConfiguration());
     long statusCleanupTimerDelay = 1000;
     indexManager = new IndexManager(server, getClusterStatus(tableDescriptor), filterCache, 10000000, 100, 1, 1,
-        statusCleanupTimerDelay, 0, new DeepPagingCache());
+        statusCleanupTimerDelay, 0, new DeepPagingCache(), NOTHING);
     setupData();
   }
 
@@ -287,7 +295,7 @@ public class IndexManagerTest {
   @Test
   public void testMutationReplaceLargeRow() throws Exception {
     final String rowId = "largerow";
-    indexManager.mutate(getLargeRow(rowId));
+    indexManager.mutate(getLargeRow(rowId, RowMutationType.REPLACE_ROW, 10000));
     TraceStorage oldReporter = Trace.getStorage();
     Trace.setStorage(new BaseTraceStorage(new BlurConfiguration()) {
 
@@ -341,12 +349,32 @@ public class IndexManagerTest {
 
   }
 
-  private RowMutation getLargeRow(String rowId) {
+  @Test
+  public void testMutationAppendLargeRow() throws Exception {
+    final String rowId = "largerowappend";
+    int batch = 2;
+    int batchSize = 10000;
+    for (int i = 0; i < batch; i++) {
+      System.out.println("Adding Batch [" + i + "]");
+      indexManager.mutate(getLargeRow(rowId, RowMutationType.UPDATE_ROW, batchSize));
+    }
+
+    FetchResult fetchResult = new FetchResult();
+    Selector selector = new Selector();
+    selector.setRowId(rowId);
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+
+    FetchRowResult fetchRowResult = fetchResult.getRowResult();
+    System.out.println(fetchRowResult.getTotalRecords());
+    assertEquals(batch * batchSize, fetchRowResult.getTotalRecords());
+  }
+
+  private RowMutation getLargeRow(String rowId, RowMutationType rowMutationType, int count) {
     RowMutation rowMutation = new RowMutation();
     rowMutation.setTable(TABLE);
     rowMutation.setRowId(rowId);
-    rowMutation.setRecordMutations(getRecordMutations(10000));
-    rowMutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+    rowMutation.setRecordMutations(getRecordMutations(count));
+    rowMutation.setRowMutationType(rowMutationType);
     return rowMutation;
   }
 
@@ -574,6 +602,42 @@ public class IndexManagerTest {
     FetchRowResult rowResult = fetchResult.getRowResult();
     assertEquals(row, rowResult.getRow());
     assertEquals(1, rowResult.getTotalRecords());
+  }
+
+  @Test
+  public void testFetchRowByLocationIdFromRecordOnlySearch() throws Exception {
+
+    BlurQuery blurQuery = new BlurQuery();
+    Query query = new Query();
+    query.setQuery("recordid:record-5B");
+    query.setRowQuery(false);
+    blurQuery.setQuery(query);
+
+    BlurResultIterable blurResultIterable = indexManager.query(TABLE, blurQuery, null);
+    BlurIterator<BlurResult, BlurException> iterator = blurResultIterable.iterator();
+    String locationId = null;
+    if (iterator.hasNext()) {
+      BlurResult result = iterator.next();
+      locationId = result.locationId;
+    } else {
+      fail();
+    }
+
+    Selector selector = new Selector().setLocationId(locationId);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+
+    Row row = newRow(
+        "row-5",
+        newRecord(FAMILY, "record-5A", newColumn("testcol1", "value13"), newColumn("testcol2", "value14"),
+            newColumn("testcol3", "value15")),
+        newRecord(FAMILY, "record-5B", newColumn("testcol1", "value16"), newColumn("testcol2", "value17"),
+            newColumn("testcol3", "value18"), newColumn("testcol3", "value19")));
+    assertEquals(row, fetchResult.rowResult.row);
+    FetchRowResult rowResult = fetchResult.getRowResult();
+    assertEquals(row, rowResult.getRow());
+    assertEquals(2, rowResult.getTotalRecords());
   }
 
   @Test
@@ -1157,6 +1221,34 @@ public class IndexManagerTest {
     FetchRowResult rowResult = fetchResult.getRowResult();
     assertEquals(row, rowResult.getRow());
     assertEquals(1, rowResult.getTotalRecords());
+  }
+
+  @Test
+  public void testMutationReplaceRowFailureWithNullRecordId() throws Exception {
+    RowMutation mutation = newRowMutation(
+        TABLE,
+        "row-4",
+        newRecordMutation(FAMILY, null, newColumn("testcol1", "value2"), newColumn("testcol2", "value3"),
+            newColumn("testcol3", "value4")));
+    try {
+      indexManager.mutate(mutation);
+      fail();
+    } catch (BlurException e) {
+    }
+  }
+  
+  @Test
+  public void testMutationReplaceRowWithNullRowId() throws Exception {
+    RowMutation mutation = newRowMutation(
+        TABLE,
+        null,
+        newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"),
+            newColumn("testcol3", "value4")));
+    try {
+      indexManager.mutate(mutation);
+      fail();
+    } catch (BlurException e) {
+    }
   }
 
   @Test

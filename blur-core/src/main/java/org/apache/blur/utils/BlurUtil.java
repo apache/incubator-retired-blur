@@ -63,7 +63,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.blur.BlurConfiguration;
-import org.apache.blur.index.ExitableReader.ExitableFilterAtomicReader;
+import org.apache.blur.concurrent.ThreadWatcher;
 import org.apache.blur.log.Log;
 import org.apache.blur.log.LogFactory;
 import org.apache.blur.lucene.search.PrimeDocCache;
@@ -88,7 +88,6 @@ import org.apache.blur.thrift.generated.BlurException;
 import org.apache.blur.thrift.generated.BlurQuery;
 import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.BlurResults;
-import org.apache.blur.thrift.generated.Column;
 import org.apache.blur.thrift.generated.FetchResult;
 import org.apache.blur.thrift.generated.Record;
 import org.apache.blur.thrift.generated.RecordMutation;
@@ -104,7 +103,6 @@ import org.apache.blur.trace.Tracer;
 import org.apache.blur.user.User;
 import org.apache.blur.user.UserContext;
 import org.apache.blur.zookeeper.ZookeeperPathConstants;
-import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -116,7 +114,6 @@ import org.apache.lucene.index.BaseCompositeReaderUtil;
 import org.apache.lucene.index.DocsEnum;
 import org.apache.lucene.index.Fields;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.index.SlowCompositeReaderWrapper;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
@@ -330,6 +327,10 @@ public class BlurUtil {
       }
     } else if (methodName.equals("mutateBatch")) {
       argsStr = "[\"Batch Mutate\"]";
+    } else if (methodName.equals("bulkMutateAdd")) {
+      argsStr = "[\"Bulk Mutate Add\"]";
+    } else if (methodName.equals("bulkMutateAddMultiple")) {
+      argsStr = "[\"Bulk Mutate Add Multiple\"]";
     } else {
       argsStr = getArgsStr(args, loggerArgsState);
     }
@@ -650,22 +651,6 @@ public class BlurUtil {
     }
   }
 
-  public static String getShardName(int id) {
-    return getShardName(BlurConstants.SHARD_PREFIX, id);
-  }
-
-  public static String getShardName(String prefix, int id) {
-    return prefix + buffer(id, 8);
-  }
-
-  private static String buffer(int value, int length) {
-    String str = Integer.toString(value);
-    while (str.length() < length) {
-      str = "0" + str;
-    }
-    return str;
-  }
-
   public static String humanizeTime(long time, TimeUnit unit) {
     long seconds = unit.toSeconds(time);
     long hours = getHours(seconds);
@@ -712,24 +697,21 @@ public class BlurUtil {
     zookeeper.create(path, data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
   }
 
-  public static void setupFileSystem(String uri, int shardCount) throws IOException {
+  public static void setupFileSystem(String uri, int shardCount, Configuration configuration) throws IOException {
+    ThreadWatcher.status("creating shard dirs", 0.0f);
     Path tablePath = new Path(uri);
-    FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
+    FileSystem fileSystem = tablePath.getFileSystem(configuration);
     if (createPath(fileSystem, tablePath)) {
       LOG.info("Table uri existed.");
-      validateShardCount(shardCount, fileSystem, tablePath);
+//      validateShardCount(shardCount, fileSystem, tablePath);
     }
-    for (int i = 0; i < shardCount; i++) {
-      String shardName = BlurUtil.getShardName(SHARD_PREFIX, i);
-      Path shardPath = new Path(tablePath, shardName);
-      createPath(fileSystem, shardPath);
-    }
+    ThreadWatcher.resetStatus();
   }
 
   public static void validateShardCount(int shardCount, FileSystem fileSystem, Path tablePath) throws IOException {
     // Check that all the directories that should be are in fact there.
     for (int i = 0; i < shardCount; i++) {
-      Path path = new Path(tablePath, BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
+      Path path = new Path(tablePath, ShardUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
       if (!fileSystem.exists(path)) {
         LOG.error("Path [{0}] for shard [{1}] does not exist.", path, i);
         throw new RuntimeException("Path [" + path + "] for shard [" + i + "] does not exist.");
@@ -780,31 +762,6 @@ public class BlurUtil {
     return t;
   }
 
-  @SuppressWarnings("unchecked")
-  public static <T> T getInstance(String className, Class<T> c) {
-    Class<?> clazz;
-    try {
-      clazz = Class.forName(className);
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-    try {
-      return (T) configure(clazz.newInstance());
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public static <T> T configure(T t) {
-    if (t instanceof Configurable) {
-      Configurable configurable = (Configurable) t;
-      configurable.setConf(new Configuration());
-    }
-    return t;
-  }
-
   public static byte[] read(TBase<?, ?> base) {
     if (base == null) {
       return null;
@@ -844,9 +801,9 @@ public class BlurUtil {
     zooKeeper.delete(path, -1);
   }
 
-  public static void removeIndexFiles(String uri) throws IOException {
+  public static void removeIndexFiles(String uri, Configuration configuration) throws IOException {
     Path tablePath = new Path(uri);
-    FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
+    FileSystem fileSystem = tablePath.getFileSystem(configuration);
     fileSystem.delete(tablePath, true);
   }
 
@@ -903,25 +860,25 @@ public class BlurUtil {
       if (indexOf < 0) {
         throw new IOException("Location id [" + locationId + "] not valid");
       }
-      int notAdjustedPrimeDocId = Integer.parseInt(locationId.substring(indexOf + 1));
-      int readerIndex = BaseCompositeReaderUtil.readerIndex(indexReader, notAdjustedPrimeDocId);
+      int notAdjustedRequestedDocId = Integer.parseInt(locationId.substring(indexOf + 1));
+      int readerIndex = BaseCompositeReaderUtil.readerIndex(indexReader, notAdjustedRequestedDocId);
       int readerBase = BaseCompositeReaderUtil.readerBase(indexReader, readerIndex);
-      int primeDocId = notAdjustedPrimeDocId - readerBase;
+      int requestedDocId = notAdjustedRequestedDocId - readerBase;
       IndexReader orgReader = sequentialSubReaders.get(readerIndex);
-      SegmentReader sReader = getSegmentReader(orgReader);
-      if (sReader != null) {
-        SegmentReader segmentReader = (SegmentReader) sReader;
-        Bits liveDocs = segmentReader.getLiveDocs();
+      if (orgReader != null && orgReader instanceof AtomicReader) {
+        AtomicReader atomicReader = (AtomicReader) orgReader;
+        Bits liveDocs = atomicReader.getLiveDocs();
 
-        OpenBitSet bitSet = PrimeDocCache.getPrimeDocBitSet(primeDocTerm, segmentReader);
+        OpenBitSet bitSet = PrimeDocCache.getPrimeDocBitSet(primeDocTerm, atomicReader);
+        int primeDocId = bitSet.prevSetBit(requestedDocId);
         int nextPrimeDoc = bitSet.nextSetBit(primeDocId + 1);
         int numberOfDocsInRow;
         if (nextPrimeDoc == -1) {
-          numberOfDocsInRow = segmentReader.maxDoc() - primeDocId;
+          numberOfDocsInRow = atomicReader.maxDoc() - primeDocId;
         } else {
           numberOfDocsInRow = nextPrimeDoc - primeDocId;
         }
-        OpenBitSet docsInRowSpanToFetch = getDocsToFetch(segmentReader, selector, primeDocId, numberOfDocsInRow,
+        OpenBitSet docsInRowSpanToFetch = getDocsToFetch(atomicReader, selector, primeDocId, numberOfDocsInRow,
             liveDocs, filter, totalRecords);
         int start = selector.getStartRecord();
         int maxDocsToFetch = selector.getMaxRecordsToFetch();
@@ -947,10 +904,10 @@ public class BlurUtil {
             if (docsInRowSpanToFetch.fastGet(cursor)) {
               maxDocsToFetch--;
               int docID = primeDocId + cursor;
-              segmentReader.document(docID, fieldSelector);
+              atomicReader.document(docID, fieldSelector);
               Document document = fieldSelector.getDocument();
               if (highlighter.shouldHighlight()) {
-                docs.add(highlighter.highlight(docID, document, segmentReader));
+                docs.add(highlighter.highlight(docID, document, atomicReader));
               } else {
                 docs.add(document);
               }
@@ -966,7 +923,7 @@ public class BlurUtil {
         }
         return orderDocsBasedOnFamilyOrder(docs, selector);
       } else {
-        throw new IOException("Expecting a segment reader got a [" + orgReader + "]");
+        throw new IOException("Expecting a atomic reader got a [" + orgReader + "]");
       }
     }
     throw new IOException("IndexReader [" + reader + "] is not a basecompsitereader");
@@ -1012,18 +969,6 @@ public class BlurUtil {
     return ordering;
   }
 
-  public static SegmentReader getSegmentReader(IndexReader indexReader) {
-    if (indexReader instanceof SegmentReader) {
-      return (SegmentReader) indexReader;
-    }
-    if (indexReader instanceof ExitableFilterAtomicReader) {
-      ExitableFilterAtomicReader exitableFilterAtomicReader = (ExitableFilterAtomicReader) indexReader;
-      AtomicReader originalReader = exitableFilterAtomicReader.getOriginalReader();
-      return getSegmentReader(originalReader);
-    }
-    return null;
-  }
-
   private static int getStartingPosition(OpenBitSet docsInRowSpanToFetch, int start) {
     int docStartingPosition = docsInRowSpanToFetch.nextSetBit(0);
     int offset = 0;
@@ -1034,26 +979,26 @@ public class BlurUtil {
     return docStartingPosition;
   }
 
-  private static OpenBitSet getDocsToFetch(SegmentReader segmentReader, Selector selector, int primeDocRowId,
+  private static OpenBitSet getDocsToFetch(AtomicReader atomicReader, Selector selector, int primeDocRowId,
       int numberOfDocsInRow, Bits liveDocs, Filter filter, AtomicInteger totalRecords) throws IOException {
     Set<String> alreadyProcessed = new HashSet<String>();
     OpenBitSet bits = new OpenBitSet(numberOfDocsInRow);
     OpenBitSet mask = null;
     if (filter != null) {
-      DocIdSet docIdSet = filter.getDocIdSet(segmentReader.getContext(), liveDocs);
+      DocIdSet docIdSet = filter.getDocIdSet(atomicReader.getContext(), liveDocs);
       mask = getMask(docIdSet, primeDocRowId, numberOfDocsInRow);
     }
     Set<String> columnFamiliesToFetch = selector.getColumnFamiliesToFetch();
     boolean fetchAll = true;
     if (columnFamiliesToFetch != null) {
       fetchAll = false;
-      applyFamilies(alreadyProcessed, bits, columnFamiliesToFetch, segmentReader, primeDocRowId, numberOfDocsInRow,
+      applyFamilies(alreadyProcessed, bits, columnFamiliesToFetch, atomicReader, primeDocRowId, numberOfDocsInRow,
           liveDocs);
     }
     Map<String, Set<String>> columnsToFetch = selector.getColumnsToFetch();
     if (columnsToFetch != null) {
       fetchAll = false;
-      applyColumns(alreadyProcessed, bits, columnsToFetch, segmentReader, primeDocRowId, numberOfDocsInRow, liveDocs);
+      applyColumns(alreadyProcessed, bits, columnsToFetch, atomicReader, primeDocRowId, numberOfDocsInRow, liveDocs);
     }
     if (fetchAll) {
       bits.set(0, numberOfDocsInRow);
@@ -1081,18 +1026,18 @@ public class BlurUtil {
   }
 
   private static void applyColumns(Set<String> alreadyProcessed, OpenBitSet bits,
-      Map<String, Set<String>> columnsToFetch, SegmentReader segmentReader, int primeDocRowId, int numberOfDocsInRow,
+      Map<String, Set<String>> columnsToFetch, AtomicReader atomicReader, int primeDocRowId, int numberOfDocsInRow,
       Bits liveDocs) throws IOException {
     for (String family : columnsToFetch.keySet()) {
       if (!alreadyProcessed.contains(family)) {
-        applyFamily(bits, family, segmentReader, primeDocRowId, numberOfDocsInRow, liveDocs);
+        applyFamily(bits, family, atomicReader, primeDocRowId, numberOfDocsInRow, liveDocs);
         alreadyProcessed.add(family);
       }
     }
   }
 
   private static void applyFamilies(Set<String> alreadyProcessed, OpenBitSet bits, Set<String> columnFamiliesToFetch,
-      SegmentReader segmentReader, int primeDocRowId, int numberOfDocsInRow, Bits liveDocs) throws IOException {
+      AtomicReader segmentReader, int primeDocRowId, int numberOfDocsInRow, Bits liveDocs) throws IOException {
     for (String family : columnFamiliesToFetch) {
       if (!alreadyProcessed.contains(family)) {
         applyFamily(bits, family, segmentReader, primeDocRowId, numberOfDocsInRow, liveDocs);
@@ -1101,9 +1046,9 @@ public class BlurUtil {
     }
   }
 
-  private static void applyFamily(OpenBitSet bits, String family, SegmentReader segmentReader, int primeDocRowId,
+  private static void applyFamily(OpenBitSet bits, String family, AtomicReader atomicReader, int primeDocRowId,
       int numberOfDocsInRow, Bits liveDocs) throws IOException {
-    Fields fields = segmentReader.fields();
+    Fields fields = atomicReader.fields();
     Terms terms = fields.terms(BlurConstants.FAMILY);
     TermsEnum iterator = terms.iterator(null);
     BytesRef text = new BytesRef(family);
@@ -1119,70 +1064,6 @@ public class BlurUtil {
 
   public static AtomicReader getAtomicReader(IndexReader reader) throws IOException {
     return SlowCompositeReaderWrapper.wrap(reader);
-  }
-
-  public static int getShardIndex(String shard) {
-    int index = shard.indexOf('-');
-    return Integer.parseInt(shard.substring(index + 1));
-  }
-
-  public static void validateRowIdAndRecord(String rowId, Record record) {
-    if (!validate(record.family)) {
-      throw new IllegalArgumentException("Invalid column family name [ " + record.family
-          + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-    }
-
-    for (Column column : record.getColumns()) {
-      if (!validate(column.name)) {
-        throw new IllegalArgumentException("Invalid column name [ " + column.name
-            + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-      }
-    }
-  }
-
-  public static boolean validate(String s) {
-    int length = s.length();
-    for (int i = 0; i < length; i++) {
-      char c = s.charAt(i);
-      if (!validate(c)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  private static boolean validate(char c) {
-    if (c >= 'a' && c <= 'z') {
-      return true;
-    }
-    if (c >= 'A' && c <= 'Z') {
-      return true;
-    }
-    if (c >= '0' && c <= '9') {
-      return true;
-    }
-    switch (c) {
-    case '_':
-      return true;
-    case '-':
-      return true;
-    default:
-      return false;
-    }
-  }
-
-  public static void validateTableName(String tableName) {
-    if (!validate(tableName)) {
-      throw new IllegalArgumentException("Invalid table name [ " + tableName
-          + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-    }
-  }
-
-  public static void validateShardName(String shardName) {
-    if (!validate(shardName)) {
-      throw new IllegalArgumentException("Invalid shard name [ " + shardName
-          + " ]. It should contain only this pattern [A-Za-z0-9_-]");
-    }
   }
 
   public static String getPid() {
@@ -1404,6 +1285,16 @@ public class BlurUtil {
     } catch (UnsupportedEncodingException e) {
       throw new RuntimeException(e);
     }
+  }
+  
+  public static Configuration newHadoopConfiguration() {
+    return addHdfsConfig(new Configuration());
+  }
+
+  public static Configuration addHdfsConfig(Configuration configuration) {
+    configuration.addResource("hdfs-default.xml");
+    configuration.addResource("hdfs-site.xml");
+    return configuration;
   }
 
 }

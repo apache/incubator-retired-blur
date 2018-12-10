@@ -121,7 +121,7 @@ public abstract class Cache implements Closeable {
    *          the key.
    * @return the cache value or null.
    */
-  public abstract CacheValue get(CacheKey key);
+  public abstract CacheValue get(CacheDirectory directory, String fileName, CacheKey key);
 
   /**
    * Gets the cache value for the given key. Null if missing. NOTE: This method
@@ -131,7 +131,7 @@ public abstract class Cache implements Closeable {
    *          the key.
    * @return the cache value or null.
    */
-  public abstract CacheValue getQuietly(CacheKey key);
+  public abstract CacheValue getQuietly(CacheDirectory directory, String fileName, CacheKey key);
 
   /**
    * Puts the cache entry into the cache.
@@ -141,7 +141,7 @@ public abstract class Cache implements Closeable {
    * @param value
    *          the value.
    */
-  public abstract void put(CacheKey key, CacheValue value);
+  public abstract void put(CacheDirectory directory, String fileName, CacheKey key, CacheValue value);
 
   /**
    * Removes the file from the cache.
@@ -157,10 +157,10 @@ public abstract class Cache implements Closeable {
   /**
    * This is called when the CacheDirectory is finalized.
    * 
-   * @param directoryName
-   *          the directory name.
+   * @param directory
+   *          the directory.
    */
-  public abstract void releaseDirectory(String directoryName);
+  public abstract void releaseDirectory(CacheDirectory directory);
 
   /**
    * Determines if the reader should be quiet or not.
@@ -182,7 +182,7 @@ public abstract class Cache implements Closeable {
    * 
    * @param fileId
    *          the file id.
-   * @throws IOException 
+   * @throws IOException
    */
   public abstract void fileClosedForWriting(CacheDirectory directory, String fileName, long fileId) throws IOException;
 

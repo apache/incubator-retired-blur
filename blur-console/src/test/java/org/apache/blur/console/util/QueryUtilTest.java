@@ -39,6 +39,8 @@ import org.apache.blur.thrift.generated.RowMutation;
 import org.apache.blur.thrift.generated.RowMutationType;
 import org.apache.blur.thrift.generated.ScoreType;
 import org.apache.blur.thrift.generated.TableDescriptor;
+import org.apache.blur.user.User;
+import org.apache.blur.user.UserContext;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -67,6 +69,7 @@ public class QueryUtilTest extends ConsoleTestBase {
 
   @Test
   public void testGetCurrentQueryCount() throws BlurException, IOException, TException {
+    UserContext.setUser(new User("testUser",null));
     Iface client = Config.getClient();
     BlurQuery query = new BlurQuery(
         new Query("fam0.col0:*", true, ScoreType.SUPER, null, null),
@@ -76,12 +79,14 @@ public class QueryUtilTest extends ConsoleTestBase {
     int currentCount = QueryUtil.getCurrentQueryCount();
     client.query("queryUnitTable", query);
     assertEquals(currentCount + 1, QueryUtil.getCurrentQueryCount());
+    UserContext.reset();
   }
 
   @SuppressWarnings("unchecked")
   @Test
   public void testGetQueries() throws IOException, BlurException, TException {
     Iface client = Config.getClient();
+    UserContext.setUser(new User("testUser",null));
     BlurQuery query = new BlurQuery(
         new Query("fam0.col0:*", true, ScoreType.SUPER, null, null),
         null,
@@ -96,6 +101,8 @@ public class QueryUtilTest extends ConsoleTestBase {
       }
     }
     client.query("queryUnitTable", query);
+    
+    UserContext.reset();
 
     Map<String, Object> queries = QueryUtil.getQueries();
 

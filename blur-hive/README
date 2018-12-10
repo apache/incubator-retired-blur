@@ -1,0 +1,16 @@
+README file for Blur Hive project
+===========================
+
+To build the blur hive project with a different version of hive use:
+
+For Hadoop 1:
+
+mvn install -Dhadoop1 -Dhive.version=<desired version>
+
+For Hadoop 2 MR1:
+
+mvn install -Dhadoop2-mr1 -Dhive.version=<desired version>
+
+For Hadoop 2:
+
+mvn install -Dhadoop2 -Dhive.version=<desired version>

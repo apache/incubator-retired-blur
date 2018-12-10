@@ -49,6 +49,8 @@ public class MergerTableStats implements Merger<TableStats> {
     s1.bytes = Math.max(s1.bytes, s2.bytes);
     s1.recordCount = s1.recordCount + s2.recordCount;
     s1.rowCount = s1.rowCount + s2.rowCount;
+    s1.segmentImportInProgressCount = s1.segmentImportInProgressCount + s2.segmentImportInProgressCount;
+    s1.segmentImportPendingCount = s1.segmentImportPendingCount + s2.segmentImportPendingCount;
     return s1;
   }
 

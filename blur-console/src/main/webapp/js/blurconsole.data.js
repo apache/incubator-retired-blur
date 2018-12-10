@@ -36,30 +36,30 @@ blurconsole.data = (function() {
 
   //------------------- Public API -------------------------------
   function getTableList(callback) {
-    $.getJSON('/service/tables', callback).fail(function(xhr) {
+    $.getJSON('service/tables', callback).fail(function(xhr) {
       _handleError(xhr, 'tables', callback);
     });
   }
 
   function getNodeList(callback) {
-    $.getJSON('/service/nodes', callback).fail(function(xhr) {
+    $.getJSON('service/nodes', callback).fail(function(xhr) {
       _handleError(xhr, 'tables', callback);
     });
   }
   function getQueryPerformance(callback) {
-    $.getJSON('/service/queries/performance', callback).fail(function(xhr) {
+    $.getJSON('service/queries/performance', callback).fail(function(xhr) {
       _handleError(xhr, 'tables', callback);
     });
   }
 
   function getQueries(callback) {
-    $.getJSON('/service/queries', callback).fail(function(xhr) {
+    $.getJSON('service/queries', callback).fail(function(xhr) {
       _handleError(xhr, 'tables', callback);
     });
   }
 
   function cancelQuery(table, uuid) {
-    $.ajax('/service/queries/' + uuid + '/cancel', {
+    $.ajax('service/queries/' + uuid + '/cancel', {
       data: {
         table: table
       },
@@ -70,7 +70,7 @@ blurconsole.data = (function() {
   }
 
   function disableTable(table) {
-    $.ajax('/service/tables/' + table + '/disable', {
+    $.ajax('service/tables/' + table + '/disable', {
       error: function(xhr) {
         _handleError(xhr, 'tables');
       }
@@ -78,7 +78,7 @@ blurconsole.data = (function() {
   }
 
   function enableTable (table){
-    $.ajax('/service/tables/' + table + '/enable', {
+    $.ajax('service/tables/' + table + '/enable', {
       error: function(xhr) {
         _handleError(xhr, 'tables');
       }
@@ -86,7 +86,7 @@ blurconsole.data = (function() {
   }
 
   function deleteTable (table, includeFiles) {
-    $.ajax('/service/tables/' + table + '/delete', {
+    $.ajax('service/tables/' + table + '/delete', {
       data: {
         includeFiles: includeFiles
       },
@@ -97,19 +97,19 @@ blurconsole.data = (function() {
   }
 
   function getSchema(table, callback) {
-    $.getJSON('/service/tables/' + table + '/schema', callback).fail(function(xhr) {
+    $.getJSON('service/tables/' + table + '/schema', callback).fail(function(xhr) {
       _handleError(xhr, 'tables');
     });
   }
 
   function findTerms (table, family, column, startsWith, callback) {
-    $.getJSON('/service/tables/' + table + '/' + family + '/' + column + '/terms', {startsWith: startsWith}, callback).fail(function(xhr) {
+    $.getJSON('service/tables/' + table + '/' + family + '/' + column + '/terms', {startsWith: startsWith}, callback).fail(function(xhr) {
       _handleError(xhr, 'tables');
     });
   }
 
   function copyTable(srcTable, destTable, destLocation, cluster) {
-    $.ajax('/service/tables/' + srcTable + '/copy', {
+    $.ajax('service/tables/' + srcTable + '/copy', {
       data: {
         newName: destTable,
         cluster: cluster,
@@ -123,12 +123,25 @@ blurconsole.data = (function() {
 
   function sendSearch(query, table, args, callback) {
     var params = $.extend({table:table, query:query}, args);
-    $.ajax('/service/search', {
+    $.ajax('service/search', {
       'type': 'POST',
       'data': params,
       'success': callback,
       'error': function(xhr) {
-        _handleError(xhr, 'tables');
+        _handleError(xhr, 'search');
+      }
+    });
+  }
+
+  function runFacetCount(query, table, family, column, terms, callback) {
+    var params = {table: table, query: query, family: family, column: column, terms: terms};
+
+    $.ajax('service/search/facets', {
+      'type': 'POST',
+      'data': params,
+      'success': callback,
+      'error': function(xhr) {
+        _handleError(xhr, 'search');
       }
     });
   }
@@ -145,6 +158,7 @@ blurconsole.data = (function() {
     getSchema : getSchema,
     findTerms : findTerms,
     copyTable : copyTable,
-    sendSearch : sendSearch
+    sendSearch : sendSearch,
+    runFacetCount : runFacetCount
   };
 }());

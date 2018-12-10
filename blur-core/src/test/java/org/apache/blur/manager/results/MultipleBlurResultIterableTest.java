@@ -31,6 +31,7 @@ import org.apache.blur.thrift.generated.BlurResult;
 import org.apache.blur.thrift.generated.SortFieldResult;
 import org.apache.blur.utils.BlurIterator;
 import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.junit.Test;
 
 public class MultipleBlurResultIterableTest {
@@ -103,7 +104,7 @@ public class MultipleBlurResultIterableTest {
       Entry<Double, List<SortFieldResult>>... entries) {
     List<BlurResult> results = new ArrayList<BlurResult>();
     for (Entry<Double, List<SortFieldResult>> entry : entries) {
-      String shardName = BlurUtil.getShardName(shard);
+      String shardName = ShardUtil.getShardName(shard);
       int docId = random.nextInt(Integer.MAX_VALUE);
       Double score = entry.getKey();
       results.add(new BlurResult(shardName + "/" + docId, score, null, entry.getValue()));
@@ -138,7 +139,7 @@ public class MultipleBlurResultIterableTest {
   private BlurResultIterable newBlurResultIterableNoSort(int shard, Random random, double... ds) {
     List<BlurResult> results = new ArrayList<BlurResult>();
     for (double d : ds) {
-      String shardName = BlurUtil.getShardName(shard);
+      String shardName = ShardUtil.getShardName(shard);
       int docId = random.nextInt(Integer.MAX_VALUE);
       results.add(new BlurResult(shardName + "/" + docId, d, null, null));
     }

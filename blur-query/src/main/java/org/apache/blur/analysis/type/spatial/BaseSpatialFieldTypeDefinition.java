@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.blur.analysis.type.CustomFieldTypeDefinition;
+import org.apache.blur.analysis.type.MultiValuedNotAllowedException;
 import org.apache.blur.thrift.generated.Column;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.StoredField;
@@ -37,6 +38,9 @@ import com.spatial4j.core.shape.Shape;
 
 public abstract class BaseSpatialFieldTypeDefinition extends CustomFieldTypeDefinition {
 
+  public static final String QUAD = "Quad(";
+  public static final String END = ")";
+  public static final String GEO_HASH = "GeoHash(";
   public static final String GEOHASH_PREFIX_TREE = "GeohashPrefixTree";
   public static final String QUAD_PREFIX_TREE = "QuadPrefixTree";
   public static final String SPATIAL_PREFIX_TREE = "spatialPrefixTree";
@@ -89,7 +93,7 @@ public abstract class BaseSpatialFieldTypeDefinition extends CustomFieldTypeDefi
     SpatialArgs args = SpatialArgsParser.parse(text, _shapeReadWriter);
     checkSpatialArgs(args);
     synchronized (_strategy) {
-      return _strategy.makeQuery(args);  
+      return _strategy.makeQuery(args);
     }
   }
 
@@ -169,4 +173,14 @@ public abstract class BaseSpatialFieldTypeDefinition extends CustomFieldTypeDefi
     }
     _supportedIndexedShapes.add(c);
   }
+
+  @Override
+  public void setMultiValueField(boolean multiValueField) {
+    if (!multiValueField) {
+      super.setMultiValueField(multiValueField);
+    } else {
+      throw new MultiValuedNotAllowedException("Field type [" + getName() + "] can not multi valued.");
+    }
+  }
+
 }

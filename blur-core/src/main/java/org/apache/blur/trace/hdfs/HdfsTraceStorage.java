@@ -46,16 +46,18 @@ public class HdfsTraceStorage extends TraceStorage {
 
   private final static Log LOG = LogFactory.getLog(HdfsTraceStorage.class);
 
-  private final Path _storePath;
-  private final BlockingQueue<TraceCollector> _queue = new LinkedBlockingQueue<TraceCollector>();
-  private final Thread _daemon;
-  private final Configuration _conf = new Configuration();
-  private final FileSystem _fileSystem;
+  private Path _storePath;
+  private BlockingQueue<TraceCollector> _queue = new LinkedBlockingQueue<TraceCollector>();
+  private Thread _daemon;
+  private FileSystem _fileSystem;
 
   public HdfsTraceStorage(BlurConfiguration configuration) throws IOException {
     super(configuration);
-    _storePath = new Path(configuration.get(BLUR_HDFS_TRACE_PATH));
-    _fileSystem = _storePath.getFileSystem(_conf);
+  }
+
+  public void init(Configuration conf) throws IOException {
+    _storePath = new Path(_configuration.get(BLUR_HDFS_TRACE_PATH));
+    _fileSystem = _storePath.getFileSystem(conf);
     _fileSystem.mkdirs(_storePath);
     _daemon = new Thread(new Runnable() {
       @Override

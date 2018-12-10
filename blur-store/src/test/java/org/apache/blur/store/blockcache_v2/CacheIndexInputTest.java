@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.util.Random;
 
-import org.apache.blur.store.blockcache_v2.cachevalue.UnsafeCacheValue;
+import org.apache.blur.store.blockcache_v2.cachevalue.ByteArrayCacheValue;
 import org.apache.blur.store.buffer.BufferStore;
 import org.apache.lucene.store.IOContext;
 import org.apache.lucene.store.IndexInput;
@@ -183,7 +183,11 @@ public class CacheIndexInputTest {
     Weigher<CacheValue> weigher = new Weigher<CacheValue>() {
       @Override
       public int weightOf(CacheValue value) {
-        return value.length();
+        try {
+          return value.length();
+        } catch (EvictionException e) {
+          return 0;
+        }
       }
     };
     long maximumWeightedCapacity = 1 * 1024 * 1024;
@@ -193,7 +197,7 @@ public class CacheIndexInputTest {
 
       @Override
       public CacheValue newInstance(CacheDirectory directory, String fileName, int cacheBlockSize) {
-        return new UnsafeCacheValue(cacheBlockSize);
+        return new ByteArrayCacheValue(cacheBlockSize);
       }
 
       @Override
@@ -222,12 +226,12 @@ public class CacheIndexInputTest {
       }
 
       @Override
-      public CacheValue get(CacheKey key) {
+      public CacheValue get(CacheDirectory directory, String fileName, CacheKey key) {
         return cache.get(key);
       }
 
       @Override
-      public void put(CacheKey key, CacheValue value) {
+      public void put(CacheDirectory directory, String fileName, CacheKey key, CacheValue value) {
         cache.put(key, value);
       }
 
@@ -237,12 +241,12 @@ public class CacheIndexInputTest {
       }
 
       @Override
-      public void releaseDirectory(String directoryName) {
+      public void releaseDirectory(CacheDirectory directory) {
 
       }
 
       @Override
-      public CacheValue getQuietly(CacheKey key) {
+      public CacheValue getQuietly(CacheDirectory directory, String fileName, CacheKey key) {
         return cache.getQuietly(key);
       }
 
@@ -258,11 +262,10 @@ public class CacheIndexInputTest {
 
       @Override
       public void fileClosedForWriting(CacheDirectory directory, String fileName, long fileId) throws IOException {
-        
+
       }
 
     };
     return cacheFactory;
   }
-
 }

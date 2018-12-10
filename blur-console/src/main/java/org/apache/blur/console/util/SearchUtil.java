@@ -32,6 +32,7 @@ public class SearchUtil {
   private static final String TOTAL_KEY = "total";
   private static final String DATA_KEY = "results";
   private static final String FAMILY_KEY = "families";
+  private static final String TIME_KEY = "time";
 
   private static final String ROW_ROW_OPTION = "rowrow";
   private static final String RECORD_RECORD_OPTION = "recordrecord";
@@ -50,6 +51,40 @@ public class SearchUtil {
     }
 
     return searchAndFetch(table, query, rowQuery, start, fetch, families, user, securityUser);
+  }
+
+  public static Map<String, Long> facetSearch(Map<String, String[]> params, User user) throws IOException, TException {
+    String table = HttpUtil.getFirstParam(params.get("table"));
+    String query = HttpUtil.getFirstParam(params.get("query"));
+    String family = HttpUtil.getFirstParam(params.get("family"));
+    String column = HttpUtil.getFirstParam(params.get("column"));
+    String[] terms = params.get("terms[]");
+    String rowQuery = HttpUtil.getFirstParam(params.get("rowRecordOption"));
+    String securityUser = HttpUtil.getFirstParam(params.get("securityUser"));
+    
+    System.out.println(params);
+
+    Iface client = Config.getClient(user, securityUser);
+
+    BlurQuery blurQuery = new BlurQuery();
+
+    Query q = new Query(query, ROW_ROW_OPTION.equalsIgnoreCase(rowQuery), ScoreType.SUPER, null, null);
+    blurQuery.setQuery(q);
+    blurQuery.setUserContext(user.getName());
+    for(String term : terms) {
+    	blurQuery.addToFacets(new Facet("+(+" + family + "." + column + ":(" + term + "))", 1000));
+    }
+
+    BlurResults blurResults = client.query(table, blurQuery);
+
+    List<Long> facetCounts = blurResults.getFacetCounts();
+    
+    Map<String, Long> countMap = new HashMap<String, Long>();
+    for (int i = 0; i < terms.length; i++) {
+    	countMap.put(terms[i], facetCounts.get(i));
+    }
+
+    return countMap;
   }
 
   @SuppressWarnings({"unchecked", "rawtypes"})
@@ -72,9 +107,11 @@ public class SearchUtil {
       s.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
       blurQuery.setSelector(s);
 
-      BlurResults blurResults = client.query(table, blurQuery);
-
       Map<String, Object> results = new HashMap<String, Object>();
+      long startTime = System.currentTimeMillis();
+      BlurResults blurResults = client.query(table, blurQuery);
+      results.put(TIME_KEY, System.currentTimeMillis() - startTime);
+
       results.put(TOTAL_KEY, blurResults.getTotalResults());
 
       Map<String, List> rows = new HashMap<String, List>();
@@ -120,25 +157,6 @@ public class SearchUtil {
     }
   }
 
-  private static Map<String, Object> fullTextSearch(String table, String query, User user, String securityUser) throws IOException, TException {
-    try {
-      Iface client = Config.getClient(user, securityUser);
-
-      BlurQuery blurQuery = new BlurQuery();
-
-      Query q = new Query(query, true, ScoreType.SUPER, null, null);
-      blurQuery.setQuery(q);
-      blurQuery.setUserContext(user.getName());
-      BlurResults blurResults = client.query(table, blurQuery);
-
-      Map<String, Object> results = new HashMap<String, Object>();
-      results.put(TOTAL_KEY, blurResults.getTotalResults());
-      return results;
-    } finally {
-      UserContext.reset();
-    }
-  }
-
   @SuppressWarnings({"unchecked", "rawtypes"})
   private static Map<String, Object> fetchRow(String table, String query, String[] families, User user, String securityUser) throws IOException, TException {
     try {
@@ -149,9 +167,10 @@ public class SearchUtil {
       selector.setRowId(rowid);
       selector.setColumnFamiliesToFetch(new HashSet<String>(Arrays.asList(families)));
 
-      FetchResult fetchRow = client.fetchRow(table, selector);
-
       Map<String, Object> results = new HashMap<String, Object>();
+      long startTime = System.currentTimeMillis();
+      FetchResult fetchRow = client.fetchRow(table, selector);
+      results.put(TIME_KEY, System.currentTimeMillis() - startTime);
       results.put(TOTAL_KEY, fetchRow.getRowResult().getRow() == null ? 0 : 1);
 
       Map<String, List> rows = new HashMap<String, List>();

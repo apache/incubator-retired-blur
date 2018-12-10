@@ -56,7 +56,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public abstract class BaseDirectoryTestSuite {
-  protected static final File TMPDIR = new File(System.getProperty("blur.tmp.dir", "/tmp"));
+  protected static final File TMPDIR = new File(System.getProperty("blur.tmp.dir",
+      "./target/tmp/BaseDirectoryTestSuite"));
 
   protected static final int MAX_NUMBER_OF_WRITES = 10000;
   protected static final int MIN_FILE_SIZE = 100;
@@ -195,7 +196,7 @@ public abstract class BaseDirectoryTestSuite {
     // The serial merge scheduler can be useful for debugging.
     // conf.setMergeScheduler(new SerialMergeScheduler());
     IndexWriter writer = new IndexWriter(dir, conf);
-    int numDocs = 10000;
+    int numDocs = 1000;
     DirectoryReader reader = null;
     long gen = 0;
     for (int i = 0; i < 100; i++) {

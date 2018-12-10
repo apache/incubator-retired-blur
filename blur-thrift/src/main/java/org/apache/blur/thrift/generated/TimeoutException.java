@@ -56,7 +56,7 @@ import java.util.Arrays;
 public class TimeoutException extends TException implements org.apache.blur.thirdparty.thrift_0_9_0.TBase<TimeoutException, TimeoutException._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct STRUCT_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TStruct("TimeoutException");
 
-  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField EXECUTION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("executionId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING, (short)1);
+  private static final org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField INSTANCE_EXECUTION_ID_FIELD_DESC = new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TField("instanceExecutionId", org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -64,11 +64,11 @@ public class TimeoutException extends TException implements org.apache.blur.thir
     schemes.put(TupleScheme.class, new TimeoutExceptionTupleSchemeFactory());
   }
 
-  public String executionId; // required
+  public long instanceExecutionId; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.blur.thirdparty.thrift_0_9_0.TFieldIdEnum {
-    EXECUTION_ID((short)1, "executionId");
+    INSTANCE_EXECUTION_ID((short)1, "instanceExecutionId");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -83,8 +83,8 @@ public class TimeoutException extends TException implements org.apache.blur.thir
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // EXECUTION_ID
-          return EXECUTION_ID;
+        case 1: // INSTANCE_EXECUTION_ID
+          return INSTANCE_EXECUTION_ID;
         default:
           return null;
       }
@@ -125,11 +125,13 @@ public class TimeoutException extends TException implements org.apache.blur.thir
   }
 
   // isset id assignments
+  private static final int __INSTANCEEXECUTIONID_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.EXECUTION_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("executionId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
-        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING)));
+    tmpMap.put(_Fields.INSTANCE_EXECUTION_ID, new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData("instanceExecutionId", org.apache.blur.thirdparty.thrift_0_9_0.TFieldRequirementType.DEFAULT, 
+        new org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldValueMetaData(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.blur.thirdparty.thrift_0_9_0.meta_data.FieldMetaData.addStructMetaDataMap(TimeoutException.class, metaDataMap);
   }
@@ -138,19 +140,19 @@ public class TimeoutException extends TException implements org.apache.blur.thir
   }
 
   public TimeoutException(
-    String executionId)
+    long instanceExecutionId)
   {
     this();
-    this.executionId = executionId;
+    this.instanceExecutionId = instanceExecutionId;
+    setInstanceExecutionIdIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public TimeoutException(TimeoutException other) {
-    if (other.isSetExecutionId()) {
-      this.executionId = other.executionId;
-    }
+    __isset_bitfield = other.__isset_bitfield;
+    this.instanceExecutionId = other.instanceExecutionId;
   }
 
   public TimeoutException deepCopy() {
@@ -159,40 +161,40 @@ public class TimeoutException extends TException implements org.apache.blur.thir
 
   @Override
   public void clear() {
-    this.executionId = null;
+    setInstanceExecutionIdIsSet(false);
+    this.instanceExecutionId = 0;
   }
 
-  public String getExecutionId() {
-    return this.executionId;
+  public long getInstanceExecutionId() {
+    return this.instanceExecutionId;
   }
 
-  public TimeoutException setExecutionId(String executionId) {
-    this.executionId = executionId;
+  public TimeoutException setInstanceExecutionId(long instanceExecutionId) {
+    this.instanceExecutionId = instanceExecutionId;
+    setInstanceExecutionIdIsSet(true);
     return this;
   }
 
-  public void unsetExecutionId() {
-    this.executionId = null;
+  public void unsetInstanceExecutionId() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __INSTANCEEXECUTIONID_ISSET_ID);
   }
 
-  /** Returns true if field executionId is set (has been assigned a value) and false otherwise */
-  public boolean isSetExecutionId() {
-    return this.executionId != null;
+  /** Returns true if field instanceExecutionId is set (has been assigned a value) and false otherwise */
+  public boolean isSetInstanceExecutionId() {
+    return EncodingUtils.testBit(__isset_bitfield, __INSTANCEEXECUTIONID_ISSET_ID);
   }
 
-  public void setExecutionIdIsSet(boolean value) {
-    if (!value) {
-      this.executionId = null;
-    }
+  public void setInstanceExecutionIdIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __INSTANCEEXECUTIONID_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case EXECUTION_ID:
+    case INSTANCE_EXECUTION_ID:
       if (value == null) {
-        unsetExecutionId();
+        unsetInstanceExecutionId();
       } else {
-        setExecutionId((String)value);
+        setInstanceExecutionId((Long)value);
       }
       break;
 
@@ -201,8 +203,8 @@ public class TimeoutException extends TException implements org.apache.blur.thir
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case EXECUTION_ID:
-      return getExecutionId();
+    case INSTANCE_EXECUTION_ID:
+      return Long.valueOf(getInstanceExecutionId());
 
     }
     throw new IllegalStateException();
@@ -215,8 +217,8 @@ public class TimeoutException extends TException implements org.apache.blur.thir
     }
 
     switch (field) {
-    case EXECUTION_ID:
-      return isSetExecutionId();
+    case INSTANCE_EXECUTION_ID:
+      return isSetInstanceExecutionId();
     }
     throw new IllegalStateException();
   }
@@ -234,12 +236,12 @@ public class TimeoutException extends TException implements org.apache.blur.thir
     if (that == null)
       return false;
 
-    boolean this_present_executionId = true && this.isSetExecutionId();
-    boolean that_present_executionId = true && that.isSetExecutionId();
-    if (this_present_executionId || that_present_executionId) {
-      if (!(this_present_executionId && that_present_executionId))
+    boolean this_present_instanceExecutionId = true;
+    boolean that_present_instanceExecutionId = true;
+    if (this_present_instanceExecutionId || that_present_instanceExecutionId) {
+      if (!(this_present_instanceExecutionId && that_present_instanceExecutionId))
         return false;
-      if (!this.executionId.equals(that.executionId))
+      if (this.instanceExecutionId != that.instanceExecutionId)
         return false;
     }
 
@@ -259,12 +261,12 @@ public class TimeoutException extends TException implements org.apache.blur.thir
     int lastComparison = 0;
     TimeoutException typedOther = (TimeoutException)other;
 
-    lastComparison = Boolean.valueOf(isSetExecutionId()).compareTo(typedOther.isSetExecutionId());
+    lastComparison = Boolean.valueOf(isSetInstanceExecutionId()).compareTo(typedOther.isSetInstanceExecutionId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetExecutionId()) {
-      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.executionId, typedOther.executionId);
+    if (isSetInstanceExecutionId()) {
+      lastComparison = org.apache.blur.thirdparty.thrift_0_9_0.TBaseHelper.compareTo(this.instanceExecutionId, typedOther.instanceExecutionId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -289,12 +291,8 @@ public class TimeoutException extends TException implements org.apache.blur.thir
     StringBuilder sb = new StringBuilder("TimeoutException(");
     boolean first = true;
 
-    sb.append("executionId:");
-    if (this.executionId == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.executionId);
-    }
+    sb.append("instanceExecutionId:");
+    sb.append(this.instanceExecutionId);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -315,6 +313,8 @@ public class TimeoutException extends TException implements org.apache.blur.thir
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.blur.thirdparty.thrift_0_9_0.protocol.TCompactProtocol(new org.apache.blur.thirdparty.thrift_0_9_0.transport.TIOStreamTransport(in)));
     } catch (org.apache.blur.thirdparty.thrift_0_9_0.TException te) {
       throw new java.io.IOException(te);
@@ -339,10 +339,10 @@ public class TimeoutException extends TException implements org.apache.blur.thir
           break;
         }
         switch (schemeField.id) {
-          case 1: // EXECUTION_ID
-            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.STRING) {
-              struct.executionId = iprot.readString();
-              struct.setExecutionIdIsSet(true);
+          case 1: // INSTANCE_EXECUTION_ID
+            if (schemeField.type == org.apache.blur.thirdparty.thrift_0_9_0.protocol.TType.I64) {
+              struct.instanceExecutionId = iprot.readI64();
+              struct.setInstanceExecutionIdIsSet(true);
             } else { 
               org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -362,11 +362,9 @@ public class TimeoutException extends TException implements org.apache.blur.thir
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.executionId != null) {
-        oprot.writeFieldBegin(EXECUTION_ID_FIELD_DESC);
-        oprot.writeString(struct.executionId);
-        oprot.writeFieldEnd();
-      }
+      oprot.writeFieldBegin(INSTANCE_EXECUTION_ID_FIELD_DESC);
+      oprot.writeI64(struct.instanceExecutionId);
+      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -385,12 +383,12 @@ public class TimeoutException extends TException implements org.apache.blur.thir
     public void write(org.apache.blur.thirdparty.thrift_0_9_0.protocol.TProtocol prot, TimeoutException struct) throws org.apache.blur.thirdparty.thrift_0_9_0.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       BitSet optionals = new BitSet();
-      if (struct.isSetExecutionId()) {
+      if (struct.isSetInstanceExecutionId()) {
         optionals.set(0);
       }
       oprot.writeBitSet(optionals, 1);
-      if (struct.isSetExecutionId()) {
-        oprot.writeString(struct.executionId);
+      if (struct.isSetInstanceExecutionId()) {
+        oprot.writeI64(struct.instanceExecutionId);
       }
     }
 
@@ -399,8 +397,8 @@ public class TimeoutException extends TException implements org.apache.blur.thir
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
-        struct.executionId = iprot.readString();
-        struct.setExecutionIdIsSet(true);
+        struct.instanceExecutionId = iprot.readI64();
+        struct.setInstanceExecutionIdIsSet(true);
       }
     }
   }

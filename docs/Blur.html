@@ -43,8 +43,6 @@ limitations under the License.
 <li><a href="using-blur.html">Using Blur</a></li>
 <li class="active"><a href="Blur.html">Blur API</a></li>
 <li><a href="console.html">Console</a></li>
-<li><a href="site/index.html" target="_blank">Maven Site</a></li>
-<li><a href="site/apidocs/index.html" target="_blank">Javadocs</a></li>
 </ul>
 </div>
 </div>
@@ -140,10 +138,17 @@ limitations under the License.
 <li><a href="#Fn_Blur_query">&nbsp;&nbsp;query</a></li>
 <li><a href="#Fn_Blur_fetchRow">&nbsp;&nbsp;fetchRow</a></li>
 <li><a href="#Fn_Blur_fetchRowBatch">&nbsp;&nbsp;fetchRowBatch</a></li>
+<li><a href="#Fn_Blur_loadData">&nbsp;&nbsp;loadData</a></li>
+<li><a href="#Fn_Blur_validateIndex">&nbsp;&nbsp;validateIndex</a></li>
+<li><a href="#Fn_Blur_loadIndex">&nbsp;&nbsp;loadIndex</a></li>
 <li><a href="#Fn_Blur_mutate">&nbsp;&nbsp;mutate</a></li>
 <li><a href="#Fn_Blur_enqueueMutate">&nbsp;&nbsp;enqueueMutate</a></li>
 <li><a href="#Fn_Blur_mutateBatch">&nbsp;&nbsp;mutateBatch</a></li>
 <li><a href="#Fn_Blur_enqueueMutateBatch">&nbsp;&nbsp;enqueueMutateBatch</a></li>
+<li><a href="#Fn_Blur_bulkMutateStart">&nbsp;&nbsp;bulkMutateStart</a></li>
+<li><a href="#Fn_Blur_bulkMutateAdd">&nbsp;&nbsp;bulkMutateAdd</a></li>
+<li><a href="#Fn_Blur_bulkMutateAddMultiple">&nbsp;&nbsp;bulkMutateAddMultiple</a></li>
+<li><a href="#Fn_Blur_bulkMutateFinish">&nbsp;&nbsp;bulkMutateFinish</a></li>
 <li><a href="#Fn_Blur_cancelQuery">&nbsp;&nbsp;cancelQuery</a></li>
 <li><a href="#Fn_Blur_queryStatusIdList">&nbsp;&nbsp;queryStatusIdList</a></li>
 <li><a href="#Fn_Blur_queryStatusById">&nbsp;&nbsp;queryStatusById</a></li>
@@ -158,6 +163,7 @@ limitations under the License.
 <li><a href="#Fn_Blur_shardServerLayoutState">&nbsp;&nbsp;shardServerLayoutState</a></li>
 <li><a href="#Fn_Blur_isInSafeMode">&nbsp;&nbsp;isInSafeMode</a></li>
 <li><a href="#Fn_Blur_configuration">&nbsp;&nbsp;configuration</a></li>
+<li><a href="#Fn_Blur_configurationPerServer">&nbsp;&nbsp;configurationPerServer</a></li>
 <li><a href="#Fn_Blur_metrics">&nbsp;&nbsp;metrics</a></li>
 <li><a href="#Fn_Blur_startTrace">&nbsp;&nbsp;startTrace</a></li>
 <li><a href="#Fn_Blur_traceList">&nbsp;&nbsp;traceList</a></li>
@@ -309,7 +315,7 @@ Logging level enum used to change the logging levels at runtime.
 trace (if any).
 <br/></p></section><section><div class="page-header"><h3 id="Struct_TimeoutException">Exception: TimeoutException</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
-<tr><td>1</td><td>executionId</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>1</td><td>instanceExecutionId</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
 </table><br/>TimeoutException occurs before the network connection timeout
 happens so that the client can reconnect.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_User">Struct: User</h3></div><p class="lead">
@@ -592,6 +598,10 @@ shards that are complete, etc.
 </td><td>default</td><td></td></tr>
 <tr><td>4</td><td>rowCount</td><td><code>i64</code></td><td>The row count.
 </td><td>default</td><td></td></tr>
+<tr><td>5</td><td>segmentImportPendingCount</td><td><code>i64</code></td><td>The number of pending segment imports for this table.
+</td><td>default</td><td>0</td></tr>
+<tr><td>6</td><td>segmentImportInProgressCount</td><td><code>i64</code></td><td>The number of segment imports in progress for this table.
+</td><td>default</td><td>0</td></tr>
 </table><br/>TableStats holds the statistics for a given table.
 <br/></p></section><section><div class="page-header"><h3 id="Struct_ColumnDefinition">Struct: ColumnDefinition</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
@@ -619,6 +629,8 @@ NOTE: This will index the column as a full text field in a default field, so tha
 </td><td>default</td><td></td></tr>
 <tr><td>7</td><td>sortable</td><td><code>bool</code></td><td>This will attempt to enable sorting for this column, if the type does not support sorting then an exception will be thrown.
 </td><td>default</td><td></td></tr>
+<tr><td>8</td><td>multiValueField</td><td><code>bool</code></td><td>This will attempt to enable the ability for multiple values per column name in a single Record.
+</td><td>optional</td><td>1</td></tr>
 </table><br/>The ColumnDefinition defines how a given Column should be interpreted (indexed/stored)
 <br/></p></section><section><div class="page-header"><h3 id="Struct_Schema">Struct: Schema</h3></div><p class="lead">
 <table class="table-bordered table-striped table-condensed"><thead><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></thead>
@@ -742,7 +754,7 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_TimeoutException">TimeoutException</a></code>
 </pre>Executes the given command by name on the table with the provided arguments.
 <br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_reconnect">Function: Blur.reconnect</h4></div><p class="lead">
-<pre><code><a href="Blur.html#Struct_Response">Response</a></code> reconnect(<code>string</code> executionId)
+<pre><code><a href="Blur.html#Struct_Response">Response</a></code> reconnect(<code>i64</code> instanceExecutionId)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>, <code><a href="Blur.html#Struct_TimeoutException">TimeoutException</a></code>
 </pre>If the execute command times out due to command taking longer than the configured
 network tcp timeout this method allows the client to reconnect to the already
@@ -754,13 +766,13 @@ executing command.
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Fetches the command status ids in the order they were submitted.
 <br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_commandStatus">Function: Blur.commandStatus</h4></div><p class="lead">
-<pre><code><a href="Blur.html#Struct_CommandStatus">CommandStatus</a></code> commandStatus(<code>string</code> executionId)
+<pre><code><a href="Blur.html#Struct_CommandStatus">CommandStatus</a></code> commandStatus(<code>string</code> commandExecutionId)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>Retrieves the command status by the given execution id.
+</pre>Retrieves the command status by the given command execution id.
 <br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_commandCancel">Function: Blur.commandCancel</h4></div><p class="lead">
-<pre><code>void</code> commandCancel(<code>string</code> executionId)
+<pre><code>void</code> commandCancel(<code>string</code> commandExecutionId)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre>Cancels the command with the given execution id.
+</pre>Cancels the command with the given command execution id.
 <br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_refresh">Function: Blur.refresh</h4></div><p class="lead">
 <pre><code>void</code> refresh()
 </pre>Releases and refreshes the read snapshots of the indexes in the session for the
@@ -922,7 +934,25 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </td></tr>
 <tr><td>selectors</td><td>the Selector to use to fetch the Row or Record.
 </td></tr>
-</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4></div><p class="lead">
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_loadData">Function: Blur.loadData</h4></div><p class="lead">
+<pre><code>void</code> loadData(<code>string</code> table,
+<code>string</code> location)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Loads data from external location.
+<br/><br/><h4 id="Parameters_Blur_loadData">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>table</td><td>The table name.
+</td></tr>
+<tr><td>location</td><td>Location of bulk data load.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_validateIndex">Function: Blur.validateIndex</h4></div><p class="lead">
+<pre><code>void</code> validateIndex(<code>string</code> table,
+<code>list&lt;<code>string</code>&gt;</code> externalIndexPaths)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></p></section><section><div class="page-header"><h4 id="Fn_Blur_loadIndex">Function: Blur.loadIndex</h4></div><p class="lead">
+<pre><code>void</code> loadIndex(<code>string</code> table,
+<code>list&lt;<code>string</code>&gt;</code> externalIndexPaths)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></p></section><section><div class="page-header"><h4 id="Fn_Blur_mutate">Function: Blur.mutate</h4></div><p class="lead">
 <pre><code>void</code> mutate(<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> mutation)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Mutates a Row given the RowMutation that is provided.
@@ -949,6 +979,46 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Enqueue a batch of RowMutations. Note that the effect of the RowMutation will occur at some point in the future, volume and load will play a role in how much time will pass before the mutation goes into effect.
 <br/><br/><h4 id="Parameters_Blur_enqueueMutateBatch">Parameters</h4>
 <table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>mutations</td><td>the batch of RowMutations.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_bulkMutateStart">Function: Blur.bulkMutateStart</h4></div><p class="lead">
+<pre><code>void</code> bulkMutateStart(<code>string</code> bulkId)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Starts a transaction for update (e.g. Mutate).  Returns a transaction id.
+<br/><br/><h4 id="Parameters_Blur_bulkMutateStart">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>bulkId</td><td>The bulk id.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_bulkMutateAdd">Function: Blur.bulkMutateAdd</h4></div><p class="lead">
+<pre><code>void</code> bulkMutateAdd(<code>string</code> bulkId,
+<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code> rowMutation)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Adds to the specified transaction.
+<br/><br/><h4 id="Parameters_Blur_bulkMutateAdd">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>bulkId</td><td>The bulk id.
+</td></tr>
+<tr><td>rowMutation</td><td>The row mutation.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_bulkMutateAddMultiple">Function: Blur.bulkMutateAddMultiple</h4></div><p class="lead">
+<pre><code>void</code> bulkMutateAddMultiple(<code>string</code> bulkId,
+<code>list&lt;<code><a href="Blur.html#Struct_RowMutation">RowMutation</a></code>&gt;</code> rowMutations)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Adds to the specified transaction.
+<br/><br/><h4 id="Parameters_Blur_bulkMutateAddMultiple">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>bulkId</td><td>The bulk id.
+</td></tr>
+<tr><td>rowMutations</td><td>The row mutation.
+</td></tr>
+</table></p></section><section><div class="page-header"><h4 id="Fn_Blur_bulkMutateFinish">Function: Blur.bulkMutateFinish</h4></div><p class="lead">
+<pre><code>void</code> bulkMutateFinish(<code>string</code> bulkId,
+<code>bool</code> apply,
+<code>bool</code> blockUntilComplete)
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Finishes the bulk mutate.  If apply is true the mutations are applied and committed.  If false the bulk mutate is deleted and not applied.
+<br/><br/><h4 id="Parameters_Blur_bulkMutateFinish">Parameters</h4>
+<table class="table-bordered table-striped table-condensed"><thead><th>Name</th><th>Description</th></thead><tr><td>bulkId</td><td>The bulk id.
+</td></tr>
+<tr><td>apply</td><td>Apply the bulk mutate flag.
+</td></tr>
+<tr><td>blockUntilComplete</td><td>If true this call will not block on bulk completion.  This may be required for loader bulk loads.
 </td></tr>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4></div><p class="lead">
 <pre><code>void</code> cancelQuery(<code>string</code> table,
@@ -1079,6 +1149,12 @@ throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </td></tr>
 </table></p></section><section><div class="page-header"><h4 id="Fn_Blur_configuration">Function: Blur.configuration</h4></div><p class="lead">
 <pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> configuration()
+throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre>Fetches the Blur configuration.
+@return Map of property name to value.
+<br/></p></section><section><div class="page-header"><h4 id="Fn_Blur_configurationPerServer">Function: Blur.configurationPerServer</h4></div><p class="lead">
+<pre><code>string</code> configurationPerServer(<code>string</code> thriftServerPlusPort,
+<code>string</code> configName)
 throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Fetches the Blur configuration.
 @return Map of property name to value.

@@ -71,16 +71,20 @@ public class CachingBlurClient {
       public void run() {
         boolean run = true;
           while (run) {
-            cleanup(clusterListCache);
-            cleanup(tableListCache);
-            cleanup(queryListCache);
-            cleanup(queryStatusCache);
-            cleanup(tableDescriptionCache);
-            cleanup(tableStatsCache);
-            cleanup(schemaCache);
-            cleanup(controllerListCache);
-            cleanup(shardListCache);
-            log.info("Cache: " + cacheHits + " hits, " + cacheMisses + " misses");
+            try {
+              cleanup(clusterListCache);
+              cleanup(tableListCache);
+              cleanup(queryListCache);
+              cleanup(queryStatusCache);
+              cleanup(tableDescriptionCache);
+              cleanup(tableStatsCache);
+              cleanup(schemaCache);
+              cleanup(controllerListCache);
+              cleanup(shardListCache);
+              log.info("Cache: " + cacheHits + " hits, " + cacheMisses + " misses");
+            } catch (Exception e) {
+              log.error("Error cleaning up all caches", e);
+            }
             try {
               Thread.sleep(timeout * 2);
             } catch (InterruptedException e) {
@@ -96,14 +100,18 @@ public class CachingBlurClient {
 
   private void cleanup(Map<String, Item> cache) {
     if (cache != null) {
-      synchronized (cache) {
-        Iterator<Map.Entry<String, Item>> iterator = cache.entrySet().iterator();
-        while (iterator.hasNext()) {
-          Map.Entry<String, Item> entry = iterator.next();
-          if (entry.getValue().expired(timeout)) {
-            iterator.remove();
+      try {
+        synchronized (cache) {
+          Iterator<Map.Entry<String, Item>> iterator = cache.entrySet().iterator();
+          while (iterator.hasNext()) {
+            Map.Entry<String, Item> entry = iterator.next();
+            if (entry.getValue().expired(timeout)) {
+              iterator.remove();
+            }
           }
         }
+      } catch (Exception e) {
+      	log.error("Error cleaning up cache", e);
       }
     }
   }
@@ -126,7 +134,7 @@ public class CachingBlurClient {
       } else {
         cacheHits++;
       }
-      return (T) item.value;
+      return (T) item.getValue();
     }
   }
 
@@ -144,27 +152,15 @@ public class CachingBlurClient {
 	  getClient().addColumnDefinition(table, def);
   }
 
-  @SuppressWarnings("unchecked")
   private void invalidateQuery(String table, String uuid) {
-    synchronized (queryListCache) {
-      Item item = queryListCache.get(null);
-      if(item != null && item.getValue() != null) {
-        ((List<String>)(item.getValue())).remove(uuid);
-      }
-    }
     synchronized (queryStatusCache) {
       queryStatusCache.remove(queryKey(table,uuid));
     }
   }
 
-  @SuppressWarnings("unchecked")
   private void invalidateTable(String table) {
     synchronized (tableListCache) {
-      for(Item item: tableListCache.values()) {
-        if(item != null && item.getValue() != null) {
-          ((List<String>)(item.getValue())).remove(table);
-        }
-      }
+      tableListCache.clear();
     }
   }
 

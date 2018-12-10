@@ -19,14 +19,13 @@ package org.apache.blur.server;
 import java.io.IOException;
 
 import org.apache.blur.store.hdfs.HdfsDirectory;
-import org.apache.blur.utils.BlurUtil;
+import org.apache.blur.utils.ShardUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.Directory;
 
 public class ShardContext {
 
   private String shard;
-  private Path walShardPath;
   private Path hdfsDirPath;
   private Directory directory;
   private TableContext tableContext;
@@ -67,19 +66,10 @@ public class ShardContext {
     this.shard = shard;
   }
 
-  public Path getWalShardPath() {
-    return walShardPath;
-  }
-
-  public void setWalShardPath(Path walShardPath) {
-    this.walShardPath = walShardPath;
-  }
-
   public static ShardContext create(TableContext tableContext, String shard) throws IOException {
-    BlurUtil.validateShardName(shard);
+    ShardUtil.validateShardName(shard);
     ShardContext shardContext = new ShardContext();
     shardContext.tableContext = tableContext;
-    shardContext.walShardPath = new Path(tableContext.getWalTablePath(), shard);
     shardContext.hdfsDirPath = new Path(tableContext.getTablePath(), shard);
     shardContext.shard = shard;
     shardContext.directory = new HdfsDirectory(tableContext.getConfiguration(), shardContext.hdfsDirPath);

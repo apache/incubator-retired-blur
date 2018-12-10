@@ -38,13 +38,12 @@
           <ul class="nav navbar-nav">
             <li><a href="index.html">Main</a></li>
             <li><a href="getting-started.html">Getting Started</a></li>
+            <li><a href="platform.html">Platform</a></li>
             <li><a href="data-model.html">Data Model</a></li>
             <li><a href="cluster-setup.html">Cluster Setup</a></li>
             <li><a href="using-blur.html">Using Blur</a></li>
             <li><a href="Blur.html">Blur API</a></li>
             <li class="active"><a href="console.html">Console</a></li>
-            <li><a href="site/index.html" target="_blank">Maven Site</a></li>
-            <li><a href="site/apidocs/index.html" target="_blank">Javadocs</a></li>
           </ul>
         </div>
       </div>
@@ -112,6 +111,36 @@
                   <td>blur.console.refreshtime</td>
                   <td>5000</td>
                   <td>Time to indicate how long calls to Blur should be cached (in milliseconds).</td>
+                </tr>
+                <tr>
+                  <td>blur.console.ssl.enabled</td>
+                  <td>false</td>
+                  <td>Whether to enable ssl directly in the console.</td>
+                </tr>
+                <tr>
+                  <td>blur.console.ssl.hostname.match</td>
+                  <td>true</td>
+                  <td>Indicates if the hostname should match an incoming certificate.</td>
+                </tr>
+                <tr>
+                  <td>blur.console.ssl.keystore.path</td>
+                  <td></td>
+                  <td>The path to a keystore for ssl.</td>
+                </tr>
+                <tr>
+                  <td>blur.console.ssl.keystore.password</td>
+                  <td></td>
+                  <td>The password to the keystore (used with blur.console.ssl.keystore.path).</td>
+                </tr>
+                <tr>
+                  <td>blur.console.ssl.truststore.path</td>
+                  <td></td>
+                  <td>The path to a truststore for ssl.</td>
+                </tr>
+                <tr>
+                  <td>blur.console.ssl.truststore.password</td>
+                  <td></td>
+                  <td>The password to the truststore (used with blur.console.ssl.truststore.path).</td>
                 </tr>
               </tbody>
             </table>

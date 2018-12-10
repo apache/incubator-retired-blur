@@ -2,10 +2,12 @@ package org.apache.blur.command;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.blur.command.annotation.Description;
 import org.apache.blur.command.annotation.RequiredArgument;
 import org.apache.blur.command.commandtype.ClusterServerReadCommandSingleTable;
+import org.apache.blur.command.commandtype.TableReadCommand;
 import org.apache.lucene.index.Term;
 
 /**
@@ -26,7 +28,7 @@ import org.apache.lucene.index.Term;
  */
 
 @Description("Returns the number of documents containing the term in the given field.")
-public class DocFreqCommand extends ClusterServerReadCommandSingleTable<Long> {
+public class DocFreqCommand extends TableReadCommand<Long> {
   private static final String NAME = "docFreq";
 
   @RequiredArgument
@@ -51,12 +53,12 @@ public class DocFreqCommand extends ClusterServerReadCommandSingleTable<Long> {
   }
 
   @Override
-  public Long combine(CombiningContext context, Map<? extends Location<?>, Long> results) throws IOException,
+  public Long combine(CombiningContext context, Iterable<Long> results) throws IOException,
       InterruptedException {
     
     Long total = 0l;
     
-    for(Long shardTotal: results.values()) {
+    for(Long shardTotal: results) {
       total += shardTotal;
     }
     
@@ -83,4 +85,5 @@ public class DocFreqCommand extends ClusterServerReadCommandSingleTable<Long> {
   public void setValue(String term) {
     this.term = term;
   }
+
 }

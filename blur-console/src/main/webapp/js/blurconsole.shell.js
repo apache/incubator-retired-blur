@@ -73,6 +73,8 @@ blurconsole.shell = (function () {
           tab : 'dashboard'
         });
       }
+    } else if (blurconsole[tab].anchorChanged) {
+      blurconsole[tab].anchorChanged();
     }
 
     return true;
@@ -153,6 +155,7 @@ blurconsole.shell = (function () {
     _setJqueryMap();
 
     blurconsole.schema.initModule();
+    blurconsole.facets.initModule();
     blurconsole.logging.initModule();
 
     $('#dashboard_tab').show();
